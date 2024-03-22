@@ -16,6 +16,9 @@ sealed class Chain(
     object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
     object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+
+    object Solana : Chain("eip155", 1399811149, "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+
 }
 
 internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon)
