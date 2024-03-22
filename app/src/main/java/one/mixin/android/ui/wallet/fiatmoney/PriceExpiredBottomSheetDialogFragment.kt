@@ -36,7 +36,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_ASSET_PRICE = "args_asset_price"
 
         fun newInstance(
-            amount: Long,
+            amount: String,
             currencyName: String,
             asset: TokenItem,
             total: String,
@@ -44,7 +44,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             assetPrice: String,
         ) =
             PriceExpiredBottomSheetDialogFragment().withArgs {
-                putLong(ARGS_AMOUNT, amount)
+                putString(ARGS_AMOUNT, amount)
                 putString(ARGS_CURRENCY_NAME, currencyName)
                 putParcelable(ARGS_ASSET, asset)
                 putString(ARGS_TOTAL, total)
@@ -53,7 +53,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
-    private var amount: Long = 0L
+    private var amount: String = "0"
     private lateinit var currencyName: String
     private lateinit var asset: TokenItem
     private lateinit var total: String
@@ -85,7 +85,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        amount = requireArguments().getLong(ARGS_AMOUNT)
+        amount = requireArguments().getString(ARGS_AMOUNT,"0")
         asset =
             requireNotNull(
                 requireArguments().getParcelableCompat(
@@ -125,7 +125,7 @@ class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (time == 10) {
                     val response =
                         try {
-                            fiatMoneyViewModel.ticker(RouteTickerRequest(amount, currencyName, asset.assetId))
+                            fiatMoneyViewModel.ticker(RouteTickerRequest(currencyName, asset.assetId, amount))
                         } catch (e: Exception) {
                             Timber.e(e)
                             continue

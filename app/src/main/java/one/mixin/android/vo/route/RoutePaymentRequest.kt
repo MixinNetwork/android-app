@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class RoutePaymentRequest(
     @SerializedName("amount")
-    val amount: Long,
+    val amount: String,
     @SerializedName("currency")
     val currency: String,
     @SerializedName("asset_id")
