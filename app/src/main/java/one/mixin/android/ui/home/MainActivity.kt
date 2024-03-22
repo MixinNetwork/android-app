@@ -12,6 +12,7 @@ import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
@@ -301,7 +302,7 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 lifecycleScope.launch {
                     if (PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "").isBlank()) {
-                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                     } else {
                         WalletConnectActivity.show(this@MainActivity, e)
                     }
