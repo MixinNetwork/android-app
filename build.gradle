@@ -36,7 +36,7 @@ buildscript {
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
         ext.kotlinVersion = '1.9.23'
-        ext.libphonenumberVersion = '8.13.32'
+        ext.libphonenumberVersion = '8.13.33'
         ext.coroutinesVersion = '1.8.0'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
@@ -108,7 +108,7 @@ buildscript {
         ext.sumsubVersion = '1.30.0'
         ext.checkoutFramesVersion = '4.2.1'
         ext.checkoutSecureVersion = '3.2.1'
-        ext.checkoutRiskVersion = '1.0.5'
+        ext.checkoutRiskVersion = '1.0.6'
 
         ext.playWalletVersion = '19.3.0'
         ext.playPayVersion = '16.4.0'

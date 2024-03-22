@@ -199,7 +199,6 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun createAccount() {
-        keyViewModel.updateStatus(TransferStatus.IN_PROGRESS)
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = null, from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
@@ -207,6 +206,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     keyViewModel.updateStatus(TransferStatus.FAILED)
                 },
             ) {
+                keyViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 PropertyHelper.updateKeyValue(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, address)
                 RxBus.publish(WCUnlockEvent())
