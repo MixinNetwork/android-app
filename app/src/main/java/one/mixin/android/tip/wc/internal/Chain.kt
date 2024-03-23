@@ -5,38 +5,29 @@ import one.mixin.android.Constants
 
 sealed class Chain(
     val chainNamespace: String,
-    val chainReference: Int,
+    val chainReference: String,
     val name: String,
     val symbol: String,
     val rpcServers: List<String>,
     val chainId: String = "$chainNamespace:$chainReference",
 ) {
-    object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
+    object Ethereum : Chain("eip155", "1", "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
 
-    object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain("eip155", "56", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
-    object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain("eip155", "137", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
-    object Solana : Chain("eip155", 1399811149, "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
-
+    object Solana : Chain("solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 }
 
-internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon)
+internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon, Chain.Solana)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
         Chain.Polygon.chainId -> Chain.Polygon
-        else -> null
-    }
-}
-
-internal fun Int.getChain(): Chain? {
-    return when (this) {
-        Chain.Ethereum.chainReference -> Chain.Ethereum
-        Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
-        Chain.Polygon.chainReference -> Chain.Polygon
+        Chain.Solana.chainId -> Chain.Solana
         else -> null
     }
 }
@@ -48,6 +39,7 @@ internal fun String?.getChainName(): String? {
         Chain.Ethereum.chainId -> Chain.Ethereum.name
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
         Chain.Polygon.chainId -> Chain.Polygon.name
+        Chain.Solana.chainId -> Chain.Solana.name
         else -> null
     }
 }
@@ -59,6 +51,7 @@ internal fun String?.getChainSymbol(): String? {
         Chain.Ethereum.chainId -> Chain.Ethereum.symbol
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
         Chain.Polygon.chainId -> Chain.Polygon.symbol
+        Chain.Solana.chainId -> Chain.Solana.symbol
         else -> null
     }
 }
@@ -68,6 +61,7 @@ val walletConnectChainIdMap =
         Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
         Chain.Polygon.symbol to Constants.ChainId.Polygon,
         Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
+        Chain.Solana.symbol to Constants.ChainId.Solana,
     )
 
 fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
@@ -77,8 +71,15 @@ fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.
         "eip155" to
             Wallet.Model.Namespace.Session(
                 chains = chainIds,
-                methods = supportedMethods,
+                methods = evmSupportedMethods,
                 events = listOf("chainChanged", "accountsChanged"),
+                accounts = accounts,
+            ),
+        "solana" to
+            Wallet.Model.Namespace.Session(
+                chains = chainIds,
+                methods = solanaSupporedMethods,
+                events = listOf(""),
                 accounts = accounts,
             ),
     )

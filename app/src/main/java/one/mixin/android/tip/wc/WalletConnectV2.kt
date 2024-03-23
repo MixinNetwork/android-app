@@ -1,5 +1,6 @@
 package one.mixin.android.tip.wc
 
+import android.util.Log
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
@@ -14,6 +15,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -24,7 +26,6 @@ import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
@@ -139,6 +140,7 @@ object WalletConnectV2 : WalletConnect() {
                     val hasSupportChain =
                         namespaces.any { proposal ->
                             proposal.chains!!.any { chain ->
+                                Log.e("Hello", chain + "----" + chains.toString())
                                 chains.contains(chain)
                             }
                         }
@@ -199,15 +201,15 @@ object WalletConnectV2 : WalletConnect() {
     fun approveSession(
         priv: ByteArray,
         topic: String,
+        chainId: String,
     ) {
         val sessionProposal = getSessionProposal(topic)
         if (sessionProposal == null) {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-
-        val pub = ECKeyPair.create(priv).publicKey
-        val address = Keys.toChecksumAddress(Keys.getAddress(pub))
+        val address = privateKeyToAddress(priv, chainId)
+        // TODO
         val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, getSupportedNamespaces(address))
         Timber.d("$TAG approveSession $sessionNamespaces")
         val approveParams: Wallet.Params.SessionApprove =

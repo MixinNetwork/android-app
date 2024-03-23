@@ -1,11 +1,13 @@
 package one.mixin.android.tip
 
+import android.util.Log
 import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
+import org.sol4k.Keypair
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -108,27 +110,39 @@ fun tipPrivToPrivateKey(
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
 ): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-    val bip44KeyPair =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
-            Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
-            Constants.ChainId.SOLANA_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Solana)
-            else -> throw IllegalArgumentException("Not supported chainId")
+    when (chainId) {
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> {
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         }
-    return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+        Constants.ChainId.SOLANA_CHAIN_ID -> {
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+            val kp = Keypair.fromSecretKey(seed)
+            return kp.secret
+        }
+        else -> throw IllegalArgumentException("Not supported chainId")
+    }
+    throw IllegalArgumentException("Not supported chainId")
 }
 
-fun tipPrivToAddress(
+// private key
+fun privateKeyToAddress(
     priv: ByteArray,
     chainId: String,
 ): String {
-    val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-    val bip44KeyPair =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
-            Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
-            Constants.ChainId.SOLANA_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Solana)
-            else -> throw IllegalArgumentException("Not supported chainId")
+    when (chainId) {
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> {
+            val address = Keys.getAddress(ECKeyPair.create(priv))
+            return Keys.toChecksumAddress(address)
         }
-    return Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+        Constants.ChainId.SOLANA_CHAIN_ID -> {
+            val kp = Keypair.fromSecretKey(priv)
+            val address = kp.publicKey.toBase58()
+            Log.e("Hello", address)
+            return address
+        }
+        else -> throw IllegalArgumentException("Not supported chainId")
+    }
+    throw IllegalArgumentException("Not supported chainId")
 }

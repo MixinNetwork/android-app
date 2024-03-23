@@ -41,7 +41,7 @@ class WalletConnectBottomSheetViewModel
             return WalletConnectV2.parseSessionRequest(sessionRequest)
         }
 
-        suspend fun getTipPriv(
+        suspend fun getWeb3Priv(
             context: Context,
             pin: String,
         ): ByteArray {

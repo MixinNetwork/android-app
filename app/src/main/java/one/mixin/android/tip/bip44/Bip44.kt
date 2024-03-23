@@ -30,7 +30,7 @@ object Bip44Path {
             44 or HARDENED_BIT,
             501 or HARDENED_BIT,
             0 or HARDENED_BIT,
-            0,
+            0 or HARDENED_BIT,
         )
 }
 
