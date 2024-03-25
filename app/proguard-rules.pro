@@ -77,6 +77,7 @@
 -keepclassmembers class org.web3j.crypto.* { *; }
 -keep class * extends org.web3j.abi.TypeReference
 -keep class * extends org.web3j.abi.datatypes.Type
+-keep class org.web3j.abi.datatypes.* { *; }
 
 -dontwarn com.fasterxml.jackson.databind.**
 -keep class com.fasterxml.jackson.core.** { *; }
