@@ -153,7 +153,7 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
-    } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(context)) {
+    } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled()) {
         WalletConnect.connect(this)
     } else {
         if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
