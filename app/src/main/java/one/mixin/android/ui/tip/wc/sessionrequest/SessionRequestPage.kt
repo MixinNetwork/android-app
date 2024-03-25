@@ -110,17 +110,17 @@ fun SessionRequestPage(
     MixinAppTheme {
         Column(
             modifier =
-            Modifier
-                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(MixinAppTheme.colors.background),
+                Modifier
+                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(MixinAppTheme.colors.background),
         ) {
             Column(
                 modifier =
-                Modifier
-                    .verticalScroll(rememberScrollState())
-                    .weight(weight = 1f, fill = false),
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .weight(weight = 1f, fill = false),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(modifier = Modifier.height(50.dp))
@@ -154,9 +154,9 @@ fun SessionRequestPage(
                         GlideImage(
                             data = sessionRequestUI.peerUI.icon,
                             modifier =
-                            Modifier
-                                .size(70.dp)
-                                .clip(CircleShape),
+                                Modifier
+                                    .size(70.dp)
+                                    .clip(CircleShape),
                             placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                         )
                 }
@@ -209,10 +209,10 @@ fun SessionRequestPage(
                 Box(modifier = Modifier.height(20.dp))
                 Box(
                     modifier =
-                    Modifier
-                        .height(10.dp)
-                        .fillMaxWidth()
-                        .background(MixinAppTheme.colors.backgroundWindow),
+                        Modifier
+                            .height(10.dp)
+                            .fillMaxWidth()
+                            .background(MixinAppTheme.colors.backgroundWindow),
                 )
                 when (sessionRequestUI.data) {
                     is WCEthereumTransaction -> {
@@ -243,7 +243,7 @@ fun SessionRequestPage(
                 }
                 Box(modifier = Modifier.height(20.dp))
 
-                val fee = tipGas?.displayValue()?:BigDecimal.ZERO
+                val fee = tipGas?.displayValue() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
@@ -278,11 +278,11 @@ fun SessionRequestPage(
                 if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(
                         modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
-                            .fillMaxWidth(),
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .background(MixinAppTheme.colors.background)
+                                .padding(20.dp)
+                                .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         Button(
@@ -326,11 +326,11 @@ private fun Transaction(
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(MixinAppTheme.colors.background)
+                .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
@@ -364,9 +364,9 @@ private fun Transaction(
             GlideImage(
                 data = asset?.iconUrl ?: "",
                 modifier =
-                Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
@@ -394,12 +394,12 @@ private fun Message(
         Box(modifier = Modifier.height(4.dp))
         Box(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(0.dp, 128.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .clickable { onPreviewMessage(content) },
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 128.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MixinAppTheme.colors.backgroundWindow)
+                    .clickable { onPreviewMessage(content) },
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -410,10 +410,10 @@ private fun Message(
             Image(
                 painter = painterResource(R.drawable.ic_post),
                 modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .padding(horizontal = 8.dp)
-                    .align(Alignment.TopEnd),
+                    Modifier
+                        .size(40.dp, 40.dp)
+                        .padding(horizontal = 8.dp)
+                        .align(Alignment.TopEnd),
                 contentDescription = null,
             )
         }
@@ -430,12 +430,12 @@ private enum class Hint {
 private fun Hint(hint: Hint) {
     Row(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MixinAppTheme.colors.backgroundWindow)
-            .padding(horizontal = 8.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
@@ -712,4 +712,3 @@ private fun HintPreview() {
         Hint(Hint.SpeedUp)
     }
 }
-

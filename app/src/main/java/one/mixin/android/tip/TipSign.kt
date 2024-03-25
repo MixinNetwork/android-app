@@ -13,7 +13,6 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.utils.Numeric
-import timber.log.Timber
 
 const val TAG_TIP_SIGN = "TIP_sign"
 
@@ -119,9 +118,10 @@ fun tipPrivToPrivateKey(
         }
     val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
     val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-    if (address != addressFromGo){
-        throw IllegalArgumentException("Generate illegal Address")
-    }
+    if (address != addressFromGo)
+        {
+            throw IllegalArgumentException("Generate illegal Address")
+        }
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 
@@ -138,8 +138,9 @@ fun tipPrivToAddress(
         }
     val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
     val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-    if (address != addressFromGo){
-        throw IllegalArgumentException("Generate illegal Address")
-    }
+    if (address != addressFromGo)
+        {
+            throw IllegalArgumentException("Generate illegal Address")
+        }
     return address
 }

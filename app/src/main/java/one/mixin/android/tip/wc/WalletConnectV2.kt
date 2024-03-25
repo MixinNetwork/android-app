@@ -200,9 +200,13 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun ethEstimateGas(chain: Chain, transaction: Transaction): EthEstimateGas? {
+    fun ethEstimateGas(
+        chain: Chain,
+        transaction: Transaction,
+    ): EthEstimateGas? {
         return getWeb3j(chain).ethEstimateGas(transaction).send()
     }
+
     fun ethGasPrice(chain: Chain): EthGasPrice? {
         return getWeb3j(chain).ethGasPrice().send()
     }

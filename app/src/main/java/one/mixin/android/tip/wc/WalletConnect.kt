@@ -1,12 +1,10 @@
 package one.mixin.android.tip.wc
 
-import android.content.Context
 import android.util.LruCache
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-
 import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.internal.Chain

@@ -38,8 +38,10 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-
-        suspend fun ethEstimateGas(chain: Chain, transaction: Transaction) = withContext(Dispatchers.IO) { WalletConnectV2.ethEstimateGas(chain, transaction) }
+        suspend fun ethEstimateGas(
+            chain: Chain,
+            transaction: Transaction,
+        ) = withContext(Dispatchers.IO) { WalletConnectV2.ethEstimateGas(chain, transaction) }
 
         suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethGasPrice(chain) }
 
