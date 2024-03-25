@@ -72,7 +72,7 @@ fun handleResult(
         }
     if (content.isExternalScheme(activity) || content.isExternalTransferUrl()) {
         result.putExtra(MainActivity.URL, content)
-    } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled(activity)) {
+    } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled()) {
         result.putExtra(MainActivity.WALLET_CONNECT, content)
     } else if (!content.isMixinUrl()) {
         result.putExtra(MainActivity.SCAN, content)

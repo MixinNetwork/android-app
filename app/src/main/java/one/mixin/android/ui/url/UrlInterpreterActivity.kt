@@ -79,7 +79,7 @@ class UrlInterpreterActivity : BaseActivity() {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else if (data.scheme == WC) {
-            if (WalletConnect.isEnabled(this)) {
+            if (WalletConnect.isEnabled()) {
                 if (MixinApplication.get().topActivity is WebActivity) {
                     val url = data.toString()
                     WalletConnect.connect(url)
