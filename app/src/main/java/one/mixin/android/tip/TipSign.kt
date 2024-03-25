@@ -1,8 +1,10 @@
 package one.mixin.android.tip
 
+import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
@@ -11,6 +13,7 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.utils.Numeric
+import timber.log.Timber
 
 const val TAG_TIP_SIGN = "TIP_sign"
 
@@ -114,6 +117,11 @@ fun tipPrivToPrivateKey(
             Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
             else -> throw IllegalArgumentException("Not supported chainId")
         }
+    val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+    val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+    if (address != addressFromGo){
+        throw IllegalArgumentException("Generate illegal Address")
+    }
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 
@@ -128,5 +136,10 @@ fun tipPrivToAddress(
             Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
             else -> throw IllegalArgumentException("Not supported chainId")
         }
-    return Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+    val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+    val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+    if (address != addressFromGo){
+        throw IllegalArgumentException("Generate illegal Address")
+    }
+    return address
 }
