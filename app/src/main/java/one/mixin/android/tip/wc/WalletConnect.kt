@@ -6,11 +6,11 @@ import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.response.GasPriceType
-import one.mixin.android.api.response.TipGas
+
 import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import org.web3j.crypto.ECKeyPair
@@ -78,7 +78,6 @@ abstract class WalletConnect {
             override val signMessage: T,
             val sessionRequest: Wallet.Model.SessionRequest,
             var tipGas: TipGas? = null,
-            var gasPriceType: GasPriceType = GasPriceType.Propose,
         ) : WCSignData<T>(requestId, signMessage)
 
         data class TIPSignData(

@@ -14,6 +14,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import org.web3j.protocol.core.methods.request.Transaction
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -36,6 +37,13 @@ class WalletConnectBottomSheetViewModel
                 WalletConnectV2.getSessionRequest(topic)
             }
         }
+
+
+        suspend fun ethEstimateGas(chain: Chain, transaction: Transaction) = withContext(Dispatchers.IO) { WalletConnectV2.ethEstimateGas(chain, transaction) }
+
+        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethGasPrice(chain) }
+
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethMaxPriorityFeePerGas(chain) }
 
         fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
             return WalletConnectV2.parseSessionRequest(sessionRequest)
@@ -77,6 +85,4 @@ class WalletConnectBottomSheetViewModel
                 return errorInfo
             }
         }
-
-        suspend fun getTipGas(assetId: String) = tipService.getTipGas(assetId)
     }

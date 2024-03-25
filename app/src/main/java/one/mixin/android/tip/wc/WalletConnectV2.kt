@@ -29,10 +29,13 @@ import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.core.methods.request.Transaction
+import org.web3j.protocol.core.methods.response.EthEstimateGas
+import org.web3j.protocol.core.methods.response.EthGasPrice
+import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
-import java.math.BigInteger
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -168,6 +171,7 @@ object WalletConnectV2 : WalletConnect() {
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
                     Timber.d("$TAG onSessionRequest $sessionRequest")
+                    Timber.e("$TAG ${sessionRequest.request.params}")
                     RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
                 }
 
@@ -194,6 +198,17 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG pair $uri, error: $error")
             RxBus.publish(WCErrorEvent(WCError(WalletConnectException(0, error.throwable.toString() + "\nurl: $uri"))))
         }
+    }
+
+    fun ethEstimateGas(chain: Chain, transaction: Transaction): EthEstimateGas? {
+        return getWeb3j(chain).ethEstimateGas(transaction).send()
+    }
+    fun ethGasPrice(chain: Chain): EthGasPrice? {
+        return getWeb3j(chain).ethGasPrice().send()
+    }
+
+    fun ethMaxPriorityFeePerGas(chain: Chain): EthMaxPriorityFeePerGas? {
+        return getWeb3j(chain).ethMaxPriorityFeePerGas().send()
     }
 
     fun approveSession(
@@ -484,11 +499,11 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG ethSignTransaction tipGas is null")
             return ""
         }
-        val gasLimit = BigInteger(tipGas.gasLimit)
+        val gasLimit = tipGas.gasLimit
         Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
         val rawTransaction =
             if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
-                val gasPrice = Convert.toWei(signData.gasPriceType.getGasPrice(tipGas), Convert.Unit.ETHER).toBigInteger()
+                val gasPrice = Convert.toWei(tipGas.gasPrice.toBigDecimal(), Convert.Unit.WEI).toBigInteger()
                 Timber.d("$TAG gasPrice $gasPrice")
                 RawTransaction.createTransaction(
                     nonce,
