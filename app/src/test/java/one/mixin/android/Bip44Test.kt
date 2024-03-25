@@ -4,8 +4,13 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.junit.Test
+import org.sol4k.Connection
+import org.sol4k.Keypair
+import org.sol4k.PublicKey
+import org.sol4k.RpcUrl
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Keys
+import org.web3j.utils.Numeric
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -23,12 +28,19 @@ class Bip44Test {
 
     @Test
     fun testBip44Solana() {
-        val seed = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768"
-        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed.hexStringToByteArray())
-        val key = generateBip44Key(masterKeyPair, Bip44Path.Solana)
-        val address = Keys.toChecksumAddress(Keys.getAddress(key.publicKey))
+        val priv = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768".hexStringToByteArray()
+        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
+        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+        val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+        val kp = Keypair.fromSecretKey(seed)
+        assertEquals("CNH3eKGGKVTP8PiZyZdgc4Pc9jshFzr3bR1u1RtCCmEK", kp.publicKey.toBase58())
+        getWalletBalance(kp.publicKey.toBase58())
+    }
 
-        assertContentEquals(key.publicKey.toByteArray(), "00cd85cc0e786a3b226c4a12c7a1e7e7ccc74149fffa09879f988f529a16d4ba8e64287db7880aa7b1802352b56a4e2230576f19c85c5f780b733a657d3d8f6052".hexStringToByteArray())
-        assertEquals(address, "0xb28Dae755567A81e952FC81346ae90A3458Db00b")
+    private fun getWalletBalance(address: String) {
+        val connection = Connection(RpcUrl.DEVNET)
+        val wallet = PublicKey(address)
+        val balance = connection.getBalance(wallet)
+        println("Balance in Lamports: $balance")
     }
 }
