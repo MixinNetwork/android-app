@@ -1563,7 +1563,14 @@ class WebFragment : BaseFragment() {
             val url = request.url.toString()
             // ignore wallet connect url
             if (url.startsWith("WC:", true)) {
-                return true
+                val uri =
+                    when {
+                        url.contains("wc://") -> url
+                        url.contains("wc:/") -> url.replace("wc:/", "wc://")
+                        else -> url.replace("wc:", "wc://")
+                    }.toUri()
+
+                uri.getQueryParameter("symKey") ?: return true
             }
 
             if (url.isMixinUrl()) {
