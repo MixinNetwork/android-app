@@ -118,10 +118,9 @@ fun tipPrivToPrivateKey(
         }
     val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
     val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-    if (address != addressFromGo)
-        {
-            throw IllegalArgumentException("Generate illegal Address")
-        }
+    if (address != addressFromGo) {
+        throw IllegalArgumentException("Generate illegal Address")
+    }
     return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 
@@ -138,9 +137,8 @@ fun tipPrivToAddress(
         }
     val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
     val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-    if (address != addressFromGo)
-        {
-            throw IllegalArgumentException("Generate illegal Address")
-        }
+    if (address != addressFromGo) {
+        throw IllegalArgumentException("Generate illegal Address")
+    }
     return address
 }

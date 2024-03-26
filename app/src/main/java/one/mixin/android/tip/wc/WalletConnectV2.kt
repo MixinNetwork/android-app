@@ -455,17 +455,16 @@ object WalletConnectV2 : WalletConnect() {
         sessionRequest: Wallet.Model.SessionRequest,
         signedTransactionData: String,
     ) {
-        val raw = getWeb3j(chain).ethSendRawTransaction(signedTransactionData).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-        val transactionHash = raw.transactionHash
-        if (transactionHash == null) {
-            val msg = "error code: ${raw.error.code}, message: ${raw.error.message}"
+        val tx = getWeb3j(chain).ethSendRawTransaction(signedTransactionData).send()
+        if (tx.hasError()) {
+            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
             Timber.d("$TAG transactionHash is null, $msg")
             rejectRequest(msg, sessionRequest)
-            throw WalletConnectException(raw.error.code, raw.error.message)
-        } else {
-            Timber.d("$TAG sendTransaction $transactionHash")
-            approveRequestInternal(transactionHash, sessionRequest)
+            throw WalletConnectException(tx.error.code, tx.error.message)
         }
+        val transactionHash = tx.transactionHash
+        Timber.d("$TAG sendTransaction $transactionHash")
+        approveRequestInternal(transactionHash, sessionRequest)
     }
 
     private fun ethSignMessage(
@@ -490,9 +489,7 @@ object WalletConnectV2 : WalletConnect() {
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount =
-            getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST)
-                .sendAsync()
-                .get(web3jTimeout, TimeUnit.SECONDS)
+            getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
@@ -549,14 +546,14 @@ object WalletConnectV2 : WalletConnect() {
         signData: WCSignData.V2SignData<WCEthereumTransaction>,
     ) {
         val hexMessage = ethSignTransaction(priv, chain, sessionRequest, signData, false)
-        val raw = web3j.ethSendRawTransaction(hexMessage).sendAsync().get(web3jTimeout, TimeUnit.SECONDS)
-        val transactionHash = raw.transactionHash
-        if (transactionHash == null) {
-            val msg = "error code: ${raw.error.code}, message: ${raw.error.message}"
+        val result = web3j.ethSendRawTransaction(hexMessage).send()
+        if (result.hasError()) {
+            val msg = "error code: ${result.error.code}, message: ${result.error.message}"
             Timber.d("$TAG transactionHash is null, $msg")
             rejectRequest(msg, sessionRequest)
-            throw WalletConnectException(raw.error.code, raw.error.message)
+            throw WalletConnectException(result.error.code, result.error.message)
         } else {
+            val transactionHash = result.transactionHash
             Timber.d("$TAG sendTransaction $transactionHash")
             approveRequestInternal(transactionHash, sessionRequest)
         }
