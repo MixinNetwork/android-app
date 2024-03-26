@@ -501,14 +501,14 @@ object WalletConnectV2 : WalletConnect() {
         val tipGas = signData.tipGas
         if (tipGas == null) {
             Timber.e("$TAG ethSignTransaction tipGas is null")
-            return ""
+            throw IllegalArgumentException("TipGas is null")
         }
         val gasLimit = tipGas.gasLimit
-        Timber.d("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
+        Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
         val rawTransaction =
             if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
                 val gasPrice = Convert.toWei(tipGas.gasPrice.toBigDecimal(), Convert.Unit.WEI).toBigInteger()
-                Timber.d("$TAG gasPrice $gasPrice")
+                Timber.e("$TAG gasPrice $gasPrice")
                 RawTransaction.createTransaction(
                     nonce,
                     gasPrice,
@@ -518,13 +518,14 @@ object WalletConnectV2 : WalletConnect() {
                     transaction.data ?: "",
                 )
             } else {
+                Timber.e("$TAG maxFeePerGas $maxFeePerGas maxPriorityFeePerGas $maxPriorityFeePerGas")
                 RawTransaction.createTransaction(
                     chain.chainReference.toLong(),
                     nonce,
                     gasLimit,
                     transaction.to,
                     v,
-                    transaction.data,
+                    transaction.data ?: "",
                     maxPriorityFeePerGas,
                     maxFeePerGas,
                 )
