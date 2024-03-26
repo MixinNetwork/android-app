@@ -50,8 +50,10 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.UtxoException
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
@@ -443,10 +445,15 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 }
                             "${getString(R.string.error_connection_error)} $extra"
                         }
+
                         is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
                         else -> getString(R.string.error_unknown_with_message, throwable.message)
                     }
+
+                is UtxoException -> {
+                    throwable.getUtxoExceptionMsg(requireContext())
+                }
 
                 is TipNodeException -> {
                     throwable.getTipExceptionMsg(requireContext())
