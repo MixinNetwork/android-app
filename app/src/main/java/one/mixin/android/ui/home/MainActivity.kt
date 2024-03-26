@@ -638,7 +638,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initWalletConnect() {
-        if (!WalletConnect.isEnabled(this)) return
+        if (!WalletConnect.isEnabled()) return
 
         WalletConnectV2
     }

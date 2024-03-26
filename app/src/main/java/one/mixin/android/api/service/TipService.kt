@@ -5,13 +5,11 @@ import one.mixin.android.api.request.TipRequest
 import one.mixin.android.api.request.TipSecretReadRequest
 import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.response.TipEphemeral
-import one.mixin.android.api.response.TipGas
 import one.mixin.android.api.response.TipIdentity
 import one.mixin.android.api.response.TipSecretResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Path
 
 interface TipService {
     @GET("tip/identity")
@@ -34,9 +32,4 @@ interface TipService {
     suspend fun updateTipSecret(
         @Body request: TipSecretRequest,
     ): MixinResponse<Unit>
-
-    @GET("external/gastracker/{id}")
-    suspend fun getTipGas(
-        @Path("id") assetId: String,
-    ): MixinResponse<TipGas>
 }

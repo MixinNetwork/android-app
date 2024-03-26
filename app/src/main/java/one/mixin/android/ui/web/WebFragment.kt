@@ -878,7 +878,7 @@ class WebFragment : BaseFragment() {
         callbackFunction: String,
     ) {
         if (viewDestroyed()) return
-        if (!WalletConnect.isEnabled(requireContext())) return
+        if (!WalletConnect.isEnabled()) return
         val isValid = chainId.isUUID()
         if (!isValid) {
             lifecycleScope.launch {
@@ -961,7 +961,7 @@ class WebFragment : BaseFragment() {
         callbackFunction: String,
     ) {
         if (viewDestroyed()) return
-        if (!WalletConnect.isEnabled(requireContext())) return
+        if (!WalletConnect.isEnabled()) return
 
         lifecycleScope.launch {
             WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)

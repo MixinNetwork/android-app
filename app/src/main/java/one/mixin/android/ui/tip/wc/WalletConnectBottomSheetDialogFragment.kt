@@ -37,9 +37,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.response.GasPriceType
-import one.mixin.android.api.response.TipGas
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
@@ -54,9 +51,12 @@ import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.getChain
+import one.mixin.android.tip.wc.internal.isLegacy
+import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricDialog
@@ -70,6 +70,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -122,7 +123,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
-    private var gasPriceType: GasPriceType by mutableStateOf(GasPriceType.Propose)
     private var signData: WalletConnect.WCSignData.V2SignData<*>? by mutableStateOf(null)
     private var sessionProposal: Wallet.Model.SessionProposal? by mutableStateOf(null)
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
@@ -196,18 +196,11 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             signData,
                             asset,
                             tipGas,
-                            gasPriceType,
                             errorInfo,
                             onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                             onDismissRequest = { dismiss() },
                             onPositiveClick = { onPositiveClick(it) },
                             showPin = { showPin() },
-                            onGasItemClick = { type ->
-                                gasPriceType = type
-                                if (version == WalletConnect.Version.V2) {
-                                    signData?.gasPriceType = type
-                                }
-                            },
                         )
                     }
                 }
@@ -336,15 +329,21 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
-                tipGas =
-                    handleMixinResponse(
-                        invokeNetwork = { viewModel.getTipGas(assetId) },
-                        successBlock = {
-                            it.data
-                        },
-                    )
                 if (version == WalletConnect.Version.V2) {
-                    (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                    try {
+                        val gasPrice = viewModel.ethGasPrice(chain)?.result?.run { Numeric.toBigInt(this) } ?: return@onEach
+                        val estimateGas = viewModel.ethEstimateGas(chain, tx.toTransaction())?.result?.run { Numeric.toBigInt(this) } ?: return@onEach
+                        tipGas =
+                            if (tx.isLegacy()) {
+                                TipGas(chain.chainId, gasPrice, estimateGas, tx)
+                            } else {
+                                val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain)?.result?.run { Numeric.toBigInt(this) }
+                                TipGas(chain.chainId, gasPrice, estimateGas, maxPriorityFeePerGas, tx)
+                            }
+                        (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
                 }
             }
             .launchIn(lifecycleScope)

@@ -1,9 +1,11 @@
 package one.mixin.android.tip
 
 import android.util.Log
+import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
@@ -110,20 +112,25 @@ fun tipPrivToPrivateKey(
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
 ): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
+    val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
     when (chainId) {
         Constants.ChainId.ETHEREUM_CHAIN_ID -> {
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+            if (address != addressFromGo) {
+                throw IllegalArgumentException("Generate illegal Address")
+            }
             return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
             val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
             val kp = Keypair.fromSecretKey(seed)
+            // Todo
             return kp.secret
         }
         else -> throw IllegalArgumentException("Not supported chainId")
     }
-    throw IllegalArgumentException("Not supported chainId")
 }
 
 // private key
@@ -131,18 +138,22 @@ fun privateKeyToAddress(
     priv: ByteArray,
     chainId: String,
 ): String {
+    val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
     when (chainId) {
         Constants.ChainId.ETHEREUM_CHAIN_ID -> {
             val address = Keys.getAddress(ECKeyPair.create(priv))
+            if (address != addressFromGo) {
+                throw IllegalArgumentException("Generate illegal Address")
+            }
             return Keys.toChecksumAddress(address)
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val kp = Keypair.fromSecretKey(priv)
             val address = kp.publicKey.toBase58()
+            // Todo check solana address
             Log.e("Hello", address)
             return address
         }
         else -> throw IllegalArgumentException("Not supported chainId")
     }
-    throw IllegalArgumentException("Not supported chainId")
 }

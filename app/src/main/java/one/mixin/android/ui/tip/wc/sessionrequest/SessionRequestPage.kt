@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,13 +51,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
-import one.mixin.android.api.response.GasPriceType
-import one.mixin.android.api.response.TipGas
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
+import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
@@ -82,13 +80,11 @@ fun SessionRequestPage(
     signData: WalletConnect.WCSignData.V2SignData<*>?,
     asset: Token?,
     tipGas: TipGas?,
-    gasPriceType: GasPriceType,
     errorInfo: String?,
     onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onPositiveClick: (Long?) -> Unit,
     showPin: () -> Unit,
-    onGasItemClick: (GasPriceType) -> Unit,
 ) {
     Timber.e("step $step")
     val viewModel = hiltViewModel<SessionRequestViewModel>()
@@ -246,16 +242,17 @@ fun SessionRequestPage(
                     }
                 }
                 Box(modifier = Modifier.height(20.dp))
-                val fee = if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)
+
+                val fee = tipGas?.displayValue() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
-                        fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                        fee = fee.multiply(asset.priceUSD()).toPlainString(),
                     )
                 } else {
                     FeeInfo(
                         amount = "$fee ${asset?.symbol}",
-                        fee = (if (tipGas == null) BigDecimal.ZERO else gasPriceType.calcGas(tipGas)).multiply(asset.priceUSD()).toPlainString(),
+                        fee = fee.multiply(asset.priceUSD()).toPlainString(),
                     ) {
                         openBottomSheet = true
                     }
@@ -318,18 +315,6 @@ fun SessionRequestPage(
         }
 
         Timber.e("Step $step")
-
-        if (openBottomSheet && tipGas != null && asset != null) {
-            ChooseGasBottomSheet(
-                tipGas,
-                asset,
-                onDismissRequest = { openBottomSheet = false },
-                onItemClick = { gasPriceType ->
-                    openBottomSheet = false
-                    onGasItemClick.invoke(gasPriceType)
-                },
-            )
-        }
     }
 }
 
@@ -614,57 +599,6 @@ private fun Warning(
     }
 }
 
-@Composable
-private fun ChooseGasBottomSheet(
-    tipGas: TipGas,
-    asset: Token,
-    onDismissRequest: () -> Unit,
-    onItemClick: (GasPriceType) -> Unit,
-) {
-    MixinBottomSheetDialog(onDismissRequest = onDismissRequest) {
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .background(MixinAppTheme.colors.background),
-        ) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(66.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    modifier = Modifier.padding(start = 20.dp),
-                    text = stringResource(id = R.string.network_fee),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight(600),
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Image(
-                    painter = painterResource(R.drawable.ic_circle_close),
-                    modifier =
-                        Modifier
-                            .size(52.dp, 52.dp)
-                            .clip(CircleShape)
-                            .clickable(onClick = {
-                                onDismissRequest.invoke()
-                            })
-                            .padding(horizontal = 14.dp, vertical = 14.dp),
-                    contentDescription = null,
-                )
-            }
-            GasItem(gasPriceType = GasPriceType.Fast, tipGas = tipGas, asset = asset, onItemClick)
-            GasItem(gasPriceType = GasPriceType.Propose, tipGas = tipGas, asset = asset, onItemClick)
-            GasItem(gasPriceType = GasPriceType.Safe, tipGas = tipGas, asset = asset, onItemClick)
-            Box(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
@@ -689,59 +623,6 @@ private fun WarningPreview() {
         }
 
         Warning(modifier = Modifier.align(Alignment.BottomCenter), 2)
-    }
-}
-
-@Composable
-private fun GasItem(
-    gasPriceType: GasPriceType,
-    tipGas: TipGas,
-    asset: Token,
-    onItemClick: (GasPriceType) -> Unit,
-) {
-    Column(
-        modifier =
-            Modifier
-                .padding(horizontal = 16.dp, vertical = 5.dp)
-                .clip(shape = RoundedCornerShape(13.dp))
-                .fillMaxWidth()
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .clickable(onClick = {
-                    onItemClick.invoke(gasPriceType)
-                })
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(id = gasPriceType.getGasPriceName()),
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-            Text(
-                text = "$${gasPriceType.calcGas(tipGas).multiply(asset.priceUSD()).toPlainString()}",
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = gasPriceType.getEstimateTime(),
-                fontSize = 13.sp,
-                color = MixinAppTheme.colors.textMinor,
-            )
-            Text(
-                text = "${gasPriceType.calcGas(tipGas).toPlainString()} ${asset.symbol}",
-                fontSize = 13.sp,
-                color = MixinAppTheme.colors.textMinor,
-            )
-        }
     }
 }
 
@@ -830,19 +711,4 @@ private fun HintPreview() {
         Box(modifier = Modifier.height(8.dp))
         Hint(Hint.SpeedUp)
     }
-}
-
-@Preview
-@Composable
-private fun GasItemPreview() {
-    GasItem(
-        gasPriceType = GasPriceType.Propose,
-        tipGas = TipGas("43d61dcd-e413-450d-80b8-101d5e903357", "0.00000002", "0.0000003", "0.000005", "250000"),
-        asset =
-            Token(
-                "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
-                "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-                "", "1", "1", "30000", "30000", 3, "", "",
-            ),
-    ) {}
 }
