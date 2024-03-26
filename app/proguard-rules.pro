@@ -78,6 +78,7 @@
 -keep class * extends org.web3j.abi.TypeReference
 -keep class * extends org.web3j.abi.datatypes.Type
 -keep class org.web3j.abi.datatypes.* { *; }
+-keep class org.web3j.abi.* { *; }
 
 -dontwarn com.fasterxml.jackson.databind.**
 -keep class com.fasterxml.jackson.core.** { *; }
