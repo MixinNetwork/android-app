@@ -1561,6 +1561,11 @@ class WebFragment : BaseFragment() {
                 return super.shouldOverrideUrlLoading(view, request)
             }
             val url = request.url.toString()
+            // ignore wallet connect url
+            if (url.startsWith("WC:", true)) {
+                return true
+            }
+
             if (url.isMixinUrl()) {
                 if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
                     return true
