@@ -106,7 +106,6 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
-import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -902,7 +901,7 @@ class WebFragment : BaseFragment() {
                 callback = {
                     val address =
                         try {
-                            tipPrivToAddress(it, chainId)
+                            // tipPrivToAddress(it, chainId)
                         } catch (e: IllegalArgumentException) {
                             Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
                             ""

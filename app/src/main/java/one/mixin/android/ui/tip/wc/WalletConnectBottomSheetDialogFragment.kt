@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -357,8 +358,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
-                            val priv = viewModel.getTipPriv(requireContext(), pin)
-                            approveWithPriv(priv)
+                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin)
+                            approveWithPriv(privateKey)
                         }
                     }
                 if (error == null) {
@@ -415,7 +416,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 when (requestType) {
                     RequestType.Connect -> {}
                     RequestType.SessionProposal -> {
-                        WalletConnectV2.approveSession(priv, topic)
+                        // TODO ChainId = ?
+                        val chainId = SOLANA_CHAIN_ID
+                        WalletConnectV2.approveSession(priv, topic, chainId)
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"
