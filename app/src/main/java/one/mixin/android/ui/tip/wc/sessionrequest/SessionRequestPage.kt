@@ -297,7 +297,7 @@ fun SessionRequestPage(
                             Text(text = stringResource(id = R.string.Done), color = Color.White)
                         }
                     }
-                } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
+                } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign && tipGas != null) {
                     ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
                         viewModel.rejectRequest(version, topic)
                         onDismissRequest.invoke()
