@@ -130,6 +130,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
@@ -1561,7 +1562,6 @@ class WebFragment : BaseFragment() {
                 return super.shouldOverrideUrlLoading(view, request)
             }
             val url = request.url.toString()
-            // ignore wallet connect url
             if (url.startsWith("WC:", true)) {
                 val uri =
                     when {
@@ -1570,7 +1570,14 @@ class WebFragment : BaseFragment() {
                         else -> url.replace("wc:", "wc://")
                     }.toUri()
 
-                uri.getQueryParameter("symKey") ?: return true
+                val sumKey = uri.getQueryParameter("symKey")
+                if (sumKey != null) {
+                    // handle wallet connect url
+                    UrlInterpreterActivity.show(view.context, uri)
+                }
+                // ignore wallet connect data url
+                return true
+
             }
 
             if (url.isMixinUrl()) {
