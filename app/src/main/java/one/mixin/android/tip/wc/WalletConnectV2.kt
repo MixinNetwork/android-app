@@ -171,7 +171,6 @@ object WalletConnectV2 : WalletConnect() {
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
                     Timber.d("$TAG onSessionRequest $sessionRequest")
-                    Timber.e("$TAG ${sessionRequest.request.params}")
                     RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
                 }
 
