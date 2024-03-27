@@ -53,6 +53,7 @@ import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -295,7 +296,7 @@ fun SessionRequestPage(
                         }
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                    if (tipGas == null) {
+                    if (signData?.sessionRequest?.request?.method == Method.ETHSignTransaction.name || signData?.sessionRequest?.request?.method == Method.ETHSendTransaction.name && tipGas == null) {
                         Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                             Box(modifier = Modifier.height(20.dp))
                             CircularProgressIndicator(
