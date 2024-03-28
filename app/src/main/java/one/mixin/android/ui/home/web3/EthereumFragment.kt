@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -77,7 +77,7 @@ class EthereumFragment : BaseFragment() {
 
     private fun updateUI() {
         lifecycleScope.launch {
-            val address = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
+            val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (address.isBlank()) {
                 binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum)
                 binding.chainCard.setOnCreateListener {
