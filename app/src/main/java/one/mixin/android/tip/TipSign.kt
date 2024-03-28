@@ -1,6 +1,5 @@
 package one.mixin.android.tip
 
-import android.util.Log
 import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign

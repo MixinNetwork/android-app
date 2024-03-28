@@ -358,7 +358,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
-                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin)
+                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chainId = SOLANA_CHAIN_ID)
                             approveWithPriv(privateKey)
                         }
                     }

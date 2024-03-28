@@ -6,6 +6,7 @@ import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.service.TipService
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
@@ -54,10 +55,11 @@ class WalletConnectBottomSheetViewModel
         suspend fun getWeb3Priv(
             context: Context,
             pin: String,
+            chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey)
+            return tipPrivToPrivateKey(spendKey, chainId)
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)

@@ -1,6 +1,5 @@
 package one.mixin.android.tip.wc
 
-import android.util.Log
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
@@ -142,7 +141,6 @@ object WalletConnectV2 : WalletConnect() {
                     val hasSupportChain =
                         namespaces.any { proposal ->
                             proposal.chains!!.any { chain ->
-                                Log.e("Hello", chain + "----" + chains.toString())
                                 chains.contains(chain)
                             }
                         }
@@ -226,8 +224,7 @@ object WalletConnectV2 : WalletConnect() {
             return
         }
         val address = privateKeyToAddress(priv, chainId)
-        // TODO
-        val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, getSupportedNamespaces(address))
+        val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, getSupportedNamespaces(chainId, address))
         Timber.d("$TAG approveSession $sessionNamespaces")
         val approveParams: Wallet.Params.SessionApprove =
             Wallet.Params.SessionApprove(

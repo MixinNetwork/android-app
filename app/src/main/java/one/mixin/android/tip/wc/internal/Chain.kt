@@ -2,6 +2,7 @@ package one.mixin.android.tip.wc.internal
 
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 
 sealed class Chain(
     val chainNamespace: String,
@@ -64,7 +65,15 @@ val walletConnectChainIdMap =
         Chain.Solana.symbol to Constants.ChainId.Solana,
     )
 
-fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
+fun getSupportedNamespaces(chainId: String, address: String): Map<String, Wallet.Model.Namespace.Session> {
+    return if (chainId == SOLANA_CHAIN_ID) {
+        getSolanaNamespaces(address)
+    } else {
+        getEvmNamespaces(address)
+    }
+}
+
+private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
     val chainIds = supportChainList.map { chain -> chain.chainId }
     val accounts = supportChainList.map { chain -> "${chain.chainNamespace}:${chain.chainReference}:$address" }
     return mapOf(
@@ -74,13 +83,18 @@ fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.
                 methods = evmSupportedMethods,
                 events = listOf("chainChanged", "accountsChanged"),
                 accounts = accounts,
-            ),
+            )
+    )
+}
+
+private fun getSolanaNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
+    return mapOf(
         "solana" to
             Wallet.Model.Namespace.Session(
-                chains = chainIds,
+                chains = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"),
                 methods = solanaSupporedMethods,
                 events = listOf(""),
-                accounts = accounts,
-            ),
+                accounts = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:AcYW4VmviQPp9q6uYeiDfQaFdXaxH3BuPxu8zWoibGLf"),
+            )
     )
 }

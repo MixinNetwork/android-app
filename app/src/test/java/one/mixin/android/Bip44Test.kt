@@ -40,6 +40,17 @@ class Bip44Test {
         getWalletBalance(kp.publicKey.toBase58())
     }
 
+    @Test
+    fun testBip44Solana1() {
+        val priv = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768".hexStringToByteArray()
+        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
+        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+        val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+        val kp = Keypair.fromSecretKey(seed)
+        assertEquals("CNH3eKGGKVTP8PiZyZdgc4Pc9jshFzr3bR1u1RtCCmEK", kp.publicKey.toBase58())
+        getWalletBalance(kp.publicKey.toBase58())
+    }
+
     private fun getWalletBalance(address: String) {
         val connection = Connection(RpcUrl.DEVNET)
         val wallet = PublicKey(address)
