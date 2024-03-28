@@ -1446,6 +1446,7 @@
     <string name="Ethereum">Ethereum</string>
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>
+    <string name="Solana">Solana</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access dapps and DeFi projects.</string>

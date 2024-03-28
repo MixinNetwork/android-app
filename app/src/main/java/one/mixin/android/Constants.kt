@@ -87,6 +87,7 @@ object Constants {
 
         object ChainAddress {
             const val EVM_ADDRESS = "evm_address"
+            const val SOLANA_ADDRESS = "solana_address"
         }
     }
 

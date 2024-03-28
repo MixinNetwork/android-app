@@ -50,6 +50,7 @@ import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.web3.BSCFragment
 import one.mixin.android.ui.home.web3.EthereumFragment
 import one.mixin.android.ui.home.web3.PolygonFragment
+import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -142,6 +143,11 @@ class ExploreFragment : BaseFragment() {
                         exploreVa.displayedChild = 2
                         navigate(bscFragment, BSCFragment.TAG)
                     }
+
+                    R.id.radio_solana -> {
+                        exploreVa.displayedChild = 2
+                        navigate(solanaFragment, SolanaFragment.TAG)
+                    }
                 }
             }
             binding.botRv.layoutManager = LinearLayoutManager(requireContext())
@@ -196,6 +202,10 @@ class ExploreFragment : BaseFragment() {
 
     private val bscFragment by lazy {
         BSCFragment()
+    }
+
+    private val solanaFragment by lazy {
+        SolanaFragment()
     }
 
     private fun loadData() {

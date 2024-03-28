@@ -128,6 +128,16 @@
                 android:text="@string/BSC"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:background="@drawable/selector_radio"
+                android:layout_marginEnd="12dp"
+                android:button="@null" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_solana"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Solana"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:background="@drawable/selector_radio"
                 android:button="@null" />
 
         </RadioGroup>
