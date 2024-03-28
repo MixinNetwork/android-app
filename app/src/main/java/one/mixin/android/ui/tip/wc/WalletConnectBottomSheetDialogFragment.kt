@@ -12,16 +12,13 @@ import android.view.WindowManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -135,15 +132,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
             account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                snapshotFlow { step }.collect { value ->
-                    if (value == Step.Input) {
-                        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    } else {
-                        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    }
-                }
-            }
         }
     }
 
@@ -506,37 +494,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var onPinCompleteAction: (suspend (String) -> String?)? = null
     private var onRejectAction: (() -> Unit)? = null
 
-    private var biometricDialog: BiometricDialog? = null
-
-    private fun showBiometricPrompt() {
-        biometricDialog =
-            BiometricDialog(
-                requireActivity(),
-                getBiometricInfo(),
-            )
-        biometricDialog?.callback = biometricDialogCallback
-        biometricDialog?.show()
-    }
-
     fun getBiometricInfo() =
         BiometricInfo(
             getString(R.string.Verify_by_Biometric),
             "",
             "",
         )
-
-    private val biometricDialogCallback =
-        object : BiometricDialog.Callback {
-            override fun onPinComplete(pin: String) {
-                doAfterPinComplete(pin)
-            }
-
-            override fun showPin() {
-                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            }
-
-            override fun onCancel() {}
-        }
 
     private fun showPin() {
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
