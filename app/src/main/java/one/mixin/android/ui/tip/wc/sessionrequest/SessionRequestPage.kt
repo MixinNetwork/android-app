@@ -29,6 +29,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -100,7 +101,7 @@ fun SessionRequestPage(
     val warningType =
         if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE) {
             0
-        } else if (sessionRequestUI.data is WCEthereumTransaction && sessionRequestUI.data.value == null) {
+        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null|| sessionRequestUI.data.value == "0x0")) {
             2
         } else {
             1
@@ -546,8 +547,10 @@ private fun Warning(
     modifier: Modifier,
     warningType: Int,
 ) {
-    var isVisible by remember { mutableStateOf(true) }
-    if (isVisible) {
+    var localType by remember {
+        mutableIntStateOf(-1)
+    }
+    if (localType != warningType) {
         Row(
             modifier =
                 modifier
@@ -569,13 +572,19 @@ private fun Warning(
             Column {
                 Text(
                     text =
-                        if (warningType == 0) {
+                    when (warningType) {
+                        0 -> {
                             stringResource(id = R.string.blocked_action, "eth_sign")
-                        } else if (warningType == 1) {
+                        }
+
+                        1 -> {
                             stringResource(id = R.string.signature_request_warning)
-                        } else {
+                        }
+
+                        else -> {
                             stringResource(id = R.string.decode_transaction_failed)
-                        },
+                        }
+                    },
                     color = MixinAppTheme.colors.tipError,
                     fontSize = 14.sp,
                 )
@@ -584,7 +593,7 @@ private fun Warning(
                     Text(
                         modifier =
                             Modifier.clickable {
-                                isVisible = false
+                                localType = warningType
                             },
                         text = stringResource(id = R.string.Got_it),
                         color = MixinAppTheme.colors.textBlue,
