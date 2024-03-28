@@ -3,6 +3,8 @@ package one.mixin.android.ui.home.web3
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.Constants
+import one.mixin.android.api.service.TipService
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.vo.ConnectionUI
@@ -10,8 +12,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ConnectionsViewModel
-    @Inject
-    internal constructor() : ViewModel() {
+@Inject
+internal constructor(
+    private val tipService: TipService
+) : ViewModel() {
         fun disconnect(
             version: WalletConnect.Version,
             topic: String,
@@ -26,9 +30,7 @@ class ConnectionsViewModel
 
         fun getLatestActiveSignSessions(): List<ConnectionUI> {
             val v2List =
-                WalletConnectV2.getListOfActiveSessions().filter { wcSession ->
-                    wcSession.metaData != null && !Constants.InternalWeb3Wallet.any { it.name == wcSession.metaData?.name || it.uri == wcSession.metaData?.url }
-                }.mapIndexed { index, wcSession ->
+                WalletConnectV2.getListOfActiveSessions().mapIndexed { index, wcSession ->
                     ConnectionUI(
                         index = index,
                         icon = wcSession.metaData?.icons?.firstOrNull(),
@@ -39,4 +41,6 @@ class ConnectionsViewModel
                 }
             return v2List
         }
+
+        suspend fun dapps() = tipService.dapps()
     }

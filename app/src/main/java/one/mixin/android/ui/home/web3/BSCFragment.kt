@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -23,6 +25,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.widget.SpacesItemDecoration
 
+@AndroidEntryPoint
 class BSCFragment : BaseFragment() {
     companion object {
         const val TAG = "BSCFragment"
@@ -33,6 +36,7 @@ class BSCFragment : BaseFragment() {
 
     private val connectionsViewModel by viewModels<ConnectionsViewModel>()
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -40,11 +44,7 @@ class BSCFragment : BaseFragment() {
     ): View {
         _binding = FragmentBscBinding.inflate(inflater, container, false)
         binding.apply {
-            walletRv.adapter =
-                WalletAdapter().apply {
-                    connections = connectionsViewModel.getLatestActiveSignSessions()
-                }
-
+            walletRv.adapter = WalletAdapter()
             walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
         }
         RxBus.listen(WCUnlockEvent::class.java)
@@ -53,6 +53,11 @@ class BSCFragment : BaseFragment() {
                 updateUI()
             }
         updateUI()
+        lifecycleScope.launch {
+            val dapp = connectionsViewModel.dapps()
+            (binding.walletRv.adapter as WalletAdapter).connections = dapp.data?: emptyList()
+            (binding.walletRv.adapter)?.notifyDataSetChanged()
+        }
         return binding.root
     }
 
