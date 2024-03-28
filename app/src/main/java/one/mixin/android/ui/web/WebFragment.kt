@@ -1630,7 +1630,7 @@ class WebFragment : BaseFragment() {
                     }
                 } catch (e: Exception) {
                     if (e is ActivityNotFoundException) {
-                        toast(context.getString(R.string.error_unable_to_open_link, url))
+                        // do nothing
                     } else {
                         view.loadUrl(url, extraHeaders)
                     }
