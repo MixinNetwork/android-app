@@ -4,10 +4,13 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.junit.Test
+import org.sol4k.Base58.decode
 import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
+import org.sol4k.Transaction
+import org.sol4k.instruction.TransferInstruction
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
@@ -42,5 +45,28 @@ class Bip44Test {
         val wallet = PublicKey(address)
         val balance = connection.getBalance(wallet)
         println("Balance in Lamports: $balance")
+    }
+
+    @Test
+    fun tesSolTransfer() {
+        val priv = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768".hexStringToByteArray()
+        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
+        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+        val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+        val sender = Keypair.fromSecretKey(seed)
+
+        val connection = Connection(RpcUrl.DEVNET)
+        val blockhash: String = connection.getLatestBlockhash()
+
+        val receiver = PublicKey("9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g")
+        val instruction = TransferInstruction(sender.publicKey, receiver, 100L)
+        val transaction = Transaction(
+            blockhash,
+            instruction,
+            sender.publicKey
+        )
+        transaction.sign(sender)
+        val signature: String = connection.sendTransaction(transaction)
+        println("Transaction Signature: $signature")
     }
 }
