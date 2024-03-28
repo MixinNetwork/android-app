@@ -2,12 +2,11 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.Constants
 import one.mixin.android.api.service.TipService
-import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.vo.ConnectionUI
+import one.mixin.android.vo.Dapp
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,5 +41,15 @@ internal constructor(
             return v2List
         }
 
-        suspend fun dapps() = tipService.dapps()
+        private var dapps = mutableListOf<Dapp>()
+
+        suspend fun dapps(): MutableList<Dapp> {
+            if (dapps.isEmpty()) {
+                val data = tipService.dapps().data ?: emptyList()
+                dapps.addAll(data)
+                return dapps
+            }else{
+                return dapps
+            }
+        }
     }

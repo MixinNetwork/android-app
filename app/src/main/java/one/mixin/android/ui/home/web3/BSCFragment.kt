@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.databinding.FragmentBscBinding
+import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
@@ -31,20 +31,22 @@ class BSCFragment : BaseFragment() {
         const val TAG = "BSCFragment"
     }
 
-    private var _binding: FragmentBscBinding? = null
+    private var _binding: FragmentChainBinding? = null
     private val binding get() = requireNotNull(_binding)
 
     private val connectionsViewModel by viewModels<ConnectionsViewModel>()
+    private val adapter by lazy {
+        WalletAdapter()
+    }
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentBscBinding.inflate(inflater, container, false)
+        _binding = FragmentChainBinding.inflate(inflater, container, false)
         binding.apply {
-            walletRv.adapter = WalletAdapter()
+            walletRv.adapter = adapter
             walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
         }
         RxBus.listen(WCUnlockEvent::class.java)
@@ -53,12 +55,23 @@ class BSCFragment : BaseFragment() {
                 updateUI()
             }
         updateUI()
-        lifecycleScope.launch {
-            val dapp = connectionsViewModel.dapps()
-            (binding.walletRv.adapter as WalletAdapter).connections = dapp.data?: emptyList()
-            (binding.walletRv.adapter)?.notifyDataSetChanged()
-        }
+        loadData()
         return binding.root
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun loadData() {
+        lifecycleScope.launch {
+            if (adapter.itemCount <= 0) {
+                binding.va.displayedChild = 0
+            }
+            val dapps = connectionsViewModel.dapps().filter {
+                it.chains.contains(Constants.ChainId.BinanceSmartChain)
+            }
+            adapter.connections = dapps
+            adapter.notifyDataSetChanged()
+            binding.va.displayedChild = 1
+        }
     }
 
     private fun updateUI() {

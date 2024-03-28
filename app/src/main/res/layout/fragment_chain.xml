@@ -14,9 +14,23 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/wallet_rv"
+    <ViewAnimator
+        android:id="@+id/va"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="LinearLayoutManager" />
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.BlueProgress" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/wallet_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager" />
+    </ViewAnimator>
 </LinearLayout>
