@@ -53,6 +53,7 @@ import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -105,7 +106,6 @@ fun SessionRequestPage(
         } else {
             1
         }
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     MixinAppTheme {
         Column(
@@ -253,9 +253,7 @@ fun SessionRequestPage(
                     FeeInfo(
                         amount = "$fee ${asset?.symbol}",
                         fee = fee.multiply(asset.priceUSD()).toPlainString(),
-                    ) {
-                        openBottomSheet = true
-                    }
+                    )
                 }
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
@@ -298,10 +296,22 @@ fun SessionRequestPage(
                         }
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                    ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                        viewModel.rejectRequest(version, topic)
-                        onDismissRequest.invoke()
-                    }, showPin)
+                    if (signData?.sessionRequest?.request?.method == Method.ETHSignTransaction.name || signData?.sessionRequest?.request?.method == Method.ETHSendTransaction.name && tipGas == null) {
+                        Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                            Box(modifier = Modifier.height(20.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                color = MixinAppTheme.colors.accent,
+                            )
+                        }
+                    } else {
+                        ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                            viewModel.rejectRequest(version, topic)
+                            onDismissRequest.invoke()
+                        }, showPin)
+                    }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
                     ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {
                         viewModel.rejectRequest(version, topic)
@@ -497,13 +507,12 @@ private fun Hint(hint: Hint) {
 private fun FeeInfo(
     amount: String,
     fee: String,
-    onFeeClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
     ) {
         Text(
             text = stringResource(id = R.string.network_fee).uppercase(),
@@ -513,9 +522,7 @@ private fun FeeInfo(
         Box(modifier = Modifier.height(4.dp))
         Row(
             modifier =
-                Modifier
-                    .clickable { onFeeClick?.invoke() }
-                    .fillMaxWidth(),
+            Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
@@ -529,15 +536,6 @@ private fun FeeInfo(
                     text = "≈ $$fee",
                     color = MixinAppTheme.colors.textSubtitle,
                     fontSize = 14.sp,
-                )
-            }
-            if (onFeeClick != null) {
-                Image(
-                    painter = painterResource(R.drawable.ic_keyboard_arrow_down),
-                    modifier =
-                        Modifier
-                            .size(20.dp, 20.dp),
-                    contentDescription = null,
                 )
             }
         }
@@ -602,7 +600,7 @@ private fun Warning(
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
-    FeeInfo("0.0169028 ETH", "$7.57") {}
+    FeeInfo("0.0169028 ETH", "$7.57")
 }
 
 @Preview
