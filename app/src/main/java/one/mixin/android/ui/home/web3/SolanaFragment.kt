@@ -83,12 +83,12 @@ class SolanaFragment : BaseFragment() {
             val address = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             if (address.isBlank()) {
                 // Todo replace icon
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana)
                 binding.chainCard.setOnCreateListener {
                     WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_SOLANA).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                 }
             } else {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_ethereum)
+                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_solana)
                 binding.chainCard.setOnCreateListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, address))
