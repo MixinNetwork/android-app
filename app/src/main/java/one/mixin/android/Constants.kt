@@ -75,7 +75,6 @@ object Constants {
         const val PREF_LOGIN_VERIFY = "pref_login_verify"
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
-        const val PREF_WALLET_CONNECT_ADDRESS = "pref_wallet_connect_address"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -84,6 +83,10 @@ object Constants {
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT = "pref_migration_transcript_attachment"
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
+        }
+
+        object ChainAddress {
+            const val EVM_ADDRESS = "evm_address"
         }
     }
 
@@ -322,12 +325,6 @@ object Constants {
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
     const val TEAM_BOT_NAME = ""
-
-    val InternalWeb3Wallet =
-        listOf(
-            ConnectionUI(-2, "", "Uniswap", "https://app.uniswap.org", internalIcon = R.drawable.ic_uniswap),
-            ConnectionUI(-1, "", "Snapshot", "https://snapshot.org", internalIcon = R.drawable.ic_snapshot),
-        )
 
     object RouteConfig {
         const val PAN_ONLY = "pan_only"

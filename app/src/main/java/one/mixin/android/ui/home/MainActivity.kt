@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
@@ -301,7 +302,7 @@ class MainActivity : BlazeBaseActivity() {
             .autoDispose(destroyScope)
             .subscribe { e ->
                 lifecycleScope.launch {
-                    if (PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "").isBlank()) {
+                    if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
                         WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                     } else {
                         WalletConnectActivity.show(this@MainActivity, e)
