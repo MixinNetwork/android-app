@@ -416,9 +416,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 when (requestType) {
                     RequestType.Connect -> {}
                     RequestType.SessionProposal -> {
-                        // TODO ChainId = ?
-                        val chainId = SOLANA_CHAIN_ID
-                        WalletConnectV2.approveSession(priv, topic, chainId)
+                        WalletConnectV2.approveSession(priv, topic)
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"

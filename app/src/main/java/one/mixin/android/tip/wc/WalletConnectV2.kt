@@ -14,7 +14,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -213,18 +212,35 @@ object WalletConnectV2 : WalletConnect() {
         return getWeb3j(chain).ethMaxPriorityFeePerGas().send()
     }
 
+    private fun <T>flattenCollections(collection: List<List<T>?>): List<T> {
+        val result = mutableListOf<T>()
+        for (innerCollection in collection) {
+            if (innerCollection == null) continue
+            result.addAll(innerCollection)
+        }
+        return result
+    }
+
     fun approveSession(
         priv: ByteArray,
         topic: String,
-        chainId: String,
     ) {
         val sessionProposal = getSessionProposal(topic)
         if (sessionProposal == null) {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val address = privateKeyToAddress(priv, chainId)
-        val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, getSupportedNamespaces(chainId, address))
+        val requiredNamespaces:Collection<String> = flattenCollections(sessionProposal.requiredNamespaces.values.map { it.chains })
+        val chain = supportChainList.firstOrNull {
+            it.chainId in requiredNamespaces
+        }
+        if (chain == null) {
+            Timber.e("$TAG approveSession sessionProposal is null")
+            return
+        }
+        val supportedNamespaces = getSupportedNamespaces(chain, priv)
+        Timber.e("$TAG supportedNamespaces $supportedNamespaces")
+        val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
         Timber.d("$TAG approveSession $sessionNamespaces")
         val approveParams: Wallet.Params.SessionApprove =
             Wallet.Params.SessionApprove(

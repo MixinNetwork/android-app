@@ -2,7 +2,9 @@ package one.mixin.android.tip.wc.internal
 
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.tip.privateKeyToAddress
 
 sealed class Chain(
     val chainNamespace: String,
@@ -22,6 +24,7 @@ sealed class Chain(
 }
 
 internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon, Chain.Solana)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -65,17 +68,27 @@ val walletConnectChainIdMap =
         Chain.Solana.symbol to Constants.ChainId.Solana,
     )
 
-fun getSupportedNamespaces(chainId: String, address: String): Map<String, Wallet.Model.Namespace.Session> {
-    return if (chainId == SOLANA_CHAIN_ID) {
-        getSolanaNamespaces(address)
-    } else {
-        getEvmNamespaces(address)
+fun getSupportedNamespaces(chain: Chain, priv: ByteArray): Map<String, Wallet.Model.Namespace.Session> {
+    return when (chain) {
+        is Chain.Solana -> {
+            val address = privateKeyToAddress(priv, SOLANA_CHAIN_ID)
+            getSolanaNamespaces(address)
+        }
+
+        is Chain.Polygon, is Chain.Ethereum, is Chain.BinanceSmartChain -> {
+            val address = privateKeyToAddress(priv, ETHEREUM_CHAIN_ID)
+            getEvmNamespaces(address)
+        }
+
+        else -> {
+            throw IllegalArgumentException("No support")
+        }
     }
 }
 
 private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
-    val chainIds = supportChainList.map { chain -> chain.chainId }
-    val accounts = supportChainList.map { chain -> "${chain.chainNamespace}:${chain.chainReference}:$address" }
+    val chainIds = evmChainList.map { chain -> chain.chainId }
+    val accounts = evmChainList.map { chain -> "${chain.chainNamespace}:${chain.chainReference}:$address" }
     return mapOf(
         "eip155" to
             Wallet.Model.Namespace.Session(
