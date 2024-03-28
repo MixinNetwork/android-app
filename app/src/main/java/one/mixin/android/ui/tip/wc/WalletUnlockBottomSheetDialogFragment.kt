@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -208,7 +208,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ) {
                 keyViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-                PropertyHelper.updateKeyValue(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, address)
+                PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
                 RxBus.publish(WCUnlockEvent())
                 keyViewModel.success(address)
             }

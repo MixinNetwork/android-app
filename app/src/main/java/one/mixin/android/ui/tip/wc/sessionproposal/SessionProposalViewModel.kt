@@ -4,7 +4,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -19,7 +19,7 @@ class SessionProposalViewModel
         private var account: String = ""
 
         suspend fun init() {
-            account = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
+            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
         }
 
         fun rejectSession(

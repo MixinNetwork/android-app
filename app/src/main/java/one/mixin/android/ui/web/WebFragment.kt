@@ -68,6 +68,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -887,7 +888,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, ""))
+            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(EVM_ADDRESS, ""))
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),

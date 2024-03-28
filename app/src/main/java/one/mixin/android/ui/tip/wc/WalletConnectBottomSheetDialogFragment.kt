@@ -34,8 +34,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -135,7 +135,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
-            account = PropertyHelper.findValueByKey(Constants.Account.PREF_WALLET_CONNECT_ADDRESS, "")
+            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 snapshotFlow { step }.collect { value ->
                     if (value == Step.Input) {
