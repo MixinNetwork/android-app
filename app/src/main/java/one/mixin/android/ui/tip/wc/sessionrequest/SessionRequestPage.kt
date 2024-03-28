@@ -199,7 +199,12 @@ fun SessionRequestPage(
                     textAlign = TextAlign.Center,
                     style =
                         TextStyle(
-                            color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                            color = if (errorInfo != null || step !in listOf(
+                                    WalletConnectBottomSheetDialogFragment.Step.Loading,
+                                    WalletConnectBottomSheetDialogFragment.Step.Done,
+                                    WalletConnectBottomSheetDialogFragment.Step.Sending
+                                )
+                            ) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.W400,
                         ),
