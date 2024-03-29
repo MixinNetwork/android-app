@@ -79,17 +79,14 @@ class EthereumFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum)
-                binding.chainCard.setOnCreateListener {
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum, {
                     WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                }
+                })
             } else {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_ethereum)
-                binding.chainCard.setOnCreateListener {
-                    requireContext().getClipboardManager()
-                        .setPrimaryClip(ClipData.newPlainText(null, address))
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), address.formatPublicKey(), R.drawable.ic_ethereum, {
+                    requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, address))
                     toast(R.string.copied_to_clipboard)
-                }
+                }, R.string.Copy)
             }
         }
     }

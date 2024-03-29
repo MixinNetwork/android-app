@@ -134,6 +134,14 @@ class AvatarView : ViewAnimator {
             }
     }
 
+    fun loadUrl(url: String) {
+        displayedChild = POS_AVATAR
+        avatarSimple.setBackgroundResource(0)
+        avatarSimple.setImageResource(0)
+        avatarSimple.setPadding(0)
+        avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
+    }
+
     fun renderApp(app: BotInterface) {
         if (app is ExploreApp) {
             setInfo(app.name, app.iconUrl, app.appId)
