@@ -67,9 +67,7 @@ class BSCFragment : BaseFragment() {
             if (adapter.itemCount <= 0) {
                 binding.va.displayedChild = 0
             }
-            val dapps = connectionsViewModel.dapps().filter {
-                it.chains.contains(Constants.ChainId.BinanceSmartChain)
-            }
+            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == Constants.ChainId.BinanceSmartChain }?.dapps ?: emptyList()
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
             binding.va.displayedChild = 1

@@ -7,6 +7,7 @@ import one.mixin.android.api.request.TipSecretRequest
 import one.mixin.android.api.response.TipEphemeral
 import one.mixin.android.api.response.TipIdentity
 import one.mixin.android.api.response.TipSecretResponse
+import one.mixin.android.vo.ChainDapp
 import one.mixin.android.vo.Dapp
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -35,5 +36,5 @@ interface TipService {
     ): MixinResponse<Unit>
 
     @GET("external/dapps")
-    suspend fun dapps():MixinResponse<List<Dapp>>
+    suspend fun dapps():MixinResponse<List<ChainDapp>>
 }
