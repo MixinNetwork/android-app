@@ -24,12 +24,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ButtonDefaults.elevation
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
+import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
@@ -67,6 +69,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.BigInteger
 
 @Composable
 fun SessionRequestPage(
@@ -100,7 +103,7 @@ fun SessionRequestPage(
     val warningType =
         if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE) {
             0
-        } else if (sessionRequestUI.data is WCEthereumTransaction && sessionRequestUI.data.value == null) {
+        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.toBigInt(sessionRequestUI.data.value) == BigInteger.ZERO)) {
             2
         } else {
             1
@@ -198,7 +201,12 @@ fun SessionRequestPage(
                     textAlign = TextAlign.Center,
                     style =
                         TextStyle(
-                            color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                            color = if (errorInfo != null || step !in listOf(
+                                    WalletConnectBottomSheetDialogFragment.Step.Loading,
+                                    WalletConnectBottomSheetDialogFragment.Step.Done,
+                                    WalletConnectBottomSheetDialogFragment.Step.Sending
+                                )
+                            ) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.W400,
                         ),
@@ -246,12 +254,12 @@ fun SessionRequestPage(
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
-                        fee = fee.multiply(asset.priceUSD()).toPlainString(),
+                        fee = fee.multiply(asset.priceUSD()),
                     )
                 } else {
                     FeeInfo(
                         amount = "$fee ${asset?.symbol}",
-                        fee = fee.multiply(asset.priceUSD()).toPlainString(),
+                        fee = fee.multiply(asset.priceUSD()),
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
@@ -505,7 +513,7 @@ private fun Hint(hint: Hint) {
 @Composable
 private fun FeeInfo(
     amount: String,
-    fee: String,
+    fee: BigDecimal,
 ) {
     Column(
         modifier =
@@ -532,7 +540,7 @@ private fun FeeInfo(
                 )
                 Box(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "≈ $$fee",
+                    text = fee.currencyFormat(),
                     color = MixinAppTheme.colors.textSubtitle,
                     fontSize = 14.sp,
                 )
@@ -546,8 +554,10 @@ private fun Warning(
     modifier: Modifier,
     warningType: Int,
 ) {
-    var isVisible by remember { mutableStateOf(true) }
-    if (isVisible) {
+    var localType by remember {
+        mutableIntStateOf(-1)
+    }
+    if (localType != warningType) {
         Row(
             modifier =
                 modifier
@@ -569,13 +579,19 @@ private fun Warning(
             Column {
                 Text(
                     text =
-                        if (warningType == 0) {
+                    when (warningType) {
+                        0 -> {
                             stringResource(id = R.string.blocked_action, "eth_sign")
-                        } else if (warningType == 1) {
+                        }
+
+                        1 -> {
                             stringResource(id = R.string.signature_request_warning)
-                        } else {
+                        }
+
+                        else -> {
                             stringResource(id = R.string.decode_transaction_failed)
-                        },
+                        }
+                    },
                     color = MixinAppTheme.colors.tipError,
                     fontSize = 14.sp,
                 )
@@ -584,7 +600,7 @@ private fun Warning(
                     Text(
                         modifier =
                             Modifier.clickable {
-                                isVisible = false
+                                localType = warningType
                             },
                         text = stringResource(id = R.string.Got_it),
                         color = MixinAppTheme.colors.textBlue,
@@ -599,7 +615,7 @@ private fun Warning(
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
-    FeeInfo("0.0169028 ETH", "$7.57")
+    FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
 }
 
 @Preview
@@ -647,6 +663,12 @@ fun ActionBottom(
                 ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            elevation = elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp
+            )
         ) {
             Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
         }
@@ -659,6 +681,12 @@ fun ActionBottom(
                 ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            elevation = elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp
+            )
         ) {
             Text(text = confirmTitle, color = Color.White)
         }
