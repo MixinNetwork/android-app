@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -69,9 +70,7 @@ class SolanaFragment : BaseFragment() {
             if (adapter.itemCount <= 0) {
                 binding.va.displayedChild = 0
             }
-            val dapps = connectionsViewModel.dapps().filter {
-                it.chains.contains(SOLANA_CHAIN_ID)
-            }
+            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.dapps ?: emptyList()
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
             binding.va.displayedChild = 1
