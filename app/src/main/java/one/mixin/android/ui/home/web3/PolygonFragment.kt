@@ -68,9 +68,7 @@ class PolygonFragment : BaseFragment() {
             if (adapter.itemCount <= 0) {
                 binding.va.displayedChild = 0
             }
-            val dapps = connectionsViewModel.dapps().filter {
-                it.chains.contains(Constants.ChainId.Polygon)
-            }
+            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == Constants.ChainId.Polygon }?.dapps ?: emptyList()
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
             binding.va.displayedChild = 1
