@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
@@ -66,9 +67,7 @@ class EthereumFragment : BaseFragment() {
             if (adapter.itemCount <= 0) {
                 binding.va.displayedChild = 0
             }
-            val dapps = connectionsViewModel.dapps().filter {
-                it.chains.contains(ETHEREUM_CHAIN_ID)
-            }
+            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == ETHEREUM_CHAIN_ID }?.dapps?: emptyList()
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
             binding.va.displayedChild = 1
@@ -79,17 +78,14 @@ class EthereumFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum)
-                binding.chainCard.setOnCreateListener {
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum, {
                     WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                }
+                })
             } else {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_ethereum)
-                binding.chainCard.setOnCreateListener {
-                    requireContext().getClipboardManager()
-                        .setPrimaryClip(ClipData.newPlainText(null, address))
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), address.formatPublicKey(), R.drawable.ic_ethereum, {
+                    requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, address))
                     toast(R.string.copied_to_clipboard)
-                }
+                }, R.string.Copy)
             }
         }
     }

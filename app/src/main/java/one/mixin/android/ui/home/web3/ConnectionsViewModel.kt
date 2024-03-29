@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.api.service.TipService
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.vo.ChainDapp
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import javax.inject.Inject
@@ -41,14 +42,14 @@ internal constructor(
             return v2List
         }
 
-        private var dapps = mutableListOf<Dapp>()
+        private var dapps = mutableListOf<ChainDapp>()
 
-        suspend fun dapps(): MutableList<Dapp> {
+        suspend fun dapps(): MutableList<ChainDapp> {
             if (dapps.isEmpty()) {
                 val data = tipService.dapps().data ?: emptyList()
                 dapps.addAll(data)
                 return dapps
-            }else{
+            } else {
                 return dapps
             }
         }
