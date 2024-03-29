@@ -19,6 +19,7 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
@@ -322,8 +323,19 @@ object WalletConnectV2 : WalletConnect() {
                     }
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
+                Method.SolanaSignTransaction.name -> {
+                    val transaction = gson.fromJson<WcSolanaTransaction>(request.request.params)
+                    Timber.e("$TAG ${Method.SolanaSignTransaction.name}")
+                    Timber.e("$TAG params ${gson.toJson(transaction)}")
+                    WCSignData.V2SignData(request.request.id, transaction, request)
+                }
+                Method.SolanaSignMessage.name -> {
+                    Timber.e("$TAG ${Method.SolanaSignMessage.name}")
+                    Timber.e("$TAG ${gson.toJson(request.request.params)}")
+                    null
+                }
                 else -> {
-                    Timber.e("$TAG parseSessionRequest not supported method ${request.request.method}")
+                    Timber.e("$TAG ${request.request.method} parseSessionRequest not supported method ${request.request.method}")
                     null
                 }
             }
