@@ -24,6 +24,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_BSC
 import one.mixin.android.widget.SpacesItemDecoration
 
 @AndroidEntryPoint
@@ -79,17 +80,14 @@ class BSCFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_bsc)
-                binding.chainCard.setOnCreateListener {
-                    WalletUnlockBottomSheetDialogFragment.getInstance(WalletUnlockBottomSheetDialogFragment.TYPE_BSC).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                }
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_bsc, {
+                    WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_BSC).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                })
             } else {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_bsc)
-                binding.chainCard.setOnCreateListener {
-                    requireContext().getClipboardManager()
-                        .setPrimaryClip(ClipData.newPlainText(null, address))
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.BSC)), address.formatPublicKey(), R.drawable.ic_bsc, {
+                    requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, address))
                     toast(R.string.copied_to_clipboard)
-                }
+                }, R.string.Copy)
             }
         }
     }

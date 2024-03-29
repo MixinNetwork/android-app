@@ -25,10 +25,13 @@ class ChainCard : FrameLayout {
         title: String,
         subTitle: String,
         @DrawableRes icon: Int,
+        onClickListener: OnClickListener
     ) {
         _binding.title.text = title
         _binding.subTitle.text = subTitle
         _binding.icon.setImageResource(icon)
+        _binding.actionTv.setOnClickListener(onClickListener)
+        _binding.actionTv.setText(R.string.Unlock)
     }
 
     fun setContent(
@@ -36,14 +39,13 @@ class ChainCard : FrameLayout {
         address: String,
         @StringRes action: Int,
         @DrawableRes icon: Int,
+        onClickListener: OnClickListener
     ) {
         _binding.title.text = title
         _binding.subTitle.text = address.formatPublicKey()
         _binding.icon.setImageResource(icon)
         _binding.actionTv.setText(action)
-    }
-
-    fun setOnCreateListener(onClickListener: OnClickListener) {
         _binding.actionTv.setOnClickListener(onClickListener)
     }
+
 }

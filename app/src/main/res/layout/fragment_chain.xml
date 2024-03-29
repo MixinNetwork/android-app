@@ -6,14 +6,6 @@
     android:background="?attr/bg_white"
     android:orientation="vertical">
 
-    <one.mixin.android.widget.ChainCard
-        android:id="@+id/chain_card"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp" />
-
     <ViewAnimator
         android:id="@+id/va"
         android:layout_width="match_parent"

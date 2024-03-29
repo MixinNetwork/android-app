@@ -24,6 +24,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_POLYGON
 import one.mixin.android.widget.SpacesItemDecoration
 
 
@@ -80,17 +81,14 @@ class PolygonFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (address.isBlank()) {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_polygon)
-                binding.chainCard.setOnCreateListener {
-                    WalletUnlockBottomSheetDialogFragment.getInstance(WalletUnlockBottomSheetDialogFragment.TYPE_POLYGON).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                }
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_polygon, {
+                    WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_POLYGON).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                })
             } else {
-                binding.chainCard.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), address.formatPublicKey(), R.string.Copy, R.drawable.ic_polygon)
-                binding.chainCard.setOnCreateListener {
-                    requireContext().getClipboardManager()
-                        .setPrimaryClip(ClipData.newPlainText(null, address))
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Polygon)), address.formatPublicKey(), R.drawable.ic_polygon, {
+                    requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, address))
                     toast(R.string.copied_to_clipboard)
-                }
+                }, R.string.Copy)
             }
         }
     }
