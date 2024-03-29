@@ -107,7 +107,7 @@ private fun getSolanaNamespaces(address: String): Map<String, Wallet.Model.Names
                 chains = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"),
                 methods = solanaSupporedMethods,
                 events = listOf(""),
-                accounts = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:AcYW4VmviQPp9q6uYeiDfQaFdXaxH3BuPxu8zWoibGLf"),
+                accounts = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:$address"),
             )
     )
 }
