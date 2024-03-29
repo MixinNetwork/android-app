@@ -138,7 +138,12 @@ fun SessionProposalPage(
                 text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 style =
                     TextStyle(
-                        color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                        color = if (errorInfo != null || step !in listOf(
+                                WalletConnectBottomSheetDialogFragment.Step.Loading,
+                                WalletConnectBottomSheetDialogFragment.Step.Done,
+                                WalletConnectBottomSheetDialogFragment.Step.Sending
+                            )
+                        ) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.W400,
                     ),

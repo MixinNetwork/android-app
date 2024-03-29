@@ -39,6 +39,7 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -736,4 +737,12 @@ fun ByteArray.isByteArrayValidUtf8(): Boolean {
 
 fun String.isValidHex(): Boolean {
     return matches("[0-9a-fA-F]+".toRegex())
+}
+
+fun BigDecimal.currencyFormat():String {
+    return if (this < BigDecimal("0.01")) {
+        "< $0.01"
+    } else {
+        "≈ $${this.setScale(2, RoundingMode.HALF_UP)}"
+    }
 }
