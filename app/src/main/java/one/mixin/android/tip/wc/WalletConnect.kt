@@ -88,7 +88,7 @@ abstract class WalletConnect {
     protected fun getWeb3j(chain: Chain): Web3j {
         val exists = web3jPool[chain]
         return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcServers[0]))
+            val web3j = Web3j.build(HttpService(chain.rpcUrl))
             web3jPool.put(chain, web3j)
             web3j
         } else {

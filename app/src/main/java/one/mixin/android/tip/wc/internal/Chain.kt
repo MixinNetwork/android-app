@@ -2,20 +2,32 @@ package one.mixin.android.tip.wc.internal
 
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.defaultSharedPreferences
 
 sealed class Chain(
+    val assetId: String,
     val chainNamespace: String,
     val chainReference: Int,
     val name: String,
     val symbol: String,
-    val rpcServers: List<String>,
-    val chainId: String = "$chainNamespace:$chainReference",
+    private val rpcServers: List<String>,
+
 ) {
-    object Ethereum : Chain("eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
+    object Ethereum : Chain(Constants.ChainId.ETHEREUM_CHAIN_ID, "eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
 
-    object BinanceSmartChain : Chain("eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
-    object Polygon : Chain("eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+
+    val chainId: String
+        get() {
+            return "$chainNamespace:$chainReference"
+        }
+    val rpcUrl: String
+        get() {
+            return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
+        }
 }
 
 internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon)
