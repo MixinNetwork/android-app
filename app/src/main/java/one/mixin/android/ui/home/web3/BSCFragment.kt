@@ -64,13 +64,9 @@ class BSCFragment : BaseFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData() {
         lifecycleScope.launch {
-            if (adapter.itemCount <= 0) {
-                binding.va.displayedChild = 0
-            }
             val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == Constants.ChainId.BinanceSmartChain }?.dapps ?: emptyList()
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
-            binding.va.displayedChild = 1
         }
     }
 

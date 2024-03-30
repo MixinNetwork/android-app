@@ -22,6 +22,7 @@ import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
@@ -314,6 +315,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     @Inject
     lateinit var tipCounterSynced: TipCounterSyncedLiveData
+
+    @Inject
+    @Transient
+    lateinit var tipService: TipService
 
     @ApplicationScope
     @Transient

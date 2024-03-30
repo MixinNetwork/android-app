@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.TipService
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -13,9 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ConnectionsViewModel
 @Inject
-internal constructor(
-    private val tipService: TipService
-) : ViewModel() {
+internal constructor() : ViewModel() {
         fun disconnect(
             version: WalletConnect.Version,
             topic: String,
@@ -42,15 +41,6 @@ internal constructor(
             return v2List
         }
 
-        private var dapps = mutableListOf<ChainDapp>()
 
-        suspend fun dapps(): MutableList<ChainDapp> {
-            if (dapps.isEmpty()) {
-                val data = tipService.dapps().data ?: emptyList()
-                dapps.addAll(data)
-                return dapps
-            } else {
-                return dapps
-            }
-        }
+        fun dapps(): MutableList<ChainDapp>  = MixinApplication.get().chainDapp
     }
