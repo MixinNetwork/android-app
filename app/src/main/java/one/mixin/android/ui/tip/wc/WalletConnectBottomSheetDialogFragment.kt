@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -131,9 +132,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launch {
-            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        }
     }
 
     override fun onCreateView(
@@ -280,6 +278,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                 }
                 else -> {}
+            }
+
+            account = if (chain != Chain.Solana) {
+                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            } else {
+                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             }
 
             if (requestType != RequestType.SessionRequest) return@launch
