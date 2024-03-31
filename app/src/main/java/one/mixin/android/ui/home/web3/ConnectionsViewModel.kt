@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.TipService
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.fromJson
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChainDapp
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
@@ -41,6 +44,13 @@ internal constructor() : ViewModel() {
             return v2List
         }
 
-
-        fun dapps(): MutableList<ChainDapp>  = MixinApplication.get().chainDapp
+        fun dapps(chainId: String): List<Dapp> {
+            val gson = GsonHelper.customGson
+            val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$chainId", null)
+            if (dapps == null) {
+                return emptyList<Dapp>()
+            } else {
+                return gson.fromJson(dapps, Array<Dapp>::class.java).toList()
+            }
+        }
     }

@@ -130,8 +130,6 @@ open class MixinApplication :
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
 
-    val chainDapp: MutableList<ChainDapp> = mutableListOf()
-
     override fun onCreate() {
         super.onCreate()
         init()
