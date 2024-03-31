@@ -22,6 +22,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_POLYGON
@@ -65,13 +66,9 @@ class PolygonFragment : BaseFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData() {
         lifecycleScope.launch {
-            if (adapter.itemCount <= 0) {
-                binding.va.displayedChild = 0
-            }
-            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == Constants.ChainId.Polygon }?.dapps ?: emptyList()
+            val dapps = connectionsViewModel.dapps(Chain.Polygon.chainId)
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
-            binding.va.displayedChild = 1
         }
     }
 

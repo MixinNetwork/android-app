@@ -2,9 +2,13 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.TipService
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.fromJson
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChainDapp
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
@@ -13,9 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ConnectionsViewModel
 @Inject
-internal constructor(
-    private val tipService: TipService
-) : ViewModel() {
+internal constructor() : ViewModel() {
         fun disconnect(
             version: WalletConnect.Version,
             topic: String,
@@ -42,15 +44,13 @@ internal constructor(
             return v2List
         }
 
-        private var dapps = mutableListOf<ChainDapp>()
-
-        suspend fun dapps(): MutableList<ChainDapp> {
-            if (dapps.isEmpty()) {
-                val data = tipService.dapps().data ?: emptyList()
-                dapps.addAll(data)
-                return dapps
+        fun dapps(chainId: String): List<Dapp> {
+            val gson = GsonHelper.customGson
+            val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$chainId", null)
+            if (dapps == null) {
+                return emptyList<Dapp>()
             } else {
-                return dapps
+                return gson.fromJson(dapps, Array<Dapp>::class.java).toList()
             }
         }
     }

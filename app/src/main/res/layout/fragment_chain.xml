@@ -6,23 +6,9 @@
     android:background="?attr/bg_white"
     android:orientation="vertical">
 
-    <ViewAnimator
-        android:id="@+id/va"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/wallet_rv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ProgressBar
-            android:id="@+id/progress"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:theme="@style/AppTheme.BlueProgress" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/wallet_rv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layoutManager="LinearLayoutManager" />
-    </ViewAnimator>
+        android:layout_height="match_parent"
+        app:layoutManager="LinearLayoutManager" />
 </LinearLayout>

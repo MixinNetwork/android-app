@@ -97,6 +97,7 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
+import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
@@ -348,6 +349,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         jobManager.addJobInBackground(SyncOutputJob())
+        jobManager.addJobInBackground(RefreshDappJob())
         jobManager.addJobInBackground(RestoreTransactionJob())
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
