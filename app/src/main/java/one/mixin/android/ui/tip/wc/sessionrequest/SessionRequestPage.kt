@@ -86,7 +86,6 @@ fun SessionRequestPage(
     errorInfo: String?,
     onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
-    onPositiveClick: (Long?) -> Unit,
     showPin: () -> Unit,
 ) {
     Timber.e("step $step")
@@ -172,7 +171,6 @@ fun SessionRequestPage(
                                         WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
                                         WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
-                                        WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.signature_request
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                         else -> R.string.signature_request
                                     }
@@ -181,7 +179,6 @@ fun SessionRequestPage(
                                         WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
                                         WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
-                                        WalletConnectBottomSheetDialogFragment.Step.Send -> R.string.transaction_request
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                         else -> R.string.transaction_request
                                     }
@@ -319,11 +316,6 @@ fun SessionRequestPage(
                             onDismissRequest.invoke()
                         }, showPin)
                     }
-                } else if (step == WalletConnectBottomSheetDialogFragment.Step.Send) {
-                    ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {
-                        viewModel.rejectRequest(version, topic)
-                        onDismissRequest.invoke()
-                    }, { onPositiveClick.invoke(sessionRequestUI.requestId) })
                 }
 
                 Warning(modifier = Modifier.align(Alignment.BottomCenter), warningType = warningType)

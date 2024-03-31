@@ -241,66 +241,6 @@ fun WCPinBoard(
                     }
                     Box(modifier = Modifier.height(32.dp))
                 }
-            Step.Send ->
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    Box(modifier = Modifier.height(20.dp))
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_transfer_done),
-                        contentDescription = null,
-                    )
-                    Box(modifier = Modifier.height(10.dp))
-                    Box(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 28.dp),
-                    ) {
-                        Text(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth(),
-                            text = stringResource(R.string.send_signed_message_confirmation),
-                            color = MixinAppTheme.colors.textMinor,
-                            textAlign = TextAlign.Center,
-                            fontSize = 14.sp,
-                        )
-                    }
-                    Box(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { onPositiveClick.invoke() },
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
-                        contentPadding = PaddingValues(horizontal = 39.dp, vertical = 11.dp),
-                        shape = RoundedCornerShape(40.dp),
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.Send),
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                    Box(modifier = Modifier.height(24.dp))
-                    TextButton(
-                        onClick = { onNegativeClick() },
-                        contentPadding = PaddingValues(horizontal = 28.dp, vertical = 11.dp),
-                        shape = RoundedCornerShape(40.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Discard),
-                            color = Color(0xFF4B7CDD),
-                            fontSize = 16.sp,
-                        )
-                    }
-                    Box(modifier = Modifier.height(32.dp))
-                }
             else ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     AnimatedContent(targetState = step, transitionSpec = {
