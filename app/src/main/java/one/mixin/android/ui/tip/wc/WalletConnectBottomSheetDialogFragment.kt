@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -55,7 +54,6 @@ import one.mixin.android.tip.wc.internal.isLegacy
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.compose.Loading
