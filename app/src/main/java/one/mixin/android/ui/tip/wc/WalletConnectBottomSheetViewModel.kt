@@ -14,6 +14,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -43,16 +44,32 @@ class WalletConnectBottomSheetViewModel
             chain: Chain,
             transaction: Transaction,
         ) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethEstimateGas(chain, transaction)?.amountUsed
+            WalletConnectV2.ethEstimateGas(chain, transaction)?.run {
+                try {
+                    this.amountUsed
+                } catch (e: MessageDecodingException) {
+                    result?.run { Numeric.toBigInt(this) }
+                }
+            }
         }
 
         suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethGasPrice(chain)?.gasPrice
+            WalletConnectV2.ethGasPrice(chain)?.run {
+                try {
+                    this.gasPrice
+                } catch (e: MessageDecodingException) {
+                    result?.run { Numeric.toBigInt(this) }
+                }
+            }
         }
 
         suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.result?.run {
-                Numeric.toBigInt(this)
+            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
+                try {
+                    this.maxPriorityFeePerGas
+                } catch (e: MessageDecodingException) {
+                    result?.run { Numeric.toBigInt(this) }
+                }
             }
         }
 
