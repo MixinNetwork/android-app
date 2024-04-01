@@ -17,10 +17,6 @@ data class WCEthereumTransaction(
     val data: String?,
 )
 
-fun WCEthereumTransaction.isLegacy(): Boolean {
-    return maxFeePerGas == null && maxPriorityFeePerGas == null
-}
-
 val ethTransactionSerializer =
     jsonDeserializer<List<WCEthereumTransaction>> {
         val array = mutableListOf<WCEthereumTransaction>()

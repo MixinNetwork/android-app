@@ -51,7 +51,6 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.getChain
-import one.mixin.android.tip.wc.internal.isLegacy
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -320,13 +319,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     try {
                         val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
                         val estimateGas = viewModel.ethEstimateGas(chain, tx.toTransaction()) ?: return@onEach
-                        tipGas =
-                            if (tx.isLegacy()) {
-                                TipGas(chain.chainId, gasPrice, estimateGas, tx)
-                            } else {
-                                val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain)
-                                TipGas(chain.chainId, gasPrice, estimateGas, maxPriorityFeePerGas, tx)
-                            }
+                        val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
+                        tipGas = TipGas(chain.chainId, gasPrice, estimateGas, maxPriorityFeePerGas, tx)
                         (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                     } catch (e: Exception) {
                         Timber.e(e)
