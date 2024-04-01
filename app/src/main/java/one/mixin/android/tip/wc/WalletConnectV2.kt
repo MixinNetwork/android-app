@@ -30,7 +30,6 @@ import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.core.methods.response.EthBaseFee
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.protocol.core.methods.response.EthGasPrice
 import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
@@ -550,7 +549,7 @@ object WalletConnectV2 : WalletConnect() {
         val latch = CountDownLatch(1)
         val errMsg = action.invoke(latch)
         try {
-            latch.await(5, TimeUnit.SECONDS)
+            latch.await(30, TimeUnit.SECONDS)
         } catch (e: Exception) {
             throw WalletConnectException(0, e.toString())
         }
