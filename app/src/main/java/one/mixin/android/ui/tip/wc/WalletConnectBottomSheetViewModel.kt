@@ -15,6 +15,7 @@ import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import org.web3j.protocol.core.methods.request.Transaction
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -41,11 +42,19 @@ class WalletConnectBottomSheetViewModel
         suspend fun ethEstimateGas(
             chain: Chain,
             transaction: Transaction,
-        ) = withContext(Dispatchers.IO) { WalletConnectV2.ethEstimateGas(chain, transaction)?.amountUsed }
+        ) = withContext(Dispatchers.IO) {
+            WalletConnectV2.ethEstimateGas(chain, transaction)?.amountUsed
+        }
 
-        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethGasPrice(chain)?.gasPrice }
+        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
+            WalletConnectV2.ethGasPrice(chain)?.gasPrice
+        }
 
-        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.maxPriorityFeePerGas }
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) {
+            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.result?.run {
+                Numeric.toBigInt(this)
+            }
+        }
 
         fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
             return WalletConnectV2.parseSessionRequest(sessionRequest)
