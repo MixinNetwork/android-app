@@ -43,7 +43,7 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        suspend fun ethEstimateGas(
+        suspend fun ethGasLimit(
             chain: Chain,
             transaction: Transaction,
         ) = withContext(Dispatchers.IO) {

@@ -14,22 +14,27 @@ data class TipGas(
     constructor(
         assetId: String,
         gasPrice: BigInteger,
-        estimateGas: BigInteger,
+        gasLimit: BigInteger,
         ethMaxPriorityFeePerGas: BigInteger,
         tx: WCEthereumTransaction,
     ) : this(
         assetId,
         gasPrice.max(tx.gasPrice?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO),
-        estimateGas.max(tx.gasLimit?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO),
-        ethMaxPriorityFeePerGas.max(tx.maxPriorityFeePerGas?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO).run {
+        gasLimit.max(tx.gasLimit?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO).run {
             if (this == BigInteger.ZERO) {
                 this
             } else {
                 this.plus(this.divide(BigInteger.valueOf(2)))
             }
-        }
+        },
+        ethMaxPriorityFeePerGas.max(tx.maxPriorityFeePerGas?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO)
     )
 
+    fun maxFeePerGas(maxFeePerGas: BigInteger): BigInteger {
+        return gasPrice.max(maxFeePerGas).run {
+            plus(this.divide(BigInteger.valueOf(5)))
+        }
+    }
 }
 
 fun TipGas.displayValue(): BigDecimal? {
