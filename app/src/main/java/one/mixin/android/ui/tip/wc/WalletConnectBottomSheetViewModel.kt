@@ -41,11 +41,11 @@ class WalletConnectBottomSheetViewModel
         suspend fun ethEstimateGas(
             chain: Chain,
             transaction: Transaction,
-        ) = withContext(Dispatchers.IO) { WalletConnectV2.ethEstimateGas(chain, transaction) }
+        ) = withContext(Dispatchers.IO) { WalletConnectV2.ethEstimateGas(chain, transaction)?.amountUsed }
 
-        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethGasPrice(chain) }
+        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethGasPrice(chain)?.gasPrice }
 
-        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethMaxPriorityFeePerGas(chain) }
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) { WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.maxPriorityFeePerGas }
 
         fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
             return WalletConnectV2.parseSessionRequest(sessionRequest)

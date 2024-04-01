@@ -318,13 +318,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 if (version == WalletConnect.Version.V2) {
                     try {
-                        val gasPrice = viewModel.ethGasPrice(chain)?.result?.run { Numeric.toBigInt(this) } ?: return@onEach
-                        val estimateGas = viewModel.ethEstimateGas(chain, tx.toTransaction())?.result?.run { Numeric.toBigInt(this) } ?: return@onEach
+                        val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
+                        val estimateGas = viewModel.ethEstimateGas(chain, tx.toTransaction()) ?: return@onEach
                         tipGas =
                             if (tx.isLegacy()) {
                                 TipGas(chain.chainId, gasPrice, estimateGas, tx)
                             } else {
-                                val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain)?.result?.run { Numeric.toBigInt(this) }
+                                val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain)
                                 TipGas(chain.chainId, gasPrice, estimateGas, maxPriorityFeePerGas, tx)
                             }
                         (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
