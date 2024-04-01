@@ -50,7 +50,6 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.getChain
-import one.mixin.android.tip.wc.internal.isLegacy
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -64,7 +63,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import org.web3j.utils.Numeric
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -314,15 +312,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 if (version == WalletConnect.Version.V2) {
                     try {
-                        val gasPrice = viewModel.ethGasPrice(chain)?.result?.run { Numeric.toBigInt(this) } ?: return@onEach
-                        val estimateGas = viewModel.ethEstimateGas(chain, tx.toTransaction())?.result?.run { Numeric.toBigInt(this) } ?: return@onEach
-                        tipGas =
-                            if (tx.isLegacy()) {
-                                TipGas(chain.chainId, gasPrice, estimateGas, tx)
-                            } else {
-                                val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain)?.result?.run { Numeric.toBigInt(this) }
-                                TipGas(chain.chainId, gasPrice, estimateGas, maxPriorityFeePerGas, tx)
-                            }
+                        val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
+                        val gasLimit = viewModel.ethGasLimit(chain, tx.toTransaction()) ?: return@onEach
+                        val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
+                        tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, tx)
                         (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                     } catch (e: Exception) {
                         Timber.e(e)

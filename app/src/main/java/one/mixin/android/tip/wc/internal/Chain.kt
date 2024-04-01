@@ -14,7 +14,7 @@ sealed class Chain(
     private val rpcServers: List<String>,
 
 ) {
-    object Ethereum : Chain(Constants.ChainId.ETHEREUM_CHAIN_ID, "eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
+    object Ethereum : Chain(Constants.ChainId.ETHEREUM_CHAIN_ID, "eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 
     object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", 56, "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
