@@ -3,13 +3,10 @@ package one.mixin.android.ui.home.web3
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.service.TipService
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.fromJson
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.ChainDapp
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import javax.inject.Inject
