@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -55,7 +54,6 @@ import one.mixin.android.tip.wc.internal.isLegacy
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.compose.Loading
@@ -93,7 +91,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     enum class Step {
         Connecting,
         Sign,
-        Send,
         Input,
         Loading,
         Sending,
@@ -186,7 +183,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             errorInfo,
                             onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                             onDismissRequest = { dismiss() },
-                            onPositiveClick = { onPositiveClick(it) },
                             showPin = { showPin() },
                         )
                     }
@@ -352,7 +348,26 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (error == null) {
                     step =
                         if (isSignTransaction()) {
-                            Step.Send
+                            try {
+                                step = Step.Sending
+                                val sendError =
+                                    withContext(Dispatchers.IO) {
+                                        val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
+                                        val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
+                                        viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData)
+                                    }
+                                if (sendError == null) {
+                                    processCompleted = true
+                                    Step.Done
+                                } else {
+                                    errorInfo = sendError
+                                    Step.Error
+                                }
+                            } catch (e: Exception) {
+                                handleException(e)
+                                Step.Error
+                            }
+
                         } else {
                             processCompleted = true
                             Step.Done
@@ -365,37 +380,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 handleException(e)
             }
         }
-
-    private fun onPositiveClick(requestId: Long?) {
-        if (step == Step.Sign) {
-            step = Step.Input
-        } else if (step == Step.Send) {
-            if (requestId != null) {
-                lifecycleScope.launch {
-                    step = Step.Sending
-                    try {
-                        val error =
-                            withContext(Dispatchers.IO) {
-                                val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
-                                val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData)
-                            }
-                        if (error == null) {
-                            processCompleted = true
-                            step = Step.Done
-                        } else {
-                            errorInfo = error
-                            step = Step.Error
-                        }
-                    } catch (e: Exception) {
-                        handleException(e)
-                    }
-                }
-            } else {
-                step = Step.Done
-            }
-        }
-    }
 
     private fun approveWithPriv(priv: ByteArray): String? {
         when (version) {

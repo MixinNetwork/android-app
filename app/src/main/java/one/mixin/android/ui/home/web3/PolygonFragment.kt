@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -27,7 +26,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_POLYGON
 import one.mixin.android.widget.SpacesItemDecoration
-
 
 @AndroidEntryPoint
 class PolygonFragment : BaseFragment() {
