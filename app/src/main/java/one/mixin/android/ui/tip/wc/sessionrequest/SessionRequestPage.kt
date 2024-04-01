@@ -30,7 +30,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -99,8 +99,8 @@ fun SessionRequestPage(
         Loading()
         return
     }
-    val warningType =
-        if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.MESSAGE) {
+    val signType =
+        if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
             0
         } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.toBigInt(sessionRequestUI.data.value) == BigInteger.ZERO)) {
             2
@@ -167,20 +167,30 @@ fun SessionRequestPage(
                         stringResource(
                             id =
                                 if (sessionRequestUI.data is WCEthereumSignMessage) {
-                                    when (step) {
-                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
-                                        WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
-                                        WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
-                                        WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
-                                        else -> R.string.signature_request
+                                    if (signType == 0) {
+                                        when (step) {
+                                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_message_request
+                                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
+                                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
+                                            else -> R.string.web3_message_request
+                                        }
+                                    } else {
+                                        when (step) {
+                                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_transaction_request
+                                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
+                                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
+                                            else -> R.string.web3_transaction_request
+                                        }
                                     }
                                 } else {
                                     when (step) {
-                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing
-                                        WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_signing_success
+                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
+                                        WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
                                         WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
-                                        else -> R.string.transaction_request
+                                        else -> R.string.web3_signing_confirmation
                                     }
                                 },
                         ),
@@ -194,16 +204,25 @@ fun SessionRequestPage(
                 Box(modifier = Modifier.height(8.dp))
                 Text(
                     modifier = Modifier.padding(horizontal = 24.dp),
-                    text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
+                    text = errorInfo ?: stringResource(
+                        id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                            if (sessionRequestUI.data is WCEthereumSignMessage) {
+                                if (signType == 0) {
+                                    R.string.web3_signing_transaction_success
+                                } else {
+                                    R.string.web3_signing_transaction_success
+                                }
+                            } else {
+                                R.string.web3_signing_transaction_success
+                            }
+                        } else {
+                            R.string.web3_ensure_trust
+                        }
+                    ),
                     textAlign = TextAlign.Center,
                     style =
                         TextStyle(
-                            color = if (errorInfo != null || step !in listOf(
-                                    WalletConnectBottomSheetDialogFragment.Step.Loading,
-                                    WalletConnectBottomSheetDialogFragment.Step.Done,
-                                    WalletConnectBottomSheetDialogFragment.Step.Sending
-                                )
-                            ) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                            color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.W400,
                         ),
@@ -220,7 +239,7 @@ fun SessionRequestPage(
                 )
                 when (sessionRequestUI.data) {
                     is WCEthereumTransaction -> {
-                        if (warningType == 2) {
+                        if (signType == 2) {
                             Message(content = viewModel.getContent(version, gson, sessionRequestUI.data)) {
                                 onPreviewMessage.invoke(it)
                             }
@@ -318,7 +337,7 @@ fun SessionRequestPage(
                     }
                 }
 
-                Warning(modifier = Modifier.align(Alignment.BottomCenter), warningType = warningType)
+                if (signType == 2) Warning(modifier = Modifier.align(Alignment.BottomCenter))
             }
             Box(modifier = Modifier.height(32.dp))
         }
@@ -544,12 +563,9 @@ private fun FeeInfo(
 @Composable
 private fun Warning(
     modifier: Modifier,
-    warningType: Int,
 ) {
-    var localType by remember {
-        mutableIntStateOf(-1)
-    }
-    if (localType != warningType) {
+    var isVisible by remember { mutableStateOf(true) }
+    if (isVisible) {
         Row(
             modifier =
                 modifier
@@ -570,20 +586,7 @@ private fun Warning(
             Box(modifier = Modifier.width(20.dp))
             Column {
                 Text(
-                    text =
-                    when (warningType) {
-                        0 -> {
-                            stringResource(id = R.string.blocked_action, "eth_sign")
-                        }
-
-                        1 -> {
-                            stringResource(id = R.string.signature_request_warning)
-                        }
-
-                        else -> {
-                            stringResource(id = R.string.decode_transaction_failed)
-                        }
-                    },
+                    text = stringResource(id = R.string.decode_transaction_failed),
                     color = MixinAppTheme.colors.tipError,
                     fontSize = 14.sp,
                 )
@@ -592,7 +595,7 @@ private fun Warning(
                     Text(
                         modifier =
                             Modifier.clickable {
-                                localType = warningType
+                                isVisible = false
                             },
                         text = stringResource(id = R.string.Got_it),
                         color = MixinAppTheme.colors.textBlue,
@@ -627,7 +630,7 @@ private fun WarningPreview() {
         ) {
         }
 
-        Warning(modifier = Modifier.align(Alignment.BottomCenter), 2)
+        Warning(modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
