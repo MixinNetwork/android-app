@@ -32,6 +32,7 @@ import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.protocol.core.methods.response.EthGasPrice
+import org.web3j.protocol.core.methods.response.EthGetBalance
 import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -211,6 +212,10 @@ object WalletConnectV2 : WalletConnect() {
 
     fun ethMaxPriorityFeePerGas(chain: Chain): EthMaxPriorityFeePerGas? {
         return getWeb3j(chain).ethMaxPriorityFeePerGas().send()
+    }
+
+    fun ethGetBalance(chain: Chain, address: String): EthGetBalance? {
+        return getWeb3j(chain).ethGetBalance(address, DefaultBlockParameterName.LATEST).send()
     }
 
     fun approveSession(

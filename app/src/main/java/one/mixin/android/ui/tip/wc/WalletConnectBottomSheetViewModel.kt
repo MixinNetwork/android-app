@@ -70,6 +70,17 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
+        suspend fun ethGetBalance(chain: Chain, address: String) = withContext(Dispatchers.IO) {
+            WalletConnectV2.ethGetBalance(chain, address)?.run {
+                try {
+                    this.balance
+                } catch (e:MessageDecodingException) {
+                    result?.run { Numeric.toBigInt(this) }
+                }
+            }
+        }
+
+
         suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
             WalletConnectV2.ethGasPrice(chain)?.run {
                 try {

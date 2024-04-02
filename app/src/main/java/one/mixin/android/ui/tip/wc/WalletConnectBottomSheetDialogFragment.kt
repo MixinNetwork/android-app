@@ -63,7 +63,9 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -315,6 +317,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
                         val gasLimit = viewModel.ethGasLimit(chain, tx.toTransaction()) ?: return@onEach
                         val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
+                        val balance = viewModel.ethGetBalance(chain, account) ?: return@onEach
+                        if (balance < gasLimit.multiply(gasPrice).plus(tx.value?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO)) {
+                            Timber.e("Balance $balance ${gasLimit.multiply(gasPrice).plus(tx.value?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO)}")
+                            errorInfo = getString(R.string.insufficient_balance)
+                            step = Step.Error
+                            return@onEach
+                        }
                         tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, tx)
                         (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                     } catch (e: Exception) {
