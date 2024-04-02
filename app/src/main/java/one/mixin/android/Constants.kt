@@ -8,7 +8,6 @@ import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
-import one.mixin.android.vo.ConnectionUI
 
 object Constants {
     object API {
@@ -321,6 +320,8 @@ object Constants {
     const val MIXIN_BOND_USER_NAME = "Bond Bot"
     const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
     const val MIXIN_DATA_USER_NAME = "Mixin Data"
+
+    const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" //NFTs typically require more gas
 
     const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
 

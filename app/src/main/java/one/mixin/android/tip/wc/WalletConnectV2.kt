@@ -33,9 +33,9 @@ import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.protocol.core.methods.response.EthGasPrice
 import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
-import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -509,8 +509,7 @@ object WalletConnectV2 : WalletConnect() {
     ): String {
         val transaction = signData.signMessage
         val value = transaction.value ?: "0x0"
-        val maxFeePerGas = transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }
-        val maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }
+
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount =
@@ -525,33 +524,22 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG ethSignTransaction tipGas is null")
             throw IllegalArgumentException("TipGas is null")
         }
+
+        val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas
+        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
-        Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit")
-        val rawTransaction =
-            if (maxFeePerGas == null && maxPriorityFeePerGas == null) {
-                val gasPrice = Convert.toWei(tipGas.gasPrice.toBigDecimal(), Convert.Unit.WEI).toBigInteger()
-                Timber.e("$TAG gasPrice $gasPrice")
-                RawTransaction.createTransaction(
-                    nonce,
-                    gasPrice,
-                    gasLimit,
-                    transaction.to,
-                    v,
-                    transaction.data ?: "",
-                )
-            } else {
-                Timber.e("$TAG maxFeePerGas $maxFeePerGas maxPriorityFeePerGas $maxPriorityFeePerGas")
-                RawTransaction.createTransaction(
-                    chain.chainReference.toLong(),
-                    nonce,
-                    gasLimit,
-                    transaction.to,
-                    v,
-                    transaction.data ?: "",
-                    maxPriorityFeePerGas,
-                    maxFeePerGas,
-                )
-            }
+        Timber.e("$TAG dapp gas: ${transaction.gas?.let { Numeric.toBigInt(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.toBigInt(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }} ")
+        Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
+        val rawTransaction = RawTransaction.createTransaction(
+            chain.chainReference.toLong(),
+            nonce,
+            gasLimit,
+            transaction.to,
+            v,
+            transaction.data ?: "",
+            maxPriorityFeePerGas,
+            maxFeePerGas,
+        )
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
@@ -588,7 +576,7 @@ object WalletConnectV2 : WalletConnect() {
         val latch = CountDownLatch(1)
         val errMsg = action.invoke(latch)
         try {
-            latch.await(5, TimeUnit.SECONDS)
+            latch.await(30, TimeUnit.SECONDS)
         } catch (e: Exception) {
             throw WalletConnectException(0, e.toString())
         }

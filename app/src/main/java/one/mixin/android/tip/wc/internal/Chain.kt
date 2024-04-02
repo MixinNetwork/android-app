@@ -5,22 +5,35 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.defaultSharedPreferences
 
 sealed class Chain(
+    val assetId: String,
     val chainNamespace: String,
     val chainReference: String,
     val name: String,
     val symbol: String,
-    val rpcServers: List<String>,
-    val chainId: String = "$chainNamespace:$chainReference",
+    private val rpcServers: List<String>,
+
 ) {
-    object Ethereum : Chain("eip155", "1", "Ethereum Mainnet", "ETH", listOf("https://cloudflare-eth.com"))
+    object Ethereum : Chain(Constants.ChainId.ETHEREUM_CHAIN_ID, "eip155", "1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 
-    object BinanceSmartChain : Chain("eip155", "56", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
-    object Polygon : Chain("eip155", "137", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
-    object Solana : Chain("solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+    object Solana : Chain(Constants.ChainId.SOLANA_CHAIN_ID,"solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+
+    val chainId: String
+        get() {
+            return "$chainNamespace:$chainReference"
+        }
+
+    val rpcUrl: String
+        get() {
+            return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
+        }
 }
 
 internal val supportChainList = listOf(Chain.Ethereum, Chain.BinanceSmartChain, Chain.Polygon, Chain.Solana)

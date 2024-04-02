@@ -47,5 +47,4 @@ class ChainCard : FrameLayout {
         _binding.actionTv.setText(action)
         _binding.actionTv.setOnClickListener(onClickListener)
     }
-
 }

@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -22,6 +21,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_BSC
@@ -64,13 +64,9 @@ class BSCFragment : BaseFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData() {
         lifecycleScope.launch {
-            if (adapter.itemCount <= 0) {
-                binding.va.displayedChild = 0
-            }
-            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == Constants.ChainId.BinanceSmartChain }?.dapps ?: emptyList()
+            val dapps = connectionsViewModel.dapps(Chain.BinanceSmartChain.chainId)
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
-            binding.va.displayedChild = 1
         }
     }
 

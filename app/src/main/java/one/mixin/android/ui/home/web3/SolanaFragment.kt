@@ -25,6 +25,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
@@ -67,13 +68,9 @@ class SolanaFragment : BaseFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData() {
         lifecycleScope.launch {
-            if (adapter.itemCount <= 0) {
-                binding.va.displayedChild = 0
-            }
-            val dapps = connectionsViewModel.dapps().firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.dapps ?: emptyList()
+            val dapps = connectionsViewModel.dapps(Chain.Solana.chainId)
             adapter.connections = dapps
             adapter.notifyDataSetChanged()
-            binding.va.displayedChild = 1
         }
     }
 
