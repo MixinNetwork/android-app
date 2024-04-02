@@ -339,6 +339,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
+                            // val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chainId = if (chain is Chain.Solana) SOLANA_CHAIN_ID else ETHEREUM_CHAIN_ID)
                             val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chainId = SOLANA_CHAIN_ID)
                             approveWithPriv(privateKey)
                         }
@@ -433,6 +434,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         reportException("$TAG handleException", e)
+        Timber.e(e)
         step = Step.Error
     }
 

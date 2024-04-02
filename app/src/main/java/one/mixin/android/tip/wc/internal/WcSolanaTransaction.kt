@@ -1,26 +1,41 @@
 package one.mixin.android.tip.wc.internal
 
-class WcSolanaTransaction (
-    val signatures:List<Signature>,
-    val feePayer:String,
-    val instructions:List<Instruction>,
-    val recentBlockhash:String,
-    val transaction:String,
+import org.sol4k.AccountMeta
+import org.sol4k.PublicKey
+import org.sol4k.Transaction
+import org.sol4k.instruction.Instruction
+
+class WcSolanaTransaction(
+    val signatures: List<WcSignature>,
+    val feePayer: String,
+    val instructions: List<WcInstruction>,
+    val recentBlockhash: String,
+    val transaction: String,
 )
 
-class Signature(
-    val publicKey:String,
-    val signature:String?
+class WcSignature(
+    val publicKey: String,
+    val signature: String?
 )
 
-class Instruction(
-val keys:List<Key>,
-    val programId:String,
-    val data:List<Int>
+class WcInstruction(
+    val keys: List<WcAccountMeta>,
+    val programId: String,
+    val data: List<Int>
 )
 
-class Key(
+class WcAccountMeta(
     val pubkey: String,
     val isSigner: Boolean,
     val isWritable: Boolean
 )
+
+class SolanaInstruction(override val data: ByteArray, override val keys: List<AccountMeta>, override val programId: PublicKey) : Instruction
+
+private fun WcInstruction.toInstruction(): Instruction {
+    return SolanaInstruction(data.foldIndexed(ByteArray(data.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }, keys.map {
+        AccountMeta(PublicKey(it.pubkey), it.isSigner, it.isWritable)
+    }, PublicKey(programId))
+}
+
+fun WcSolanaTransaction.toTransaction(): Transaction = Transaction(recentBlockhash, instructions.map { it.toInstruction() }, PublicKey(feePayer))

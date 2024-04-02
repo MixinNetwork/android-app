@@ -4,9 +4,9 @@ import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
-import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.tip.privateKeyToAddress
 
 sealed class Chain(
     val assetId: String,
@@ -17,13 +17,13 @@ sealed class Chain(
     private val rpcServers: List<String>,
 
 ) {
-    object Ethereum : Chain(Constants.ChainId.ETHEREUM_CHAIN_ID, "eip155", "1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
+    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 
     object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
     object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
-    object Solana : Chain(Constants.ChainId.SOLANA_CHAIN_ID,"solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+    object Solana : Chain(SOLANA_CHAIN_ID,"solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
     val chainId: String
         get() {
@@ -75,7 +75,7 @@ internal fun String?.getChainSymbol(): String? {
 
 val walletConnectChainIdMap =
     mapOf(
-        Chain.Ethereum.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
+        Chain.Ethereum.symbol to ETHEREUM_CHAIN_ID,
         Chain.Polygon.symbol to Constants.ChainId.Polygon,
         Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
         Chain.Solana.symbol to Constants.ChainId.Solana,

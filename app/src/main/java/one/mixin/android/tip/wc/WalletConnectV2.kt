@@ -14,6 +14,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -23,6 +24,10 @@ import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
+import one.mixin.android.tip.wc.internal.toTransaction
+import org.sol4k.Connection
+import org.sol4k.Keypair
+import org.sol4k.RpcUrl
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -71,7 +76,7 @@ object WalletConnectV2 : WalletConnect() {
                 // ignore network exceptions
                 if (err is GenericException) return@initialize
 
-                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+                // RxBus.publish(WCErrorEvent(WCError(error.throwable)))
             },
         )
         val initParams = Wallet.Params.Init(core = CoreClient)
@@ -110,7 +115,7 @@ object WalletConnectV2 : WalletConnect() {
 
                 override fun onError(error: Wallet.Model.Error) {
                     Timber.d("$TAG onError $error")
-                    RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+                    // RxBus.publish(WCErrorEvent(WCError(error.throwable)))
                 }
 
                 override fun onProposalExpired(proposal: Wallet.Model.ExpiredProposal) {
@@ -369,6 +374,15 @@ object WalletConnectV2 : WalletConnect() {
                     return ethSignTransaction(priv, chain, sessionRequest, signData, false)
                 }
             }
+        } else if (signMessage is WcSolanaTransaction) {
+            val holder = Keypair.fromSecretKey(priv)
+            val transaction = signMessage.toTransaction()
+            Timber.e(String(signMessage.transaction.decodeBase64()))
+            transaction.sign(holder)
+            val connection = Connection(RpcUrl.MAINNNET)
+            val signature: String = connection.sendTransaction(transaction)
+            Timber.e("signature $signature")
+            return signature
         }
         return null
     }
