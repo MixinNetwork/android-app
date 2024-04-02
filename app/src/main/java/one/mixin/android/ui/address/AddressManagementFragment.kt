@@ -152,7 +152,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                 override fun afterTextChanged(s: Editable?) {
                     adapter.addresses =
                         addresses?.filter {
-                            it.label.containsIgnoreCase(s)
+                            it.label.containsIgnoreCase(s) || it.destination.containsIgnoreCase(s) || it.tag?.containsIgnoreCase(s) == true
                         }?.sortedByDescending { it.label.equalsIgnoreCase(s) }?.toMutableList()
                 }
 
