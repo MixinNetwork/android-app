@@ -4,16 +4,20 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import com.solana.transaction.LegacyMessage
+import com.solana.transaction.VersionedMessage
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.internal.common.exception.GenericException
 import com.walletconnect.android.relay.ConnectionType
 import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
+import io.ipfs.multibase.Base58
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
@@ -41,6 +45,7 @@ import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.util.Base64
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -377,8 +382,12 @@ object WalletConnectV2 : WalletConnect() {
         } else if (signMessage is WcSolanaTransaction) {
             val holder = Keypair.fromSecretKey(priv)
             val transaction = signMessage.toTransaction()
-            Timber.e(String(signMessage.transaction.decodeBase64()))
             transaction.sign(holder)
+
+            // val solana = com.solana.transaction.Transaction.from(signMessage.transaction.decodeBase64())
+            // Timber.e(signMessage.transaction)
+            // Timber.e("isLegacyMessage:${solana.message is LegacyMessage} isVersionedMessage: ${solana.message is VersionedMessage}")
+
             val connection = Connection(RpcUrl.MAINNNET)
             val signature: String = connection.sendTransaction(transaction)
             Timber.e("signature $signature")
