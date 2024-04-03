@@ -147,6 +147,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         ).apply { attachToRecyclerView(binding.addrRv) }
         binding.addrRv.adapter = adapter
         adapter.setAddrListener(addrListener)
+        binding.searchEt.setHint(R.string.search_placeholder_address)
         binding.searchEt.listener =
             object : SearchView.OnSearchViewListener {
                 override fun afterTextChanged(s: Editable?) {

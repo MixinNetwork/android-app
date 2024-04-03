@@ -36,7 +36,7 @@
             android:background="?attr/bg_white"
             android:drawablePadding="8dp"
             android:inputType="text"
-            android:hint="@string/Label"
+            android:hint="@string/search_placeholder_address"
             android:gravity="center_vertical"
             android:imeOptions="actionDone"
             android:maxLines="1"
