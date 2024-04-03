@@ -4,21 +4,16 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
-import com.solana.transaction.LegacyMessage
-import com.solana.transaction.VersionedMessage
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.internal.common.exception.GenericException
 import com.walletconnect.android.relay.ConnectionType
 import com.walletconnect.web3.wallet.client.Wallet
 import com.walletconnect.web3.wallet.client.Web3Wallet
-import io.ipfs.multibase.Base58
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.extension.base64RawURLEncode
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -29,11 +24,10 @@ import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.tip.wc.internal.toTransaction
-import org.sol4k.Connection
 import org.sol4k.Keypair
-import org.sol4k.RpcUrl
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
@@ -45,7 +39,6 @@ import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
-import java.util.Base64
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -249,7 +242,14 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val supportedNamespaces = getSupportedNamespaces(chain, priv)
+        val address = if (chain == Chain.Solana) {
+            Keypair.fromSecretKey(priv).publicKey.toBase58()
+        } else {
+            val pub = ECKeyPair.create(priv).publicKey
+            Keys.toChecksumAddress(Keys.getAddress(pub))
+        }
+
+        val supportedNamespaces = getSupportedNamespaces(chain, address)
         Timber.e("$TAG supportedNamespaces $supportedNamespaces")
         val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
         Timber.d("$TAG approveSession $sessionNamespaces")
@@ -357,7 +357,7 @@ object WalletConnectV2 : WalletConnect() {
         chain: Chain,
         topic: String,
         signData: WCSignData.V2SignData<*>,
-    ): String? {
+    ): Any? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
             Timber.e("$TAG approveRequest sessionRequest is null")
@@ -382,16 +382,14 @@ object WalletConnectV2 : WalletConnect() {
         } else if (signMessage is WcSolanaTransaction) {
             val holder = Keypair.fromSecretKey(priv)
             val transaction = signMessage.toTransaction()
+            Timber.e("${signMessage.feePayer} address ${holder.publicKey.toBase58()}")
             transaction.sign(holder)
 
             // val solana = com.solana.transaction.Transaction.from(signMessage.transaction.decodeBase64())
             // Timber.e(signMessage.transaction)
             // Timber.e("isLegacyMessage:${solana.message is LegacyMessage} isVersionedMessage: ${solana.message is VersionedMessage}")
 
-            val connection = Connection(RpcUrl.MAINNNET)
-            val signature: String = connection.sendTransaction(transaction)
-            Timber.e("signature $signature")
-            return signature
+            return transaction
         }
         return null
     }

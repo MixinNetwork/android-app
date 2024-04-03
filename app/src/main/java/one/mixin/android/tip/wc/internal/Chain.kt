@@ -81,15 +81,13 @@ val walletConnectChainIdMap =
         Chain.Solana.symbol to Constants.ChainId.Solana,
     )
 
-fun getSupportedNamespaces(chain: Chain, priv: ByteArray): Map<String, Wallet.Model.Namespace.Session> {
+fun getSupportedNamespaces(chain: Chain, address: String): Map<String, Wallet.Model.Namespace.Session> {
     return when (chain) {
         is Chain.Solana -> {
-            val address = privateKeyToAddress(priv, SOLANA_CHAIN_ID)
             getSolanaNamespaces(address)
         }
 
         is Chain.Polygon, is Chain.Ethereum, is Chain.BinanceSmartChain -> {
-            val address = privateKeyToAddress(priv, ETHEREUM_CHAIN_ID)
             getEvmNamespaces(address)
         }
 

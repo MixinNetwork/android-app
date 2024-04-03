@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -65,6 +66,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import org.sol4k.Transaction
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -120,7 +122,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var sessionProposal: Wallet.Model.SessionProposal? by mutableStateOf(null)
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
     private var account: String by mutableStateOf("")
-    private var signedTransactionData: String? = null
+    private var signedTransactionData: Any? = null
 
     override fun onViewCreated(
         view: View,
@@ -339,8 +341,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
-                            // val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chainId = if (chain is Chain.Solana) SOLANA_CHAIN_ID else ETHEREUM_CHAIN_ID)
-                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chainId = SOLANA_CHAIN_ID)
+                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, if (chain is Chain.Solana) SOLANA_CHAIN_ID else ETHEREUM_CHAIN_ID)
                             approveWithPriv(privateKey)
                         }
                     }
@@ -353,7 +354,11 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData)
+                                        if (signedTransactionData is Transaction) {
+                                            viewModel.sendTransaction(signedTransactionData)
+                                        } else {
+                                            viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
+                                        }
                                     }
                                 if (sendError == null) {
                                     processCompleted = true

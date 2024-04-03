@@ -16,6 +16,8 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import org.sol4k.Connection
+import org.sol4k.RpcUrl
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -98,7 +100,7 @@ class WalletConnectBottomSheetViewModel
         suspend fun getWeb3Priv(
             context: Context,
             pin: String,
-            chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
+            chainId: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
@@ -106,6 +108,15 @@ class WalletConnectBottomSheetViewModel
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+
+        fun sendTransaction(
+            transaction: org.sol4k.Transaction
+        ): String? {
+            val connection = Connection(RpcUrl.MAINNNET)
+            val signature: String = connection.sendTransaction(transaction)
+            Timber.d("signature $signature")
+            return null
+        }
 
         fun sendTransaction(
             version: WalletConnect.Version,
