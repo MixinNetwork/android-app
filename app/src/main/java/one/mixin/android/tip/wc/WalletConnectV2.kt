@@ -14,11 +14,13 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcSolanaMessage
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
@@ -340,8 +342,11 @@ object WalletConnectV2 : WalletConnect() {
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
                 Method.SolanaSignMessage.name -> {
+                    // Todo check
+                    val transaction = gson.fromJson<WcSolanaMessage>(request.request.params)
                     Timber.e("$TAG ${Method.SolanaSignMessage.name}")
                     Timber.e("$TAG ${gson.toJson(request.request.params)}")
+                    WCSignData.V2SignData(request.request.id, transaction, request)
                     null
                 }
                 else -> {
@@ -390,6 +395,10 @@ object WalletConnectV2 : WalletConnect() {
             // Timber.e("isLegacyMessage:${solana.message is LegacyMessage} isVersionedMessage: ${solana.message is VersionedMessage}")
 
             return transaction
+        } else if (signMessage is WcSolanaMessage) {
+            val holder = Keypair.fromSecretKey(priv)
+            val message = signMessage.message.decodeBase64()
+            return holder.sign(message)
         }
         return null
     }

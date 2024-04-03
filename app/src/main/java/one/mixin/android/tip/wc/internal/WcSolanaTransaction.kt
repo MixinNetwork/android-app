@@ -13,6 +13,10 @@ class WcSolanaTransaction(
     val transaction: String,
 )
 
+class WcSolanaMessage(
+    val message:String
+)
+
 class WcSignature(
     val publicKey: String,
     val signature: String?
