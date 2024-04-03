@@ -765,6 +765,7 @@
     <string name="Search_GIPHY">GIPHYを検索する</string>
     <string name="search_hint">資産, 連絡先とメッセージ</string>
     <string name="SEARCH_MESSAGES">メッセージを検索</string>
+    <string name="search_placeholder_address">ラベル、アドレス</string>
     <string name="search_placeholder_asset">名前、シンボル</string>
     <string name="search_placeholder_number">Mixin ID または電話番号を検索</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">

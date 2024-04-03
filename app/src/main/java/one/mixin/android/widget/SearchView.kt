@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import android.widget.TextView.OnEditorActionListener
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
@@ -110,6 +111,10 @@ class SearchView : FrameLayout {
 
     fun setHint(hintText: String) {
         binding.searchEt.hint = hintText
+    }
+
+    fun setHint(@StringRes resid: Int) {
+        binding.searchEt.setHint(resid)
     }
 
     fun showKeyboard() = et.showKeyboard()

@@ -1191,6 +1191,7 @@
     <string name="Unable_connect_desktop">无法连接到桌面，请稍后重试</string>
     <string name="Make_sure_WiFi">请确保 WiFi 连接</string>
     <string name="connected_dapps">已连接的 dApp</string>
+    <string name="search_placeholder_address">名称, 地址</string>
     <string name="search_placeholder_dapp">名称, URL</string>
     <string name="search_placeholder_app">搜索 ID 或 名字</string>
     <string name="NO_DAPP">没有 dApp</string>
