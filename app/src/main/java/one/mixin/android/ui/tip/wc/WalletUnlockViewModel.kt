@@ -45,6 +45,6 @@ class WalletUnlockViewModel
         ): String {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return privateKeyToAddress(tipPrivToPrivateKey(spendKey, chainId), chainId)
+            return privateKeyToAddress(spendKey, chainId)
         }
     }

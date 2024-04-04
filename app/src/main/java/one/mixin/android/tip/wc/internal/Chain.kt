@@ -6,7 +6,6 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.tip.privateKeyToAddress
 
 sealed class Chain(
     val assetId: String,
