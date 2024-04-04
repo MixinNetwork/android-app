@@ -337,17 +337,11 @@ object WalletConnectV2 : WalletConnect() {
                 }
                 Method.SolanaSignTransaction.name -> {
                     val transaction = gson.fromJson<WcSolanaTransaction>(request.request.params)
-                    Timber.e("$TAG ${Method.SolanaSignTransaction.name}")
-                    Timber.e("$TAG params ${gson.toJson(transaction)}")
                     WCSignData.V2SignData(request.request.id, transaction, request)
                 }
                 Method.SolanaSignMessage.name -> {
-                    // Todo check
-                    val transaction = gson.fromJson<WcSolanaMessage>(request.request.params)
-                    Timber.e("$TAG ${Method.SolanaSignMessage.name}")
-                    Timber.e("$TAG ${gson.toJson(request.request.params)}")
-                    WCSignData.V2SignData(request.request.id, transaction, request)
-                    null
+                    val message = gson.fromJson<WcSolanaMessage>(request.request.params)
+                    WCSignData.V2SignData(request.request.id, message, request)
                 }
                 else -> {
                     Timber.e("$TAG ${request.request.method} parseSessionRequest not supported method ${request.request.method}")
@@ -398,7 +392,19 @@ object WalletConnectV2 : WalletConnect() {
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
             val message = signMessage.message.decodeBase64()
-            return holder.sign(message)
+            val hexMessage = holder.sign(message)
+            val result = getWeb3j(chain).ethSendRawTransaction(hexMessage.hexString()).send()
+            if (result.hasError()) {
+                val msg = "error code: ${result.error.code}, message: ${result.error.message}"
+                Timber.d("$TAG transactionHash is null, $msg")
+                rejectRequest(msg, sessionRequest)
+                throw WalletConnectException(result.error.code, result.error.message)
+            } else {
+                val transactionHash = result.transactionHash
+                Timber.d("$TAG sendTransaction $transactionHash")
+                approveRequestInternal(transactionHash, sessionRequest)
+            }
+            return null
         }
         return null
     }

@@ -14,6 +14,7 @@ class WcSolanaTransaction(
 )
 
 class WcSolanaMessage(
+    val pubkey: String,
     val message:String
 )
 

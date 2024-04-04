@@ -52,6 +52,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
@@ -347,7 +348,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 if (error == null) {
                     step =
-                        if (isSignTransaction()) {
+                        if (isSignEvmTransaction() || isSignSolanaTransaction()) {
                             try {
                                 step = Step.Sending
                                 val sendError =
@@ -371,7 +372,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 handleException(e)
                                 Step.Error
                             }
-
                         } else {
                             processCompleted = true
                             Step.Done
@@ -449,7 +449,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         step = Step.Error
     }
 
-    private fun isSignTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
+    private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
+    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is WcSolanaTransaction
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
