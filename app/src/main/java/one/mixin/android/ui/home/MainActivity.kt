@@ -146,6 +146,7 @@ import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
@@ -303,8 +304,15 @@ class MainActivity : BlazeBaseActivity() {
             .autoDispose(destroyScope)
             .subscribe { e ->
                 lifecycleScope.launch {
-                    if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    if (e is WCEvent.V2) {
+                        val type = e.chainType ?: TYPE_ETH
+                        if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        } else {
+                            WalletConnectActivity.show(this@MainActivity, e)
+                        }
                     } else {
                         WalletConnectActivity.show(this@MainActivity, e)
                     }

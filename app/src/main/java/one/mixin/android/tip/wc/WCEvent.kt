@@ -14,6 +14,7 @@ sealed class WCEvent(
         override val version: WalletConnect.Version,
         override val requestType: RequestType,
         val topic: String,
+        val chainType: String? = null
     ) : WCEvent(version, requestType)
 
     @Parcelize

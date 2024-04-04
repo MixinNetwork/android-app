@@ -15,6 +15,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.hexString
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -26,6 +27,7 @@ import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.tip.wc.internal.toTransaction
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import org.sol4k.Keypair
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
@@ -149,8 +151,19 @@ object WalletConnectV2 : WalletConnect() {
                                 chains.contains(chain)
                             }
                         }
+
+                    val requireChain = supportChainList.first {
+                        sessionProposal.requiredNamespaces.values.first().chains?.contains(it.chainId) == true
+                    }
+                    val chainType = when {
+                        requireChain is Chain.Solana -> WalletUnlockBottomSheetDialogFragment.TYPE_SOLANA
+                        requireChain is Chain.BinanceSmartChain -> WalletUnlockBottomSheetDialogFragment.TYPE_BSC
+                        requireChain is Chain.Polygon -> WalletUnlockBottomSheetDialogFragment.TYPE_POLYGON
+                        else -> WalletUnlockBottomSheetDialogFragment.TYPE_ETH
+                    }
+
                     if (hasSupportChain) {
-                        RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic))
+                        RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic, chainType))
                     } else {
                         val notSupportChainIds =
                             namespaces.flatMap { proposal ->
