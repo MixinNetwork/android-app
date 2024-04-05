@@ -1217,6 +1217,7 @@
     <string name="Unable_connect_desktop">Unable to connect to the desktop，please try again later</string>
     <string name="Make_sure_WiFi">Make sure the WiFi is connected</string>
     <string name="connected_dapps">Connected dApps</string>
+    <string name="search_placeholder_address">Label, Address</string>
     <string name="search_placeholder_dapp">Name, URL</string>
     <string name="search_placeholder_app">Search ID or name</string>
     <string name="NO_DAPP">NO DAPP</string>
