@@ -59,6 +59,7 @@ abstract class WalletConnect {
     enum class Version {
         V2,
         TIP,
+        BROWSER
     }
 
     enum class RequestType {

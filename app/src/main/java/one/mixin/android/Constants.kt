@@ -363,4 +363,11 @@ object Constants {
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
     }
+
+    object Web3JSProtocol {
+        const val JS_PROTOCOL_CANCELLED = "cancelled"
+        const val JS_PROTOCOL_ON_SUCCESSFUL = "MixinWallet.executeCallback(%1\$s, null, \"%2\$s\")"
+        const val JS_PROTOCOL_EXPR_ON_SUCCESSFUL = "MixinWallet.executeCallback(%1\$s, null, %2\$s)"
+        const val JS_PROTOCOL_ON_FAILURE = "MixinWallet.executeCallback(%1\$s, \"%2\$s\", null)"
+    }
 }

@@ -34,6 +34,7 @@ class SessionRequestViewModel
                     WalletConnectV2.rejectRequest(msg, topic)
                 }
                 WalletConnect.Version.TIP -> {}
+                WalletConnect.Version.BROWSER -> {}
             }
         }
 
@@ -65,6 +66,9 @@ class SessionRequestViewModel
                 WalletConnect.Version.TIP -> {
                     return WalletConnectTIP.getSessionRequestUI()
                 }
+                WalletConnect.Version.BROWSER -> {
+                    return WalletConnectTIP.getSessionRequestUI()
+                }
             }
         }
 
@@ -79,6 +83,10 @@ class SessionRequestViewModel
                 }
                 WalletConnect.Version.TIP -> {
                     data as String
+                }
+                WalletConnect.Version.BROWSER->{
+                    // todo
+                    ""
                 }
             }
     }

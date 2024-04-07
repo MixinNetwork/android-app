@@ -17,7 +17,13 @@ sealed class WCEvent(
     ) : WCEvent(version, requestType)
 
     @Parcelize
-    data class TIP(
+    data class Tip(
+        override val version: WalletConnect.Version,
+        override val requestType: RequestType,
+    ) : WCEvent(version, requestType)
+
+    @Parcelize
+    data class Browser(
         override val version: WalletConnect.Version,
         override val requestType: RequestType,
     ) : WCEvent(version, requestType)

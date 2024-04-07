@@ -115,6 +115,7 @@ class WalletConnectBottomSheetViewModel
                 when (version) {
                     WalletConnect.Version.V2 -> WalletConnectV2.sendTransaction(chain, sessionRequest, signedTransactionData)
                     WalletConnect.Version.TIP -> {}
+                    WalletConnect.Version.BROWSER -> {}
                 }
                 return null
             } catch (e: Exception) {

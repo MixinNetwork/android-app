@@ -31,6 +31,7 @@ class SessionProposalViewModel
                     WalletConnectV2.rejectSession(topic)
                 }
                 WalletConnect.Version.TIP -> {}
+                WalletConnect.Version.BROWSER -> {}
             }
         }
 
@@ -55,6 +56,10 @@ class SessionProposalViewModel
                     )
                 }
                 WalletConnect.Version.TIP -> {
+                    return WalletConnectTIP.getSessionProposalUI()
+                }
+                WalletConnect.Version.BROWSER -> {
+                    // todo
                     return WalletConnectTIP.getSessionProposalUI()
                 }
             }

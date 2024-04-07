@@ -114,6 +114,9 @@ class WalletConnectActivity : BaseActivity() {
             WalletConnect.Version.TIP -> {
                 Timber.e("$TAG invalid event $event")
             }
+            WalletConnect.Version.BROWSER -> {
+
+            }
         }
     }
 

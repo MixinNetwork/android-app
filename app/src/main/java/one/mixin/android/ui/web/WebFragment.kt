@@ -70,6 +70,8 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
+import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
+import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_SUCCESSFUL
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -143,6 +145,8 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.web3.JsInjectorClient
+import one.mixin.android.web3.WalletAddEthereumChainObject
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -750,7 +754,7 @@ class WebFragment : BaseFragment() {
         webView.setDownloadListener { url, _, _, _, _ ->
             try {
                 startActivity(
-                    Intent(Intent.ACTION_VIEW).apply {
+                    Intent(ACTION_VIEW).apply {
                         data = url.toUri()
                     },
                 )
@@ -824,6 +828,10 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
+                    // web3
+                    onWalletActionSuccessful = { e ->
+                        webView.evaluateJavascript(e, Timber::d)
+                    }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -1065,11 +1073,13 @@ class WebFragment : BaseFragment() {
                     holdClip(webClip)
                 }
             }
+
             index < 0 -> {
                 webView.destroy()
                 webView.webViewClient = object : WebViewClient() {}
                 webView.webChromeClient = null
             }
+
             else -> {
                 generateWebClip()?.let { webClip ->
                     updateClip(index, webClip)
@@ -1526,6 +1536,16 @@ class WebFragment : BaseFragment() {
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
     ) : WebViewClient() {
+
+        private val jsInjectorClient: JsInjectorClient = JsInjectorClient(context)
+
+        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            super.onPageStarted(view, url, favicon)
+            view ?: return
+            view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
+            view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
+        }
+
         override fun onPageFinished(
             view: WebView?,
             url: String?,
@@ -1578,7 +1598,6 @@ class WebFragment : BaseFragment() {
                 }
                 // ignore wallet connect data url
                 return true
-
             }
 
             if (url.isMixinUrl()) {
@@ -1639,6 +1658,18 @@ class WebFragment : BaseFragment() {
             return true
         }
 
+        fun getInitString(view: WebView): String {
+            return jsInjectorClient.initJs(view.context)
+        }
+
+        fun getProviderString(view: WebView): String {
+            return jsInjectorClient.providerJs(view.context)
+        }
+
+        fun getJsInjectorClient(): JsInjectorClient {
+            return jsInjectorClient
+        }
+
         interface OnPageFinishedListener {
             fun onPageFinished()
         }
@@ -1654,6 +1685,8 @@ class WebFragment : BaseFragment() {
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
+        // web
+        val onWalletActionSuccessful: (String) -> Unit,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1699,21 +1732,59 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getTipAddress(
-            chainId: String,
-            callbackFunction: String,
+        fun signTransaction(
+            callbackId: Int, recipient: String,
+            value: String?,
+            nonce: String?,
+            gasLimit: String?,
+            gasPrice: String?,
+            payload: String?,
         ) {
-            getTipAddressAction?.invoke(chainId, callbackFunction)
+            // todo transaction
+            Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
         }
 
         @JavascriptInterface
-        fun tipSign(
-            chainId: String,
-            message: String,
-            callbackFunction: String,
-        ) {
-            tipSignAction?.invoke(chainId, message, callbackFunction)
+        fun signMessage(callbackId: Int, data: String) {
+            // todo sign message
+            Timber.e("signMessage $callbackId")
         }
+
+        @JavascriptInterface
+        fun signPersonalMessage(callbackId: Int, data: String) {
+            // todo personal message
+            Timber.e("signPersonalMessage $callbackId")
+        }
+
+        @JavascriptInterface
+        fun requestAccounts(callbackId: Int) {
+            Timber.e("requestAccounts $callbackId")
+            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"" + "0x9A6153295abCC11e09703e945C4e42c51ED57835" + "\"]")
+            onWalletActionSuccessful(expr)
+        }
+
+        @JavascriptInterface
+        fun signTypedMessage(callbackId: Int, data: String) {
+            Timber.e("signTypedMessage $callbackId")
+        }
+
+        @JavascriptInterface
+        fun ethCall(callbackId: Int, recipient: String) {
+            Timber.e("ethCall $callbackId")
+        }
+
+        @JavascriptInterface
+        fun walletAddEthereumChain(callbackId: Int, msgParams: String){
+        }
+
+        @JavascriptInterface
+        fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
+            // todo switch
+            onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, msgParams).apply {
+                Timber.e("walletSwitchEthereumChain $this")
+            })
+        }
+
     }
 
     class MixinContext(

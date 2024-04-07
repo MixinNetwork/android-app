@@ -24,6 +24,7 @@ internal constructor() : ViewModel() {
                     WalletConnectV2.disconnect(topic)
                 }
                 WalletConnect.Version.TIP -> {}
+                WalletConnect.Version.BROWSER -> {}
             }
         }
 
