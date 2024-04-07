@@ -47,8 +47,8 @@ class JsInjectorClient(context: Context?) {
         }
     }
 
-    fun initJs(context: Context): String {
-        return loadInitJs(context)
+    fun initJs(context: Context, address: String, chain: Chain): String {
+        return loadInitJs(context, address, chain)
     }
 
     fun providerJs(context: Context): String {
@@ -131,9 +131,9 @@ class JsInjectorClient(context: Context?) {
         return requestBuilder.build()
     }
 
-    private fun loadInitJs(context: Context): String {
+    private fun loadInitJs(context: Context, address:String, chain:Chain): String {
         val initSrc = loadFile(context, R.raw.init)
-        return String.format(initSrc, "0x9A6153295abCC11e09703e945C4e42c51ED57835", "https://eth.llamarpc.com", 0x89)
+        return String.format(initSrc, address, chain.rpcUrl, chain.chainReference)
     }
 
     fun injectStyleAndWrap(view: String, style: String?): String {

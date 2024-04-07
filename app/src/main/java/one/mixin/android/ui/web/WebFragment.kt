@@ -71,7 +71,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_SUCCESSFUL
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -113,6 +112,7 @@ import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -146,7 +146,6 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.web3.JsInjectorClient
-import one.mixin.android.web3.WalletAddEthereumChainObject
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -171,6 +170,8 @@ class WebFragment : BaseFragment() {
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
+        const val ARGS_ADDRESS = "args_address"
+        const val ARGS_CHAIN_ID = "args_chain_id"
         const val themeColorScript =
             """
             (function() {
@@ -204,6 +205,19 @@ class WebFragment : BaseFragment() {
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
+    }
+
+    private val chain: Chain? by lazy {
+        requireArguments().getString(ARGS_CHAIN_ID, null)?.let {
+            when (it) {
+                Chain.Polygon.chainId -> Chain.Polygon
+                Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
+                else -> Chain.Ethereum
+            }
+        }
+    }
+    private val address: String? by lazy {
+        requireArguments().getString(ARGS_ADDRESS, null)
     }
 
     private var currentUrl: String? = null
@@ -496,6 +510,7 @@ class WebFragment : BaseFragment() {
                         }
                     }
                 },
+                address, chain
             )
 
         webView.webChromeClient =
@@ -811,6 +826,7 @@ class WebFragment : BaseFragment() {
                 WebAppInterface(
                     MixinApplication.appContext,
                     conversationId,
+                    address,
                     immersive,
                     reloadThemeAction = { reloadTheme() },
                     playlistAction = { showPlaylist(it) },
@@ -819,16 +835,11 @@ class WebFragment : BaseFragment() {
                             closeSelf()
                         }
                     },
-                    getTipAddressAction = { chainId, callback ->
-                        getTipAddress(chainId, callback)
-                    },
-                    tipSignAction = { chainId, message, callback ->
-                        tipSign(chainId, message, callback)
-                    },
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
                     // web3
+                    address,
                     onWalletActionSuccessful = { e ->
                         webView.evaluateJavascript(e, Timber::d)
                     }
@@ -1535,15 +1546,21 @@ class WebFragment : BaseFragment() {
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
+        private val address: String? = null,
+        private val chain: Chain? = null
     ) : WebViewClient() {
 
-        private val jsInjectorClient: JsInjectorClient = JsInjectorClient(context)
+        private val jsInjectorClient by lazy {
+            JsInjectorClient(context)
+        }
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             view ?: return
-            view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
-            view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
+            if (address != null && chain != null) {
+                view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
+                view.evaluateJavascript(jsInjectorClient.initJs(view.context, address, chain), null)
+            }
         }
 
         override fun onPageFinished(
@@ -1658,16 +1675,12 @@ class WebFragment : BaseFragment() {
             return true
         }
 
-        fun getInitString(view: WebView): String {
-            return jsInjectorClient.initJs(view.context)
-        }
+        // fun getInitString(view: WebView): String {
+        //     return jsInjectorClient.initJs(view.context)
+        // }
 
         fun getProviderString(view: WebView): String {
             return jsInjectorClient.providerJs(view.context)
-        }
-
-        fun getJsInjectorClient(): JsInjectorClient {
-            return jsInjectorClient
         }
 
         interface OnPageFinishedListener {
@@ -1678,14 +1691,14 @@ class WebFragment : BaseFragment() {
     class WebAppInterface(
         val context: Context,
         val conversationId: String?,
+        val address: String?,
         val immersive: Boolean,
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
-        var getTipAddressAction: ((String, String) -> Unit)? = null,
-        var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         // web
+        val chainAddress: String? = null,
         val onWalletActionSuccessful: (String) -> Unit,
     ) {
         @JavascriptInterface
@@ -1758,8 +1771,7 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun requestAccounts(callbackId: Int) {
-            Timber.e("requestAccounts $callbackId")
-            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"" + "0x9A6153295abCC11e09703e945C4e42c51ED57835" + "\"]")
+            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"$address\"]")
             onWalletActionSuccessful(expr)
         }
 

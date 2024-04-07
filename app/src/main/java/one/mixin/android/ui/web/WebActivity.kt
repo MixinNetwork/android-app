@@ -43,6 +43,8 @@ class WebActivity : BaseActivity() {
             conversationId: String?,
             app: App? = null,
             appCard: AppCardData? = null,
+            address: String? = null,
+            chainId: String ? = null
         ) {
             context.startActivity(
                 Intent(context, WebActivity::class.java).apply {
@@ -61,6 +63,8 @@ class WebActivity : BaseActivity() {
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
+                            putString(WebFragment.ARGS_ADDRESS, address)
+                            putString(WebFragment.ARGS_CHAIN_ID, chainId)
                         },
                     )
                 },

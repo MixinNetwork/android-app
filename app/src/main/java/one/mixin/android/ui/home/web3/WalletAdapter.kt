@@ -14,7 +14,7 @@ import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Dapp
 
-class WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class WalletAdapter(val onDappClick:(Dapp)->Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var connections: List<Dapp> = emptyList()
 
     var title: String = ""
@@ -64,7 +64,7 @@ class WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         position: Int,
     ) {
         if (getItemViewType(position) == 1) {
-            (holder as Web3Holder).bind(connections[position - 1])
+            (holder as Web3Holder).bind(connections[position - 1], onDappClick)
         } else {
             if (action == null) {
                 (holder as Web3CardHolder).bind(title, subTitle, icon, onClickListener)
@@ -97,14 +97,14 @@ class Web3CardHolder(val binding: ItemChainCardBinding) : RecyclerView.ViewHolde
 }
 
 class Web3Holder(val binding: ItemFavoriteBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(web3: Dapp) {
+    fun bind(web3: Dapp, onDappClick: (Dapp) -> Unit) {
         binding.apply {
             avatar.loadUrl(web3.iconUrl)
             name.text = web3.name
             mixinIdTv.text = web3.homeUrl
             verifiedIv.isVisible = false
             root.setOnClickListener {
-                WebActivity.show(it.context, web3.homeUrl, null)
+                onDappClick.invoke(web3)
             }
         }
     }
