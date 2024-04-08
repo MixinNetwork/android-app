@@ -16,7 +16,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
-import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
@@ -466,21 +465,6 @@ object WalletConnectV2 : WalletConnect() {
         approveRequestInternal(transactionHash, sessionRequest)
     }
 
-    fun sendTransaction(
-        chain: Chain, signedTransactionData:String
-    ): String? {
-        val tx = getWeb3j(chain).ethSendRawTransaction(signedTransactionData).send()
-        if (tx.hasError()) {
-            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            // todo
-            throw WalletConnectException(tx.error.code, tx.error.message)
-        }
-        val transactionHash = tx.transactionHash
-        Timber.d("$TAG sendTransaction $transactionHash")
-        return transactionHash
-    }
-
     private fun ethSignMessage(
         priv: ByteArray,
         sessionRequest: Wallet.Model.SessionRequest,
@@ -536,47 +520,6 @@ object WalletConnectV2 : WalletConnect() {
         if (approve) {
             approveRequestInternal(hexMessage, sessionRequest)
         }
-        return hexMessage
-    }
-
-    fun ethSignTransaction(
-        priv: ByteArray,
-        chain: Chain,
-        transaction: WCEthereumTransaction,
-        tipGas: TipGas,
-        approve: Boolean,
-    ): String {
-        val value = transaction.value ?: "0x0"
-
-        val keyPair = ECKeyPair.create(priv)
-        val credential = Credentials.create(keyPair)
-        val transactionCount =
-            getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
-        val v = Numeric.toBigInt(value)
-
-        val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas
-        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }?: BigInteger.ZERO)
-        val gasLimit = tipGas.gasLimit
-        Timber.e("$TAG dapp gas: ${transaction.gas?.let { Numeric.toBigInt(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.toBigInt(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }} ")
-        Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
-        val rawTransaction = RawTransaction.createTransaction(
-            chain.chainReference.toLong(),
-            nonce,
-            gasLimit,
-            transaction.to,
-            v,
-            transaction.data ?: "",
-            maxPriorityFeePerGas,
-            maxFeePerGas,
-        )
-
-        val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
-        val hexMessage = Numeric.toHexString(signedMessage)
-        Timber.d("$TAG signTransaction $hexMessage")
         return hexMessage
     }
 

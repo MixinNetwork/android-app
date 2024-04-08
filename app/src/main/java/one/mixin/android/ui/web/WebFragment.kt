@@ -71,6 +71,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
+import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_FAILURE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -88,7 +89,6 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.hexString
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
@@ -113,7 +113,6 @@ import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
-import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
@@ -150,21 +149,16 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.web3.JsInjectorClient
+import one.mixin.android.web3.JsSigner
+import one.mixin.android.web3.SwitchChain
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
-import org.web3j.crypto.Credentials
-import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.RawTransaction
-import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
-import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -1777,10 +1771,14 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
-            // todo switch
-            onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, msgParams).apply {
-                Timber.e("walletSwitchEthereumChain $this")
-            })
+            Timber.e("walletSwitchEthereumChain $msgParams")
+            val switchChain = GsonHelper.customGson.fromJson(msgParams ,SwitchChain::class.java)
+            val result = JsSigner.switchChain(switchChain)
+            if (result.isSuccess) {
+                onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId))
+            } else {
+                onWalletActionSuccessful(String.format(JS_PROTOCOL_ON_FAILURE, callbackId))
+            }
         }
     }
 

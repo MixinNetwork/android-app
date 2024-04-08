@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -36,8 +35,6 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.exception.TipNetworkException
-import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -53,6 +50,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
+import one.mixin.android.web3.JsSigner
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -181,8 +179,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             val priv = viewModel.getTipPriv(requireContext(), pin)
-            val hex = WalletConnectV2.ethSignTransaction(priv, Chain.Polygon, transaction, tipGas!!, true)
-            val hash = WalletConnectV2.sendTransaction(Chain.Polygon, hex)
+            val hex = JsSigner.ethSignTransaction(priv, Chain.Polygon, transaction, tipGas!!)
+            val hash = JsSigner.sendTransaction(Chain.Polygon, hex)
             Timber.e(hash)
             onDone?.invoke(hash)
             dismiss()

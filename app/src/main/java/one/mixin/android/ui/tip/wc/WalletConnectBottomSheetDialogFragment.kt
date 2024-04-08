@@ -391,9 +391,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             WalletConnect.Version.TIP -> {
                 Timber.e("$TAG wcActionWithPriv")
             }
-            WalletConnect.Version.BROWSER->{
-                // Todo
-            }
         }
         return null
     }
@@ -413,9 +410,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             WalletConnect.Version.TIP -> {
                 Timber.e("$TAG wcActionWithPriv")
-            }
-            WalletConnect.Version.BROWSER -> {
-                // Todo
             }
         }
     }
