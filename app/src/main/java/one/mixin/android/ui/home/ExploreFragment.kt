@@ -47,9 +47,7 @@ import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
-import one.mixin.android.ui.home.web3.BSCFragment
 import one.mixin.android.ui.home.web3.EthereumFragment
-import one.mixin.android.ui.home.web3.PolygonFragment
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -133,15 +131,6 @@ class ExploreFragment : BaseFragment() {
                         navigate(ethereumFragment, EthereumFragment.TAG)
                     }
 
-                    R.id.radio_polygon -> {
-                        exploreVa.displayedChild = 2
-                        navigate(polygonFragment, PolygonFragment.TAG)
-                    }
-
-                    R.id.radio_bsc -> {
-                        exploreVa.displayedChild = 2
-                        navigate(bscFragment, BSCFragment.TAG)
-                    }
                 }
             }
             binding.botRv.layoutManager = LinearLayoutManager(requireContext())
@@ -188,14 +177,6 @@ class ExploreFragment : BaseFragment() {
     private val destinations = mutableListOf<Fragment>()
     private val ethereumFragment by lazy {
         EthereumFragment()
-    }
-
-    private val polygonFragment by lazy {
-        PolygonFragment()
-    }
-
-    private val bscFragment by lazy {
-        BSCFragment()
     }
 
     private fun loadData() {
