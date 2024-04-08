@@ -113,7 +113,9 @@ import one.mixin.android.tip.tipPrivToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -126,6 +128,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
@@ -152,9 +155,16 @@ import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
+import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -846,24 +856,22 @@ class WebFragment : BaseFragment() {
                 onWalletActionSuccessful = { e ->
                     webView.evaluateJavascript(e, Timber::d)
                 },
-                onBrowserTransaction = {e->
+                onBrowserTransaction = {e,id->
                     lifecycleScope.launch {
-                        showWalletConnectBottomSheetDialogFragment(
+                        showBrowserBottomSheetDialogFragment(
                             tip,
+                            e,
+                            id,
                             requireActivity(),
-                            WalletConnect.RequestType.SessionRequest,
-                            WalletConnect.Version.BROWSER,
-                            null,
                             onReject = {
                                 lifecycleScope.launch {
                                     // webView.evaluateJavascript("$callbackFunction('')") {}
                                 }
                             },
-                            callback = {
-                                Timber.e("${it.hexString()}")
-                                // val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
+                            onDone = { priv ->
                                 lifecycleScope.launch {
-                                    // webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                                    val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, null)
+                                    webView.evaluateJavascript(callback) {}
                                 }
                             },
                         )
@@ -1716,7 +1724,7 @@ class WebFragment : BaseFragment() {
     class Web3Interface(
         val address: String?,
         val onWalletActionSuccessful: (String) -> Unit,
-        val onBrowserTransaction: (WalletConnect.WCSignData.Browser) -> Unit,
+        val onBrowserTransaction: (WCEthereumTransaction, Int) -> Unit,
     ) {
         @JavascriptInterface
         fun signTransaction(
@@ -1728,8 +1736,8 @@ class WebFragment : BaseFragment() {
             payload: String?,
         ) {
             Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
-            if (value != null && payload != null) {
-                onBrowserTransaction(WalletConnect.WCSignData.Browser(callbackId.toLong(), payload, recipient, value))
+            if (value != null && payload != null && address!=null) {
+                onBrowserTransaction(WCEthereumTransaction(address, recipient, null, gasPrice, null, null, null, gasLimit, value, payload), callbackId)
             } else {
                 Timber.e("Illegal Argument")
             }

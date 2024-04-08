@@ -8,17 +8,14 @@ import okhttp3.Request
 import okhttp3.Response
 import one.mixin.android.R
 import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.vo.Address
 import timber.log.Timber
 import java.io.IOException
-import java.math.BigInteger
 import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.min
 
 class JsInjectorClient(context: Context?) {
     private var chainId: Int = 0
-    var walletAddress: Address? = null
 
     private var rpcUrl: String? = null
 
@@ -53,18 +50,6 @@ class JsInjectorClient(context: Context?) {
 
     fun providerJs(context: Context): String {
         return loadFile(context, R.raw.wallet_min)
-    }
-
-    fun injectWeb3TokenInit(ctx: Context, view: String, tokenContent: String?, tokenId: BigInteger): String {
-        var initSrc = loadFile(ctx, R.raw.init_token)
-        //put the view in here
-        val tokenIdWrapperName = "token-card-" + tokenId.toString(10)
-        initSrc = String.format(initSrc, tokenContent, walletAddress, rpcUrl, chainId, tokenIdWrapperName)
-        //now insert this source into the view
-        // note that the <div> is not closed because it is closed in injectStyleAndWrap().
-        val wrapper = "<div id=\"token-card-" + tokenId.toString(10) + "\" class=\"token-card\">"
-        initSrc = "<script>\n$initSrc</script>\n$wrapper"
-        return injectJS(view, initSrc)
     }
 
     fun injectJSAtEnd(view: String, newCode: String): String {

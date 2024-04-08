@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Dapp
 
 class WalletAdapter(val onDappClick:(Dapp)->Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

@@ -1,9 +1,12 @@
 package one.mixin.android.tip.wc.internal
 
+import android.os.Parcelable
 import com.github.salomonbrys.kotson.jsonDeserializer
+import kotlinx.parcelize.Parcelize
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.utils.Numeric
 
+@Parcelize
 data class WCEthereumTransaction(
     val from: String,
     val to: String?,
@@ -15,7 +18,7 @@ data class WCEthereumTransaction(
     val gasLimit: String?,
     val value: String?,
     val data: String?,
-)
+) : Parcelable
 
 val ethTransactionSerializer =
     jsonDeserializer<List<WCEthereumTransaction>> {
