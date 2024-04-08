@@ -60,6 +60,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.max
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -845,7 +846,7 @@ class WebFragment : BaseFragment() {
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(Web3Interface(
                 // web3
-                address,
+                JsSigner.address,
                 onWalletActionSuccessful = { e ->
                     webView.evaluateJavascript(e, Timber::d)
                 },
@@ -861,9 +862,9 @@ class WebFragment : BaseFragment() {
                                     // webView.evaluateJavascript("$callbackFunction('')") {}
                                 }
                             },
-                            onDone = { priv ->
+                            onDone = { hash ->
                                 lifecycleScope.launch {
-                                    val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, null)
+                                    val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, hash)
                                     webView.evaluateJavascript(callback) {}
                                 }
                             },
@@ -1725,7 +1726,7 @@ class WebFragment : BaseFragment() {
             payload: String?,
         ) {
             Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
-            if (value != null && payload != null && address!=null) {
+            if (value != null && payload != null && address != null) {
                 onBrowserTransaction(WCEthereumTransaction(address, recipient, null, gasPrice, null, null, null, gasLimit, value, payload), callbackId)
             } else {
                 Timber.e("Illegal Argument")
