@@ -82,6 +82,13 @@ abstract class WalletConnect {
         data class TIPSignData(
             override val signMessage: String,
         ) : WCSignData<String>(0L, signMessage)
+
+        data class Browser(
+            override val requestId: Long,
+            override val signMessage: String,
+            val recipient: String,
+            val value: String,
+        ) : WCSignData<String>(requestId, signMessage)
     }
 
     private var web3jPool = LruCache<Chain, Web3j>(3)

@@ -18,43 +18,43 @@ window.MixinWallet.init(__rpcURL, {
     var gasPrice = tx.gasPrice || null;
     var data = tx.data || null;
     var nonce = tx.nonce || -1;
-    MixinContext.signTransaction(id, tx.to || null, tx.value, nonce, gasLimit, gasPrice, data);
+    mixin.signTransaction(id, tx.to || null, tx.value, nonce, gasLimit, gasPrice, data);
   },
   signMessage: function (msgParams, cb) {
       console.log('signMessage', msgParams)
       const { data, chainType } = msgParams
       const { id = 8888 } = msgParams
     MixinWallet.addCallback(id, cb)
-    MixinContext.signMessage(id, data);
+    mixin.signMessage(id, data);
   },
   signPersonalMessage: function (msgParams, cb) {
       console.log('signPersonalMessage', msgParams)
       const { data, chainType } = msgParams
       const { id = 8888 } = msgParams
     MixinWallet.addCallback(id, cb)
-    MixinContext.signPersonalMessage(id, data);
+    mixin.signPersonalMessage(id, data);
   },
   signTypedMessage: function (msgParams, cb) {
     console.log('signTypedMessage ', msgParams)
     const { data } = msgParams
     const { id = 8888 } = msgParams
     MixinWallet.addCallback(id, cb)
-    MixinContext.signTypedMessage(id, JSON.stringify(msgParams))
+    mixin.signTypedMessage(id, JSON.stringify(msgParams))
   },
   ethCall: function (msgParams, cb) {
     console.log("eth_call", msgParams)
     const data = msgParams
     const { id = Math.floor((Math.random() * 100000) + 1) } = msgParams
     MixinWallet.addCallback(id, cb)
-    MixinContext.ethCall(id, JSON.stringify(msgParams));
-    //MixinContext.ethCall(id, msgParams.to, msgParams.data, msgParams.value);
+    mixin.ethCall(id, JSON.stringify(msgParams));
+    //mixin.ethCall(id, msgParams.to, msgParams.data, msgParams.value);
   },
   walletAddEthereumChain: function (msgParams, cb) {
     const data = msgParams
     const { id = Math.floor((Math.random() * 100000) + 1) } = msgParams
     console.log("walletAddEthereumChain", msgParams)
     MixinWallet.addCallback(id, cb)
-    MixinContext.walletAddEthereumChain(id, JSON.stringify(msgParams));
+    mixin.walletAddEthereumChain(id, JSON.stringify(msgParams));
     //webkit.messageHandlers.walletAddEthereumChain.postMessage({"name": "walletAddEthereumChain", "object": data, id: id})
   },
   walletSwitchEthereumChain: function (msgParams, cb) {
@@ -62,14 +62,14 @@ window.MixinWallet.init(__rpcURL, {
     const { id = Math.floor((Math.random() * 100000) + 1) } = msgParams
     console.log("walletSwitchEthereumChain", msgParams)
     MixinWallet.addCallback(id, cb)
-    MixinContext.walletSwitchEthereumChain(id, JSON.stringify(msgParams));
+    mixin.walletSwitchEthereumChain(id, JSON.stringify(msgParams));
     //webkit.messageHandlers.walletSwitchEthereumChain.postMessage({"name": "walletSwitchEthereumChain", "object": data, id: id})
   },
   requestAccounts: function(cb) {
       id = Math.floor((Math.random() * 100000) + 1)
       console.log("requestAccounts", id)
       MixinWallet.addCallback(id, cb)
-      MixinContext.requestAccounts(id);
+      mixin.requestAccounts(id);
   },
   enable: function() {
       return new Promise(function(resolve, reject) {

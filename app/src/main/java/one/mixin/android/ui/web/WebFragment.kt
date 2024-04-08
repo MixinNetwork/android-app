@@ -88,6 +88,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
@@ -826,7 +827,6 @@ class WebFragment : BaseFragment() {
                 WebAppInterface(
                     MixinApplication.appContext,
                     conversationId,
-                    address,
                     immersive,
                     reloadThemeAction = { reloadTheme() },
                     playlistAction = { showPlaylist(it) },
@@ -838,13 +838,38 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
-                    // web3
-                    address,
-                    onWalletActionSuccessful = { e ->
-                        webView.evaluateJavascript(e, Timber::d)
-                    }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
+            webView.addJavascriptInterface(Web3Interface(
+                // web3
+                address,
+                onWalletActionSuccessful = { e ->
+                    webView.evaluateJavascript(e, Timber::d)
+                },
+                onBrowserTransaction = {e->
+                    lifecycleScope.launch {
+                        showWalletConnectBottomSheetDialogFragment(
+                            tip,
+                            requireActivity(),
+                            WalletConnect.RequestType.SessionRequest,
+                            WalletConnect.Version.BROWSER,
+                            null,
+                            onReject = {
+                                lifecycleScope.launch {
+                                    // webView.evaluateJavascript("$callbackFunction('')") {}
+                                }
+                            },
+                            callback = {
+                                Timber.e("${it.hexString()}")
+                                // val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
+                                lifecycleScope.launch {
+                                    // webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                                }
+                            },
+                        )
+                    }
+                }
+            ), "mixin")
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -1056,6 +1081,7 @@ class WebFragment : BaseFragment() {
         webAppInterface?.playlistAction = null
         webAppInterface = null
         webView.removeJavascriptInterface("MixinContext")
+        webView.removeJavascriptInterface("mixin")
         webView.webChromeClient = null
         webView.webViewClient = object : WebViewClient() {}
 
@@ -1687,19 +1713,77 @@ class WebFragment : BaseFragment() {
             fun onPageFinished()
         }
     }
+    class Web3Interface(
+        val address: String?,
+        val onWalletActionSuccessful: (String) -> Unit,
+        val onBrowserTransaction: (WalletConnect.WCSignData.Browser) -> Unit,
+    ) {
+        @JavascriptInterface
+        fun signTransaction(
+            callbackId: Int, recipient: String,
+            value: String?,
+            nonce: String?,
+            gasLimit: String?,
+            gasPrice: String?,
+            payload: String?,
+        ) {
+            Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
+            if (value != null && payload != null) {
+                onBrowserTransaction(WalletConnect.WCSignData.Browser(callbackId.toLong(), payload, recipient, value))
+            } else {
+                Timber.e("Illegal Argument")
+            }
+        }
+
+        @JavascriptInterface
+        fun signMessage(callbackId: Int, data: String) {
+            // todo sign message
+            Timber.e("signMessage $callbackId")
+        }
+
+        @JavascriptInterface
+        fun signPersonalMessage(callbackId: Int, data: String) {
+            // todo personal message
+            Timber.e("signPersonalMessage $callbackId")
+        }
+
+        @JavascriptInterface
+        fun requestAccounts(callbackId: Int) {
+            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"$address\"]")
+            onWalletActionSuccessful(expr)
+        }
+
+        @JavascriptInterface
+        fun signTypedMessage(callbackId: Int, data: String) {
+            Timber.e("signTypedMessage $callbackId")
+        }
+
+        @JavascriptInterface
+        fun ethCall(callbackId: Int, recipient: String) {
+            Timber.e("ethCall $callbackId")
+        }
+
+        @JavascriptInterface
+        fun walletAddEthereumChain(callbackId: Int, msgParams: String) {
+        }
+
+        @JavascriptInterface
+        fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
+            // todo switch
+            onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, msgParams).apply {
+                Timber.e("walletSwitchEthereumChain $this")
+            })
+        }
+    }
 
     class WebAppInterface(
         val context: Context,
         val conversationId: String?,
-        val address: String?,
         val immersive: Boolean,
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
-        // web
-        val chainAddress: String? = null,
-        val onWalletActionSuccessful: (String) -> Unit,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1743,60 +1827,6 @@ class WebFragment : BaseFragment() {
         fun close() {
             closeAction?.invoke()
         }
-
-        @JavascriptInterface
-        fun signTransaction(
-            callbackId: Int, recipient: String,
-            value: String?,
-            nonce: String?,
-            gasLimit: String?,
-            gasPrice: String?,
-            payload: String?,
-        ) {
-            // todo transaction
-            Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
-        }
-
-        @JavascriptInterface
-        fun signMessage(callbackId: Int, data: String) {
-            // todo sign message
-            Timber.e("signMessage $callbackId")
-        }
-
-        @JavascriptInterface
-        fun signPersonalMessage(callbackId: Int, data: String) {
-            // todo personal message
-            Timber.e("signPersonalMessage $callbackId")
-        }
-
-        @JavascriptInterface
-        fun requestAccounts(callbackId: Int) {
-            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"$address\"]")
-            onWalletActionSuccessful(expr)
-        }
-
-        @JavascriptInterface
-        fun signTypedMessage(callbackId: Int, data: String) {
-            Timber.e("signTypedMessage $callbackId")
-        }
-
-        @JavascriptInterface
-        fun ethCall(callbackId: Int, recipient: String) {
-            Timber.e("ethCall $callbackId")
-        }
-
-        @JavascriptInterface
-        fun walletAddEthereumChain(callbackId: Int, msgParams: String){
-        }
-
-        @JavascriptInterface
-        fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
-            // todo switch
-            onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, msgParams).apply {
-                Timber.e("walletSwitchEthereumChain $this")
-            })
-        }
-
     }
 
     class MixinContext(
