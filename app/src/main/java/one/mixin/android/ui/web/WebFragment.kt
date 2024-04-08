@@ -515,7 +515,6 @@ class WebFragment : BaseFragment() {
                         }
                     }
                 },
-                address, chain
             )
 
         webView.webChromeClient =
@@ -1574,8 +1573,6 @@ class WebFragment : BaseFragment() {
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
-        private val address: String? = null,
-        private val chain: Chain? = null
     ) : WebViewClient() {
 
         private val jsInjectorClient by lazy {
@@ -1585,10 +1582,8 @@ class WebFragment : BaseFragment() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             view ?: return
-            if (address != null && chain != null) {
-                view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
-                view.evaluateJavascript(jsInjectorClient.initJs(view.context, address, chain), null)
-            }
+            view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
+            view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.address, JsSigner.currentChain), null)
         }
 
         override fun onPageFinished(
@@ -1772,10 +1767,10 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
             Timber.e("walletSwitchEthereumChain $msgParams")
-            val switchChain = GsonHelper.customGson.fromJson(msgParams ,SwitchChain::class.java)
+            val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = JsSigner.switchChain(switchChain)
             if (result.isSuccess) {
-                onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId))
+                onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, GsonHelper.customGson.toJson(switchChain)))
             } else {
                 onWalletActionSuccessful(String.format(JS_PROTOCOL_ON_FAILURE, callbackId))
             }

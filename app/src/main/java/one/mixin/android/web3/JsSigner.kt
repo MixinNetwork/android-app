@@ -1,6 +1,9 @@
 package one.mixin.android.web3
 
 import android.util.LruCache
+import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
@@ -36,7 +39,14 @@ object JsSigner {
         }
     }
 
-    private var currentChain = Chain.Ethereum
+    var address = ""
+        private set
+    var currentChain = Chain.Polygon //  todo
+        private set
+
+    suspend fun init() {
+        address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+    }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {
         return when (switchChain.chainId) {

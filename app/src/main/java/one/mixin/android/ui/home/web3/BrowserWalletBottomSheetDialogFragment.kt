@@ -181,7 +181,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val priv = viewModel.getTipPriv(requireContext(), pin)
             val hex = JsSigner.ethSignTransaction(priv, Chain.Polygon, transaction, tipGas!!)
             val hash = JsSigner.sendTransaction(Chain.Polygon, hex)
-            Timber.e(hash)
             onDone?.invoke(hash)
             dismiss()
         }
