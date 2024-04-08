@@ -46,10 +46,10 @@ import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetViewModel
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.JsSigner
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
@@ -78,7 +78,11 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     var step by mutableStateOf(Step.Input)
         private set
+    // todo
     private var chain: Chain by mutableStateOf(Chain.Polygon)
+    private var tipGas: TipGas? by mutableStateOf(null)
+    private var asset: Token? by mutableStateOf(null)
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,7 +93,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(showPin = { showPin() })
+                BrowserPage(tipGas, asset, showPin = { showPin() })
             }
 
             doOnPreDraw {
@@ -159,22 +163,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         tickerFlow(15.seconds)
             .onEach {
-                val asset = viewModel.refreshAsset(assetId)
+                asset = viewModel.refreshAsset(assetId)
                 try {
                     val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
                     val gasLimit = viewModel.ethGasLimit(chain, transaction.toTransaction()) ?: return@onEach
                     val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
                     tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
-                    // Todo
-                    Timber.e(GsonHelper.customGson.toJson(tipGas))
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
             }
             .launchIn(lifecycleScope)
     }
-
-    private var tipGas: TipGas? = null
 
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {

@@ -3,16 +3,16 @@ package one.mixin.android.web3
 import android.content.Context
 import android.text.TextUtils
 import androidx.annotation.RawRes
+import java.io.IOException
+import java.util.Locale
+import java.util.regex.Pattern
+import kotlin.math.min
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.Response
 import one.mixin.android.R
 import one.mixin.android.tip.wc.internal.Chain
 import timber.log.Timber
-import java.io.IOException
-import java.util.Locale
-import java.util.regex.Pattern
-import kotlin.math.min
 
 class JsInjectorClient(context: Context?) {
     private var chainId: Int = 0
@@ -25,7 +25,7 @@ class JsInjectorClient(context: Context?) {
 
     fun setChainId(chainId: Int) {
         this.chainId = chainId
-        this.rpcUrl = when(chainId){
+        this.rpcUrl = when (chainId) {
             Chain.Ethereum.chainReference -> Chain.Ethereum.rpcUrl
             Chain.Polygon.chainReference -> Chain.Polygon.rpcUrl
             Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain.rpcUrl
@@ -36,7 +36,7 @@ class JsInjectorClient(context: Context?) {
     // Set ChainId for TokenScript inject
     fun setTSChainId(chainId: Int) {
         this.chainId = chainId
-        this.rpcUrl = when(chainId){
+        this.rpcUrl = when (chainId) {
             Chain.Ethereum.chainReference -> Chain.Ethereum.rpcUrl
             Chain.Polygon.chainReference -> Chain.Polygon.rpcUrl
             Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain.rpcUrl
@@ -91,7 +91,7 @@ class JsInjectorClient(context: Context?) {
             index = body.indexOf("</head")
         }
         if (index < 0) {
-            index = 0 //just wrap whole view
+            index = 0 // just wrap whole view
         }
         return index
     }
@@ -105,7 +105,7 @@ class JsInjectorClient(context: Context?) {
     }
 
     private fun buildRequest(url: String, headers: Map<String, String>): Request? {
-        val httpUrl = url.toHttpUrlOrNull()?: return null
+        val httpUrl = url.toHttpUrlOrNull() ?: return null
         val requestBuilder: Request.Builder = Request.Builder()
             .get()
             .url(httpUrl)
@@ -116,7 +116,7 @@ class JsInjectorClient(context: Context?) {
         return requestBuilder.build()
     }
 
-    private fun loadInitJs(context: Context, address:String, chain:Chain): String {
+    private fun loadInitJs(context: Context, address: String, chain: Chain): String {
         val initSrc = loadFile(context, R.raw.init)
         return String.format(initSrc, address, chain.rpcUrl, chain.chainReference)
     }
@@ -124,8 +124,8 @@ class JsInjectorClient(context: Context?) {
     fun injectStyleAndWrap(view: String, style: String?): String {
         var style = style
         if (style == null) style = ""
-        //String injectHeader = "<head><meta name=\"viewport\" content=\"width=device-width, user-scalable=false\" /></head>";
-        val injectHeader = "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no\" />" //iOS uses these header settings
+        // String injectHeader = "<head><meta name=\"viewport\" content=\"width=device-width, user-scalable=false\" /></head>";
+        val injectHeader = "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no\" />" // iOS uses these header settings
         style = """
              <style type="text/css">
              $style.token-card {

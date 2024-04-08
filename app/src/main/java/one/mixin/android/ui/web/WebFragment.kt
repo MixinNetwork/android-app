@@ -1725,7 +1725,8 @@ class WebFragment : BaseFragment() {
             payload: String?,
         ) {
             Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
-            if (value != null && payload != null && address != null) {
+            val address = JsSigner.address
+            if (value != null && payload != null) {
                 onBrowserTransaction(WCEthereumTransaction(address, recipient, null, gasPrice, null, null, null, gasLimit, value, payload), callbackId)
             } else {
                 Timber.e("Illegal Argument")

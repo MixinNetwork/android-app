@@ -522,7 +522,7 @@ private fun Hint(hint: Hint) {
 }
 
 @Composable
-private fun FeeInfo(
+fun FeeInfo(
     amount: String,
     fee: BigDecimal,
 ) {
