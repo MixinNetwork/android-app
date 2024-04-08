@@ -845,10 +845,10 @@ class WebFragment : BaseFragment() {
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(Web3Interface(
-                // web3
-                JsSigner.address,
                 onWalletActionSuccessful = { e ->
-                    webView.evaluateJavascript(e, Timber::d)
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript(e, Timber::d)
+                    }
                 },
                 onBrowserTransaction = {e,id->
                     lifecycleScope.launch {
@@ -1712,7 +1712,6 @@ class WebFragment : BaseFragment() {
         }
     }
     class Web3Interface(
-        val address: String?,
         val onWalletActionSuccessful: (String) -> Unit,
         val onBrowserTransaction: (WCEthereumTransaction, Int) -> Unit,
     ) {
@@ -1747,7 +1746,8 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun requestAccounts(callbackId: Int) {
-            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"$address\"]")
+            Timber.e("requestAccounts $callbackId")
+            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"${JsSigner.address}\"]")
             onWalletActionSuccessful(expr)
         }
 
@@ -1771,7 +1771,7 @@ class WebFragment : BaseFragment() {
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = JsSigner.switchChain(switchChain)
             if (result.isSuccess) {
-                onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, GsonHelper.customGson.toJson(switchChain)))
+                onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, null))
             } else {
                 onWalletActionSuccessful(String.format(JS_PROTOCOL_ON_FAILURE, callbackId))
             }
