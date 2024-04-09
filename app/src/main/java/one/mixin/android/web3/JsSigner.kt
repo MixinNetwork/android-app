@@ -8,11 +8,14 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.Sign
+import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
@@ -126,6 +129,26 @@ object JsSigner {
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         return hexMessage
+    }
+
+    fun signMessage(
+        priv: ByteArray,
+        message: String,
+        type:Int = 0
+    ): String {
+        val keyPair = ECKeyPair.create(priv)
+        val signature =
+            if (type == 1) {
+                val encoder = StructuredDataEncoder(message)
+                Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+            } else {
+                Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
+            }
+        val b = ByteArray(65)
+        System.arraycopy(signature.r, 0, b, 0, 32)
+        System.arraycopy(signature.s, 0, b, 32, 32)
+        System.arraycopy(signature.v, 0, b, 64, 1)
+        return Numeric.toHexString(b)
     }
 
     private fun throwError(

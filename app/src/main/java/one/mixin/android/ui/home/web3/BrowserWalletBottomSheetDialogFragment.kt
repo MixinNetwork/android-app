@@ -60,11 +60,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val TAG = "BrowserWalletBottomSheetDialogFragment"
 
         const val ARGS_TRANSACTION = "args_transaction"
+        const val ARGS_DATA = "args_data"
 
         fun newInstance(
             wcEthereumTransaction: WCEthereumTransaction
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, wcEthereumTransaction)
+        }
+
+        fun newInstance(
+            data: String
+        ) = BrowserWalletBottomSheetDialogFragment().withArgs {
+            putString(ARGS_DATA, data)
         }
     }
 
@@ -74,7 +81,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
 
-    private val transaction: WCEthereumTransaction by lazy { requireArguments().getParcelableCompat(ARGS_TRANSACTION, WCEthereumTransaction::class.java)!! }
+    private val transaction: WCEthereumTransaction? by lazy { requireArguments().getParcelableCompat(ARGS_TRANSACTION, WCEthereumTransaction::class.java) }
+    private val data: String? by lazy { requireArguments().getString(ARGS_DATA) }
 
     var step by mutableStateOf(Step.Input)
         private set
@@ -82,7 +90,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var chain: Chain by mutableStateOf(Chain.Polygon)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,7 +100,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(tipGas, asset, showPin = { showPin() })
+                BrowserPage(tipGas, asset, data, showPin = { showPin() })
             }
 
             doOnPreDraw {
@@ -156,11 +163,11 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
         val assetId = walletConnectChainIdMap[chain.symbol]
+        val transaction = this.transaction ?: return
         if (assetId == null) {
             Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
             return
         }
-
         tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
@@ -178,14 +185,25 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
-            val priv = viewModel.getTipPriv(requireContext(), pin)
-            val hex = JsSigner.ethSignTransaction(priv, Chain.Polygon, transaction, tipGas!!)
-            val hash = JsSigner.sendTransaction(Chain.Polygon, hex)
-            onDone?.invoke(hash)
+            try {
+                if (transaction != null) {
+                    val priv = viewModel.getTipPriv(requireContext(), pin)
+                    val hex = JsSigner.ethSignTransaction(priv, Chain.Polygon, requireNotNull(transaction), tipGas!!)
+                    val hash = JsSigner.sendTransaction(Chain.Polygon, hex)
+                    onDone?.invoke(hash)
+                } else if (data != null) {
+                    val priv = viewModel.getTipPriv(requireContext(), pin)
+                    val hex = JsSigner.signMessage(priv, requireNotNull(data))
+                    onDone?.invoke(hex)
+                }
+            } catch (e: Exception) {
+                handleException(e)
+            }
             dismiss()
         }
 
     private fun handleException(e: Throwable) {
+        Timber.e(e)
         reportException("$TAG handleException", e)
         step = Step.Error
     }
@@ -251,6 +269,27 @@ fun showBrowserBottomSheetDialogFragment(
     onDone: ((String?) -> Unit)? = null,
 ) {
     val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(wcEthereumTransaction)
+    onDone?.let {
+        wcBottomSheet.setOnDone(onDone)
+    }
+    onReject?.let {
+        // wcBottomSheet.setOnReject(it)
+    }
+    wcBottomSheet.showNow(
+        fragmentActivity.supportFragmentManager,
+        BrowserWalletBottomSheetDialogFragment.TAG,
+    )
+}
+
+fun showBrowserBottomSheetDialogFragment(
+    tip: Tip,
+    data: String,
+    callbackId: Int,
+    fragmentActivity: FragmentActivity,
+    onReject: (() -> Unit)? = null,
+    onDone: ((String?) -> Unit)? = null,
+) {
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(data)
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)
     }

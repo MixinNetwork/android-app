@@ -29,7 +29,7 @@ import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal
 
 @Composable
-fun BrowserPage(tipGas: TipGas?, asset: Token?, showPin: () -> Unit) {
+fun BrowserPage(tipGas: TipGas?, asset: Token?, data:String?, showPin: () -> Unit) {
     MixinAppTheme {
         Column(
             modifier =
@@ -52,7 +52,7 @@ fun BrowserPage(tipGas: TipGas?, asset: Token?, showPin: () -> Unit) {
                 )
             }
             Box(modifier = Modifier.height(20.dp))
-            if (tipGas == null) {
+            if (tipGas == null && data == null) {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .size(20.dp)
@@ -72,6 +72,7 @@ fun BrowserPage(tipGas: TipGas?, asset: Token?, showPin: () -> Unit) {
                     Text(text = stringResource(id = R.string.Continue), color = Color.White)
                 }
             }
+            Box(modifier = Modifier.height(48.dp))
         }
     }
 }

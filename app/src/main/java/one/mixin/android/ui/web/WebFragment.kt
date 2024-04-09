@@ -60,7 +60,6 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.max
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -73,6 +72,7 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_FAILURE
+import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_SUCCESSFUL
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -162,6 +162,7 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.jvm.internal.Reflection.function
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -850,7 +851,7 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript(e, Timber::d)
                     }
                 },
-                onBrowserTransaction = {e,id->
+                onBrowserTransaction = { e, id ->
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
                             tip,
@@ -864,6 +865,30 @@ class WebFragment : BaseFragment() {
                             },
                             onDone = { hash ->
                                 lifecycleScope.launch {
+                                    val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, id, hash).apply {
+                                        Timber.e("callback $this")
+                                    }
+                                    webView.evaluateJavascript(callback) {}
+                                }
+                            },
+                        )
+                    }
+                },
+                onBrowserSignPersonalMessage = { data, id ->
+                    lifecycleScope.launch {
+                        showBrowserBottomSheetDialogFragment(
+                            tip,
+                            data,
+                            id,
+                            requireActivity(),
+                            onReject = {
+                                lifecycleScope.launch {
+                                    // webView.evaluateJavascript("$callbackFunction('')") {}
+                                }
+                            },
+                            onDone = { hash ->
+                                lifecycleScope.launch {
+                                    Timber.e("hash ${hash}")
                                     val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, hash)
                                     webView.evaluateJavascript(callback) {}
                                 }
@@ -1714,6 +1739,7 @@ class WebFragment : BaseFragment() {
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
         val onBrowserTransaction: (WCEthereumTransaction, Int) -> Unit,
+        val onBrowserSignPersonalMessage: (String, Int) -> Unit,
     ) {
         @JavascriptInterface
         fun signTransaction(
@@ -1736,13 +1762,12 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun signMessage(callbackId: Int, data: String) {
             // todo sign message
-            Timber.e("signMessage $callbackId")
+            Timber.e("signMessage $callbackId $data")
         }
 
         @JavascriptInterface
         fun signPersonalMessage(callbackId: Int, data: String) {
-            // todo personal message
-            Timber.e("signPersonalMessage $callbackId")
+            onBrowserSignPersonalMessage(data, callbackId)
         }
 
         @JavascriptInterface
