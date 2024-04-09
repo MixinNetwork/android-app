@@ -865,9 +865,7 @@ class WebFragment : BaseFragment() {
                             },
                             onDone = { hash ->
                                 lifecycleScope.launch {
-                                    val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, id, hash).apply {
-                                        Timber.e("callback $this")
-                                    }
+                                    val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, id, hash)
                                     webView.evaluateJavascript(callback) {}
                                 }
                             },
@@ -888,8 +886,8 @@ class WebFragment : BaseFragment() {
                             },
                             onDone = { hash ->
                                 lifecycleScope.launch {
-                                    Timber.e("hash ${hash}")
-                                    val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, hash)
+                                    val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, "\"$hash\"")
+                                    Timber.e("callback ${callback}")
                                     webView.evaluateJavascript(callback) {}
                                 }
                             },
