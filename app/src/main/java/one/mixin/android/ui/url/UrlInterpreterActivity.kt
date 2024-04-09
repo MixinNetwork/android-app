@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
@@ -20,6 +21,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.OldTransferFragment
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.web3.convertWcLink
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -78,15 +80,17 @@ class UrlInterpreterActivity : BaseActivity() {
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        } else if (data.scheme == WC) {
-            if (WalletConnect.isEnabled()) {
+        } else if (data.toString().startsWith(Constants.Scheme.HTTPS_MIXIN_WC) || data.toString().startsWith(Constants.Scheme.MIXIN_WC)
+            || data.toString().startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX)) {
+            val wcUri = convertWcLink(data.toString())
+            if (wcUri != null && WalletConnect.isEnabled()) {
                 if (MixinApplication.get().topActivity is WebActivity) {
-                    val url = data.toString()
-                    WalletConnect.connect(url)
+                    WalletConnect.connect(wcUri.toString())
                 } else {
                     startActivity(
                         Intent(this, MainActivity::class.java).apply {
-                            putExtra(MainActivity.WALLET_CONNECT, data.toString())
+                            putExtra(MainActivity.WALLET_CONNECT, wcUri.toString())
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
                         },
                     )
                 }
