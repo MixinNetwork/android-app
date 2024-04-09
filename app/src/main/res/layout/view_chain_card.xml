@@ -27,16 +27,16 @@
 
             <TextView
                 android:id="@+id/title"
-                android:textSize="18sp"
-                android:textColor="?attr/text_primary"
+                android:textSize="14sp"
+                android:textColor="?attr/text_assist"
                 android:layout_width="wrap_content"
                 android:textFontWeight="500"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/sub_title"
-                android:textSize="14sp"
-                android:textColor="?attr/text_assist"
+                android:textSize="16sp"
+                android:textColor="?attr/text_primary"
                 android:layout_width="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="16dp"
