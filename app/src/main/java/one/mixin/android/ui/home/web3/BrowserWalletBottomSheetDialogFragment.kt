@@ -183,8 +183,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getTipPriv(requireContext(), pin)
-                    val hex = JsSigner.ethSignTransaction(priv, JsSigner.currentChain, transaction, tipGas!!)
-                    val hash = JsSigner.sendTransaction(JsSigner.currentChain, hex)
+                    val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!)
+                    val hash = JsSigner.sendTransaction(hex)
                     val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hash)
                     onDone?.invoke(callback)
                 } else if (signMessage.type == JsSignMessage.TYPE_MSSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
