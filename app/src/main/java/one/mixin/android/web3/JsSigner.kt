@@ -1,5 +1,6 @@
 package one.mixin.android.web3
 
+import JsSignMessage
 import android.util.LruCache
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -63,7 +64,7 @@ object JsSigner {
                 Result.success(Chain.BinanceSmartChain.name)
             }
             else -> {
-                Result.success("")
+                Result.failure(IllegalArgumentException("No support"))
             }
         }
     }
@@ -134,11 +135,11 @@ object JsSigner {
     fun signMessage(
         priv: ByteArray,
         message: String,
-        type:Int = 0
+        type: Int,
     ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
-            if (type == 1) {
+            if (type == JsSignMessage.TYPE_MSSAGE) {
                 val encoder = StructuredDataEncoder(message)
                 Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
             } else {

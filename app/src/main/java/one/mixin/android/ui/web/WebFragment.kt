@@ -1,5 +1,6 @@
 package one.mixin.android.ui.web
 
+import JsSignMessage
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -70,9 +71,9 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
+import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_CANCELLED
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_FAILURE
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_SUCCESSFUL
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -851,49 +852,25 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript(e, Timber::d)
                     }
                 },
-                onBrowserTransaction = { e, id ->
+                onBrowserSign = { message->
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
                             tip,
-                            e,
-                            id,
+                            message,
                             requireActivity(),
                             onReject = {
                                 lifecycleScope.launch {
-                                    // webView.evaluateJavascript("$callbackFunction('')") {}
+                                    webView.evaluateJavascript(JS_PROTOCOL_CANCELLED) {}
                                 }
                             },
-                            onDone = { hash ->
+                            onDone = { callback ->
                                 lifecycleScope.launch {
-                                    val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, id, hash)
-                                    webView.evaluateJavascript(callback) {}
+                                    if (callback != null) webView.evaluateJavascript(callback) {}
                                 }
                             },
                         )
                     }
                 },
-                onBrowserSignPersonalMessage = { data, id ->
-                    lifecycleScope.launch {
-                        showBrowserBottomSheetDialogFragment(
-                            tip,
-                            data,
-                            id,
-                            requireActivity(),
-                            onReject = {
-                                lifecycleScope.launch {
-                                    // webView.evaluateJavascript("$callbackFunction('')") {}
-                                }
-                            },
-                            onDone = { hash ->
-                                lifecycleScope.launch {
-                                    val callback = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, id, "\"$hash\"")
-                                    Timber.e("callback ${callback}")
-                                    webView.evaluateJavascript(callback) {}
-                                }
-                            },
-                        )
-                    }
-                }
             ), "mixin")
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
@@ -1736,22 +1713,21 @@ class WebFragment : BaseFragment() {
     }
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
-        val onBrowserTransaction: (WCEthereumTransaction, Int) -> Unit,
-        val onBrowserSignPersonalMessage: (String, Int) -> Unit,
+        val onBrowserSign: (JsSignMessage) -> Unit,
     ) {
         @JavascriptInterface
         fun signTransaction(
-            callbackId: Int, recipient: String,
+            callbackId: Int,
+            recipient: String,
             value: String?,
             nonce: String?,
             gasLimit: String?,
             gasPrice: String?,
             payload: String?,
         ) {
-            Timber.e("signTransaction $callbackId recipient $recipient value $value nonce $nonce gasLimit $gasLimit gasPrice $gasPrice payload $payload")
             val address = JsSigner.address
             if (value != null && payload != null) {
-                onBrowserTransaction(WCEthereumTransaction(address, recipient, null, gasPrice, null, null, null, gasLimit, value, payload), callbackId)
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = WCEthereumTransaction(address, recipient, null, gasPrice, null, null, null, gasLimit, value, payload)))
             } else {
                 Timber.e("Illegal Argument")
             }
@@ -1759,13 +1735,12 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun signMessage(callbackId: Int, data: String) {
-            // todo sign message
             Timber.e("signMessage $callbackId $data")
         }
 
         @JavascriptInterface
         fun signPersonalMessage(callbackId: Int, data: String) {
-            onBrowserSignPersonalMessage(data, callbackId)
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data))
         }
 
         @JavascriptInterface
@@ -1777,27 +1752,27 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun signTypedMessage(callbackId: Int, data: String) {
-            Timber.e("signTypedMessage $callbackId")
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MSSAGE, data = data))
         }
 
         @JavascriptInterface
         fun ethCall(callbackId: Int, recipient: String) {
-            Timber.e("ethCall $callbackId")
+            Timber.e("ethCall $callbackId $recipient")
         }
 
         @JavascriptInterface
         fun walletAddEthereumChain(callbackId: Int, msgParams: String) {
+            Timber.e("walletAddEthereumChain $callbackId $msgParams")
         }
 
         @JavascriptInterface
         fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
-            Timber.e("walletSwitchEthereumChain $msgParams")
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = JsSigner.switchChain(switchChain)
             if (result.isSuccess) {
                 onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, null))
             } else {
-                onWalletActionSuccessful(String.format(JS_PROTOCOL_ON_FAILURE, callbackId))
+                onWalletActionSuccessful(String.format(JS_PROTOCOL_ON_FAILURE, callbackId, result.toString()))
             }
         }
     }
