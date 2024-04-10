@@ -115,6 +115,10 @@ object Constants {
         const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
 
+        // web3
+        const val HTTPS_MIXIN_WC = "https://mixin.one/wc"
+        const val MIXIN_WC = "mixin://wc"
+
         // deprecated
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
         const val HTTPS_CODES = "https://mixin.one/codes"

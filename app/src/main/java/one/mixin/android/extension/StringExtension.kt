@@ -320,7 +320,7 @@ fun UUID.toByteArray(): ByteArray {
 }
 
 fun String.formatPublicKey(): String {
-    if (this.length <= 14) return this
+    if (this.length <= 50) return this
     return substring(0, 8) + "..." + substring(length - 6, length)
 }
 

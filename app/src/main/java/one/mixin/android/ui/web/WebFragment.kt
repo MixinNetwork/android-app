@@ -153,6 +153,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.web3.JsInjectorClient
 import one.mixin.android.web3.JsSigner
 import one.mixin.android.web3.SwitchChain
+import one.mixin.android.web3.convertWcLink
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -163,7 +164,6 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlin.jvm.internal.Reflection.function
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -1624,18 +1624,14 @@ class WebFragment : BaseFragment() {
                 return super.shouldOverrideUrlLoading(view, request)
             }
             val url = request.url.toString()
-            if (url.startsWith("WC:", true)) {
-                val uri =
-                    when {
-                        url.contains("wc://") -> url
-                        url.contains("wc:/") -> url.replace("wc:/", "wc://")
-                        else -> url.replace("wc:", "wc://")
-                    }.toUri()
 
-                val sumKey = uri.getQueryParameter("symKey")
-                if (sumKey != null) {
+            if (url.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
+                url.startsWith(Constants.Scheme.MIXIN_WC) ||
+                url.startsWith(Constants.Scheme.HTTPS_MIXIN_WC)) {
+                val wcUrl = convertWcLink(url)
+                if (wcUrl != null) {
                     // handle wallet connect url
-                    UrlInterpreterActivity.show(view.context, uri)
+                    UrlInterpreterActivity.show(view.context, wcUrl)
                 }
                 // ignore wallet connect data url
                 return true
