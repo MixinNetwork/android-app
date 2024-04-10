@@ -42,6 +42,7 @@ import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetViewModel
@@ -63,7 +64,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_MESSAGE = "args_message"
 
         fun newInstance(
-            jsSignMessage: JsSignMessage
+            jsSignMessage: JsSignMessage,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
         }
@@ -92,7 +93,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data, errorInfo, showPin = { showPin() }, onDismissRequest = { dismiss() })
+                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data, errorInfo,
+                    onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
+                    showPin = { showPin() }, onDismissRequest = { dismiss() })
             }
 
             doOnPreDraw {
@@ -271,7 +274,7 @@ fun showBrowserBottomSheetDialogFragment(
         wcBottomSheet.setOnDone(onDone)
     }
     onReject?.let {
-        // todo
+        wcBottomSheet.setOnReject(onReject)
     }
     wcBottomSheet.showNow(
         fragmentActivity.supportFragmentManager,

@@ -29,11 +29,12 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
+import one.mixin.android.ui.home.web3.components.MessagePreview
+import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
-import one.mixin.android.ui.tip.wc.sessionrequest.Transaction
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.JsSignMessage
@@ -42,7 +43,7 @@ import org.web3j.utils.Numeric
 import java.math.BigDecimal
 
 @Composable
-fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?, errorInfo: String?, showPin: () -> Unit, onDismissRequest: () -> Unit) {
+fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?, errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit) {
     MixinAppTheme {
         Column(
             modifier =
@@ -115,11 +116,11 @@ fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBot
                     .background(MixinAppTheme.colors.backgroundWindow),
             )
             if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE) {
-                one.mixin.android.ui.tip.wc.sessionrequest.Message(content = data?:"") {
-                    // onPreviewMessage.invoke(it)
+                MessagePreview(content = data?:"") {
+                    onPreviewMessage.invoke(it)
                 }
             } else {
-                Transaction(
+                TransactionPreview(
                     balance =
                     Convert.fromWei(
                         Numeric.toBigInt(transaction?.value ?: "0",).toBigDecimal(),
