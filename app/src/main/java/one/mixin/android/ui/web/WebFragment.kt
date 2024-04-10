@@ -159,6 +159,7 @@ import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
+import org.json.JSONObject
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
@@ -1748,7 +1749,8 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun signTypedMessage(callbackId: Int, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MSSAGE, data = data))
+            val jsonObject = JSONObject(data)
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MSSAGE, data = jsonObject.getString("data")))
         }
 
         @JavascriptInterface
