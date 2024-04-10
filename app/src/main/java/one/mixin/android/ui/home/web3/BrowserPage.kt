@@ -1,9 +1,9 @@
 package one.mixin.android.ui.home.web3
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,19 +19,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
+import one.mixin.android.ui.tip.wc.sessionrequest.Transaction
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.JsSignMessage
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import java.math.BigDecimal
 
 @Composable
-fun BrowserPage(step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, data:String?, errorInfo: String?, showPin: () -> Unit, onDismissRequest: () -> Unit,) {
+fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?, errorInfo: String?, showPin: () -> Unit, onDismissRequest: () -> Unit) {
     MixinAppTheme {
         Column(
             modifier =
@@ -40,6 +51,84 @@ fun BrowserPage(step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGa
                 .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Box(modifier = Modifier.height(32.dp))
+
+            Text(
+                text =
+                stringResource(
+                    id =
+                    if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE) {
+                        when (step) {
+                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_message_request
+                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
+                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
+                            else -> R.string.web3_message_request
+                        }
+                    } else {
+                        when (step) {
+                            WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
+                            WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
+                            WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                            WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
+                            else -> R.string.web3_signing_confirmation
+                        }
+                    },
+                ),
+                style =
+                TextStyle(
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600,
+                ),
+            )
+            Box(modifier = Modifier.height(8.dp))
+            Text(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                text = errorInfo ?: stringResource(
+                    id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                        if (type == JsSignMessage.TYPE_TRANSACTION) {
+                            R.string.web3_signing_transaction_success
+                        } else {
+                            R.string.web3_signing_message_success
+                        }
+                    } else {
+                        R.string.web3_ensure_trust
+                    }
+                ),
+                textAlign = TextAlign.Center,
+                style =
+                TextStyle(
+                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W400,
+                ),
+                maxLines = 3,
+                minLines = 3,
+            )
+            Box(modifier = Modifier.height(10.dp))
+            Box(
+                modifier =
+                Modifier
+                    .height(10.dp)
+                    .fillMaxWidth()
+                    .background(MixinAppTheme.colors.backgroundWindow),
+            )
+            if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE) {
+                one.mixin.android.ui.tip.wc.sessionrequest.Message(content = data?:"") {
+                    // onPreviewMessage.invoke(it)
+                }
+            } else {
+                Transaction(
+                    balance =
+                    Convert.fromWei(
+                        Numeric.toBigInt(transaction?.value ?: "0",).toBigDecimal(),
+                        Convert.Unit.ETHER,
+                    ),
+                    chain,
+                    asset,
+                )
+            }
             Box(modifier = Modifier.height(20.dp))
             val fee = tipGas?.displayValue() ?: BigDecimal.ZERO
             if (fee == BigDecimal.ZERO) {
@@ -59,6 +148,13 @@ fun BrowserPage(step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGa
                     text = errorInfo
                 )
             }
+            // Todo
+            // Box(modifier = Modifier.height(20.dp))
+            // ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = "Todo", footer = "Todo")
+            Box(modifier = Modifier.height(20.dp))
+            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+            Box(modifier = Modifier.height(20.dp))
+            ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
             Box(modifier = Modifier.height(20.dp))
             if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading) {
                 CircularProgressIndicator(

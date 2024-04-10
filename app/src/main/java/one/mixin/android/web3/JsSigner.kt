@@ -1,6 +1,5 @@
 package one.mixin.android.web3
 
-import JsSignMessage
 import android.util.LruCache
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
@@ -137,7 +136,7 @@ object JsSigner {
     ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
-            if (type == JsSignMessage.TYPE_MSSAGE) {
+            if (type == JsSignMessage.TYPE_TYPED_MESSAGE) {
                 val encoder = StructuredDataEncoder(message)
                 Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
             } else {

@@ -347,7 +347,7 @@ fun SessionRequestPage(
 }
 
 @Composable
-private fun Transaction(
+fun Transaction(
     balance: BigDecimal,
     chain: Chain,
     asset: Token?,
@@ -408,7 +408,7 @@ private fun Transaction(
 }
 
 @Composable
-private fun Message(
+fun Message(
     content: String,
     onPreviewMessage: (String) -> Unit,
 ) {

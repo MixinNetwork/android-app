@@ -1,3 +1,5 @@
+package one.mixin.android.web3
+
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -10,8 +12,8 @@ class JsSignMessage(
     val data: String? = null,
 ) : Parcelable {
     companion object {
-        const val TYPE_MSSAGE = 0
-        const val TYPE_PERSONAL_MESSAGE = 1
+        const val TYPE_TYPED_MESSAGE = 0
+        const val TYPE_MESSAGE = 1
         const val TYPE_TRANSACTION = 2
     }
 }

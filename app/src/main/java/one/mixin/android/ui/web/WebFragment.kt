@@ -1,6 +1,6 @@
 package one.mixin.android.ui.web
 
-import JsSignMessage
+import one.mixin.android.web3.JsSignMessage
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -1732,12 +1732,13 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun signMessage(callbackId: Int, data: String) {
-            Timber.e("signMessage $callbackId $data")
+            // todo check
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
         @JavascriptInterface
         fun signPersonalMessage(callbackId: Int, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
         @JavascriptInterface
@@ -1750,11 +1751,12 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun signTypedMessage(callbackId: Int, data: String) {
             val jsonObject = JSONObject(data)
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MSSAGE, data = jsonObject.getString("data")))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = jsonObject.getString("data")))
         }
 
         @JavascriptInterface
         fun ethCall(callbackId: Int, recipient: String) {
+            // do nothing
             Timber.e("ethCall $callbackId $recipient")
         }
 

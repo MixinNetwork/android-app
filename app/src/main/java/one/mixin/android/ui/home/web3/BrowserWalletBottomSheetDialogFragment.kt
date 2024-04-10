@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3
 
-import JsSignMessage
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
@@ -27,8 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
 import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_SUCCESSFUL
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
@@ -41,7 +38,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
-import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -54,6 +50,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.JsSignMessage
 import one.mixin.android.web3.JsSigner
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
@@ -95,7 +92,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(step, tipGas, asset, signMessage.data, errorInfo, showPin = { showPin() }, onDismissRequest = { dismiss() })
+                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data, errorInfo, showPin = { showPin() }, onDismissRequest = { dismiss() })
             }
 
             doOnPreDraw {
@@ -190,7 +187,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val hash = JsSigner.sendTransaction(hex)
                     val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hash)
                     onDone?.invoke(callback)
-                } else if (signMessage.type == JsSignMessage.TYPE_MSSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
+                } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE) {
                     val priv = viewModel.getTipPriv(requireContext(), pin)
                     val hex = JsSigner.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
                     val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hex)
