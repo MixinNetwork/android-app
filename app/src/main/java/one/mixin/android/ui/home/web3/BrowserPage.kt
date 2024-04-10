@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -23,13 +24,14 @@ import one.mixin.android.R
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal
 
 @Composable
-fun BrowserPage(tipGas: TipGas?, asset: Token?, data:String?, showPin: () -> Unit) {
+fun BrowserPage(step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, data:String?, errorInfo: String?, showPin: () -> Unit, onDismissRequest: () -> Unit,) {
     MixinAppTheme {
         Column(
             modifier =
@@ -51,14 +53,32 @@ fun BrowserPage(tipGas: TipGas?, asset: Token?, data:String?, showPin: () -> Uni
                     fee = fee.multiply(asset.priceUSD()),
                 )
             }
+            if (errorInfo != null) {
+                Text(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    text = errorInfo
+                )
+            }
             Box(modifier = Modifier.height(20.dp))
-            if (tipGas == null && data == null) {
+            if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading) {
                 CircularProgressIndicator(
                     modifier = Modifier
-                        .size(20.dp)
+                        .size(40.dp)
                         .align(Alignment.CenterHorizontally),
                     color = MixinAppTheme.colors.accent,
                 )
+            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error){
+                Button(
+                    onClick = onDismissRequest,
+                    colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                ) {
+                    Text(text = stringResource(id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) R.string.Done else R.string.Got_it), color = Color.White)
+                }
             } else {
                 Button(
                     onClick = showPin,

@@ -2,14 +2,11 @@ package one.mixin.android.web3
 
 import JsSignMessage
 import android.util.LruCache
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
-import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import org.web3j.crypto.Credentials
@@ -43,7 +40,7 @@ object JsSigner {
         }
     }
 
-    var address = ""
+    lateinit var address: String
         private set
     var currentChain: Chain = Chain.Polygon // todo
         private set
@@ -79,7 +76,6 @@ object JsSigner {
         if (tx.hasError()) {
             val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
             Timber.d("$TAG transactionHash is null, $msg")
-            // todo
             throw WalletConnectException(tx.error.code, tx.error.message)
         }
         val transactionHash = tx.transactionHash

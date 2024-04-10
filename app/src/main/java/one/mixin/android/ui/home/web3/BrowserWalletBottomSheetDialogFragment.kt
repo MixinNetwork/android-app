@@ -82,6 +82,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     var step by mutableStateOf(Step.Input)
         private set
+    private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
 
@@ -94,7 +95,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(tipGas, asset, signMessage.data, showPin = { showPin() })
+                BrowserPage(step, tipGas, asset, signMessage.data, errorInfo, showPin = { showPin() }, onDismissRequest = { dismiss() })
             }
 
             doOnPreDraw {
@@ -180,10 +181,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                step = Step.Loading
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getTipPriv(requireContext(), pin)
                     val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!)
+                    step = Step.Sending
                     val hash = JsSigner.sendTransaction(hex)
                     val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hash)
                     onDone?.invoke(callback)
@@ -193,6 +196,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hex)
                     onDone?.invoke(callback)
                 }
+                step = Step.Done
             } catch (e: Exception) {
                 handleException(e)
             }
@@ -201,6 +205,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun handleException(e: Throwable) {
         Timber.e(e)
+        errorInfo = e.message
         reportException("$TAG handleException", e)
         step = Step.Error
     }
