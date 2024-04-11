@@ -299,7 +299,7 @@ class MainActivity : BlazeBaseActivity() {
         RxBus.listen(TipEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { e ->
-                handleTipEvent(e, deviceId)
+//                handleTipEvent(e, deviceId)
             }
         RxBus.listen(WCEvent::class.java)
             .autoDispose(destroyScope)
@@ -325,21 +325,21 @@ class MainActivity : BlazeBaseActivity() {
         } else if (Session.getTipPub().isNullOrBlank()) {
             TipActivity.show(this, TipType.Upgrade, shouldWatch = true)
         } else {
-            if (Session.hasSafe()) {
-                jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
-                if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
-                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                        onDismissCallback = { success ->
-                            if (success) {
-                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                            }
-                        }
-                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
-                }
-            } else {
-                CheckRegisterBottomSheetDialogFragment.newInstance()
-                    .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
-            }
+//            if (Session.hasSafe()) {
+//                jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+//                if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+//                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+//                        onDismissCallback = { success ->
+//                            if (success) {
+//                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+//                            }
+//                        }
+//                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+//                }
+//            } else {
+//                CheckRegisterBottomSheetDialogFragment.newInstance()
+//                    .showNow(supportFragmentManager, CheckRegisterBottomSheetDialogFragment.TAG)
+//            }
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
