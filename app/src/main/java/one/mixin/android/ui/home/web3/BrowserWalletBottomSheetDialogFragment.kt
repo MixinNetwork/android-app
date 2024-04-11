@@ -27,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_SUCCESSFUL
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
@@ -202,13 +201,11 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!)
                     step = Step.Sending
                     val hash = JsSigner.sendTransaction(hex)
-                    val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hash)
-                    onDone?.invoke(callback)
+                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE) {
                     val priv = viewModel.getTipPriv(requireContext(), pin)
                     val hex = JsSigner.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
-                    val callback = String.format(JS_PROTOCOL_ON_SUCCESSFUL, signMessage.callbackId, hex)
-                    onDone?.invoke(callback)
+                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
                 }
                 step = Step.Done
             } catch (e: Exception) {

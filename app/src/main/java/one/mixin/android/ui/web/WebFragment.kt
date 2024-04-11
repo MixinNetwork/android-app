@@ -60,6 +60,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.trust.web3.demo.DAppMethod
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -70,9 +71,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_CANCELLED
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_EXPR_ON_SUCCESSFUL
-import one.mixin.android.Constants.Web3JSProtocol.JS_PROTOCOL_ON_FAILURE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -867,7 +865,8 @@ class WebFragment : BaseFragment() {
                             requireActivity(),
                             onReject = {
                                 lifecycleScope.launch {
-                                    webView.evaluateJavascript(JS_PROTOCOL_CANCELLED) {}
+                                    // todo
+                                    // webView.evaluateJavascript(JS_PROTOCOL_CANCELLED) {}
                                 }
                             },
                             onDone = { callback ->
@@ -878,7 +877,7 @@ class WebFragment : BaseFragment() {
                         )
                     }
                 },
-            ), "mixin")
+            ), "_tw_")
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -1586,7 +1585,7 @@ class WebFragment : BaseFragment() {
         private var redirect = false
         private var loadingError = false
         private val jsInjectorClient by lazy {
-            JsInjectorClient(context)
+            JsInjectorClient()
         }
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -1595,8 +1594,8 @@ class WebFragment : BaseFragment() {
             view.clearCache(true)
             Timber.e("onPageStarted")
             if (!redirect) {
-                view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
-                view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.address, JsSigner.currentChain), null)
+                view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
+                view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.currentChain), null)
             }
             redirect = false
         }
@@ -1716,14 +1715,6 @@ class WebFragment : BaseFragment() {
             return true
         }
 
-        // fun getInitString(view: WebView): String {
-        //     return jsInjectorClient.initJs(view.context)
-        // }
-
-        fun getProviderString(view: WebView): String {
-            return jsInjectorClient.providerJs(view.context)
-        }
-
         interface OnPageFinishedListener {
             fun onPageFinished()
         }
@@ -1733,8 +1724,41 @@ class WebFragment : BaseFragment() {
         val onBrowserSign: (JsSignMessage) -> Unit,
     ) {
         @JavascriptInterface
-        fun signTransaction(
-            callbackId: Int,
+        fun postMessage(json: String) {
+            Timber.e("postMessage $json")
+            val obj = JSONObject(json)
+            val id = obj.getLong("id")
+            val method = DAppMethod.fromValue(obj.getString("name"))
+            val network = obj.getString("network")
+            when(method) {
+                DAppMethod.REQUESTACCOUNTS -> {
+                    onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");".apply { Timber.e(this) })
+                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);".apply { Timber.e(this) })
+                }
+
+                DAppMethod.SWITCHETHEREUMCHAIN -> {
+                    walletSwitchEthereumChain(id, obj.getJSONObject("object").toString())
+                }
+
+                DAppMethod.SIGNMESSAGE -> {
+                    signMessage(id, obj.getJSONObject("object").toString())
+                }
+
+                DAppMethod.SIGNPERSONALMESSAGE -> {
+                    signPersonalMessage(id, obj.getJSONObject("object").getString("data"))
+                }
+
+                DAppMethod.SIGNTYPEDMESSAGE -> {
+                    signTypedMessage(id, obj.getJSONObject("object").toString())
+                }
+                else -> {
+                    Timber.e("json $json")
+                }
+            }
+        }
+
+        private fun signTransaction(
+            callbackId: Long,
             recipient: String,
             value: String?,
             nonce: String?,
@@ -1750,50 +1774,44 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        @JavascriptInterface
-        fun signMessage(callbackId: Int, data: String) {
+        private fun signMessage(callbackId: Long, data: String) {
             // todo check
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
-        @JavascriptInterface
-        fun signPersonalMessage(callbackId: Int, data: String) {
+        private fun signPersonalMessage(callbackId: Long, data: String) {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
-        @JavascriptInterface
-        fun requestAccounts(callbackId: Int) {
-            Timber.e("requestAccounts $callbackId")
-            val expr = String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, "[\"${JsSigner.address}\"]")
-            onWalletActionSuccessful(expr)
-        }
-
-        @JavascriptInterface
-        fun signTypedMessage(callbackId: Int, data: String) {
+        private fun signTypedMessage(callbackId: Long, data: String) {
             val jsonObject = JSONObject(data)
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = jsonObject.getString("data")))
         }
 
-        @JavascriptInterface
-        fun ethCall(callbackId: Int, recipient: String) {
+        private fun ethCall(callbackId: Long, recipient: String) {
             // do nothing
             Timber.e("ethCall $callbackId $recipient")
         }
 
-        @JavascriptInterface
-        fun walletAddEthereumChain(callbackId: Int, msgParams: String) {
+        private fun walletAddEthereumChain(callbackId: Long, msgParams: String) {
             Timber.e("walletAddEthereumChain $callbackId $msgParams")
         }
 
-        @JavascriptInterface
-        fun walletSwitchEthereumChain(callbackId: Int, msgParams: String) {
+        private fun walletSwitchEthereumChain(callbackId: Long, msgParams: String) {
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = JsSigner.switchChain(switchChain)
-            if (result.isSuccess) {
-                onWalletActionSuccessful(String.format(JS_PROTOCOL_EXPR_ON_SUCCESSFUL, callbackId, null))
-            } else {
-                onWalletActionSuccessful(String.format(JS_PROTOCOL_ON_FAILURE, callbackId, result.toString()))
-            }
+            onWalletActionSuccessful("""
+                var config = {
+                ethereum: {
+                    address: "${JsSigner.address}",
+                    chainId: ${JsSigner.currentChain.chainReference},
+                    rpcUrl: "${JsSigner.currentChain.rpcUrl}"
+                }
+            };
+            mixinwallet.${JsSigner.currentNetwork}.setConfig(config);
+            """)
+            onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged($callbackId, ${JsSigner.currentChain.hexReference});")
+            onWalletActionSuccessful("window.${JsSigner.currentNetwork}.sendResponse($callbackId, null);")
         }
     }
 

@@ -41,8 +41,10 @@ object JsSigner {
 
     lateinit var address: String
         private set
-    var currentChain: Chain = Chain.Polygon // todo
+    var currentChain: Chain = Chain.Ethereum
         private set
+
+    var currentNetwork = "ethereum"
 
     suspend fun init() {
         address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")

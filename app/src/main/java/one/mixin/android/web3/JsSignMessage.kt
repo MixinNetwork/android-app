@@ -6,7 +6,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 
 @Parcelize
 class JsSignMessage(
-    val callbackId: Int,
+    val callbackId: Long,
     val type: Int,
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
