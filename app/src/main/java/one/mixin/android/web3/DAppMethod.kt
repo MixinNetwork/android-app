@@ -19,6 +19,7 @@ enum class DAppMethod {
                 "signPersonalMessage" -> SIGNPERSONALMESSAGE
                 "signMessage" -> SIGNMESSAGE
                 "signTypedMessage" -> SIGNTYPEDMESSAGE
+                "eth_signTypedData_v4" -> SIGNTYPEDMESSAGE
                 "ecRecover" -> ECRECOVER
                 "requestAccounts" -> REQUESTACCOUNTS
                 "watchAsset" -> WATCHASSET

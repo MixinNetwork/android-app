@@ -1592,7 +1592,7 @@ class WebFragment : BaseFragment() {
             super.onPageStarted(view, url, favicon)
             view ?: return
             view.clearCache(true)
-            Timber.e("onPageStarted")
+            Timber.e("onPageStarted ${JsSigner.currentChain.name}")
             if (!redirect) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
                 view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.currentChain), null)
@@ -1751,6 +1751,20 @@ class WebFragment : BaseFragment() {
                 DAppMethod.SIGNTYPEDMESSAGE -> {
                     signTypedMessage(id, obj.getJSONObject("object").toString())
                 }
+
+                DAppMethod.SIGNTRANSACTION -> {
+                    val transaction = obj.getJSONObject("object")
+                    val to = transaction.getString("to")
+                    val from = transaction.getString("from")
+                    val data = transaction.getString("data")
+                    val gas = transaction.getString("gas")
+                    val value = transaction.getString("value")
+                    val maxPriorityFeePerGas = transaction.getString("maxPriorityFeePerGas")
+                    val maxFeePerGas = transaction.getString("maxFeePerGas")
+
+                    signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                }
+
                 else -> {
                     Timber.e("json $json")
                 }
@@ -1759,19 +1773,9 @@ class WebFragment : BaseFragment() {
 
         private fun signTransaction(
             callbackId: Long,
-            recipient: String,
-            value: String?,
-            nonce: String?,
-            gasLimit: String?,
-            gasPrice: String?,
-            payload: String?,
+            wcEthereumTransaction: WCEthereumTransaction,
         ) {
-            val address = JsSigner.address
-            if (value != null && payload != null) {
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = WCEthereumTransaction(address, recipient, null, gasPrice, null, null, null, gasLimit, value, payload)))
-            } else {
-                Timber.e("Illegal Argument")
-            }
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
         }
 
         private fun signMessage(callbackId: Long, data: String) {
@@ -1784,8 +1788,7 @@ class WebFragment : BaseFragment() {
         }
 
         private fun signTypedMessage(callbackId: Long, data: String) {
-            val jsonObject = JSONObject(data)
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = jsonObject.getString("data")))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data))
         }
 
         private fun ethCall(callbackId: Long, recipient: String) {
