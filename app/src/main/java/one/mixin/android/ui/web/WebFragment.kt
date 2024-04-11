@@ -1,6 +1,5 @@
 package one.mixin.android.ui.web
 
-import one.mixin.android.web3.JsSignMessage
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -151,6 +150,7 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.web3.JsInjectorClient
+import one.mixin.android.web3.JsSignMessage
 import one.mixin.android.web3.JsSigner
 import one.mixin.android.web3.SwitchChain
 import one.mixin.android.web3.convertWcLink
@@ -230,6 +230,7 @@ class WebFragment : BaseFragment() {
     }
 
     private var currentUrl: String? = null
+    private var currentTitle: String? = null
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
@@ -504,6 +505,9 @@ class WebFragment : BaseFragment() {
                 { url ->
                     currentUrl = url
                     isFinished = true
+                }, { title, url ->
+                    currentUrl = url
+                    currentTitle = title
                 },
                 { errorCode, _, failingUrl ->
                     currentUrl = failingUrl
@@ -853,11 +857,13 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript(e, Timber::d)
                     }
                 },
-                onBrowserSign = { message->
+                onBrowserSign = { message ->
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
                             tip,
                             message,
+                            currentUrl,
+                            currentTitle,
                             requireActivity(),
                             onReject = {
                                 lifecycleScope.launch {
@@ -1574,9 +1580,11 @@ class WebFragment : BaseFragment() {
         private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
+        private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
     ) : WebViewClient() {
-
+        private var redirect = false
+        private var loadingError = false
         private val jsInjectorClient by lazy {
             JsInjectorClient(context)
         }
@@ -1584,8 +1592,13 @@ class WebFragment : BaseFragment() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             view ?: return
-            view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
-            view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.address, JsSigner.currentChain), null)
+            view.clearCache(true)
+            Timber.e("onPageStarted")
+            if (!redirect) {
+                view.evaluateJavascript(jsInjectorClient.providerJs(view.context), null)
+                view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.address, JsSigner.currentChain), null)
+            }
+            redirect = false
         }
 
         override fun onPageFinished(
@@ -1593,8 +1606,13 @@ class WebFragment : BaseFragment() {
             url: String?,
         ) {
             super.onPageFinished(view, url)
+            if (!redirect && !loadingError) {
+                onWebpageLoaded.invoke(view?.title, url)
+            }
             onPageFinishedListener.onPageFinished()
             onFinished(url)
+            redirect = false
+            loadingError = false
         }
 
         override fun onReceivedError(
@@ -1605,6 +1623,7 @@ class WebFragment : BaseFragment() {
         ) {
             super.onReceivedError(view, errorCode, description, failingUrl)
             onReceivedError(errorCode, description, failingUrl)
+            loadingError = true
         }
 
         override fun onPageCommitVisible(
@@ -1621,6 +1640,7 @@ class WebFragment : BaseFragment() {
             view: WebView?,
             request: WebResourceRequest?,
         ): Boolean {
+            redirect = true
             if (view == null || request == null) {
                 return super.shouldOverrideUrlLoading(view, request)
             }

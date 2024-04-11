@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.web3
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -62,11 +63,19 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val TAG = "BrowserWalletBottomSheetDialogFragment"
 
         const val ARGS_MESSAGE = "args_message"
+        const val ARGS_URL = "args_url"
+        const val ARGS_TITLE = "args_title"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
+            url:String?,
+            title:String?
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
+            putString(ARGS_URL, url?.run {
+                Uri.parse(this).host
+            })
+            putString(ARGS_TITLE, title)
         }
     }
 
@@ -77,6 +86,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
 
     private val signMessage: JsSignMessage by lazy { requireArguments().getParcelableCompat(ARGS_MESSAGE, JsSignMessage::class.java)!! }
+    private val url: String? by lazy { requireArguments().getString(ARGS_URL) }
+    private val title: String? by lazy { requireArguments().getString(ARGS_TITLE) }
 
     var step by mutableStateOf(Step.Input)
         private set
@@ -93,7 +104,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data, errorInfo,
+                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data,
+                    url,
+                    title,
+                    errorInfo,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     showPin = { showPin() }, onDismissRequest = { dismiss() })
             }
@@ -265,11 +279,13 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 fun showBrowserBottomSheetDialogFragment(
     tip: Tip,
     signMessage: JsSignMessage,
+    currentUrl: String?,
+    currentTitle: String?,
     fragmentActivity: FragmentActivity,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle)
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)
     }

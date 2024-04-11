@@ -43,7 +43,9 @@ import org.web3j.utils.Numeric
 import java.math.BigDecimal
 
 @Composable
-fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?, errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit) {
+fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
+    url:String?, title:String?,
+    errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit) {
     MixinAppTheme {
         Column(
             modifier =
@@ -149,9 +151,10 @@ fun BrowserPage(account: String, chain: Chain, type: Int, step: WalletConnectBot
                     text = errorInfo
                 )
             }
-            // Todo
-            // Box(modifier = Modifier.height(20.dp))
-            // ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = "Todo", footer = "Todo")
+            if (url != null && title != null) {
+                Box(modifier = Modifier.height(20.dp))
+                ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = title, footer = url)
+            }
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
             Box(modifier = Modifier.height(20.dp))
