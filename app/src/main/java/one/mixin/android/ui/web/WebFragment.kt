@@ -1749,7 +1749,7 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
-                    signTypedMessage(id, obj.getJSONObject("object").toString())
+                    signTypedMessage(id, obj.getJSONObject("object").getString("raw"))
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
