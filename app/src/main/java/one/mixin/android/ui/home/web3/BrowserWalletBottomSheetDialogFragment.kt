@@ -211,7 +211,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } catch (e: Exception) {
                 handleException(e)
             }
-            dismiss()
         }
 
     private fun handleException(e: Throwable) {

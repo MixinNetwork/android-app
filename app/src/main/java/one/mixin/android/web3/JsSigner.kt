@@ -44,6 +44,7 @@ object JsSigner {
     var currentChain: Chain = Chain.Ethereum
         private set
 
+    // now only ETH
     var currentNetwork = "ethereum"
 
     suspend fun init() {
@@ -159,5 +160,9 @@ object JsSigner {
         Timber.d("${WalletConnect.TAG} error $msg")
         msgAction?.invoke(msg)
         throw Web3Exception(error.code, error.message)
+    }
+
+    fun reset() {
+        currentChain = Chain.Ethereum
     }
 }

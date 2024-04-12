@@ -17,6 +17,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -31,6 +32,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
+import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -1140,6 +1142,7 @@ class WebFragment : BaseFragment() {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+        JsSigner.reset()
         super.onDestroyView()
         _binding = null
     }
@@ -1623,6 +1626,11 @@ class WebFragment : BaseFragment() {
             super.onReceivedError(view, errorCode, description, failingUrl)
             onReceivedError(errorCode, description, failingUrl)
             loadingError = true
+        }
+
+        override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+            handler?.proceed()
+            Timber.e("${error?.toString()}")
         }
 
         override fun onPageCommitVisible(
