@@ -191,7 +191,7 @@ fun BrowserPage(
                 Modifier
                     .fillMaxWidth(),
             ) {
-                if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading) {
+                if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                         Box(modifier = Modifier.height(20.dp))
                         CircularProgressIndicator(

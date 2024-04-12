@@ -81,7 +81,6 @@ abstract class WalletConnect {
         data class TIPSignData(
             override val signMessage: String,
         ) : WCSignData<String>(0L, signMessage)
-
     }
 
     private var web3jPool = LruCache<Chain, Web3j>(3)

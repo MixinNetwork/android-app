@@ -179,8 +179,6 @@ class WebFragment : BaseFragment() {
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
-        const val ARGS_ADDRESS = "args_address"
-        const val ARGS_CHAIN_ID = "args_chain_id"
         const val themeColorScript =
             """
             (function() {
@@ -214,19 +212,6 @@ class WebFragment : BaseFragment() {
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
-    }
-
-    private val chain: Chain? by lazy {
-        requireArguments().getString(ARGS_CHAIN_ID, null)?.let {
-            when (it) {
-                Chain.Polygon.chainId -> Chain.Polygon
-                Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
-                else -> Chain.Ethereum
-            }
-        }
-    }
-    private val address: String? by lazy {
-        requireArguments().getString(ARGS_ADDRESS, null)
     }
 
     private var currentUrl: String? = null
@@ -846,6 +831,12 @@ class WebFragment : BaseFragment() {
                             closeSelf()
                         }
                     },
+                    getTipAddressAction = { chainId, callback ->
+                        getTipAddress(chainId, callback)
+                    },
+                    tipSignAction = { chainId, message, callback ->
+                        tipSign(chainId, message, callback)
+                    },
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
@@ -867,8 +858,7 @@ class WebFragment : BaseFragment() {
                             requireActivity(),
                             onReject = {
                                 lifecycleScope.launch {
-                                    // todo
-                                    // webView.evaluateJavascript(JS_PROTOCOL_CANCELLED) {}
+                                    webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse($id, null)") {}
                                 }
                             },
                             onDone = { callback ->
@@ -879,7 +869,7 @@ class WebFragment : BaseFragment() {
                         )
                     }
                 },
-            ), "_tw_")
+            ), "_mw_")
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -1740,8 +1730,8 @@ class WebFragment : BaseFragment() {
             val network = obj.getString("network")
             when(method) {
                 DAppMethod.REQUESTACCOUNTS -> {
-                    onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");".apply { Timber.e(this) })
-                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);".apply { Timber.e(this) })
+                    onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");")
+                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);")
                 }
 
                 DAppMethod.SWITCHETHEREUMCHAIN -> {
@@ -1799,7 +1789,6 @@ class WebFragment : BaseFragment() {
         }
 
         private fun signMessage(callbackId: Long, data: String) {
-            // todo check
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
@@ -1823,17 +1812,21 @@ class WebFragment : BaseFragment() {
         private fun walletSwitchEthereumChain(callbackId: Long, msgParams: String) {
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = JsSigner.switchChain(switchChain)
-            onWalletActionSuccessful("""
-                var config = {
-                ethereum: {
-                    address: "${JsSigner.address}",
-                    chainId: ${JsSigner.currentChain.chainReference},
-                    rpcUrl: "${JsSigner.currentChain.rpcUrl}"
-                }
-            };
-            mixinwallet.${JsSigner.currentNetwork}.setConfig(config);
-            """)
-            onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged($callbackId, ${JsSigner.currentChain.hexReference});")
+            if (result.isSuccess) {
+                onWalletActionSuccessful(
+                    """
+                    var config = {
+                    ethereum: {
+                        address: "${JsSigner.address}",
+                        chainId: ${JsSigner.currentChain.chainReference},
+                        rpcUrl: "${JsSigner.currentChain.rpcUrl}"
+                    }
+                };
+                mixinwallet.${JsSigner.currentNetwork}.setConfig(config);
+                """
+                )
+                onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged($callbackId, ${JsSigner.currentChain.hexReference});")
+            }
             onWalletActionSuccessful("window.${JsSigner.currentNetwork}.sendResponse($callbackId, null);")
         }
     }
@@ -1845,6 +1838,8 @@ class WebFragment : BaseFragment() {
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
+        var getTipAddressAction: ((String, String) -> Unit)? = null,
+        var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
@@ -1888,6 +1883,24 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun close() {
             closeAction?.invoke()
+        }
+
+
+        @JavascriptInterface
+        fun getTipAddress(
+            chainId: String,
+            callbackFunction: String,
+        ) {
+            getTipAddressAction?.invoke(chainId, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun tipSign(
+            chainId: String,
+            message: String,
+            callbackFunction: String,
+        ) {
+            tipSignAction?.invoke(chainId, message, callbackFunction)
         }
     }
 

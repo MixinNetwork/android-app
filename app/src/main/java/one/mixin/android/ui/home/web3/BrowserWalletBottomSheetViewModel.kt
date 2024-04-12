@@ -31,17 +31,6 @@ class BrowserWalletBottomSheetViewModel
         private val tipService: TipService,
         private val tip: Tip,
     ) : ViewModel() {
-        suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
-            return withContext(Dispatchers.IO) {
-                WalletConnectV2.getSessionProposal(topic)
-            }
-        }
-
-        suspend fun getV2SessionRequest(topic: String): Wallet.Model.SessionRequest? {
-            return withContext(Dispatchers.IO) {
-                WalletConnectV2.getSessionRequest(topic)
-            }
-        }
 
         suspend fun ethGasLimit(
             chain: Chain,
@@ -105,29 +94,4 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
-        fun sendTransaction(
-            version: WalletConnect.Version,
-            chain: Chain,
-            sessionRequest: Wallet.Model.SessionRequest,
-            signedTransactionData: String,
-        ): String? {
-            try {
-                when (version) {
-                    WalletConnect.Version.V2 -> WalletConnectV2.sendTransaction(chain, sessionRequest, signedTransactionData)
-                    WalletConnect.Version.TIP -> {}
-                }
-                return null
-            } catch (e: Exception) {
-                val errorInfo = e.stackTraceToString()
-                Timber.d(
-                    "${
-                        when (version) {
-                            WalletConnect.Version.V2 -> WalletConnectV2.TAG
-                            else -> WalletConnectTIP.TAG
-                        }
-                    } $errorInfo",
-                )
-                return errorInfo
-            }
-        }
     }

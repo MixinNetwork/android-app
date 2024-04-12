@@ -40,7 +40,7 @@ class EthereumFragment : BaseFragment() {
     private val connectionsViewModel by viewModels<ConnectionsViewModel>()
     private val adapter by lazy {
         WalletAdapter { web3 ->
-            WebActivity.show(requireContext(), web3.homeUrl, null, address = address, chainId = Chain.Polygon.chainId)
+            WebActivity.show(requireContext(), web3.homeUrl, null)
         }
     }
     override fun onCreateView(
