@@ -24,6 +24,7 @@ enum class DAppMethod {
                 "requestAccounts" -> REQUESTACCOUNTS
                 "watchAsset" -> WATCHASSET
                 "addEthereumChain" -> ADDETHEREUMCHAIN
+                "switchChain" -> SWITCHETHEREUMCHAIN
                 "switchEthereumChain" -> SWITCHETHEREUMCHAIN
                 else -> UNKNOWN
             }

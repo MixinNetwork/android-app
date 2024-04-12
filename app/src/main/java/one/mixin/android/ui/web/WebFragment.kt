@@ -1825,7 +1825,7 @@ class WebFragment : BaseFragment() {
                 mixinwallet.${JsSigner.currentNetwork}.setConfig(config);
                 """
                 )
-                onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged($callbackId, ${JsSigner.currentChain.hexReference});")
+                onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged('${JsSigner.currentChain.hexReference}');")
             }
             onWalletActionSuccessful("window.${JsSigner.currentNetwork}.sendResponse($callbackId, null);")
         }
