@@ -4,13 +4,9 @@
             chainId: %1$s,
             rpcUrl: '%2$s'
         },
-        solana: {
-            cluster: "mainnet-beta",
-        },
         isDebug: true
     };
     mixinwallet.ethereum = new mixinwallet.Provider(config);
-    mixinwallet.solana = new mixinwallet.SolanaProvider(config);
     mixinwallet.postMessage = (json) => {
         window._mw_.postMessage(JSON.stringify(json));
     }
@@ -26,7 +22,10 @@
     };
 
     function initializeEIP6963(provider, options = {}) {
-        const providerDetail = { info, provider };
+        const providerDetail = {
+            info,
+            provider
+        };
         Object.defineProperty(providerDetail, 'provider', {
             get() {
                 options.onAccessProvider?.();
@@ -34,13 +33,13 @@
             },
         });
         const announceEvent = new CustomEvent('eip6963:announceProvider', {
-        detail: Object.freeze(providerDetail),
-    });
-    window.dispatchEvent(announceEvent);
-    window.addEventListener('eip6963:requestProvider', () => {
+            detail: Object.freeze(providerDetail),
+        });
         window.dispatchEvent(announceEvent);
-        options.onRequestProvider?.();
-    });
+        window.addEventListener('eip6963:requestProvider', () => {
+            window.dispatchEvent(announceEvent);
+            options.onRequestProvider?.();
+        });
     }
     initializeEIP6963(window.ethereum);
 })();
