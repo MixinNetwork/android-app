@@ -71,14 +71,15 @@ fun BrowserPage(
                     .weight(weight = 1f, fill = false),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(modifier = Modifier.height(32.dp))
-
+                Box(modifier = Modifier.height(50.dp))
                 Icon(
                     modifier = Modifier.size(70.dp),
                     painter = painterResource(id = R.drawable.ic_no_dapp),
                     contentDescription = null,
                     tint = Color.Unspecified,
                 )
+
+                Box(modifier = Modifier.height(16.dp))
 
                 Text(
                     text =

@@ -1766,7 +1766,11 @@ class WebFragment : BaseFragment() {
                     val from = transaction.getString("from")
                     val data = transaction.getString("data")
                     val gas = transaction.getString("gas")
-                    val value = transaction.getString("value")
+                    val value = if (transaction.has("value")) {
+                        transaction.getString("value")
+                    } else {
+                        "0x0"
+                    }
                     val maxPriorityFeePerGas = if (transaction.has("maxPriorityFeePerGas")) {
                         transaction.getString("maxPriorityFeePerGas")
                     } else {
