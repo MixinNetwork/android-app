@@ -8,9 +8,9 @@ import one.mixin.android.tip.wc.internal.Chain
 import timber.log.Timber
 
 class JsInjectorClient {
-    fun initJs(context: Context, chain: Chain): String {
+    fun initJs(context: Context, chain: Chain, address: String): String {
         val initSrc = loadFile(context, rawRes = R.raw.init)
-        return String.format(initSrc, chain.chainReference, chain.rpcUrl)
+        return String.format(initSrc, chain.chainReference, chain.rpcUrl, address)
     }
 
     fun loadProviderJs(context: Context): String {

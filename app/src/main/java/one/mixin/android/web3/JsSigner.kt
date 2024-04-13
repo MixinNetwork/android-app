@@ -41,6 +41,10 @@ object JsSigner {
 
     lateinit var address: String
         private set
+
+    fun updateAddress(address: String) {
+        this.address = address
+    }
     var currentChain: Chain = Chain.Ethereum
         private set
 
