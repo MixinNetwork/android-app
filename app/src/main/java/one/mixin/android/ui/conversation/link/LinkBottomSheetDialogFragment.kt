@@ -326,6 +326,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         index = multisigs.senders.indexOf(Session.getAccountId()),
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
+                        reference = null
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
