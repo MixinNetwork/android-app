@@ -27,8 +27,10 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -116,13 +118,26 @@ class ExploreFragment : BaseFragment() {
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
 
+            if (defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 0) {
+                exploreVa.displayedChild = 0
+                radioFavorite.isChecked = true
+                radioEth.isChecked = false
+            } else {
+                exploreVa.displayedChild = 1
+                radioEth.isChecked = true
+                radioFavorite.isChecked = false
+                navigate(ethereumFragment, EthereumFragment.TAG)
+            }
+
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
                     R.id.radio_favorite -> {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 0)
                         exploreVa.displayedChild = 0
                     }
 
                     R.id.radio_eth -> {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 1)
                         exploreVa.displayedChild = 1
                         navigate(ethereumFragment, EthereumFragment.TAG)
                     }
