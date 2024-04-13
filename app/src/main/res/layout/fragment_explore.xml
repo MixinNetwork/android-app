@@ -92,16 +92,6 @@
                 android:button="@null" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_bot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/bots_title"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -133,34 +123,6 @@
                 tools:listitem="@layout/item_favorite" />
 
         </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="?attr/bg_white">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/bot_rv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_favorite" />
-
-            <FrameLayout
-                android:id="@+id/empty_fl"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="80dp"
-                    android:layout_marginBottom="80dp"
-                    android:text="@string/NO_BOTS" />
-            </FrameLayout>
-        </FrameLayout>
 
         <one.mixin.android.widget.ContainerFrameLayout
             android:id="@+id/fragment_container"

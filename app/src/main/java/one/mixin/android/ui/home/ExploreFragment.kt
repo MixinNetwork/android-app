@@ -10,7 +10,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.autoDispose
@@ -22,8 +21,8 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
-import one.mixin.android.databinding.ItemFavoriteDecorationBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
+import one.mixin.android.databinding.ItemFavoriteTitleBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.event.SessionEvent
@@ -116,26 +115,20 @@ class ExploreFragment : BaseFragment() {
             }
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
+
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
                     R.id.radio_favorite -> {
                         exploreVa.displayedChild = 0
                     }
 
-                    R.id.radio_bot -> {
-                        exploreVa.displayedChild = 1
-                    }
-
                     R.id.radio_eth -> {
-                        exploreVa.displayedChild = 2
+                        exploreVa.displayedChild = 1
                         navigate(ethereumFragment, EthereumFragment.TAG)
                     }
 
                 }
             }
-            binding.botRv.layoutManager = LinearLayoutManager(requireContext())
-            binding.botRv.adapter = botsAdapter
-            botRv.adapter = botsAdapter
 
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
         }
@@ -187,7 +180,7 @@ class ExploreFragment : BaseFragment() {
     }
 
     private val adapter by lazy {
-        FavoriteAdapter({
+        BotAdapter({
             activity?.addFragment(
                 this@ExploreFragment,
                 MySharedAppsFragment.newInstance(),
@@ -195,6 +188,12 @@ class ExploreFragment : BaseFragment() {
             )
         }, { app ->
             clickAction(app)
+        }, { bot ->
+            lifecycleScope.launch {
+                botManagerViewModel.findUserByAppId(bot.getBotId())?.let { user ->
+                    showUserBottom(parentFragmentManager, user)
+                }
+            }
         })
     }
 
@@ -212,24 +211,7 @@ class ExploreFragment : BaseFragment() {
     private fun loadBotData() {
         lifecycleScope.launch {
             val apps = botManagerViewModel.getAllExploreApps()
-            if (apps.isEmpty()) {
-                binding.emptyFl.isVisible = true
-                binding.botRv.isVisible = false
-            } else {
-                binding.emptyFl.isVisible = false
-                binding.botRv.isVisible = true
-            }
-            botsAdapter.list = apps
-        }
-    }
-
-    private val botsAdapter by lazy {
-        BotAdapter { app ->
-            lifecycleScope.launch {
-                botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
-                    showUserBottom(parentFragmentManager, user)
-                }
-            }
+            adapter.list = apps
         }
     }
 
@@ -292,9 +274,20 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    class FavoriteAdapter(private val editAction: () -> Unit, private val botAction: (BotInterface) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        private var favoriteApps: List<ExploreApp>? = null
+    class BotAdapter(private val editAction: () -> Unit, private val botAction: (BotInterface) -> Unit, private val appAction: (BotInterface) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        private val TYPE_INTERNAL = 0
+        private val TYPE_TITEL = 1
+        private val TYPE_FAVORITE = 2
+        private val TYPE_EDIT = 3
+        private val TYPE_BOT = 4
 
+        private var favoriteApps: List<ExploreApp>? = null
+        var list: List<ExploreApp> = listOf()
+            @SuppressLint("NotifyDataSetChanged")
+            set(value) {
+                field = value
+                notifyDataSetChanged()
+            }
         var isDesktopLogin = false
             set(value) {
                 if (value == field) return
@@ -316,12 +309,14 @@ class ExploreFragment : BaseFragment() {
             viewType: Int,
         ): RecyclerView.ViewHolder {
             return when (viewType) {
-                2 -> {
+                TYPE_EDIT -> {
                     FavoriteEditHolder(ItemFavoriteEditBinding.inflate(LayoutInflater.from(parent.context), parent, false))
                 }
-                3 -> {
-                    FavoriteDecorationHolder(ItemFavoriteDecorationBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+                TYPE_TITEL -> {
+                    FavoriteTitleHolder(ItemFavoriteTitleBinding.inflate(LayoutInflater.from(parent.context), parent, false))
                 }
+
                 else -> {
                     FavoriteHolder(ItemFavoriteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
                 }
@@ -333,41 +328,53 @@ class ExploreFragment : BaseFragment() {
             holder: RecyclerView.ViewHolder,
             position: Int,
         ) {
-            if (getItemViewType(position) == 2) {
+            val type = getItemViewType(position)
+            if (type == TYPE_EDIT) {
                 holder.itemView.setOnClickListener {
                     editAction.invoke()
                 }
-            } else if (getItemViewType(position) != 3) {
-                getItem(position)?.let { app ->
+            } else if (type == TYPE_INTERNAL || type == TYPE_FAVORITE) {
+                getItem(type, position)?.let { app ->
                     (holder as FavoriteHolder).bind(app, isDesktopLogin)
                     holder.itemView.setOnClickListener {
                         botAction.invoke(app)
+                    }
+                }
+            } else if (type == TYPE_BOT) {
+                getItem(type, position)?.let { bot ->
+                    (holder as FavoriteHolder).bind(bot, isDesktopLogin)
+                    holder.itemView.setOnClickListener {
+                        appAction.invoke(bot)
                     }
                 }
             }
         }
 
         override fun getItemCount(): Int {
-            return InternalBots.size + (favoriteApps?.size ?: 0) + 2
+            return InternalBots.size + (favoriteApps?.size ?: 0) + list.notEmptyWithElse({ it.size }, 0) + 2
         }
 
         override fun getItemViewType(position: Int): Int {
             return if (position < InternalBots.size) {
-                1
-            } else if (position == itemCount - 1) {
-                2
+                TYPE_INTERNAL
             } else if (position == InternalBots.size) {
-                3
+                TYPE_TITEL
+            } else if (position < InternalBots.size + (favoriteApps?.size ?: 0) + 1) {
+                TYPE_FAVORITE
+            } else if (position == InternalBots.size + (favoriteApps?.size ?: 0) + 1) {
+                TYPE_EDIT
             } else {
-                0
+                TYPE_BOT
             }
         }
 
-        fun getItem(position: Int): BotInterface? {
-            return if (position < InternalBots.size) {
+        private fun getItem(type: Int, position: Int): BotInterface? {
+            return if (type == TYPE_INTERNAL) {
                 InternalBots[position]
-            } else {
+            } else if (type == TYPE_FAVORITE) {
                 favoriteApps?.get(position - InternalBots.size - 1)
+            } else {
+                list.get(position - InternalBots.size - (favoriteApps?.size ?: 0) - 2)
             }
         }
     }
@@ -405,51 +412,5 @@ class ExploreFragment : BaseFragment() {
 
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
-    class FavoriteDecorationHolder(itemBinding: ItemFavoriteDecorationBinding) : RecyclerView.ViewHolder(itemBinding.root)
-
-    class BotAdapter(private val botCallBack: (ExploreApp) -> Unit) : RecyclerView.Adapter<BotAdapter.ListViewHolder>() {
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int,
-        ): ListViewHolder {
-            val view =
-                LayoutInflater.from(
-                    parent.context,
-                ).inflate(R.layout.item_favorite, parent, false)
-            return ListViewHolder(view)
-        }
-
-        var list: List<ExploreApp> = listOf()
-            @SuppressLint("NotifyDataSetChanged")
-            set(value) {
-                field = value
-                notifyDataSetChanged()
-            }
-
-        override fun onBindViewHolder(
-            holder: ListViewHolder,
-            position: Int,
-        ) {
-            val binding = ItemFavoriteBinding.bind(holder.itemView)
-            list[position].let { app ->
-                binding.avatar.renderApp(app)
-                binding.name.text = app.name
-                binding.mixinIdTv.text = app.appNumber
-                binding.verifiedIv.setImageResource(if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
-                holder.itemView.setOnClickListener {
-                    botCallBack.invoke(app)
-                }
-                binding.avatar.setOnClickListener {
-                    botCallBack.invoke(app)
-                }
-                binding.avatar.tag = position
-            }
-        }
-
-        override fun getItemCount(): Int {
-            return list.notEmptyWithElse({ it.size }, 0)
-        }
-
-        class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
-    }
+    class FavoriteTitleHolder(itemBinding: ItemFavoriteTitleBinding) : RecyclerView.ViewHolder(itemBinding.root)
 }
