@@ -1,0 +1,94 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="66dp"
+    android:background="?attr/bg_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:foreground="?selectableItemBackground">
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/avatar"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"/>
+
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" />
+
+    <TextView
+        android:id="@+id/balance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/avatar"
+        android:layout_toEndOf="@id/avatar"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginEnd="2dp"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/mixin_font"
+        android:maxWidth="240dp"
+        android:maxLines="1"
+        android:textColor="?attr/text_primary"
+        android:textSize="19sp" />
+
+    <TextView
+        android:id="@+id/symbol_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/balance"
+        android:layout_toEndOf="@id/balance"
+        android:maxWidth="200dp"
+        android:minWidth="30dp"
+        android:textColor="?attr/text_primary"
+        android:textSize="12sp"
+        android:translationY="-1dp" />
+
+    <TextView
+        android:id="@+id/balance_as"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="50dp"
+        android:maxWidth="200dp"
+        android:layout_below="@+id/balance"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginTop="6dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_toEndOf="@id/avatar"
+        android:textSize="12sp"
+        android:textColor="?attr/text_assist"/>
+
+    <TextView
+        android:id="@+id/change_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/symbol_tv"
+        android:layout_alignBaseline="@id/balance"
+        android:layout_alignParentEnd="true"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="@color/wallet_green"/>
+
+    <TextView
+        android:id="@+id/price_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_toEndOf="@id/balance_as"
+        android:layout_alignBaseline="@+id/balance_as"
+        android:layout_alignParentEnd="true"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textSize="12sp"
+        android:textColor="?attr/text_assist"/>
+</RelativeLayout>

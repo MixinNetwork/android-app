@@ -34,17 +34,4 @@ class ChainCard : FrameLayout {
         _binding.actionTv.setText(R.string.Unlock)
     }
 
-    fun setContent(
-        title: String,
-        address: String,
-        @StringRes action: Int,
-        @DrawableRes icon: Int,
-        onClickListener: OnClickListener
-    ) {
-        _binding.title.text = title
-        _binding.subTitle.text = address.formatPublicKey()
-        _binding.icon.setImageResource(icon)
-        _binding.actionTv.setText(action)
-        _binding.actionTv.setOnClickListener(onClickListener)
-    }
 }

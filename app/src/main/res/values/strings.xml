@@ -1477,4 +1477,8 @@
     <string name="web3_signing_transaction_success">The transaction has been signed and sent successfully, Please return to dApp to continue.</string>
     <string name="web3_signing_data_success">The data has been signed and sent successfully, Please return to dApp to continue.</string>
     <string name="web3_sending_success">Sending Success</string>
+    <string name="Browser">Browser</string>
+    <string name="copy_address">Copy Address</string>
+    <string name="coming_soon">Coming soon</string>
+    <string name="web3_deposit_bottom">Use this address for receiving tokens on Ethereum, Polygon, BSC networks.</string>
 </resources>

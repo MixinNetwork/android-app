@@ -367,5 +367,7 @@ object Constants {
         val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
+
+        const val WEB3_URL = ""
     }
 }

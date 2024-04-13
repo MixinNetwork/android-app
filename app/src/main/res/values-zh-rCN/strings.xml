@@ -1444,4 +1444,8 @@
     <string name="web3_signing_transaction_success">交易已签名并发送成功，请返回 dApp 继续操作。</string>
     <string name="web3_signing_data_success">数据已签名并发送成功，请返回 dApp 继续操作</string>
     <string name="web3_sending_success">发送成功</string>
+    <string name="Browser">浏览器</string>
+    <string name="copy_address">复制地址</string>
+    <string name="coming_soon">即将推出</string>
+    <string name="web3_deposit_bottom">使用此地址在以太坊、Polygon、BSC网络上接收 token。</string>
 </resources>
