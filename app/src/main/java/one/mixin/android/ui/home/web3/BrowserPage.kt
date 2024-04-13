@@ -38,6 +38,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
+import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
@@ -48,6 +49,7 @@ import one.mixin.android.web3.JsSignMessage
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
+import java.math.BigInteger
 
 @Composable
 fun BrowserPage(
@@ -245,6 +247,9 @@ fun BrowserPage(
                             Text(text = stringResource(id = R.string.Continue), color = Color.White)
                         }
                     }
+                }
+                if (type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
+                    Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
             Box(modifier = Modifier.height(16.dp))

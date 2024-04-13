@@ -57,6 +57,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
+import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
@@ -456,78 +457,10 @@ fun FeeInfo(
     }
 }
 
-@Composable
-private fun Warning(
-    modifier: Modifier,
-) {
-    var isVisible by remember { mutableStateOf(true) }
-    if (isVisible) {
-        Row(
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .background(MixinAppTheme.colors.tipWarning)
-                    .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
-                    .padding(20.dp),
-        ) {
-            Image(
-                painter = painterResource(R.drawable.ic_warning),
-                modifier =
-                    Modifier
-                        .size(40.dp, 40.dp)
-                        .padding(horizontal = 7.dp),
-                contentDescription = null,
-            )
-            Box(modifier = Modifier.width(20.dp))
-            Column {
-                Text(
-                    text = stringResource(id = R.string.decode_transaction_failed),
-                    color = MixinAppTheme.colors.tipError,
-                    fontSize = 14.sp,
-                )
-                Box(modifier = Modifier.width(8.dp))
-                Row(modifier = Modifier.align(Alignment.End)) {
-                    Text(
-                        modifier =
-                            Modifier.clickable {
-                                isVisible = false
-                            },
-                        text = stringResource(id = R.string.Got_it),
-                        color = MixinAppTheme.colors.textBlue,
-                        fontSize = 14.sp,
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Preview
 @Composable
 private fun NetworkInfoPreview() {
     FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
-}
-
-@Preview
-@Composable
-private fun WarningPreview() {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-    ) {
-        ActionBottom(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            cancelTitle = stringResource(id = R.string.Cancel),
-            confirmTitle = stringResource(id = R.string.Confirm),
-            cancelAction = { },
-        ) {
-        }
-
-        Warning(modifier = Modifier.align(Alignment.BottomCenter))
-    }
 }
 
 @Composable
@@ -586,35 +519,11 @@ fun ActionBottom(
 
 @Preview
 @Composable
-fun PreviewMessage() {
-    Box(modifier = Modifier.background(MixinAppTheme.colors.background)) {
-        MessagePreview(
-            content = """{
-          "raw": [
-            "0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb",
-            "{\"types\":{\"Alias\":[{\"name\":\"from\",\"type\":\"address\"},{\"name\":\"alias\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint64\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"}]},\"domain\":{\"name\":\"snapshot\",\"version\":\"0.1.4\"},\"primaryType\":\"Alias\",\"message\":{\"from\":\"0x9df67f5a05fb594c4357d87221cbd69f1d5a6fbb\",\"alias\":\"0x8f14e8dbc7b3619e5210201022f637f271545c90\",\"timestamp\":\"1710766295\"}}"
-          ],
-          "type": "TYPED_MESSAGE"
-        }
-    """,
-        ) {
-        }
-    }
-}
-
-@Preview
-@Composable
 fun TransferBottomPreview() {
     Column {
         ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
         ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
-}
-
-@Preview
-@Composable
-private fun TransactionPreview() {
-    TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
 }
 
 @Preview
