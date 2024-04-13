@@ -20,6 +20,11 @@ sealed class Chain(
 
     object Polygon : Chain(Constants.ChainId.Polygon, "eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
+    val hexReference:String
+        get() {
+            return "0x%x".format(chainReference)
+        }
+
     val chainId: String
         get() {
             return "$chainNamespace:$chainReference"

@@ -28,6 +28,7 @@ fun ItemContent(
             text = title,
             color = MixinAppTheme.colors.textSubtitle,
             fontSize = 14.sp,
+            maxLines = 1
         )
         Box(modifier = Modifier.height(4.dp))
         Text(

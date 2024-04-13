@@ -26,6 +26,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.JsSigner
 import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
 import java.io.IOException
@@ -209,6 +210,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 keyViewModel.updateStatus(TransferStatus.IN_PROGRESS)
                 val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
+                JsSigner.updateAddress(address)
                 RxBus.publish(WCUnlockEvent())
                 keyViewModel.success(address)
             }

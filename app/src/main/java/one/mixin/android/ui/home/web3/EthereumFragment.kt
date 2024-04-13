@@ -25,6 +25,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.widget.SpacesItemDecoration
 
 @AndroidEntryPoint
@@ -38,7 +39,9 @@ class EthereumFragment : BaseFragment() {
 
     private val connectionsViewModel by viewModels<ConnectionsViewModel>()
     private val adapter by lazy {
-        WalletAdapter()
+        WalletAdapter { web3 ->
+            WebActivity.show(requireContext(), web3.homeUrl, null)
+        }
     }
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,9 +72,11 @@ class EthereumFragment : BaseFragment() {
         }
     }
 
+    private var address: String? = null
     private fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            this@EthereumFragment.address = address
             if (address.isBlank()) {
                 adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum, {
                     WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)

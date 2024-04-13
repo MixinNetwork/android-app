@@ -15,7 +15,7 @@ fun convertWcLink(url: String): Uri? {
         }
         if (wcUrl == null) return null
         val wcUri = wcUrl.run {
-            
+
             when {
                 startsWith("wc://") -> this
                 startsWith("wc:/") -> replace("wc:/", "wc://")
