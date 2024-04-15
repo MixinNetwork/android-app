@@ -4,17 +4,46 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/copy"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@drawable/bg_upper_round"
         android:foreground="?android:attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:textColor="?attr/text_primary"
-        android:text="@string/copy_address" />
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Ethereum_Account"
+            android:textColor="?attr/text_assist"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="12dp"
+            android:textSize="13sp"/>
+
+        <TextView
+            android:id="@+id/address_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textColor="?attr/text_remarks"
+            android:layout_below="@id/title"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/copy"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/copy_address"
+        android:textColor="?attr/text_primary" />
 
     <TextView
         android:id="@+id/cancel"
@@ -23,8 +52,8 @@
         android:background="?attr/bg_white"
         android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
-        android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:textColor="?attr/text_primary"
-        android:text="@string/Cancel" />
+        android:paddingEnd="16dp"
+        android:text="@string/Cancel"
+        android:textColor="?attr/text_primary" />
 </LinearLayout>

@@ -362,11 +362,17 @@ class ExploreFragment : BaseFragment() {
                         appAction.invoke(bot)
                     }
                 }
+            } else if (type == TYPE_TITEL) {
+                if (position == InternalBots.size) {
+                    (holder as FavoriteTitleHolder).setText(R.string.Favorite)
+                } else {
+                    (holder as FavoriteTitleHolder).setText(R.string.bots_title)
+                }
             }
         }
 
         override fun getItemCount(): Int {
-            return InternalBots.size + (favoriteApps?.size ?: 0) + list.notEmptyWithElse({ it.size }, 0) + 2
+            return InternalBots.size + (favoriteApps?.size ?: 0) + list.notEmptyWithElse({ it.size }, 0) + 3
         }
 
         override fun getItemViewType(position: Int): Int {
@@ -378,6 +384,8 @@ class ExploreFragment : BaseFragment() {
                 TYPE_FAVORITE
             } else if (position == InternalBots.size + (favoriteApps?.size ?: 0) + 1) {
                 TYPE_EDIT
+            } else if (position == InternalBots.size + (favoriteApps?.size ?: 0) + 2) {
+                TYPE_TITEL
             } else {
                 TYPE_BOT
             }
@@ -389,7 +397,7 @@ class ExploreFragment : BaseFragment() {
             } else if (type == TYPE_FAVORITE) {
                 favoriteApps?.get(position - InternalBots.size - 1)
             } else {
-                list.get(position - InternalBots.size - (favoriteApps?.size ?: 0) - 2)
+                list.get(position - InternalBots.size - (favoriteApps?.size ?: 0) - 3)
             }
         }
     }
@@ -427,5 +435,9 @@ class ExploreFragment : BaseFragment() {
 
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
-    class FavoriteTitleHolder(itemBinding: ItemFavoriteTitleBinding) : RecyclerView.ViewHolder(itemBinding.root)
+    class FavoriteTitleHolder(val itemBinding: ItemFavoriteTitleBinding) : RecyclerView.ViewHolder(itemBinding.root) {
+        fun setText(res:Int) {
+            itemBinding.title.setText(res)
+        }
+    }
 }

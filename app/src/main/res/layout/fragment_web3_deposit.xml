@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:need_divider="false"
-        app:titleText="@string/Deposit" />
+        app:titleText="@string/Receive" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,13 +63,14 @@
             android:text="@string/Copy"
             android:textColor="@color/white"
             android:textSize="14sp" />
+
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"/>
 
         <TextView
-            android:text="@string/web3_deposit_bottom"
+            android:text="@string/web3_deposit_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="38dp"

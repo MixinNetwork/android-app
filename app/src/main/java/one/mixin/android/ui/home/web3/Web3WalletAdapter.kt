@@ -28,6 +28,8 @@ class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter
             notifyDataSetChanged()
         }
 
+    fun isEmpty()  = tokens.size == 0
+
     private var tokens: List<Web3Token> = emptyList()
         get() {
             return account?.tokens ?: emptyList()
@@ -146,7 +148,7 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
             balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
             val changePercent = BigDecimal(token.changePercent)
             changeTv.text = "${changePercent.numberFormat2()}%"
-            changeTv.textColorResource = if (changePercent < BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
+            changeTv.textColorResource = if (changePercent >= BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
             if (token.price == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE

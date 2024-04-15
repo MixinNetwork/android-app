@@ -1480,5 +1480,7 @@
     <string name="Browser">Browser</string>
     <string name="copy_address">Copy Address</string>
     <string name="coming_soon">Coming soon</string>
-    <string name="web3_deposit_bottom">Use this address for receiving tokens on Ethereum, Polygon, BSC networks.</string>
+    <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
+    <string name="No_asset">Don’t have assets</string>
+    <string name="Ethereum_Account">Ethereum Account</string>
 </resources>

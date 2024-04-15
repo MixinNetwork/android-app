@@ -23,6 +23,7 @@ import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navTo
@@ -49,23 +50,27 @@ class EthereumFragment : BaseFragment() {
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
-        Web3WalletAdapter {id->
-            when(id) {
+        Web3WalletAdapter { id ->
+            when (id) {
                 R.id.send -> {
                     toast(R.string.coming_soon)
                 }
+
                 R.id.receive -> {
                     navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
                 }
+
                 R.id.browser -> {
                     navTo(SearchDappFragment(), SearchDappFragment.TAG)
                 }
+
                 R.id.more -> {
                     val builder = BottomSheet.Builder(requireActivity())
                     _bottomBinding = ViewWalletWeb3BottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_bottom, null))
                     builder.setCustomView(bottomBinding.root)
                     val bottomSheet = builder.create()
                     bottomBinding.apply {
+                        addressTv.text = this@EthereumFragment.address?.formatPublicKey()
                         copy.setOnClickListener {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                             toast(R.string.copied_to_clipboard)
@@ -122,14 +127,54 @@ class EthereumFragment : BaseFragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun refreshAccount(address: String) {
-        if (adapter.account == null) {
+        if (adapter.isEmpty()) {
             binding.progress.isVisible = true
         }
-        val account = web3ViewModel.web3Account(address)
+        val account = try {
+            val response = web3ViewModel.web3Account(address)
+            if (response.error != null) {
+                handleError(address, response.errorDescription)
+                binding.progress.isVisible = false
+                return
+            }
+            response
+        } catch (e: Exception) {
+            handleError(address, e.message ?: getString(R.string.Unknown))
+            binding.progress.isVisible = false
+            return
+        }
         account.data?.let { data ->
             adapter.account = data
         }
+        handleEmpty()
+        binding.empty.isVisible = false
         binding.progress.isVisible = false
+    }
+
+    private fun handleError(address: String, err: String) {
+        binding.apply {
+            if (adapter.account != null) return
+            empty.isVisible = true
+            titleTv.text = err
+            receiveTv.setText(R.string.Retry)
+            receiveTv.setOnClickListener {
+                lifecycleScope.launch {
+                    refreshAccount(address = address)
+                }
+            }
+        }
+    }
+
+    private fun handleEmpty() {
+        binding.apply {
+            if (!adapter.isEmpty()) return
+            empty.isVisible = true
+            titleTv.setText(R.string.No_asset)
+            receiveTv.setText(R.string.Receive)
+            receiveTv.setOnClickListener {
+                navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+            }
+        }
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
