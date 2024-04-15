@@ -33,6 +33,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.util.ErrorHandler
@@ -82,6 +83,9 @@ class EthereumFragment : BaseFragment() {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                             toast(R.string.copied_to_clipboard)
                             bottomSheet.dismiss()
+                        }
+                        connectedTv.setOnClickListener {
+                            this@EthereumFragment.navTo(WalletConnectFragment.newInstance(), WalletConnectFragment.TAG)
                         }
                         cancel.setOnClickListener { bottomSheet.dismiss() }
                     }
@@ -191,7 +195,7 @@ class EthereumFragment : BaseFragment() {
                 dialog = alertDialogBuilder()
                     .setTitle(R.string.Update_Mixin)
                     .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    .setNegativeButton(R.string.Later) { dialog, _ ->
                         dialog.dismiss()
                     }.setPositiveButton(R.string.Update) { dialog, _ ->
                         requireContext().openMarket(parentFragmentManager, lifecycleScope)

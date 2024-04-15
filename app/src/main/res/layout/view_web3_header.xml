@@ -68,7 +68,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple"
+            android:foreground="@drawable/mixin_ripple_25"
             android:src="@drawable/ic_web3_send" />
 
         <TextView
@@ -92,7 +92,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple"
+            android:foreground="@drawable/mixin_ripple_25"
             android:src="@drawable/ic_web3_receive" />
 
         <TextView
@@ -116,7 +116,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple"
+            android:foreground="@drawable/mixin_ripple_25"
             android:src="@drawable/ic_web3_browser" />
 
         <TextView
@@ -141,7 +141,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple"
+            android:foreground="@drawable/mixin_ripple_25"
             android:src="@drawable/ic_web3_more" />
 
         <TextView
