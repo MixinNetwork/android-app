@@ -30,8 +30,8 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val searchAdapter: SearchDappAdapter by lazy {
-        SearchDappAdapter { web3 ->
-            WebActivity.show(requireContext(), web3.homeUrl, null)
+        SearchDappAdapter { url ->
+            WebActivity.show(requireContext(), url, null)
         }
     }
 
@@ -51,6 +51,9 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
     private fun setQueryText(text: String) {
         if (isAdded && text != keyword) {
             searchAdapter.query = text
+            lifecycleScope.launch {
+                searchAdapter.url = web3ViewModel.fuzzySearchUrl(text)
+            }
             keyword = text
         }
     }
@@ -72,6 +75,7 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
                 (requireActivity() as MainActivity).closeSearch()
             }
         }
+        binding.searchEt.setHint(R.string.search_placeholder_dapp)
         binding.searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.searchRv.adapter = searchAdapter
         binding.backIb.setOnClickListener {

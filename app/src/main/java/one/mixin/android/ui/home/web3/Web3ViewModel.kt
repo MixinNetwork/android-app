@@ -8,6 +8,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import javax.inject.Inject
@@ -52,6 +53,14 @@ internal constructor(
             return emptyList<Dapp>()
         } else {
             return gson.fromJson(dapps, Array<Dapp>::class.java).toList()
+        }
+    }
+
+    suspend inline fun fuzzySearchUrl(query: String?): String? {
+        return if (query.isNullOrEmpty()) {
+            null
+        } else {
+            firstUrl(query)
         }
     }
 
