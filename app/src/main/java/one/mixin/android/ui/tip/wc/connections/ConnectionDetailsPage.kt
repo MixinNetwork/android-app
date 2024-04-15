@@ -1,4 +1,4 @@
-package one.mixin.android.ui.tip.wc.compose
+package one.mixin.android.ui.tip.wc.connections
 
 import GlideImage
 import androidx.compose.foundation.background

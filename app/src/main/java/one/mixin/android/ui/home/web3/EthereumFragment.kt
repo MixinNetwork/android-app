@@ -86,6 +86,7 @@ class EthereumFragment : BaseFragment() {
                         }
                         connectedTv.setOnClickListener {
                             this@EthereumFragment.navTo(WalletConnectFragment.newInstance(), WalletConnectFragment.TAG)
+                            bottomSheet.dismiss()
                         }
                         cancel.setOnClickListener { bottomSheet.dismiss() }
                     }

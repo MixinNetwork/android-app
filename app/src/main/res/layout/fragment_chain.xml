@@ -44,6 +44,7 @@
             android:textColor="?attr/text_assist"
             android:layout_centerInParent="true"
             android:textSize="14sp"
+            android:gravity="center_horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
