@@ -5,9 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.impl.TestWorkManagerImpl
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token

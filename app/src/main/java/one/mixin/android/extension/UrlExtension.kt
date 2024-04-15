@@ -23,7 +23,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -38,7 +37,6 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.getShareCategory
-import one.mixin.android.web3.convertWcLink
 import timber.log.Timber
 
 fun String.openAsUrlOrWeb(

@@ -21,10 +21,8 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Dapp
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint

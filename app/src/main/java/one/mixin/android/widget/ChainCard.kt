@@ -6,10 +6,8 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewChainCardBinding
-import one.mixin.android.extension.formatPublicKey
 
 class ChainCard : FrameLayout {
     private val _binding: ViewChainCardBinding
