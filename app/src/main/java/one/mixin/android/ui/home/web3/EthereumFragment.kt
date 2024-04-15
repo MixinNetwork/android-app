@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -13,25 +14,35 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.MixinResponseException
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.Wbe3DepositFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
+import timber.log.Timber
 
 @AndroidEntryPoint
 class EthereumFragment : BaseFragment() {
@@ -121,14 +132,77 @@ class EthereumFragment : BaseFragment() {
         }
     }
 
+    private suspend fun checkPublicKey() {
+        if (Session.web3PublicKey != null) return
+        val key =
+            web3ViewModel.findBotPublicKey(
+                generateConversationId(
+                    WEB3_BOT_USER_ID,
+                    Session.getAccountId()!!,
+                ),
+                WEB3_BOT_USER_ID,
+            )
+        if (!key.isNullOrEmpty()) {
+            Session.web3PublicKey = key
+        } else {
+            val sessionResponse =
+                web3ViewModel.fetchSessionsSuspend(listOf(WEB3_BOT_USER_ID))
+            if (sessionResponse.isSuccess) {
+                val sessionData = requireNotNull(sessionResponse.data)[0]
+                web3ViewModel.saveSession(
+                    ParticipantSession(
+                        generateConversationId(
+                            sessionData.userId,
+                            Session.getAccountId()!!,
+                        ),
+                        sessionData.userId,
+                        sessionData.sessionId,
+                        publicKey = sessionData.publicKey,
+                    ),
+                )
+                Session.web3PublicKey = sessionData.publicKey
+            } else {
+                throw MixinResponseException(
+                    sessionResponse.errorCode,
+                    sessionResponse.errorDescription,
+                )
+            }
+        }
+    }
+
+    private var dialog: AlertDialog? = null
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun refreshAccount(address: String) {
         if (adapter.isEmpty()) {
             binding.progress.isVisible = true
+            binding.empty.isVisible = false
+        }
+        try {
+            checkPublicKey()
+        } catch (e: Exception) {
+            handleError(address, e.message ?: getString(R.string.Unknown))
+            binding.progress.isVisible = false
+            return
         }
         val account = try {
             val response = web3ViewModel.web3Account(address)
-            if (response.error != null) {
+            if (response.errorCode == ErrorHandler.OLD_VERSION) {
+                dialog?.dismiss()
+                dialog = alertDialogBuilder()
+                    .setTitle(R.string.Update_Mixin)
+                    .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                    .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                        dialog.dismiss()
+                    }.setPositiveButton(R.string.Update) { dialog, _ ->
+                        requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                        dialog.dismiss()
+                    }.create()
+                dialog?.show()
+                throw MixinResponseException(
+                    response.errorCode,
+                    getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName),
+                )
+            } else if (response.error != null) {
                 handleError(address, response.errorDescription)
                 binding.progress.isVisible = false
                 return

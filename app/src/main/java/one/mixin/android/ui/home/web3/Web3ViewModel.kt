@@ -5,19 +5,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.ParticipantSession
 import javax.inject.Inject
 
 @HiltViewModel
 class Web3ViewModel
 @Inject
 internal constructor(
-    val web3Service: Web3Service,
+    private val userRepository: UserRepository,
+    private val web3Service: Web3Service,
 ) : ViewModel() {
     fun disconnect(
         version: WalletConnect.Version,
@@ -65,4 +68,15 @@ internal constructor(
     }
 
     suspend fun web3Account(address: String) = web3Service.web3Account(address)
+
+    suspend fun saveSession(participantSession: ParticipantSession) {
+        userRepository.saveSession(participantSession)
+    }
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+    suspend fun findBotPublicKey(
+        conversationId: String,
+        botId: String,
+    ) = userRepository.findBotPublicKey(conversationId, botId)
 }

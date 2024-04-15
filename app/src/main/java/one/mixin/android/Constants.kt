@@ -369,5 +369,7 @@ object Constants {
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
 
         const val WEB3_URL = ""
+
+        const val WEB3_BOT_USER_ID = ""
     }
 }

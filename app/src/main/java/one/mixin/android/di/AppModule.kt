@@ -128,6 +128,9 @@ object AppModule {
     private const val mrAccessSign = "MR-ACCESS-SIGN"
     private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
 
+    private const val mwAccessSign = "MW-ACCESS-SIGN"
+    private const val mwAccessTimestamp = "MW-ACCESS-TIMESTAMP"
+
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA =
@@ -496,7 +499,7 @@ object AppModule {
                         .addHeader("Accept-Language", Locale.getDefault().language)
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getRouteSignature(sourceRequest)
+                    val (ts, signature) = Session.getBotSignature(Session.routePublicKey, sourceRequest)
                     if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
                         b.addHeader(mrAccessTimestamp, ts.toString())
                         b.addHeader(mrAccessSign, signature)
@@ -537,7 +540,11 @@ object AppModule {
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
                         .addHeader("Accept-Language", Locale.getDefault().language)
+                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, requestId)
+                    val (ts, signature) = Session.getBotSignature(Session.web3PublicKey, sourceRequest)
+                    b.addHeader(mwAccessTimestamp, ts.toString())
+                    b.addHeader(mwAccessSign, signature)
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }
