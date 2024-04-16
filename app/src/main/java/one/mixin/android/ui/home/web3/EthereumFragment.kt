@@ -122,7 +122,7 @@ class EthereumFragment : BaseFragment() {
     }
 
     private var address: String? = null
-    private fun updateUI() {
+    fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             this@EthereumFragment.address = address
