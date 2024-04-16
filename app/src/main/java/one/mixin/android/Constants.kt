@@ -368,8 +368,8 @@ object Constants {
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
 
-        const val WEB3_URL = ""
+        const val WEB3_URL = "https://web3-api.mixin.one"
 
-        const val WEB3_BOT_USER_ID = ""
+        const val WEB3_BOT_USER_ID = "57eff6cd-038b-4ad6-abab-5792f95e05d7"
     }
 }
