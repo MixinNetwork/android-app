@@ -6,7 +6,7 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface Web3Service {
-    @GET("account/{account}")
+    @GET("accounts/{account}")
     suspend fun web3Account(
         @Path("account") account: String,
     ): MixinResponse<Web3Account>
