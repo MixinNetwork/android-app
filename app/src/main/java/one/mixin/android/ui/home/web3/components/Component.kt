@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.sessionrequest.ActionBottom
@@ -95,7 +96,7 @@ fun TransactionPreview(
             )
         }
         Text(
-            text = "≈ $${balance.multiply(asset.priceUSD()).toPlainString()}",
+            text = balance.multiply(asset.priceUSD()).currencyFormat(),
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
         )
