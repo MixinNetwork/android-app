@@ -339,6 +339,7 @@ class BottomSheetViewModel
             pin: String,
             trace: String,
             memo: String?,
+            reference: String?
         ): MixinResponse<*> {
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
@@ -366,7 +367,7 @@ class BottomSheetViewModel
             val changeKeys = data.first().keys.joinToString(",")
             val changeMask = data.first().mask
 
-            val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo)
+            val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo, reference ?: "")
             Timber.e("Kernel Address Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
             if (transactionResponse.error != null) {
@@ -417,6 +418,7 @@ class BottomSheetViewModel
             pin: String,
             trace: String,
             memo: String?,
+            reference: String? = null,
         ): MixinResponse<*> {
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)
@@ -444,7 +446,7 @@ class BottomSheetViewModel
 
             val changeKeys = data.last().keys.joinToString(",")
             val changeMask = data.last().mask
-            val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, "")
+            val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, reference ?: "")
 
             Timber.e("Kernel Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
