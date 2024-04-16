@@ -109,9 +109,11 @@ class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter
 }
 
 class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding, val onClickListener: (Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+    init {
+        binding.header.setOnClickAction(onClickListener)
+    }
     fun bind(balance: String) {
         binding.header.setText(balance)
-        binding.header.setOnClickAction(onClickListener)
     }
 }
 
