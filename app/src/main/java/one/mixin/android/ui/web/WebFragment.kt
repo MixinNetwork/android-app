@@ -1753,8 +1753,16 @@ class WebFragment : BaseFragment() {
                     val transaction = obj.getJSONObject("object")
                     val to = transaction.getString("to")
                     val from = transaction.getString("from")
-                    val data = transaction.getString("data")
-                    val gas = transaction.getString("gas")
+                    val gas = if (transaction.has("gas")) {
+                        transaction.getString("gas")
+                    } else {
+                        null
+                    }
+                    val data = if (transaction.has("data")) {
+                        transaction.getString("data")
+                    } else {
+                        null
+                    }
                     val value = if (transaction.has("value")) {
                         transaction.getString("value")
                     } else {
