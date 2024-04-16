@@ -189,7 +189,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
                         .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                        .setNegativeButton(R.string.Later) { dialog, _ ->
                             dialog.dismiss()
                         }.setPositiveButton(R.string.Update) { dialog, _ ->
                             requireContext().openMarket(parentFragmentManager, lifecycleScope)

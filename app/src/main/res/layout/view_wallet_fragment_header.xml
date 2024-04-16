@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="?attr/bg_white">
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.surprise.SurpriseLinearLayout
         android:layout_width="match_parent"
@@ -26,7 +26,7 @@
                 android:gravity="center"
                 android:text="@string/asset_migration_hint"
                 android:textColor="@color/white"
-                android:textSize="12sp"/>
+                android:textSize="12sp" />
 
         </FrameLayout>
 
@@ -55,12 +55,12 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:fontFamily="@font/mixin_font"
-                android:textIsSelectable="true"
                 android:gravity="center"
                 android:textColor="?attr/text_primary"
+                android:textIsSelectable="true"
                 android:textSize="40sp"
-                tools:text="12345.8"
-                tools:ignore="RelativeOverlap" />
+                tools:ignore="RelativeOverlap"
+                tools:text="12345.8" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -79,8 +79,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/mixin_font"
-                android:textIsSelectable="true"
                 android:textColor="?attr/text_primary"
+                android:textIsSelectable="true"
                 android:textSize="18sp"
                 tools:text="0.123" />
 
@@ -118,9 +118,9 @@
             android:id="@+id/send_receive_view"
             android:layout_width="match_parent"
             android:layout_height="44dp"
-            android:layout_marginBottom="@dimen/margin16"
             android:layout_marginStart="@dimen/margin20"
-            android:layout_marginEnd="@dimen/margin20"/>
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_marginBottom="@dimen/margin16" />
     </one.mixin.android.widget.surprise.SurpriseLinearLayout>
 
     <View

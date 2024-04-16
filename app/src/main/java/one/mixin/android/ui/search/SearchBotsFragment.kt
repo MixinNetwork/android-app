@@ -30,6 +30,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
@@ -39,7 +40,9 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchAdapter: SearchBotAdapter by lazy {
-        SearchBotAdapter()
+        SearchBotAdapter { url ->
+            WebActivity.show(requireContext(), url, null)
+        }
     }
 
     companion object {
@@ -160,6 +163,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
     private fun fuzzySearch(keyword: String?) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
+            searchAdapter.url = searchViewModel.fuzzySearchUrl(keyword)
             if (keyword.isNullOrBlank()) {
                 binding.searchRv.isVisible = true
                 binding.empty.isVisible = false
@@ -170,7 +174,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                 val cancellationSignal = CancellationSignal()
                 val users = searchViewModel.fuzzyBots(cancellationSignal, keyword)
                 searchAdapter.userList = users
-                if (users.isNullOrEmpty()) {
+                if (searchAdapter.itemCount <= 0) {
                     binding.searchRv.isVisible = false
                     binding.empty.isVisible = true
                 } else {

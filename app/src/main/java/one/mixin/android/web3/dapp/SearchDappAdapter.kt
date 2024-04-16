@@ -1,17 +1,14 @@
-package one.mixin.android.ui.search
+package one.mixin.android.web3.dapp
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.databinding.ItemSearchContactBinding
+import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
-import one.mixin.android.ui.search.holder.BotHolder
-import one.mixin.android.vo.User
-import one.mixin.android.web3.dapp.TipHolder
+import one.mixin.android.vo.Dapp
 
-class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    var onItemClickListener: SearchBotsFragment.UserListener? = null
+class SearchDappAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var query: String = ""
     var url: String? = null
         @SuppressLint("NotifyDataSetChanged")
@@ -21,8 +18,7 @@ class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<
                 notifyDataSetChanged()
             }
         }
-
-    var userList: List<User>? = null
+    var userList: List<Dapp>? = null
 
     @SuppressLint("NotifyDataSetChanged")
     fun clear() {
@@ -44,7 +40,7 @@ class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<
                     position
                 }
             )?.let {
-                (holder as BotHolder).bind(it, query, onItemClickListener)
+                (holder as DappHolder).bind(it, onUrlClick)
             }
         }
     }
@@ -57,6 +53,7 @@ class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<
     }
 
     override fun getItemCount(): Int = (userList?.size ?: 0) + (if (showTip()) 1 else 0)
+
     private fun showTip() = !url.isNullOrBlank()
 
     override fun onCreateViewHolder(
@@ -66,7 +63,7 @@ class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<
         return if (viewType == 1) {
             TipHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
-            BotHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            DappHolder(ItemFavoriteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 }
