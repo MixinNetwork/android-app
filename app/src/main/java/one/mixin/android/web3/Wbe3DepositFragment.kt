@@ -56,7 +56,7 @@ class Wbe3DepositFragment : BaseFragment() {
             binding.address.text = address
             val qr = this@Wbe3DepositFragment.binding.qr
             val qrAvatar = this@Wbe3DepositFragment.binding.qrAvatar
-            qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_mixin)
+            qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
                     val r = address.generateQRCode(qr.width)
