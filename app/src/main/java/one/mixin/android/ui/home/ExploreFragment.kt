@@ -194,6 +194,13 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden) {
+            ethereumFragment.updateUI()
+        }
+    }
+
     private val adapter by lazy {
         BotAdapter({
             activity?.addFragment(
