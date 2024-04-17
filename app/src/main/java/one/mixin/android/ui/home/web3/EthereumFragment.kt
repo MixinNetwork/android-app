@@ -222,7 +222,6 @@ class EthereumFragment : BaseFragment() {
             adapter.account = data
         }
         handleEmpty()
-        binding.empty.isVisible = false
         binding.progress.isVisible = false
     }
 
