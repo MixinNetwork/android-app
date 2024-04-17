@@ -112,7 +112,7 @@ buildscript {
 
         ext.playWalletVersion = '19.3.0'
         ext.playPayVersion = '16.4.0'
-        ext.datastoreVersion = '1.0.0'
+        ext.datastoreVersion = '1.1.0'
         ext.protobufVersion = '3.11.0'
     }
 
