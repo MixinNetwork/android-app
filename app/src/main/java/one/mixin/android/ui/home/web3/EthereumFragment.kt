@@ -178,6 +178,7 @@ class EthereumFragment : BaseFragment() {
     private var dialog: AlertDialog? = null
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun refreshAccount(address: String) {
+        if (!isAdded) return
         if (adapter.isEmpty()) {
             binding.progress.isVisible = true
             binding.empty.isVisible = false
@@ -191,6 +192,7 @@ class EthereumFragment : BaseFragment() {
         }
         val account = try {
             val response = web3ViewModel.web3Account(address)
+            if (!isAdded) return
             if (response.errorCode == ErrorHandler.OLD_VERSION) {
                 dialog?.dismiss()
                 dialog = alertDialogBuilder()
@@ -214,6 +216,7 @@ class EthereumFragment : BaseFragment() {
             }
             response
         } catch (e: Exception) {
+            if (!isAdded) return
             handleError(address, e.message ?: getString(R.string.Unknown))
             binding.progress.isVisible = false
             return
