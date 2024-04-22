@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -53,7 +54,8 @@ import java.math.BigInteger
 
 @Composable
 fun BrowserPage(
-    account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
+    account: String, chain: Chain, token: Web3Token?,
+    type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?,
     errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit,
 ) {
@@ -172,12 +174,6 @@ fun BrowserPage(
                         fee = fee.multiply(asset.priceUSD()),
                     )
                 }
-                if (errorInfo != null) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        text = errorInfo
-                    )
-                }
                 if (url != null && title != null) {
                     Box(modifier = Modifier.height(20.dp))
                     ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = title, footer = url)
@@ -248,7 +244,7 @@ fun BrowserPage(
                         }
                     }
                 }
-                if (type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
+                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }

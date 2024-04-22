@@ -36,13 +36,18 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     companion object {
         const val TAG = "InputAddressFragment"
         const val ARGS_TOKEN = "args_token"
-        fun newInstance(web3Token: Web3Token) = InputAddressFragment().apply {
+        const val ARGS_ADDRESS = "args_address"
+        fun newInstance(address: String, web3Token: Web3Token) = InputAddressFragment().apply {
             withArgs {
                 putParcelable(ARGS_TOKEN, web3Token)
+                putString(ARGS_ADDRESS, address)
             }
         }
     }
     lateinit var token: Web3Token
+    private val address by lazy {
+        requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    }
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
@@ -92,7 +97,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
         binding.continueTv.setOnClickListener {
             val destination = binding.addrEt.text.toString()
-            navTo(InputFragment.newInstance(destination, token), InputFragment.TAG)
+            navTo(InputFragment.newInstance(address, destination, token), InputFragment.TAG)
         }
         binding.addrIv.setOnClickListener {
             handleClick()

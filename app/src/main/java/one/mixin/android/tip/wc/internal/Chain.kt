@@ -12,7 +12,6 @@ sealed class Chain(
     val name: String,
     val symbol: String,
     private val rpcServers: List<String>,
-
 ) {
     object Ethereum : Chain(Constants.ChainId.ETHEREUM_CHAIN_ID, "eip155", 1, "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 

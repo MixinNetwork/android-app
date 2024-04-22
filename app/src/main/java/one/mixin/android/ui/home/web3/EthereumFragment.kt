@@ -105,7 +105,7 @@ class EthereumFragment : BaseFragment() {
         TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
             setOnClickListener {token->
                 address?.let {add->
-                    navTo(InputAddressFragment.newInstance(token), InputAddressFragment.TAG)
+                    navTo(InputAddressFragment.newInstance(add, token), InputAddressFragment.TAG)
                 }
                 dismissNow()
             }

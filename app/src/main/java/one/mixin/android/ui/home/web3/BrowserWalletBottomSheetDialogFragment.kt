@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
@@ -64,17 +66,20 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_MESSAGE = "args_message"
         const val ARGS_URL = "args_url"
         const val ARGS_TITLE = "args_title"
+        const val ARGS_TOKEN = "args_token"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
             url:String?,
-            title:String?
+            title:String?,
+            token: Web3Token? = null,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(ARGS_URL, url?.run {
                 Uri.parse(this).host
             })
             putString(ARGS_TITLE, title)
+            putParcelable(ARGS_TOKEN, token)
         }
     }
 
@@ -87,6 +92,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val signMessage: JsSignMessage by lazy { requireArguments().getParcelableCompat(ARGS_MESSAGE, JsSignMessage::class.java)!! }
     private val url: String? by lazy { requireArguments().getString(ARGS_URL) }
     private val title: String? by lazy { requireArguments().getString(ARGS_TITLE) }
+    private val token by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
+    }
+    private val currentChain by lazy {
+        token?.getChainFromName() ?: JsSigner.currentChain
+    }
 
     var step by mutableStateOf(Step.Input)
         private set
@@ -103,7 +114,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data,
+                BrowserPage(JsSigner.address, currentChain, token, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data,
                     url,
                     title,
                     errorInfo,
@@ -120,8 +131,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
 
-
-            refreshEstimatedGasAndAsset(JsSigner.currentChain)
+            refreshEstimatedGasAndAsset(currentChain)
         }
 
     @SuppressLint("RestrictedApi")
@@ -198,9 +208,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getTipPriv(requireContext(), pin)
-                    val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!)
+                    val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName())
                     step = Step.Sending
-                    val hash = JsSigner.sendTransaction(hex)
+                    val hash = JsSigner.sendTransaction(hex, token?.getChainFromName())
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE) {
                     val priv = viewModel.getTipPriv(requireContext(), pin)
@@ -273,15 +283,16 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 }
 
 fun showBrowserBottomSheetDialogFragment(
+    fragmentActivity: FragmentActivity,
     tip: Tip,
     signMessage: JsSignMessage,
-    currentUrl: String?,
-    currentTitle: String?,
-    fragmentActivity: FragmentActivity,
+    token: Web3Token? = null,
+    currentUrl: String? = null,
+    currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, token)
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)
     }

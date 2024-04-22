@@ -6,6 +6,7 @@ import android.util.TypedValue
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.work.impl.TestWorkManagerImpl
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -20,35 +21,53 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.web3.JsSignMessage.Companion.TYPE_TRANSACTION
 import one.mixin.android.widget.Keyboard
+import org.web3j.protocol.core.methods.request.Transaction
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import javax.inject.Inject
 import kotlin.math.max
 
 @AndroidEntryPoint
 class InputFragment : BaseFragment(R.layout.fragment_input) {
     companion object {
         const val TAG = "InputFragment"
-        const val ARGS_ADDRESS = "args_address"
+        const val ARGS_TO_ADDRESS = "args_to_address"
+        const val ARGS_FROM_ADDRESS = "args_from_address"
         const val ARGS_TOKEN = "args_token"
-        fun newInstance(address: String, web3Token: Web3Token) = InputFragment().apply {
+        fun newInstance(fromAddress:String, toAddress: String, web3Token: Web3Token) = InputFragment().apply {
             withArgs {
-                putString(ARGS_ADDRESS, address)
+                putString(ARGS_FROM_ADDRESS, fromAddress)
+                putString(ARGS_TO_ADDRESS, toAddress)
                 putParcelable(ARGS_TOKEN, web3Token)
             }
         }
     }
 
     private val binding by viewBinding(FragmentInputBinding::bind)
+
+    @Inject
+    lateinit var tip: Tip
+
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private var isReverse: Boolean = false
     
-    private val address by lazy {
-        requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    private val toAddress by lazy {
+        requireNotNull(requireArguments().getString(ARGS_TO_ADDRESS))
+    }
+    private val fromAddress by lazy {
+        requireNotNull(requireArguments().getString(ARGS_FROM_ADDRESS))
     }
     private val token by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java))
@@ -71,7 +90,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
-                titleView.setSubTitle(getString(R.string.Send_transfer), address.formatPublicKey())
+                titleView.setSubTitle(getString(R.string.Send_transfer), toAddress.formatPublicKey())
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(
@@ -137,7 +156,24 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-
+                    // Todo Non-chain token
+                    val value = Numeric.toHexStringWithPrefix(
+                        Convert.toWei(
+                            if (isReverse) {
+                                v
+                            } else {
+                                binding.minorTv.text.toString().split(" ")[1]
+                            }, Convert.Unit.ETHER
+                        ).toBigInteger()
+                    )
+                    showBrowserBottomSheetDialogFragment(
+                        requireActivity(),
+                        tip,
+                        JsSignMessage(0, TYPE_TRANSACTION,
+                            WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)
+                        ),
+                        token = token
+                    )
                 }
                 switchIv.setOnClickListener {
                     isReverse = !isReverse
