@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,6 +19,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -27,6 +29,7 @@ import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.max
@@ -49,7 +52,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
     private val binding by viewBinding(FragmentInputBinding::bind)
 
-    private val web3ViewModel by viewModels<Web3ViewModel>()
     private var isReverse: Boolean = false
     
     private val toAddress by lazy {
@@ -134,7 +136,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         token.balance
                     } else {
                         // Todo No price token and chain token gas
-                        BigDecimal(token.balance).multiply(BigDecimal(token.price)).numberFormat2()
+                        BigDecimal(token.balance).multiply(BigDecimal(token.price)).setScale(2, RoundingMode.DOWN).numberFormat2()
                     }
                     updateUI()
                 }
@@ -149,7 +151,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         fromAddress, toAddress, if (isReverse) {
                             v
                         } else {
-                            binding.minorTv.text.toString().split(" ")[1]
+                            binding.minorTv.text.toString().split(" ")[1].replace(",", "")
                         }
                     )
 
@@ -210,8 +212,27 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         "≈ ${(value.toBigDecimal().divide(price, 8, RoundingMode.UP)).numberFormat8()} ${token.symbol}"
                 }
             }
+
+            if (value == "0") {
+                continueVa.isEnabled = false
+                binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+            } else {
+                val v = if (isReverse) {
+                    value
+                } else {
+                    minorTv.text.toString().split(" ")[1].replace(",", "")
+                }
+                Timber.e("$v ${token.balance}")
+                if (BigDecimal(v) > BigDecimal(token.balance)) {
+                    continueVa.isEnabled = false
+                    binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else {
+                    continueVa.isEnabled = true
+                    binding.continueTv.textColor = requireContext().getColor(R.color.white)
+                }
+            }
         }
-        // todo check value
+
         updatePrimarySize()
     }
 

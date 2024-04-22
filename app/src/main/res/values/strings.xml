@@ -1486,4 +1486,6 @@
     <string name="Review">Review</string>
     <string name="Max">Max</string>
     <string name="hint_address">Enter a wallet address</string>
+    <string name="Accounts">Accounts</string>
+    <string name="to_mixin_wallet">To my Mixin Wallet</string>
 </resources>

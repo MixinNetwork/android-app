@@ -10,8 +10,11 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentAddressInputBinding
@@ -22,7 +25,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.decodeICAP
@@ -48,6 +53,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     private val address by lazy {
         requireNotNull(requireArguments().getString(ARGS_ADDRESS))
     }
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
@@ -99,8 +105,19 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             val destination = binding.addrEt.text.toString()
             navTo(InputFragment.newInstance(address, destination, token), InputFragment.TAG)
         }
-        binding.addrIv.setOnClickListener {
-            handleClick()
+        binding.addrVa.setOnClickListener {
+            if (binding.addrVa.displayedChild == 0) {
+                handleClick()
+            } else {
+                binding.addrEt.setText("")
+            }
+        }
+        binding.mixinIdTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
+        binding.toRl.setOnClickListener {
+            lifecycleScope.launch {
+                val toAddress= web3ViewModel.findAddres(token)
+                if (toAddress!=null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
+            }
         }
         binding.addrEt.addTextChangedListener(mWatcher)
     }
@@ -152,6 +169,11 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
 
             override fun afterTextChanged(s: Editable) {
                 if (viewDestroyed()) return
+                if (s.isEmpty()) {
+                    binding.addrVa.displayedChild = 0
+                } else {
+                    binding.addrVa.displayedChild = 1
+                }
                 updateSaveButton()
             }
         }

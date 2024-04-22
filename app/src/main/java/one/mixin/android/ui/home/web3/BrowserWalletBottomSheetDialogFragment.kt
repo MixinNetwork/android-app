@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.web3
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
@@ -52,6 +53,8 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.InputAddressFragment
+import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.JsSignMessage
 import one.mixin.android.web3.JsSigner
 import timber.log.Timber
@@ -221,6 +224,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 handleException(e)
             }
         }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        parentFragmentManager.apply {
+            findFragmentByTag(InputAddressFragment.TAG)?.let {
+                beginTransaction().remove(it).commit()
+            }
+            findFragmentByTag(InputFragment.TAG)?.let {
+                beginTransaction().remove(it).commit()
+            }
+        }
+        super.onDismiss(dialog)
+    }
 
     private fun handleException(e: Throwable) {
         Timber.e(e)

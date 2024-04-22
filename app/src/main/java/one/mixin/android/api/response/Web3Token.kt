@@ -3,6 +3,7 @@ package one.mixin.android.api.response
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.web3.JsSignMessage
@@ -49,6 +50,15 @@ fun Web3Token.getChainFromName(): Chain {
         chainName.contains("Ethereum", true) -> Chain.Ethereum
         chainName.contains("Polygon", true) -> Chain.Polygon
         chainName.contains("BNB Chain", true) -> Chain.BinanceSmartChain
+        else -> throw IllegalArgumentException("Not support: $chainName")
+    }
+}
+
+fun Web3Token.getChainIdFromName(): String {
+    return when {
+        chainName.contains("Ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
+        chainName.contains("Polygon", true) -> Constants.ChainId.Polygon
+        chainName.contains("BNB Chain", true) -> Constants.ChainId.BinanceSmartChain
         else -> throw IllegalArgumentException("Not support: $chainName")
     }
 }
