@@ -37,7 +37,6 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.toTransaction
@@ -284,7 +283,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
 fun showBrowserBottomSheetDialogFragment(
     fragmentActivity: FragmentActivity,
-    tip: Tip,
     signMessage: JsSignMessage,
     token: Web3Token? = null,
     currentUrl: String? = null,

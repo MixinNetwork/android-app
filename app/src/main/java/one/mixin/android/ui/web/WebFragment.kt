@@ -851,7 +851,6 @@ class WebFragment : BaseFragment() {
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
                             requireActivity(),
-                            tip,
                             message,
                             currentUrl = currentUrl,
                             currentTitle = currentTitle,

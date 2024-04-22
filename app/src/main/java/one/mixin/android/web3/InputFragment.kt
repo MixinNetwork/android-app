@@ -6,11 +6,11 @@ import android.util.TypedValue
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.work.impl.TestWorkManagerImpl
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.buildTransaction
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
@@ -21,22 +21,14 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.Tip
-import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
-import one.mixin.android.web3.JsSignMessage.Companion.TYPE_TRANSACTION
 import one.mixin.android.widget.Keyboard
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import javax.inject.Inject
 import kotlin.math.max
 
 @AndroidEntryPoint
@@ -56,9 +48,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private val binding by viewBinding(FragmentInputBinding::bind)
-
-    @Inject
-    lateinit var tip: Tip
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private var isReverse: Boolean = false
@@ -156,22 +145,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    // Todo Non-chain token
-                    val value = Numeric.toHexStringWithPrefix(
-                        Convert.toWei(
-                            if (isReverse) {
-                                v
-                            } else {
-                                binding.minorTv.text.toString().split(" ")[1]
-                            }, Convert.Unit.ETHER
-                        ).toBigInteger()
+                    val transaction = token.buildTransaction(
+                        fromAddress, toAddress, if (isReverse) {
+                            v
+                        } else {
+                            binding.minorTv.text.toString().split(" ")[1]
+                        }
                     )
+
                     showBrowserBottomSheetDialogFragment(
                         requireActivity(),
-                        tip,
-                        JsSignMessage(0, TYPE_TRANSACTION,
-                            WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)
-                        ),
+                        transaction,
                         token = token
                     )
                 }
@@ -227,6 +211,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
             }
         }
+        // todo check value
         updatePrimarySize()
     }
 
