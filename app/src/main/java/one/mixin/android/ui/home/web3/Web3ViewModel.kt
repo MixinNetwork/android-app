@@ -2,6 +2,8 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainIdFromName
@@ -87,4 +89,9 @@ internal constructor(
     suspend fun findAddres(token: Web3Token): String? {
         return tokenRepository.findDepositEntry(token.getChainIdFromName())?.destination
     }
+
+    suspend fun findAndSyncDepositEntry(token: Web3Token): String? =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
+        }
 }

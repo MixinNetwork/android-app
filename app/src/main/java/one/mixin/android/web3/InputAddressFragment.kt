@@ -16,13 +16,17 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentAddressInputBinding
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.textColor
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -115,8 +119,17 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         binding.mixinIdTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.toRl.setOnClickListener {
             lifecycleScope.launch {
-                val toAddress= web3ViewModel.findAddres(token)
-                if (toAddress!=null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
+                var toAddress = web3ViewModel.findAddres(token)
+                if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
+                else {
+                    val alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                        show()
+                    }
+                    toAddress = web3ViewModel.findAndSyncDepositEntry(token)
+                    alertDialog.dismiss()
+                    if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
+                    else toast(R.string.Not_found)
+                }
             }
         }
         binding.addrEt.addTextChangedListener(mWatcher)
