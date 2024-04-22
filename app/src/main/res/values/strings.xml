@@ -1483,4 +1483,5 @@
     <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
     <string name="No_asset">Don’t have assets</string>
     <string name="Ethereum_Account">Ethereum Account</string>
+    <string name="Review">Review</string>
 </resources>

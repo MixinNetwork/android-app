@@ -1,9 +1,8 @@
-package one.mixin.android.ui.home.web3
+package one.mixin.android.web3
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
@@ -20,24 +19,16 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    var account: Web3Account? = null
+class TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    fun isEmpty() = tokens.isEmpty()
+
+    var tokens: ArrayList<Web3Token> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
-
-    fun isEmpty() = tokens.isEmpty()
-    private var onClickAction: ((Int) -> Unit)? = null
-
-    fun setOnClickAction(onClickListener: (Int) -> Unit) {
-        this.onClickAction = onClickListener
-    }
-
-    val tokens: List<Web3Token>
-        get() {
-            return account?.tokens ?: emptyList()
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
         }
 
     var address: String? = null
@@ -48,89 +39,30 @@ class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 notifyDataSetChanged()
             }
         }
-    var title: String = ""
-    var subTitle: String = ""
-    var icon: Int = R.drawable.ic_ethereum
-    var onClickListener: OnClickListener = OnClickListener { }
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun setContent(
-        title: String,
-        subTitle: String,
-        @DrawableRes icon: Int,
-        onClickListener: OnClickListener,
-    ) {
-        this.title = title
-        this.subTitle = subTitle
-        this.icon = icon
+    private var onClickListener: ((Web3Token) -> Unit)? = null
+    fun setOnClickListener(onClickListener: (Web3Token) -> Unit) {
         this.onClickListener = onClickListener
-        notifyDataSetChanged()
     }
-
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
     ): RecyclerView.ViewHolder {
-        return if (viewType == 0) {
-            Web3CardHolder(ItemChainCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        } else if (viewType == 1) {
-            Web3HeaderHolder(ItemWeb3HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        } else {
-            Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        }
+        return Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun getItemCount(): Int {
-        return tokens.size + 1
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        if (0 == position) {
-            return if (account == null && address.isNullOrEmpty()) {
-                0
-            } else {
-                1
-            }
-        }
-        return 2
+        return tokens.size
     }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        val type = getItemViewType(position)
-        when (type) {
-            0 -> {
-                (holder as Web3CardHolder).bind(title, subTitle, icon, onClickListener)
-            }
 
-            1 -> {
-                account?.let { account ->
-                    (holder as Web3HeaderHolder).bind(account.balance, onClickAction)
-                }
-            }
-
-            2 -> (holder as Web3Holder).bind(tokens[position - 1])
+        (holder as Web3Holder).bind(tokens[position])
+        holder.itemView.setOnClickListener {
+            onClickListener?.invoke(tokens[position])
         }
-    }
-}
-
-class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(balance: String, onClickListener: ((Int) -> Unit)?) {
-        binding.header.setText(balance)
-        binding.header.setOnClickAction(onClickListener)
-    }
-}
-
-class Web3CardHolder(val binding: ItemChainCardBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(
-        title: String,
-        subTitle: String,
-        @DrawableRes icon: Int,
-        onClickListener: OnClickListener,
-    ) {
-        binding.root.setContent(title, subTitle, icon, onClickListener)
     }
 }
 
