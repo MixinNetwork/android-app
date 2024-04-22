@@ -1484,4 +1484,5 @@
     <string name="No_asset">Don’t have assets</string>
     <string name="Ethereum_Account">Ethereum Account</string>
     <string name="Review">Review</string>
+    <string name="Max">Max</string>
 </resources>

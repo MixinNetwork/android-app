@@ -16,6 +16,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.shaking
@@ -23,12 +24,17 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Fiat
+import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.max
@@ -58,8 +64,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     private val token by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java))
     }
-    private val price: Float by lazy {
-        token.symbol.toFloatOrNull() ?: 1f
+    private val price: BigDecimal by lazy {
+        (token.price.toBigDecimalOrNull() ?: BigDecimal.ONE).multiply(Fiats.getRate().toBigDecimal())
+    }
+    private val currencyName by lazy {
+        Fiats.getAccountCurrencyAppearance()
     }
 
     @SuppressLint("SetTextI18n")
@@ -119,6 +128,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         }
                     },
                 )
+                avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
+                avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                name.text = token.name
+                balance.text = "${token.balance} ${token.symbol}"
+                max.setOnClickListener {
+                    v = if (isReverse) {
+                        token.balance
+                    } else {
+                        // Todo No price token and chain token gas
+                        BigDecimal(token.balance).multiply(BigDecimal(token.price)).numberFormat2()
+                    }
+                    updateUI()
+                }
                 keyboard.initPinKeys(
                     requireContext(),
                     listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "<<"),
@@ -159,24 +181,24 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     v
                 }
             if (isReverse) {
-                val currentValue = value.toFloat() * price
+                val currentValue = price.multiply(value.toBigDecimal())
                 if (value == "0") {
                     primaryTv.text = "0 ${token.symbol}"
-                    minorTv.text = "0 USD"
+                    minorTv.text = "0 $currencyName"
                 } else {
                     primaryTv.text = "$value ${token.symbol}"
                     minorTv.text =
-                        "≈ ${getNumberFormat(String.format("%.2f", currentValue))} USD"
+                        "≈ ${getNumberFormat(String.format("%.2f", currentValue))} $currencyName"
                 }
             } else {
                 val currentValue = value.toFloat()
                 if (value == "0") {
-                    primaryTv.text = "0 USD"
+                    primaryTv.text = "0 $currencyName"
                     minorTv.text = "0 ${token.symbol}"
                 } else {
-                    primaryTv.text = "${getNumberFormat(value)} USD"
+                    primaryTv.text = "${getNumberFormat(value)} $currencyName"
                     minorTv.text =
-                        "≈ ${BigDecimal((currentValue / price).toDouble()).numberFormat8()} ${token.symbol}"
+                        "≈ ${(value.toBigDecimal().divide(price, 8, RoundingMode.UP)).numberFormat8()} ${token.symbol}"
                 }
             }
         }
