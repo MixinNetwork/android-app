@@ -39,6 +39,7 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.InputAddressFragment
 import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.Wbe3DepositFragment
@@ -104,7 +105,7 @@ class EthereumFragment : BaseFragment() {
         TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
             setOnClickListener {token->
                 address?.let {add->
-                    navTo(InputFragment.newInstance(add,token), InputFragment.TAG)
+                    navTo(InputAddressFragment.newInstance(token), InputAddressFragment.TAG)
                 }
                 dismissNow()
             }

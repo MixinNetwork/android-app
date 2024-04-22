@@ -1452,4 +1452,5 @@
     <string name="Ethereum_Account">Ethereum 账户</string>
     <string name="Review">预览</string>
     <string name="Max">最大值</string>
+    <string name="hint_address">输入钱包地址</string>
 </resources>

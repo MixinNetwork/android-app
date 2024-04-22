@@ -4,18 +4,16 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.AppListBottomSheetDialogFragment
-import one.mixin.android.vo.App
 
 class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 

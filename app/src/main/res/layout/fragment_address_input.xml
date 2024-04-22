@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:titleText="@string/Address" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_white"
+        android:baselineAligned="false"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/addr_rl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/bg_round_8_solid_gray"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/addr_et"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:hint="@string/hint_address"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="56dp"
+                android:textColor="?attr/text_primary"
+                android:textColorHint="?attr/text_assist"
+                android:textSize="16sp"
+                android:lines="3"
+                android:gravity="start|top"
+                tools:ignore="Autofill,TextFields" />
+
+            <ImageView
+                android:id="@+id/addr_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_gravity="bottom|end"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_addr_qr" />
+        </FrameLayout>
+
+        <View
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
+
+        <Button
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/continue_tv"
+            android:layout_width="116dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/margin16"
+            android:layout_marginBottom="20dp"
+            android:enabled="false"
+            android:text="@string/Continue"
+            android:textColor="?attr/text_assist"
+            android:textSize="14sp" />
+    </LinearLayout>
+</LinearLayout>

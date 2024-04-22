@@ -1485,4 +1485,5 @@
     <string name="Ethereum_Account">Ethereum Account</string>
     <string name="Review">Review</string>
     <string name="Max">Max</string>
+    <string name="hint_address">Enter a wallet address</string>
 </resources>

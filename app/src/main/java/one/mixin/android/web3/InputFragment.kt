@@ -8,37 +8,26 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.setting.Currency
-import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Fiat
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.Keyboard
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.max
-import kotlin.math.min
 
 @AndroidEntryPoint
 class InputFragment : BaseFragment(R.layout.fragment_input) {

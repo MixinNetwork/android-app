@@ -4,13 +4,9 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.databinding.ItemChainCardBinding
-import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
