@@ -103,7 +103,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.data,
+                BrowserPage(JsSigner.address, JsSigner.currentChain, signMessage.type, step, tipGas, asset, signMessage.wcEthereumTransaction, signMessage.reviewData,
                     url,
                     title,
                     errorInfo,
