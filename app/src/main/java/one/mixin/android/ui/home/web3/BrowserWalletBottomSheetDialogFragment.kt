@@ -126,10 +126,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                BrowserPage(JsSigner.address, currentChain, token, chainToken, signMessage.type, step, tipGas, asset,
-                    signMessage.wcEthereumTransaction, signMessage.data, url, title, errorInfo, insufficientGas,
+                BrowserPage(
+                    JsSigner.address, currentChain, token, chainToken, signMessage.type, step, tipGas, asset,
+                    signMessage.wcEthereumTransaction, signMessage.reviewData,
+                    url, title, errorInfo, insufficientGas,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
-                    showPin = { showPin() }, deposit = { deposit()}, onDismissRequest = { dismiss() })
+                    showPin = { showPin() },
+                    onDismissRequest = { dismiss() },
+                    onRejectAction = {
+                        onRejectAction?.invoke()
+                        dismiss()
+                    }
+                )
             }
 
             doOnPreDraw {

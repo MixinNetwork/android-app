@@ -2,10 +2,10 @@ package one.mixin.android.web3
 
 import android.content.Context
 import androidx.annotation.RawRes
-import java.io.IOException
 import one.mixin.android.R
 import one.mixin.android.tip.wc.internal.Chain
 import timber.log.Timber
+import java.io.IOException
 
 class JsInjectorClient {
     fun initJs(context: Context, chain: Chain, address: String): String {

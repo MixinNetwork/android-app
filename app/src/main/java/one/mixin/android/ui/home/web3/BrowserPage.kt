@@ -37,13 +37,13 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
-import one.mixin.android.ui.tip.wc.sessionrequest.ActionBottom
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -58,7 +58,7 @@ fun BrowserPage(
     account: String, chain: Chain, token: Web3Token?, chainToken: Web3Token?,
     type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?, errorInfo: String?, insufficientGas: Boolean,
-    showPin: () -> Unit, deposit: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit,
+    showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit, onRejectAction: () -> Unit
 ) {
     MixinAppTheme {
         Column(
@@ -227,10 +227,7 @@ fun BrowserPage(
                     ActionBottom(
                         modifier = Modifier
                             .align(Alignment.BottomCenter), cancelTitle = stringResource(R.string.Cancel), confirmTitle = stringResource(id = R.string.Continue),
-                        cancelAction = {
-                            onDismissRequest.invoke()
-                        }, confirmAction =
-                        showPin
+                        cancelAction = onRejectAction, confirmAction = showPin
                     )
                 }
                 if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
