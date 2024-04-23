@@ -10,6 +10,7 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -36,6 +37,7 @@ import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint
 class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
@@ -51,6 +53,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             }
         }
     }
+
     lateinit var token: Web3Token
     private val address by lazy {
         requireNotNull(requireArguments().getString(ARGS_ADDRESS))
@@ -184,8 +187,10 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 if (viewDestroyed()) return
                 if (s.isEmpty()) {
                     binding.addrVa.displayedChild = 0
+                    binding.walletLl.isVisible = true
                 } else {
                     binding.addrVa.displayedChild = 1
+                    binding.walletLl.isVisible = false
                 }
                 updateSaveButton()
             }
@@ -202,7 +207,6 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     }
 
     private fun isValidEthAddress(address: String): Boolean {
-        return address.matches("^0x[0-9a-fA-F]{40}$".toRegex())
+        return WalletUtils.isValidAddress(address)
     }
-
 }
