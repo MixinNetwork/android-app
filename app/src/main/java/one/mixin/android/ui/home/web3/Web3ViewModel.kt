@@ -2,9 +2,14 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -20,6 +25,7 @@ class Web3ViewModel
 @Inject
 internal constructor(
     private val userRepository: UserRepository,
+    private val tokenRepository: TokenRepository,
     private val web3Service: Web3Service,
 ) : ViewModel() {
     fun disconnect(
@@ -79,4 +85,13 @@ internal constructor(
         conversationId: String,
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
+
+    suspend fun findAddres(token: Web3Token): String? {
+        return tokenRepository.findDepositEntry(token.getChainIdFromName())?.destination
+    }
+
+    suspend fun findAndSyncDepositEntry(token: Web3Token): String? =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
+        }
 }

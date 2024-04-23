@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
@@ -19,21 +20,28 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var account: Web3Account? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    fun isEmpty()  = tokens.size == 0
+    fun isEmpty() = tokens.isEmpty()
+    private var onClickAction: ((Int) -> Unit)? = null
 
-    private var tokens: List<Web3Token> = emptyList()
+    fun setOnClickAction(onClickListener: (Int) -> Unit) {
+        this.onClickAction = onClickListener
+    }
+
+    val tokens: List<Web3Token>
         get() {
             return account?.tokens ?: emptyList()
         }
 
     var address: String? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
                 field = value
@@ -43,14 +51,14 @@ class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter
     var title: String = ""
     var subTitle: String = ""
     var icon: Int = R.drawable.ic_ethereum
-    var onClickListener: View.OnClickListener = View.OnClickListener { }
+    var onClickListener: OnClickListener = OnClickListener { }
 
     @SuppressLint("NotifyDataSetChanged")
     fun setContent(
         title: String,
         subTitle: String,
         @DrawableRes icon: Int,
-        onClickListener: View.OnClickListener,
+        onClickListener: OnClickListener,
     ) {
         this.title = title
         this.subTitle = subTitle
@@ -66,7 +74,7 @@ class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter
         return if (viewType == 0) {
             Web3CardHolder(ItemChainCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else if (viewType == 1) {
-            Web3HeaderHolder(ItemWeb3HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false), onClickAction)
+            Web3HeaderHolder(ItemWeb3HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
             Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
@@ -99,7 +107,7 @@ class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter
 
             1 -> {
                 account?.let { account ->
-                    (holder as Web3HeaderHolder).bind(account.balance)
+                    (holder as Web3HeaderHolder).bind(account.balance, onClickAction)
                 }
             }
 
@@ -108,12 +116,10 @@ class Web3WalletAdapter(val onClickAction: (Int) -> Unit) : RecyclerView.Adapter
     }
 }
 
-class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding, val onClickListener: (Int) -> Unit) : RecyclerView.ViewHolder(binding.root) {
-    init {
-        binding.header.setOnClickAction(onClickListener)
-    }
-    fun bind(balance: String) {
+class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding) : RecyclerView.ViewHolder(binding.root) {
+    fun bind(balance: String, onClickListener: ((Int) -> Unit)?) {
         binding.header.setText(balance)
+        binding.header.setOnClickAction(onClickListener)
     }
 }
 
@@ -122,7 +128,7 @@ class Web3CardHolder(val binding: ItemChainCardBinding) : RecyclerView.ViewHolde
         title: String,
         subTitle: String,
         @DrawableRes icon: Int,
-        onClickListener: View.OnClickListener,
+        onClickListener: OnClickListener,
     ) {
         binding.root.setContent(title, subTitle, icon, onClickListener)
     }
