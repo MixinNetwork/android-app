@@ -5,8 +5,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -236,5 +240,69 @@ private fun WarningPreview() {
         }
 
         Warning(modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+
+@Composable
+fun ActionBottom(
+    modifier: Modifier,
+    cancelTitle: String,
+    confirmTitle: String,
+    cancelAction: () -> Unit,
+    confirmAction: () -> Unit,
+) {
+    Row(
+        modifier =
+        modifier
+            .background(MixinAppTheme.colors.background)
+            .padding(20.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Button(
+            onClick = cancelAction,
+            colors =
+            ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.backgroundGray,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            elevation = ButtonDefaults.elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp
+            )
+        ) {
+            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
+        }
+        Box(modifier = Modifier.width(36.dp))
+        Button(
+            onClick = confirmAction,
+            colors =
+            ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.accent,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            elevation = ButtonDefaults.elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp
+            )
+        ) {
+            Text(text = confirmTitle, color = Color.White)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun TransferBottomPreview() {
+    Column {
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
 }

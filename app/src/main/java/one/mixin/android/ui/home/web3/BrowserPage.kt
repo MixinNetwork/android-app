@@ -36,6 +36,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -188,6 +189,7 @@ fun BrowserPage(
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))
             }
+            Box(modifier = Modifier.weight(1f))
             Box(
                 modifier =
                 Modifier
@@ -226,27 +228,14 @@ fun BrowserPage(
                         }
                     }
                 } else {
-                    Row(
-                        modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Button(
-                            onClick = showPin,
-                            colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-                        ) {
-                            Text(text = stringResource(id = R.string.Continue), color = Color.White)
-                        }
-                    }
+                    ActionBottom(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter), cancelTitle = stringResource(R.string.Cancel), confirmTitle = stringResource(id = R.string.Continue),
+                        cancelAction = {
+                            onDismissRequest.invoke()
+                        }, confirmAction =
+                        showPin
+                    )
                 }
                 if (type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
