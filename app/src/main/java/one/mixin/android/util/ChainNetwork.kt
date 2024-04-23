@@ -59,9 +59,9 @@ fun getChainName(
 ): String? {
     if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
         return if (assetKey?.isDigitsOnly() == true) {
-            "Tron (TRC-10)"
+            "TRC-10"
         } else {
-            "Tron (TRC-20)"
+            "TRC-20"
         }
     }
     return chainNames[chainId] ?: chainName

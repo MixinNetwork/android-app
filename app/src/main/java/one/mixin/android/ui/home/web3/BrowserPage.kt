@@ -37,6 +37,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -54,10 +55,10 @@ import java.math.BigInteger
 
 @Composable
 fun BrowserPage(
-    account: String, chain: Chain, token: Web3Token?,
+    account: String, chain: Chain, token: Web3Token?, chainToken: Web3Token?,
     type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
-    url: String?, title: String?,
-    errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit,
+    url: String?, title: String?, errorInfo: String?, insufficientGas: Boolean,
+    showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit, onRejectAction: () -> Unit
 ) {
     MixinAppTheme {
         Column(
@@ -69,8 +70,7 @@ fun BrowserPage(
         ) {
 
             Column(
-                modifier =
-                Modifier
+                modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .weight(weight = 1f, fill = false),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -78,7 +78,11 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(50.dp))
                 Icon(
                     modifier = Modifier.size(70.dp),
-                    painter = painterResource(id = if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp),
+                    painter = painterResource(
+                        id = if (token != null) {
+                            if (insufficientGas) R.drawable.ic_transfer_status_failed else R.drawable.ic_web3_transaction
+                        } else R.drawable.ic_no_dapp
+                    ),
                     contentDescription = null,
                     tint = Color.Unspecified,
                 )
@@ -93,7 +97,7 @@ fun BrowserPage(
                             when (step) {
                                 WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_message_request
                                 WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
-                                WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                                WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else R.string.web3_signing_failed
                                 WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                 else -> R.string.web3_message_request
                             }
@@ -101,7 +105,7 @@ fun BrowserPage(
                             when (step) {
                                 WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
                                 WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
-                                WalletConnectBottomSheetDialogFragment.Step.Error -> R.string.web3_signing_failed
+                                WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else R.string.web3_signing_failed
                                 WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                 else -> R.string.web3_signing_confirmation
                             }
@@ -140,8 +144,7 @@ fun BrowserPage(
                 )
                 Box(modifier = Modifier.height(10.dp))
                 Box(
-                    modifier =
-                    Modifier
+                    modifier = Modifier
                         .height(10.dp)
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.backgroundWindow),
@@ -201,8 +204,7 @@ fun BrowserPage(
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(
-                        modifier =
-                        Modifier
+                        modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .background(MixinAppTheme.colors.background)
                             .padding(20.dp)
@@ -222,27 +224,11 @@ fun BrowserPage(
                         }
                     }
                 } else {
-                    Row(
-                        modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Button(
-                            onClick = showPin,
-                            colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = MixinAppTheme.colors.accent,
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-                        ) {
-                            Text(text = stringResource(id = R.string.Continue), color = Color.White)
-                        }
-                    }
+                    ActionBottom(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter), cancelTitle = stringResource(R.string.Cancel), confirmTitle = stringResource(id = R.string.Continue),
+                        cancelAction = onRejectAction, confirmAction = showPin
+                    )
                 }
                 if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))

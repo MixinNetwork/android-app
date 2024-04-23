@@ -36,11 +36,11 @@ import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.tip.wc.sessionrequest.ActionBottom
 
 @Composable
 fun SessionProposalPage(

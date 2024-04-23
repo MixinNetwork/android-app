@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.supportDeposit
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -45,18 +46,25 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     companion object {
         const val TAG = "InputAddressFragment"
         const val ARGS_TOKEN = "args_token"
+        const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
-        fun newInstance(address: String, web3Token: Web3Token) = InputAddressFragment().apply {
+        fun newInstance(address: String, web3Token: Web3Token, chainToken: Web3Token?) = InputAddressFragment().apply {
             withArgs {
                 putParcelable(ARGS_TOKEN, web3Token)
+                putParcelable(ARGS_CHAIN_TOKEN, chainToken)
                 putString(ARGS_ADDRESS, address)
             }
         }
     }
 
-    lateinit var token: Web3Token
     private val address by lazy {
         requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    }
+    private val token by lazy {
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java))
+    }
+    private val chainToken by lazy {
+        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
@@ -89,11 +97,6 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             )
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)!!
-    }
-
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -109,7 +112,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         binding.continueTv.setOnClickListener {
             val destination = binding.addrEt.text.toString()
             binding.addrEt.hideKeyboard()
-            navTo(InputFragment.newInstance(address, destination, token), InputFragment.TAG)
+            navTo(InputFragment.newInstance(address, destination, token, chainToken), InputFragment.TAG)
         }
         binding.addrVa.setOnClickListener {
             if (binding.addrVa.displayedChild == 0) {
@@ -123,18 +126,19 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             lifecycleScope.launch {
                 var toAddress = web3ViewModel.findAddres(token)
                 binding.addrEt.hideKeyboard()
-                if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
+                if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
                 else {
                     val alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                         show()
                     }
                     toAddress = web3ViewModel.findAndSyncDepositEntry(token)
                     alertDialog.dismiss()
-                    if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
+                    if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
                     else toast(R.string.Not_found)
                 }
             }
         }
+        binding.walletLl.isVisible = supportDeposit
         binding.addrEt.addTextChangedListener(mWatcher)
     }
 
@@ -187,7 +191,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 if (viewDestroyed()) return
                 if (s.isEmpty()) {
                     binding.addrVa.displayedChild = 0
-                    binding.walletLl.isVisible = true
+                    binding.walletLl.isVisible = supportDeposit
                 } else {
                     binding.addrVa.displayedChild = 1
                     binding.walletLl.isVisible = false
@@ -195,6 +199,10 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 updateSaveButton()
             }
         }
+
+    private val supportDeposit by lazy {
+        token.supportDeposit()
+    }
 
     private fun updateSaveButton() {
         if (binding.addrEt.text.isNotEmpty() && isValidEthAddress(binding.addrEt.text.toString())) {

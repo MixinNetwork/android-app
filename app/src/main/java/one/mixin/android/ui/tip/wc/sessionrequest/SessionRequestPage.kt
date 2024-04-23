@@ -49,6 +49,7 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -455,69 +456,6 @@ fun FeeInfo(
 @Composable
 private fun NetworkInfoPreview() {
     FeeInfo("0.0169028 ETH", BigDecimal("7.57"))
-}
-
-@Composable
-fun ActionBottom(
-    modifier: Modifier,
-    cancelTitle: String,
-    confirmTitle: String,
-    cancelAction: () -> Unit,
-    confirmAction: () -> Unit,
-) {
-    Row(
-        modifier =
-            modifier
-                .background(MixinAppTheme.colors.background)
-                .padding(20.dp)
-                .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Button(
-            onClick = cancelAction,
-            colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.backgroundGray,
-                ),
-            shape = RoundedCornerShape(20.dp),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            elevation = elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp
-            )
-        ) {
-            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
-        }
-        Box(modifier = Modifier.width(36.dp))
-        Button(
-            onClick = confirmAction,
-            colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
-                ),
-            shape = RoundedCornerShape(20.dp),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            elevation = elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp
-            )
-        ) {
-            Text(text = confirmTitle, color = Color.White)
-        }
-    }
-}
-
-@Preview
-@Composable
-fun TransferBottomPreview() {
-    Column {
-        ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
-        ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
-    }
 }
 
 @Preview

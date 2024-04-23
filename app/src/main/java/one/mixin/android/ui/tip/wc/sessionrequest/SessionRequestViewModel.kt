@@ -7,10 +7,12 @@ import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import javax.inject.Inject
 
@@ -75,7 +77,20 @@ class SessionRequestViewModel
         ): String =
             when (version) {
                 WalletConnect.Version.V2 -> {
-                    gson.toJson(data)
+                    if (data is WCEthereumSignMessage && (data.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE || data.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE)) {
+                        try {
+                            if (data.raw.size >= 2) {
+                                val encodedMessage = data.raw[0]
+                                String(encodedMessage.hexStringToByteArray())
+                            } else {
+                                throw IllegalArgumentException("IllegalArgument")
+                            }
+                        } catch (e: Exception) {
+                            gson.toJson(data)
+                        }
+                    } else {
+                        gson.toJson(data)
+                    }
                 }
                 WalletConnect.Version.TIP -> {
                     data as String
