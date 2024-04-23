@@ -14,12 +14,12 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -39,11 +39,12 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.InputAddressFragment
+import one.mixin.android.web3.TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.Wbe3DepositFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
-import timber.log.Timber
 
 @AndroidEntryPoint
 class EthereumFragment : BaseFragment() {
@@ -58,43 +59,56 @@ class EthereumFragment : BaseFragment() {
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
-        Web3WalletAdapter { id ->
-            when (id) {
-                R.id.send -> {
-                    toast(R.string.coming_soon)
-                }
-
-                R.id.receive -> {
-                    navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
-                }
-
-                R.id.browser -> {
-                    navTo(SearchDappFragment(), SearchDappFragment.TAG)
-                }
-
-                R.id.more -> {
-                    val builder = BottomSheet.Builder(requireActivity())
-                    _bottomBinding = ViewWalletWeb3BottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_bottom, null))
-                    builder.setCustomView(bottomBinding.root)
-                    val bottomSheet = builder.create()
-                    bottomBinding.apply {
-                        addressTv.text = this@EthereumFragment.address?.formatPublicKey()
-                        copy.setOnClickListener {
-                            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
-                            toast(R.string.copied_to_clipboard)
-                            bottomSheet.dismiss()
-                        }
-                        connectedTv.setOnClickListener {
-                            this@EthereumFragment.navTo(WalletConnectFragment.newInstance(), WalletConnectFragment.TAG)
-                            bottomSheet.dismiss()
-                        }
-                        cancel.setOnClickListener { bottomSheet.dismiss() }
+        Web3WalletAdapter().apply {
+            setOnClickAction { id ->
+                when (id) {
+                    R.id.send -> {
+                        sendCallback(tokens)
                     }
 
-                    bottomSheet.show()
+                    R.id.receive -> {
+                        navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+                    }
+
+                    R.id.browser -> {
+                        navTo(SearchDappFragment(), SearchDappFragment.TAG)
+                    }
+
+                    R.id.more -> {
+                        val builder = BottomSheet.Builder(requireActivity())
+                        _bottomBinding = ViewWalletWeb3BottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_bottom, null))
+                        builder.setCustomView(bottomBinding.root)
+                        val bottomSheet = builder.create()
+                        bottomBinding.apply {
+                            addressTv.text = this@EthereumFragment.address?.formatPublicKey()
+                            copy.setOnClickListener {
+                                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
+                                toast(R.string.copied_to_clipboard)
+                                bottomSheet.dismiss()
+                            }
+                            connectedTv.setOnClickListener {
+                                this@EthereumFragment.navTo(WalletConnectFragment.newInstance(), WalletConnectFragment.TAG)
+                                bottomSheet.dismiss()
+                            }
+                            cancel.setOnClickListener { bottomSheet.dismiss() }
+                        }
+
+                        bottomSheet.show()
+                    }
                 }
             }
         }
+    }
+
+    private val sendCallback = fun(list: List<Web3Token>) {
+        TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
+            setOnClickListener {token->
+                address?.let {add->
+                    navTo(InputAddressFragment.newInstance(add, token), InputAddressFragment.TAG)
+                }
+                dismissNow()
+            }
+        }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
     }
 
     override fun onCreateView(
@@ -176,6 +190,7 @@ class EthereumFragment : BaseFragment() {
     }
 
     private var dialog: AlertDialog? = null
+
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun refreshAccount(address: String) {
         if (!isAdded) return
@@ -223,10 +238,13 @@ class EthereumFragment : BaseFragment() {
         }
         account.data?.let { data ->
             adapter.account = data
+            tokens = data.tokens
         }
         handleEmpty()
         binding.progress.isVisible = false
     }
+
+    private var tokens = emptyList<Web3Token>()
 
     private fun handleError(address: String, err: String) {
         binding.apply {

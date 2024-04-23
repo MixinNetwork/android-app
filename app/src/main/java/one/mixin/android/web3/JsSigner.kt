@@ -76,9 +76,10 @@ object JsSigner {
     }
 
     fun sendTransaction(
-        signedTransactionData: String
+        signedTransactionData: String,
+        chain: Chain?
     ): String? {
-        val tx = getWeb3j(currentChain).ethSendRawTransaction(signedTransactionData).send()
+        val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
         if (tx.hasError()) {
             val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
             Timber.d("$TAG transactionHash is null, $msg")
@@ -93,13 +94,13 @@ object JsSigner {
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
+        chain: Chain?
     ): String {
         val value = transaction.value ?: "0x0"
-
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount =
-            getWeb3j(currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
+            getWeb3j(chain ?: currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
@@ -120,7 +121,7 @@ object JsSigner {
         )
         Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
         val rawTransaction = RawTransaction.createTransaction(
-            currentChain.chainReference.toLong(),
+            (chain ?: currentChain).chainReference.toLong(),
             nonce,
             gasLimit,
             transaction.to,
@@ -130,7 +131,7 @@ object JsSigner {
             maxFeePerGas,
         )
 
-        val signedMessage = TransactionEncoder.signMessage(rawTransaction, currentChain.chainReference.toLong(), credential)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         return hexMessage

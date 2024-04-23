@@ -850,14 +850,13 @@ class WebFragment : BaseFragment() {
                 onBrowserSign = { message ->
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
-                            tip,
-                            message,
-                            currentUrl,
-                            currentTitle,
                             requireActivity(),
+                            message,
+                            currentUrl = currentUrl,
+                            currentTitle = currentTitle,
                             onReject = {
                                 lifecycleScope.launch {
-                                    webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse($id, null)") {}
+                                    webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
                                 }
                             },
                             onDone = { callback ->

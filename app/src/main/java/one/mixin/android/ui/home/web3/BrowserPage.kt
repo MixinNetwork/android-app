@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -54,7 +55,8 @@ import java.math.BigInteger
 
 @Composable
 fun BrowserPage(
-    account: String, chain: Chain, type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
+    account: String, chain: Chain, token: Web3Token?,
+    type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?,
     errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit,
 ) {
@@ -77,7 +79,7 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(50.dp))
                 Icon(
                     modifier = Modifier.size(70.dp),
-                    painter = painterResource(id = R.drawable.ic_no_dapp),
+                    painter = painterResource(id = if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp),
                     contentDescription = null,
                     tint = Color.Unspecified,
                 )
@@ -173,12 +175,6 @@ fun BrowserPage(
                         fee = fee.multiply(asset.priceUSD()),
                     )
                 }
-                if (errorInfo != null) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        text = errorInfo
-                    )
-                }
                 if (url != null && title != null) {
                     Box(modifier = Modifier.height(20.dp))
                     ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = title, footer = url)
@@ -189,7 +185,6 @@ fun BrowserPage(
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))
             }
-            Box(modifier = Modifier.weight(1f))
             Box(
                 modifier =
                 Modifier
@@ -237,7 +232,7 @@ fun BrowserPage(
                         showPin
                     )
                 }
-                if (type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
+                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }

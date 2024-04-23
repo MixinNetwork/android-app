@@ -1,14 +1,11 @@
 package one.mixin.android.web3
 
 import android.os.Parcelable
-import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.OldDepositEntry
 
 @Parcelize
 class JsSignMessage(

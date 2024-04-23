@@ -42,7 +42,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.ui.tip.wc.sessionrequest.ActionBottom
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal
@@ -107,7 +106,6 @@ fun TransactionPreview(
         Box(modifier = Modifier.height(10.dp))
     }
 }
-
 
 @Composable
 fun MessagePreview(
@@ -221,7 +219,6 @@ private fun TransactionPreview() {
     TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
 }
 
-
 @Preview
 @Composable
 private fun WarningPreview() {
@@ -242,7 +239,6 @@ private fun WarningPreview() {
         Warning(modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
-
 
 @Composable
 fun ActionBottom(

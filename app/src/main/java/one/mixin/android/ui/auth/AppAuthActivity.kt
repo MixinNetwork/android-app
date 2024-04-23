@@ -67,7 +67,7 @@ class AppAuthActivity : BaseActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         binding.swirl.setState(SwirlView.State.ON)
     }
@@ -228,13 +228,13 @@ class AppAuthActivity : BaseActivity() {
                 refreshSwirl(getString(R.string.Not_recognized), false)
             }
 
-            override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
+            override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult) {
                 finishAndCheckNeed2GoUrlInterpreter()
             }
 
             override fun onAuthenticationHelp(
                 helpMsgId: Int,
-                helpString: CharSequence?,
+                helpString: CharSequence,
             ) {
                 refreshSwirl(helpString.toString(), true)
             }
