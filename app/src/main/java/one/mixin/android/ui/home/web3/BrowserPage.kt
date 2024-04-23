@@ -68,11 +68,10 @@ fun BrowserPage(
                 .fillMaxHeight()
                 .background(MixinAppTheme.colors.background),
         ) {
-
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .weight(weight = 1f, fill = false),
+                    .weight(weight = 1f, fill = true),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(modifier = Modifier.height(50.dp))
@@ -187,11 +186,7 @@ fun BrowserPage(
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))
             }
-            Box(
-                modifier =
-                Modifier
-                    .fillMaxWidth(),
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                         Box(modifier = Modifier.height(20.dp))
@@ -201,6 +196,7 @@ fun BrowserPage(
                                 .align(Alignment.CenterHorizontally),
                             color = MixinAppTheme.colors.accent,
                         )
+                        Box(modifier = Modifier.height(20.dp))
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(

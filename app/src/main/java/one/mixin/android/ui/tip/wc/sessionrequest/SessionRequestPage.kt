@@ -82,7 +82,6 @@ fun SessionRequestPage(
     onDismissRequest: () -> Unit,
     showPin: () -> Unit,
 ) {
-    Timber.e("step $step")
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
         Loading()
