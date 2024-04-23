@@ -37,11 +37,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_FROM_ADDRESS = "args_from_address"
         const val ARGS_TOKEN = "args_token"
-        fun newInstance(fromAddress:String, toAddress: String, web3Token: Web3Token) = InputFragment().apply {
+        const val ARGS_CHAIN_TOKEN = "args_chain_token"
+        fun newInstance(fromAddress:String, toAddress: String, web3Token: Web3Token, chainToken: Web3Token?) = InputFragment().apply {
             withArgs {
                 putString(ARGS_FROM_ADDRESS, fromAddress)
                 putString(ARGS_TO_ADDRESS, toAddress)
                 putParcelable(ARGS_TOKEN, web3Token)
+                putParcelable(ARGS_CHAIN_TOKEN, chainToken)
             }
         }
     }
@@ -58,6 +60,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
     private val token by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java))
+    }
+    private val chainToken by lazy {
+        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
     private val price: BigDecimal by lazy {
         (token.price.toBigDecimalOrNull() ?: BigDecimal.ONE).multiply(Fiats.getRate().toBigDecimal())
@@ -154,7 +159,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     showBrowserBottomSheetDialogFragment(
                         requireActivity(),
                         transaction,
-                        token = token
+                        token = token,
+                        chainToken = chainToken,
                     )
                 }
                 switchIv.setOnClickListener {

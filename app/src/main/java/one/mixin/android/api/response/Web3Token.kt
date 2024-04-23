@@ -63,6 +63,13 @@ fun Web3Token.getChainIdFromName(): String {
     }
 }
 
+fun Web3Token.getChainAssetKey(): String {
+    return if (chainId.equals("ethereum", true)) "0x0000000000000000000000000000000000000000"
+    else if (chainId.equals("polygon", true)) "0x0000000000000000000000000000000000001010"
+    else if (chainId.equals("binance-smart-chain", true)) "0x0000000000000000000000000000000000000000"
+    else throw IllegalArgumentException("Not support: $chainId")
+}
+
 fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String): JsSignMessage {
     val transaction =
         if ((chainId.equals("ethereum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
