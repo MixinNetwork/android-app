@@ -16,10 +16,8 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentAddressInputBinding
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -107,6 +105,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
         binding.continueTv.setOnClickListener {
             val destination = binding.addrEt.text.toString()
+            binding.addrEt.hideKeyboard()
             navTo(InputFragment.newInstance(address, destination, token), InputFragment.TAG)
         }
         binding.addrVa.setOnClickListener {
@@ -120,6 +119,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         binding.toRl.setOnClickListener {
             lifecycleScope.launch {
                 var toAddress = web3ViewModel.findAddres(token)
+                binding.addrEt.hideKeyboard()
                 if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token), InputFragment.TAG)
                 else {
                     val alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {

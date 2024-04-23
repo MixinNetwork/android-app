@@ -10,7 +10,6 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.navTo

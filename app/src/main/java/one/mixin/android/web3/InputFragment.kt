@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -24,12 +22,10 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.Keyboard
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.max
@@ -103,10 +99,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             } else {
                                 if (v == "0" && value != ".") {
                                     v = value
-                                } else if (isReverse && isEightDecimal(v)) {
+                                } else if (!isReverse && isEightDecimal(v)) {
                                     // do noting
                                     return
-                                } else if (!isReverse && isTwoDecimal(v)) {
+                                } else if (isReverse && isTwoDecimal(v)) {
                                     // do noting
                                     return
                                 } else if (value == "." && v.contains(".")) {
@@ -133,10 +129,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 balance.text = "${token.balance} ${token.symbol}"
                 max.setOnClickListener {
                     v = if (isReverse) {
-                        token.balance
-                    } else {
                         // Todo No price token and chain token gas
                         BigDecimal(token.balance).multiply(BigDecimal(token.price)).setScale(2, RoundingMode.DOWN).numberFormat2()
+                    } else {
+                        token.balance
                     }
                     updateUI()
                 }
@@ -149,9 +145,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 continueVa.setOnClickListener {
                     val transaction = token.buildTransaction(
                         fromAddress, toAddress, if (isReverse) {
-                            v
-                        } else {
                             binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                        } else {
+                            v
                         }
                     )
 
@@ -192,16 +188,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     v
                 }
             if (isReverse) {
-                val currentValue = price.multiply(value.toBigDecimal())
-                if (value == "0") {
-                    primaryTv.text = "0 ${token.symbol}"
-                    minorTv.text = "0 $currencyName"
-                } else {
-                    primaryTv.text = "$value ${token.symbol}"
-                    minorTv.text =
-                        "≈ ${getNumberFormat(String.format("%.2f", currentValue))} $currencyName"
-                }
-            } else {
                 val currentValue = value.toFloat()
                 if (value == "0") {
                     primaryTv.text = "0 $currencyName"
@@ -211,6 +197,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     minorTv.text =
                         "≈ ${(value.toBigDecimal().divide(price, 8, RoundingMode.UP)).numberFormat8()} ${token.symbol}"
                 }
+            } else {
+                val currentValue = price.multiply(value.toBigDecimal())
+                if (value == "0") {
+                    primaryTv.text = "0 ${token.symbol}"
+                    minorTv.text = "0 $currencyName"
+                } else {
+                    primaryTv.text = "$value ${token.symbol}"
+                    minorTv.text =
+                        "≈ ${getNumberFormat(String.format("%.2f", currentValue))} $currencyName"
+                }
             }
 
             if (value == "0") {
@@ -218,11 +214,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             } else {
                 val v = if (isReverse) {
-                    value
-                } else {
                     minorTv.text.toString().split(" ")[1].replace(",", "")
+                } else {
+                    value
                 }
-                Timber.e("$v ${token.balance}")
                 if (BigDecimal(v) > BigDecimal(token.balance)) {
                     continueVa.isEnabled = false
                     binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)

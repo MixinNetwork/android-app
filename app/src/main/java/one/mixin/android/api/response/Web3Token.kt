@@ -47,24 +47,28 @@ class Web3Token(
 
 fun Web3Token.getChainFromName(): Chain {
     return when {
-        chainName.contains("Ethereum", true) -> Chain.Ethereum
-        chainName.contains("Polygon", true) -> Chain.Polygon
-        chainName.contains("BNB Chain", true) -> Chain.BinanceSmartChain
-        else -> throw IllegalArgumentException("Not support: $chainName")
+        chainId.equals("ethereum", true) -> Chain.Ethereum
+        chainId.equals("polygon", true) -> Chain.Polygon
+        chainId.equals("binance-smart-chain", true) -> Chain.BinanceSmartChain
+        else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
 
 fun Web3Token.getChainIdFromName(): String {
     return when {
-        chainName.contains("Ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
-        chainName.contains("Polygon", true) -> Constants.ChainId.Polygon
-        chainName.contains("BNB Chain", true) -> Constants.ChainId.BinanceSmartChain
-        else -> throw IllegalArgumentException("Not support: $chainName")
+        chainId.equals("ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
+        chainId.equals("polygon", true) -> Constants.ChainId.Polygon
+        chainId.equals("binance-smart-chain", true) -> Constants.ChainId.BinanceSmartChain
+        else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
 
 fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String): JsSignMessage {
-    val transaction = if (symbol == "ETH" || symbol == "MATIC" || symbol == "BNB") {
+    val transaction =
+        if ((chainId.equals("ethereum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
+            (chainId.equals("polygon", true) && assetKey == "0x0000000000000000000000000000000000001010") ||
+            (chainId.equals("binance-smart-chain", true) && assetKey == "0x0000000000000000000000000000000000000000")
+        ) {
         val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
         WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)
     } else {
