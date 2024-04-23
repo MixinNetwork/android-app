@@ -14,6 +14,7 @@ import org.web3j.abi.datatypes.Uint
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
+import java.util.Locale
 
 @Parcelize
 class Web3Token(
@@ -68,6 +69,13 @@ fun Web3Token.getChainAssetKey(): String {
     else if (chainId.equals("polygon", true)) "0x0000000000000000000000000000000000001010"
     else if (chainId.equals("binance-smart-chain", true)) "0x0000000000000000000000000000000000000000"
     else throw IllegalArgumentException("Not support: $chainId")
+}
+
+fun Web3Token.supportDeposit():Boolean {
+    return when (chainId.lowercase(Locale.US)) {
+        "ethereum", "polygon", "binance-smart-chain" -> true
+        else -> false
+    }
 }
 
 fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String): JsSignMessage {

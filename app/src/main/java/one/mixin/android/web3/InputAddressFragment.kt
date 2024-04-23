@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.supportDeposit
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -137,6 +138,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 }
             }
         }
+        binding.walletLl.isVisible = supportDeposit
         binding.addrEt.addTextChangedListener(mWatcher)
     }
 
@@ -189,7 +191,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 if (viewDestroyed()) return
                 if (s.isEmpty()) {
                     binding.addrVa.displayedChild = 0
-                    binding.walletLl.isVisible = true
+                    binding.walletLl.isVisible = supportDeposit
                 } else {
                     binding.addrVa.displayedChild = 1
                     binding.walletLl.isVisible = false
@@ -197,6 +199,10 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 updateSaveButton()
             }
         }
+
+    private val supportDeposit by lazy {
+        token.supportDeposit()
+    }
 
     private fun updateSaveButton() {
         if (binding.addrEt.text.isNotEmpty() && isValidEthAddress(binding.addrEt.text.toString())) {
