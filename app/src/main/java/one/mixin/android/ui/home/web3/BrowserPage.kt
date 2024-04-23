@@ -58,7 +58,7 @@ fun BrowserPage(
     account: String, chain: Chain, token: Web3Token?,
     type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?,
-    errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit,
+    errorInfo: String?, showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit, onRejectAction: () -> Unit
 ) {
     MixinAppTheme {
         Column(
@@ -226,10 +226,7 @@ fun BrowserPage(
                     ActionBottom(
                         modifier = Modifier
                             .align(Alignment.BottomCenter), cancelTitle = stringResource(R.string.Cancel), confirmTitle = stringResource(id = R.string.Continue),
-                        cancelAction = {
-                            onDismissRequest.invoke()
-                        }, confirmAction =
-                        showPin
+                        cancelAction = onRejectAction, confirmAction = showPin
                     )
                 }
                 if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {

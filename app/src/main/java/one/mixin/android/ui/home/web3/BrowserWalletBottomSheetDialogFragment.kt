@@ -121,7 +121,13 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     title,
                     errorInfo,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
-                    showPin = { showPin() }, onDismissRequest = { dismiss() })
+                    showPin = { showPin() },
+                    onDismissRequest = { dismiss() },
+                    onRejectAction = {
+                        onRejectAction?.invoke()
+                        dismiss()
+                    }
+                )
             }
 
             doOnPreDraw {
