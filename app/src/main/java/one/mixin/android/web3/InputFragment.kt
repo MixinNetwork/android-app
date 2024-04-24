@@ -101,7 +101,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
     
     private val tokenPrice: BigDecimal by lazy {
-        ((asset?.priceUsd?:token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
+        ((asset?.priceUsd ?: token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
     }
     private val tokenSymbol by lazy {
         asset?.symbol ?: token!!.symbol
@@ -183,7 +183,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 max.setOnClickListener {
                     v = if (isReverse) {
                         // Todo No price token and chain token gas
-                        BigDecimal(tokenBalance).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).numberFormat2()
+                        BigDecimal(tokenBalance).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
                     } else {
                         tokenBalance
                     }
