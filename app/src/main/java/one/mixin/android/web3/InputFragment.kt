@@ -130,7 +130,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
-                titleView.setSubTitle(getString(R.string.Send_transfer), toAddress.formatPublicKey())
+                titleView.setSubTitle(getString(if(asset!= null) R.string.Receive else R.string.Send_transfer), toAddress.formatPublicKey())
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(
@@ -343,7 +343,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     value
                 }
                 if (BigDecimal(v) > BigDecimal(tokenBalance)) {
-                    insufficientBalance.isVisible = true
+                    insufficientBalance.isVisible = BigDecimal(v) > BigDecimal.ZERO
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {

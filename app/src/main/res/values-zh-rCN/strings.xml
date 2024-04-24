@@ -1456,5 +1456,7 @@
     <string name="Accounts">账户</string>
     <string name="to_mixin_wallet">划转到 Mixin 钱包</string>
     <string name="insufficient_gas">您的账户中没有足够的 %1$s 来支付网络费用</string>
-    <string name="From_mixin_wallet">From Mixin Wallet</string>
+    <string name="From_mixin_wallet">从 Mixin 钱包转入</string>
+    <string name="From_address">从地址转入</string>
+    <string name="From_address_desc">从其他钱包或交易所转入</string>
 </resources>
