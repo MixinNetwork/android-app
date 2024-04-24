@@ -203,7 +203,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     v = if (isReverse) {
                         BigDecimal(v).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
                     } else {
-                        if (tokenPrice == BigDecimal.ZERO){
+                        if (tokenPrice <= BigDecimal.ZERO){
                             tokenBalance
                         } else {
                             BigDecimal(v).divide(tokenPrice,8, RoundingMode.DOWN).stripTrailingZeros().toString()
@@ -242,7 +242,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     minorTv.text = "0 $tokenSymbol"
                 } else {
                     primaryTv.text = "${getNumberFormat(value)} $currencyName"
-                    minorTv.text = if (tokenPrice == BigDecimal.ZERO) "≈ 0 $tokenSymbol"
+                    minorTv.text = if (tokenPrice <= BigDecimal.ZERO) "≈ 0 $tokenSymbol"
                         else "≈ ${(value.toBigDecimal().divide(tokenPrice, 8, RoundingMode.UP)).numberFormat8()} $tokenSymbol"
                 }
             } else {
