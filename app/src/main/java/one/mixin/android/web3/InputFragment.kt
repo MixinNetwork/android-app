@@ -34,9 +34,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
-import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
@@ -259,17 +257,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     } else {// from web3
                         val token = requireNotNull(token)
                         val fromAddress = requireNotNull(fromAddress)
-                        val transaction = token.buildTransaction(
-                            fromAddress, toAddress, if (isReverse) {
-                                binding.minorTv.text.toString().split(" ")[1].replace(",", "")
-                            } else {
-                                v
-                            }
-                        )
+                        val amount =  if (isReverse) {
+                            binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                        } else {
+                            v
+                        }
+                        val transaction = token.buildTransaction(fromAddress, toAddress, amount)
                         showBrowserBottomSheetDialogFragment(
                             requireActivity(),
                             transaction,
                             token = token,
+                            amount = amount,
                             chainToken = chainToken,
                         )
                     }

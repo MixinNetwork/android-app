@@ -39,6 +39,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
+import one.mixin.android.ui.home.web3.components.TokenTransactionPreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -55,7 +56,7 @@ import java.math.BigInteger
 
 @Composable
 fun BrowserPage(
-    account: String, chain: Chain, token: Web3Token?, chainToken: Web3Token?,
+    account: String, chain: Chain, amount:String?, token: Web3Token?, chainToken: Web3Token?,
     type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?, errorInfo: String?, insufficientGas: Boolean,
     showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit, onRejectAction: () -> Unit
@@ -152,6 +153,8 @@ fun BrowserPage(
                     MessagePreview(content = data ?: "") {
                         onPreviewMessage.invoke(it)
                     }
+                } else if (token!=null && amount!=null){
+                    TokenTransactionPreview(amount = amount, token = token)
                 } else {
                     TransactionPreview(
                         balance =
