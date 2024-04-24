@@ -65,7 +65,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
     private val price: BigDecimal by lazy {
-        (token.price.toBigDecimalOrNull() ?: BigDecimal.ONE).multiply(Fiats.getRate().toBigDecimal())
+        (token.price.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
     }
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
@@ -135,7 +135,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 max.setOnClickListener {
                     v = if (isReverse) {
                         // Todo No price token and chain token gas
-                        BigDecimal(token.balance).multiply(BigDecimal(token.price)).setScale(2, RoundingMode.DOWN).numberFormat2()
+                        BigDecimal(token.balance).multiply(price).setScale(2, RoundingMode.DOWN).numberFormat2()
                     } else {
                         token.balance
                     }
@@ -165,7 +165,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
                 switchIv.setOnClickListener {
                     isReverse = !isReverse
-                    v = "0"
+                    v = if (isReverse) {
+                        BigDecimal(v).multiply(price).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
+                    } else {
+                        if (price == BigDecimal.ZERO){
+                            token.balance
+                        } else {
+                            BigDecimal(v).divide(price,8, RoundingMode.DOWN).stripTrailingZeros().toString()
+                        }
+                    }
                     updateUI()
                 }
                 updateUI()
@@ -194,14 +202,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     v
                 }
             if (isReverse) {
-                val currentValue = value.toFloat()
                 if (value == "0") {
                     primaryTv.text = "0 $currencyName"
                     minorTv.text = "0 ${token.symbol}"
                 } else {
                     primaryTv.text = "${getNumberFormat(value)} $currencyName"
-                    minorTv.text =
-                        "≈ ${(value.toBigDecimal().divide(price, 8, RoundingMode.UP)).numberFormat8()} ${token.symbol}"
+                    minorTv.text = if (price == BigDecimal.ZERO) "≈ 0 ${token.symbol}"
+                        else "≈ ${(value.toBigDecimal().divide(price, 8, RoundingMode.UP)).numberFormat8()} ${token.symbol}"
                 }
             } else {
                 val currentValue = price.multiply(value.toBigDecimal())
@@ -256,10 +263,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         binding.apply {
             val length = primaryTv.text.length
             val size =
-                if (length <= 8) {
+                if (length <= 12) {
                     40f
                 } else {
-                    max(40f - 2 * (length - 4), 12f)
+                    max(40f - 2 * (length - 8), 12f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }
