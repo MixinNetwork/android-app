@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.service.Web3Service
@@ -96,4 +97,17 @@ internal constructor(
         }
 
     suspend fun web3TokenItems() = tokenRepository.web3TokenItems()
+
+    suspend fun getFees(
+        id: String,
+        destination: String,
+    ) = tokenRepository.getFees(id, destination)
+
+    suspend fun findTokensExtra(assetId: String) = withContext(Dispatchers.IO) {
+        tokenRepository.findTokensExtra(assetId)
+    }
+
+    suspend fun syncAsset(assetId: String) = withContext(Dispatchers.IO) {
+        tokenRepository.syncAsset(assetId)
+    }
 }

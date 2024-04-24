@@ -4,31 +4,49 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
+import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
+import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.Keyboard
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.UUID
 import kotlin.math.max
 
 @AndroidEntryPoint
@@ -58,6 +76,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private val binding by viewBinding(FragmentInputBinding::bind)
+
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private var isReverse: Boolean = false
     
@@ -178,8 +198,49 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    if (asset != null) {
-                        // Todo withdrawal
+                    if (asset != null) { // to web3
+                        val assetId = requireNotNull(asset?.assetId)
+                        val amount = if (isReverse) {
+                            binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                        } else {
+                            v
+                        }
+                        lifecycleScope.launch( CoroutineExceptionHandler { _, error ->
+                            ErrorHandler.handleError(error)
+                            alertDialog.dismiss()
+                        }) {
+                            alertDialog.show()
+                            val feeResponse = web3ViewModel.getFees(assetId, toAddress)
+                            if (!feeResponse.isSuccess) {
+                                toast(requireContext().getMixinErrorStringByCode(feeResponse.errorCode, feeResponse.errorDescription))
+                                alertDialog.dismiss()
+                                return@launch
+                            }
+                            val fee = feeResponse.data!!.first()
+                            val feeTokensExtra = web3ViewModel.findTokensExtra(fee.assetId!!)
+                            val feeItem = web3ViewModel.syncAsset(fee.assetId)
+                            if (feeItem == null) {
+                                toast(R.string.insufficient_balance)
+                                alertDialog.dismiss()
+                                return@launch
+                            }
+                            val totalAmount = if (fee.assetId == assetId) {
+                                (amount.toBigDecimalOrNull() ?:BigDecimal.ZERO) + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                            } else {
+                                fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            }
+                            if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
+                                toast(requireContext().getString(R.string.insufficient_gas, feeItem.symbol))
+                                alertDialog.dismiss()
+                                return@launch
+                            }
+
+                            val address = Address("", "address", assetId, toAddress, "Web3 Address", nowInUtc(), "0", fee.amount!!, null, null, fee.assetId)
+                            val networkFee = NetworkFee(feeItem, fee.amount)
+                            val withdrawBiometricItem = WithdrawBiometricItem(address, networkFee, null, UUID.randomUUID().toString(), asset, amount, null, PaymentStatus.pending.name, null)
+
+                            TransferFragment.newInstance(withdrawBiometricItem).show(parentFragmentManager, TransferFragment.TAG)
+                        }
                     } else {// from web3
                         val token = requireNotNull(token)
                         val fromAddress = requireNotNull(fromAddress)
@@ -215,6 +276,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
             }
         }
     }
+
+    private val alertDialog by lazy { indeterminateProgressDialog(message = R.string.Please_wait_a_bit) }
 
     private fun isTwoDecimal(string: String): Boolean {
         return string.matches(Regex("\\d+\\.\\d{2}"))
