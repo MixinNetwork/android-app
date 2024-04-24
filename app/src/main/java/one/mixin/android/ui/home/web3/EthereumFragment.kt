@@ -41,7 +41,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.InputAddressFragment
-import one.mixin.android.web3.TokenListBottomSheetDialogFragment
+import one.mixin.android.web3.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.Wbe3DepositFragment
 import one.mixin.android.web3.Wbe3DepositSelectFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
@@ -103,14 +103,14 @@ class EthereumFragment : BaseFragment() {
     }
 
     private val sendCallback = fun(list: List<Web3Token>) {
-        TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
+        Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
             setOnClickListener {token->
                 address?.let {add->
                     navTo(InputAddressFragment.newInstance(add, token, getChainToken(token)), InputAddressFragment.TAG)
                 }
                 dismissNow()
             }
-        }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
     }
 
     private fun getChainToken(web3Token: Web3Token): Web3Token? {

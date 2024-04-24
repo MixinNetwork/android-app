@@ -92,6 +92,10 @@ interface TokenDao : BaseDao<Token> {
     suspend fun findTokenItems(ids: List<String>): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.chain_id IN (:chinIds)")
+    suspend fun web3TokenItems(chinIds: List<String>): List<TokenItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE ae.balance > 0 

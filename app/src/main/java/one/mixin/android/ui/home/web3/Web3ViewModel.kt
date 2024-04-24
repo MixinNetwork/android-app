@@ -94,4 +94,6 @@ internal constructor(
         withContext(Dispatchers.IO) {
             tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
         }
+
+    suspend fun web3TokenItems() = tokenRepository.web3TokenItems()
 }

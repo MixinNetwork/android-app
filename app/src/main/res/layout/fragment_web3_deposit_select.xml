@@ -33,6 +33,12 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp" />
 
+        <Space
+            android:id="@+id/wallet_center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerVertical="true" />
+
         <ImageView
             android:src="@drawable/ic_web3_arrow"
             android:layout_centerVertical="true"
@@ -49,18 +55,22 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/avatar"
             android:layout_marginTop="12dp"
+            android:layout_above="@id/wallet_center"
+            android:layout_marginBottom="2dp"
             android:layout_marginStart="12dp" />
 
         <TextView
             android:text="@string/Mixin_ID"
-            android:textColor="?attr/text_assist"
+            android:textColor="?attr/text_subtitle"
             android:textSize="13sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/avatar"
+            android:layout_below="@+id/wallet_center"
+            android:layout_marginTop="2dp"
             android:layout_marginStart="12dp"
             android:layout_marginBottom="12dp"
-            android:layout_alignParentBottom="true"/>
+            android:layout_alignParentBottom="true" />
 
     </RelativeLayout>
 
@@ -91,6 +101,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        <Space
+            android:id="@+id/address_center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerVertical="true" />
+
         <TextView
             android:text="@string/From_address"
             android:textColor="?attr/text_primary"
@@ -99,18 +115,22 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/avatar_address"
             android:layout_marginTop="12dp"
+            android:layout_above="@id/address_center"
+            android:layout_marginBottom="2dp"
             android:layout_marginStart="12dp" />
 
         <TextView
             android:text="@string/From_address_desc"
-            android:textColor="?attr/text_assist"
+            android:textColor="?attr/text_subtitle"
             android:textSize="13sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/avatar_address"
+            android:layout_above="@id/address_center"
+            android:layout_marginTop="2dp"
             android:layout_marginStart="12dp"
             android:layout_marginBottom="12dp"
-            android:layout_alignParentBottom="true"/>
+            android:layout_alignParentBottom="true" />
 
     </RelativeLayout>
 </LinearLayout>
