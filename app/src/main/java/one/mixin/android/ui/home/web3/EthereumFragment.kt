@@ -43,6 +43,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.InputAddressFragment
 import one.mixin.android.web3.TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.Wbe3DepositFragment
+import one.mixin.android.web3.Wbe3DepositSelectFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
@@ -68,7 +69,7 @@ class EthereumFragment : BaseFragment() {
                     }
 
                     R.id.receive -> {
-                        navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+                        navTo(Wbe3DepositSelectFragment(), Wbe3DepositSelectFragment.TAG)
                     }
 
                     R.id.browser -> {

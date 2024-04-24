@@ -25,6 +25,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.Keyboard
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -38,12 +39,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         const val ARGS_FROM_ADDRESS = "args_from_address"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
+        const val ARGS_ASSET = "args_asset"
         fun newInstance(fromAddress:String, toAddress: String, web3Token: Web3Token, chainToken: Web3Token?) = InputFragment().apply {
             withArgs {
                 putString(ARGS_FROM_ADDRESS, fromAddress)
                 putString(ARGS_TO_ADDRESS, toAddress)
                 putParcelable(ARGS_TOKEN, web3Token)
                 putParcelable(ARGS_CHAIN_TOKEN, chainToken)
+            }
+        }
+
+        fun newInstance(tokenItem: TokenItem) = InputFragment().apply {
+            withArgs {
+                putParcelable(ARGS_ASSET, tokenItem)
             }
         }
     }
@@ -64,6 +72,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
+
+    private val asset by lazy {
+        requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
+    }
+
     private val price: BigDecimal by lazy {
         (token.price.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
     }
