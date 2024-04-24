@@ -257,9 +257,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
             val length = primaryTv.text.length
             val size =
                 if (length <= 8) {
-                    56f
+                    40f
                 } else {
-                    max(56f - 2 * (length - 4), 12f)
+                    max(40f - 2 * (length - 4), 12f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }
