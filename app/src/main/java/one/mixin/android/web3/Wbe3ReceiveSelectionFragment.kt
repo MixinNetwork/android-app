@@ -12,7 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWeb3DepositSelectBinding
+import one.mixin.android.databinding.FragmentWeb3ReceuceSelectionBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
@@ -20,12 +20,12 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 
 @AndroidEntryPoint
-class Wbe3DepositSelectFragment : BaseFragment() {
+class Wbe3ReceiveSelectionFragment : BaseFragment() {
     companion object {
-        const val TAG = "Wbe3DepositSelectFragment"
+        const val TAG = "Wbe3ReceiveSelectionFragment"
     }
 
-    private var _binding: FragmentWeb3DepositSelectBinding? = null
+    private var _binding: FragmentWeb3ReceuceSelectionBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
@@ -34,7 +34,7 @@ class Wbe3DepositSelectFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentWeb3DepositSelectBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
+        _binding = FragmentWeb3ReceuceSelectionBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         binding.root.setOnClickListener {  }
         binding.title.setOnClickListener {  }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -55,7 +55,7 @@ class Wbe3DepositSelectFragment : BaseFragment() {
             }
         }
         binding.addressRl.setOnClickListener {
-            navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+            navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
         }
         return binding.root
     }

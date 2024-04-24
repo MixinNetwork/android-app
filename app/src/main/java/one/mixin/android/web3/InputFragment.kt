@@ -20,7 +20,6 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -242,7 +241,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                     override fun onSuccess() {
                                         if (viewDestroyed()) return
                                         parentFragmentManager.apply {
-                                            findFragmentByTag(Wbe3DepositSelectFragment.TAG)?.let {
+                                            findFragmentByTag(Wbe3ReceiveSelectionFragment.TAG)?.let {
                                                 beginTransaction().remove(it).commit()
                                             }
                                             findFragmentByTag(TAG)?.let {

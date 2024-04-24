@@ -70,7 +70,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
                 dismiss()
             }
             searchEt.listener =
