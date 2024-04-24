@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
+import org.web3j.utils.Numeric
 
 @Parcelize
 class JsSignMessage(
@@ -16,26 +17,36 @@ class JsSignMessage(
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
-        const val TYPE_MESSAGE = 1
-        const val TYPE_TRANSACTION = 2
+        const val TYPE_PERSONAL_MESSAGE = 1
+        const val TYPE_MESSAGE = 2
+        const val TYPE_TRANSACTION = 3
     }
 
     val reviewData: String?
         get() {
             val data = this.data ?: return null
-            if (type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE) {
-                try {
+            try {
+                if (type == TYPE_PERSONAL_MESSAGE) {
                     val listType = object : TypeToken<List<String>>() {}.type
                     val params = GsonHelper.customGson.fromJson<List<String>>(data, listType)
                     if (params.size >= 2) {
                         val encodedMessage = params[0]
-                        String(encodedMessage.hexStringToByteArray())
+                        String(Numeric.cleanHexPrefix(encodedMessage).hexStringToByteArray())
                     } else {
                         throw IllegalArgumentException("IllegalArgument")
                     }
-                } catch (e: Exception) {
-                    return data
+                } else if (type == TYPE_TYPED_MESSAGE) {
+                    val listType = object : TypeToken<List<String>>() {}.type
+                    val params = GsonHelper.customGson.fromJson<List<String>>(data, listType)
+                    if (params.size >= 2) {
+                        val messageString = params[1]
+                        return messageString
+                    } else {
+                        throw IllegalArgumentException("IllegalArgument")
+                    }
                 }
+            } catch (e: Exception) {
+                return data
             }
             return data
         }

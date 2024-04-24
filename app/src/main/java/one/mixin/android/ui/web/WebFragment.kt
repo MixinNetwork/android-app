@@ -1799,7 +1799,7 @@ class WebFragment : BaseFragment() {
         }
 
         private fun signPersonalMessage(callbackId: Long, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data))
         }
 
         private fun signTypedMessage(callbackId: Long, data: String) {

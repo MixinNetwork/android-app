@@ -14,6 +14,9 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -78,15 +81,10 @@ class SessionRequestViewModel
             when (version) {
                 WalletConnect.Version.V2 -> {
                     if (data is WCEthereumSignMessage && (data.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE || data.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE)) {
-                        try {
-                            if (data.raw.size >= 2) {
-                                val encodedMessage = data.raw[0]
-                                String(encodedMessage.hexStringToByteArray())
-                            } else {
-                                throw IllegalArgumentException("IllegalArgument")
-                            }
-                        } catch (e: Exception) {
-                            gson.toJson(data)
+                        if (data.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
+                            String(Numeric.cleanHexPrefix(data.data).hexStringToByteArray())
+                        } else {
+                            gson.toJson(data.data)
                         }
                     } else {
                         gson.toJson(data)
