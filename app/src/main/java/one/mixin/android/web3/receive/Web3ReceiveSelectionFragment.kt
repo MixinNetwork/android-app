@@ -1,5 +1,5 @@
 
-package one.mixin.android.web3
+package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -18,9 +18,11 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.web3.InputFragment
+import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
 
 @AndroidEntryPoint
-class Wbe3ReceiveSelectionFragment : BaseFragment() {
+class Web3ReceiveSelectionFragment : BaseFragment() {
     companion object {
         const val TAG = "Wbe3ReceiveSelectionFragment"
     }

@@ -48,7 +48,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.web3.JsSignMessage
+import one.mixin.android.web3.js.JsSignMessage
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal

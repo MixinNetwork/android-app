@@ -1,4 +1,4 @@
-package com.trust.web3.demo
+package one.mixin.android.web3.js
 
 enum class DAppMethod {
     SIGNTRANSACTION,

@@ -1,33 +1,31 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.send
 
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
-import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
-class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val ARGS_TOKENS = "args_tokens"
-        const val TAG = "Web3TokenListBottomSheetDialogFragment"
+        const val TAG = "TokenListBottomSheetDialogFragment"
 
-        fun newInstance(tokens: ArrayList<Web3Token>) =
-            Web3TokenListBottomSheetDialogFragment().withArgs {
+        fun newInstance(tokens: ArrayList<TokenItem>) =
+            TokenListBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_TOKENS, tokens)
             }
     }
@@ -35,11 +33,11 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
 
     private val tokens by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3Token::class.java)
+        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, TokenItem::class.java)
     }
 
     private val adapter by lazy {
-        Web3TokenAdapter()
+        TokenAdapter()
     }
 
     @SuppressLint("RestrictedApi")
@@ -68,9 +66,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 rvVa.displayedChild = 0
             }
-            depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
                 dismiss()
             }
             searchEt.listener =
@@ -106,7 +102,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    fun setOnClickListener(onClickListener: (Web3Token) -> Unit) {
+    fun setOnClickListener(onClickListener: (TokenItem) -> Unit) {
         this.adapter.setOnClickListener(onClickListener)
     }
 }

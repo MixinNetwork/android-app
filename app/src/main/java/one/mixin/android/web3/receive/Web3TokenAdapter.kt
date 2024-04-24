@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

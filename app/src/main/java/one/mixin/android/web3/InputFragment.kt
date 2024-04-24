@@ -40,6 +40,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -241,7 +242,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                     override fun onSuccess() {
                                         if (viewDestroyed()) return
                                         parentFragmentManager.apply {
-                                            findFragmentByTag(Wbe3ReceiveSelectionFragment.TAG)?.let {
+                                            findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
                                                 beginTransaction().remove(it).commit()
                                             }
                                             findFragmentByTag(TAG)?.let {

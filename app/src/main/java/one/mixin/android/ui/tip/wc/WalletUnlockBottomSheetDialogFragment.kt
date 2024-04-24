@@ -26,7 +26,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.JsSigner
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
 import java.io.IOException

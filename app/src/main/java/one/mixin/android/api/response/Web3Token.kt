@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.web3.JsSignMessage
+import one.mixin.android.web3.js.JsSignMessage
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function

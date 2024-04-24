@@ -54,10 +54,10 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.web3.InputAddressFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.web3.InputFragment
-import one.mixin.android.web3.JsSignMessage
-import one.mixin.android.web3.JsSigner
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber

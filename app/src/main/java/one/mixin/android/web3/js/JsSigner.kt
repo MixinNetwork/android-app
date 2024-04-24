@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.js
 
 import android.util.LruCache
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -8,6 +8,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.web3.Web3Exception
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -43,7 +44,7 @@ object JsSigner {
         private set
 
     fun updateAddress(address: String) {
-        this.address = address
+        JsSigner.address = address
     }
     var currentChain: Chain = Chain.Ethereum
         private set
