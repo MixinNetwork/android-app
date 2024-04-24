@@ -343,7 +343,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 } else {
                     value
                 }
-                if (BigDecimal(v) > BigDecimal(tokenBalance)) {
+                if (isReverse && v == "0") {
+                    insufficientBalance.isVisible = false
+                    continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
