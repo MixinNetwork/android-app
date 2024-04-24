@@ -8,7 +8,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
@@ -20,6 +19,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -30,13 +30,12 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
-import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
-import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
@@ -235,11 +234,26 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 return@launch
                             }
 
+                            alertDialog.dismiss()
                             val address = Address("", "address", assetId, toAddress, "Web3 Address", nowInUtc(), "0", fee.amount!!, null, null, fee.assetId)
                             val networkFee = NetworkFee(feeItem, fee.amount)
                             val withdrawBiometricItem = WithdrawBiometricItem(address, networkFee, null, UUID.randomUUID().toString(), asset, amount, null, PaymentStatus.pending.name, null)
+                            TransferFragment.newInstance(withdrawBiometricItem).apply {
+                                callback = object : TransferFragment.Callback {
+                                    override fun onSuccess() {
+                                        if (viewDestroyed()) return
+                                        parentFragmentManager.apply {
+                                            findFragmentByTag(Wbe3DepositSelectFragment.TAG)?.let {
+                                                beginTransaction().remove(it).commit()
+                                            }
+                                            findFragmentByTag(TAG)?.let {
+                                                beginTransaction().remove(it).commit()
+                                            }
+                                        }
+                                    }
+                                }
+                            }.show(parentFragmentManager, TransferFragment.TAG)
 
-                            TransferFragment.newInstance(withdrawBiometricItem).show(parentFragmentManager, TransferFragment.TAG)
                         }
                     } else {// from web3
                         val token = requireNotNull(token)

@@ -16,7 +16,6 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import timber.log.Timber
 
 @AndroidEntryPoint
 class Wbe3DepositSelectFragment : BaseFragment() {

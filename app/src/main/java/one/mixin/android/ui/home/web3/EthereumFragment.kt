@@ -41,9 +41,9 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.InputAddressFragment
-import one.mixin.android.web3.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.Wbe3DepositFragment
 import one.mixin.android.web3.Wbe3DepositSelectFragment
+import one.mixin.android.web3.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
