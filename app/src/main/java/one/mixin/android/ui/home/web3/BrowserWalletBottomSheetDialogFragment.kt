@@ -214,7 +214,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
                     insufficientGas = checkGas(token, chainToken, tipGas, signMessage.wcEthereumTransaction?.value)
                     if (insufficientGas) {
-                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol)))
+                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
