@@ -76,16 +76,43 @@ fun BrowserPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(modifier = Modifier.height(50.dp))
-                Icon(
-                    modifier = Modifier.size(70.dp),
-                    painter = painterResource(
-                        id = if (token != null) {
-                            if (insufficientGas) R.drawable.ic_transfer_status_failed else R.drawable.ic_web3_transaction
-                        } else R.drawable.ic_no_dapp
-                    ),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                )
+                when (step) {
+                    WalletConnectBottomSheetDialogFragment.Step.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(70.dp),
+                            color = MixinAppTheme.colors.accent,
+                        )
+                    }
+
+                    WalletConnectBottomSheetDialogFragment.Step.Error -> {
+                        Icon(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                        )
+                    }
+
+                    WalletConnectBottomSheetDialogFragment.Step.Done -> {
+                        Icon(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(id = R.drawable.ic_transfer_status_success),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                        )
+                    }
+
+                    else -> {
+                        Icon(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(
+                                id = if (token != null) R.drawable.ic_web3_transaction  else R.drawable.ic_no_dapp
+                            ),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                        )
+                    }
+                }
 
                 Box(modifier = Modifier.height(16.dp))
 
