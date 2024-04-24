@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -336,7 +337,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
             if (value == "0") {
                 continueVa.isEnabled = false
-                binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             } else {
                 val v = if (isReverse) {
                     minorTv.text.toString().split(" ")[1].replace(",", "")
@@ -344,11 +345,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     value
                 }
                 if (BigDecimal(v) > BigDecimal(tokenBalance)) {
+                    insufficientBalance.isVisible = true
                     continueVa.isEnabled = false
-                    binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
+                    insufficientBalance.isVisible = false
                     continueVa.isEnabled = true
-                    binding.continueTv.textColor = requireContext().getColor(R.color.white)
+                    continueTv.textColor = requireContext().getColor(R.color.white)
                 }
             }
         }

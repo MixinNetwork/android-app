@@ -60,6 +60,7 @@
             android:layout_marginStart="12dp" />
 
         <TextView
+            android:id="@+id/wallet_tv"
             android:text="@string/Mixin_ID"
             android:textColor="?attr/text_subtitle"
             android:textSize="13sp"

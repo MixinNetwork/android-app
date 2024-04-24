@@ -11,9 +11,11 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3DepositSelectBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 
@@ -36,6 +38,7 @@ class Wbe3DepositSelectFragment : BaseFragment() {
         binding.root.setOnClickListener {  }
         binding.title.setOnClickListener {  }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.walletTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.walletRl.setOnClickListener {
             lifecycleScope.launch {
                 val address = PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
