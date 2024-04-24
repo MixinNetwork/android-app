@@ -382,7 +382,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 if (length <= 12) {
                     40f
                 } else {
-                    max(40f - 2 * (length - 8), 12f)
+                    max(40f - 1 * (length - 8), 16f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }

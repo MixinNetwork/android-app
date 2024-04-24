@@ -139,7 +139,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/minor_tv"
-                tools:text="0"
+                tools:text="0 USD"
                 tools:ignore="HardcodedText" />
 
             <ImageView
@@ -160,6 +160,7 @@
                 android:textColor="?attr/text_assist"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
+                android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@id/primary_tv"
                 app:layout_constraintBottom_toTopOf="@id/token_rl"
                 app:layout_constraintStart_toStartOf="parent"
