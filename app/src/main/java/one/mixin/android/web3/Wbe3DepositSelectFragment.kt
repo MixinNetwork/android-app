@@ -10,7 +10,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.databinding.FragmentWeb3DepositSelectBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -37,10 +39,14 @@ class Wbe3DepositSelectFragment : BaseFragment() {
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.walletRl.setOnClickListener {
             lifecycleScope.launch {
+                val address = PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
+                if (address.isEmpty()) {
+                    return@launch
+                }
                 val list = web3ViewModel.web3TokenItems()
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
-                    setOnClickListener {token->
-                        Timber.e(token.symbol)
+                    setOnClickListener { token ->
+                        navTo(InputFragment.newInstance(token, address), InputFragment.TAG)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)

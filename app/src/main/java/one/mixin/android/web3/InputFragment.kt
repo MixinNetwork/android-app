@@ -49,9 +49,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
             }
         }
 
-        fun newInstance(tokenItem: TokenItem) = InputFragment().apply {
+        fun newInstance(tokenItem: TokenItem, toAddress:String) = InputFragment().apply {
             withArgs {
                 putParcelable(ARGS_ASSET, tokenItem)
+                putString(ARGS_TO_ADDRESS, toAddress)
             }
         }
     }
@@ -64,10 +65,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         requireNotNull(requireArguments().getString(ARGS_TO_ADDRESS))
     }
     private val fromAddress by lazy {
-        requireNotNull(requireArguments().getString(ARGS_FROM_ADDRESS))
+        requireArguments().getString(ARGS_FROM_ADDRESS)
     }
     private val token by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java))
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
     }
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
@@ -77,11 +78,27 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
     }
 
-    private val price: BigDecimal by lazy {
-        (token.price.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
-    }
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
+    }
+    
+    private val tokenPrice: BigDecimal by lazy {
+        ((asset?.priceUsd?:token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
+    }
+    private val tokenSymbol by lazy {
+        asset?.symbol ?: token!!.symbol
+    }
+    private val tokenIconUrl by lazy {
+        asset?.iconUrl ?: token!!.iconUrl
+    }
+    private val tokenChainIconUrl by lazy {
+        asset?.chainIconUrl ?: token!!.chainIconUrl
+    }
+    private val tokenBalance by lazy {
+        asset?.balance ?: token!!.balance
+    }
+    private val tokenName by lazy {
+        asset?.name ?: token!!.name
     }
 
     @SuppressLint("SetTextI18n")
@@ -141,16 +158,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         }
                     },
                 )
-                avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-                avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                name.text = token.name
-                balance.text = "${token.balance} ${token.symbol}"
+                avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
+                avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
+                name.text = tokenName
+                balance.text = "$tokenBalance $tokenSymbol"
                 max.setOnClickListener {
                     v = if (isReverse) {
                         // Todo No price token and chain token gas
-                        BigDecimal(token.balance).multiply(price).setScale(2, RoundingMode.DOWN).numberFormat2()
+                        BigDecimal(tokenBalance).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).numberFormat2()
                     } else {
-                        token.balance
+                        tokenBalance
                     }
                     updateUI()
                 }
@@ -161,30 +178,35 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    val transaction = token.buildTransaction(
-                        fromAddress, toAddress, if (isReverse) {
-                            binding.minorTv.text.toString().split(" ")[1].replace(",", "")
-                        } else {
-                            v
-                        }
-                    )
-
-                    showBrowserBottomSheetDialogFragment(
-                        requireActivity(),
-                        transaction,
-                        token = token,
-                        chainToken = chainToken,
-                    )
+                    if (asset != null) {
+                        // Todo withdrawal
+                    } else {// from web3
+                        val token = requireNotNull(token)
+                        val fromAddress = requireNotNull(fromAddress)
+                        val transaction = token.buildTransaction(
+                            fromAddress, toAddress, if (isReverse) {
+                                binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                            } else {
+                                v
+                            }
+                        )
+                        showBrowserBottomSheetDialogFragment(
+                            requireActivity(),
+                            transaction,
+                            token = token,
+                            chainToken = chainToken,
+                        )
+                    }
                 }
                 switchIv.setOnClickListener {
                     isReverse = !isReverse
                     v = if (isReverse) {
-                        BigDecimal(v).multiply(price).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
+                        BigDecimal(v).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
                     } else {
-                        if (price == BigDecimal.ZERO){
-                            token.balance
+                        if (tokenPrice == BigDecimal.ZERO){
+                            tokenBalance
                         } else {
-                            BigDecimal(v).divide(price,8, RoundingMode.DOWN).stripTrailingZeros().toString()
+                            BigDecimal(v).divide(tokenPrice,8, RoundingMode.DOWN).stripTrailingZeros().toString()
                         }
                     }
                     updateUI()
@@ -217,19 +239,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
             if (isReverse) {
                 if (value == "0") {
                     primaryTv.text = "0 $currencyName"
-                    minorTv.text = "0 ${token.symbol}"
+                    minorTv.text = "0 $tokenSymbol"
                 } else {
                     primaryTv.text = "${getNumberFormat(value)} $currencyName"
-                    minorTv.text = if (price == BigDecimal.ZERO) "≈ 0 ${token.symbol}"
-                        else "≈ ${(value.toBigDecimal().divide(price, 8, RoundingMode.UP)).numberFormat8()} ${token.symbol}"
+                    minorTv.text = if (tokenPrice == BigDecimal.ZERO) "≈ 0 $tokenSymbol"
+                        else "≈ ${(value.toBigDecimal().divide(tokenPrice, 8, RoundingMode.UP)).numberFormat8()} $tokenSymbol"
                 }
             } else {
-                val currentValue = price.multiply(value.toBigDecimal())
+                val currentValue = tokenPrice.multiply(value.toBigDecimal())
                 if (value == "0") {
-                    primaryTv.text = "0 ${token.symbol}"
+                    primaryTv.text = "0 $tokenSymbol"
                     minorTv.text = "0 $currencyName"
                 } else {
-                    primaryTv.text = "$value ${token.symbol}"
+                    primaryTv.text = "$value $tokenSymbol"
                     minorTv.text =
                         "≈ ${getNumberFormat(String.format("%.2f", currentValue))} $currencyName"
                 }
@@ -244,7 +266,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 } else {
                     value
                 }
-                if (BigDecimal(v) > BigDecimal(token.balance)) {
+                if (BigDecimal(v) > BigDecimal(tokenBalance)) {
                     continueVa.isEnabled = false
                     binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
