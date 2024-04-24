@@ -138,35 +138,43 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/minor_tv"
+                app:layout_constraintBottom_toTopOf="@id/minor_ll"
                 tools:text="0 USD"
                 tools:ignore="HardcodedText" />
 
-            <ImageView
-                android:id="@+id/switch_iv"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:background="@drawable/mixin_ripple"
-                android:src="@drawable/ic_switch"
-                app:layout_constraintBottom_toBottomOf="@id/minor_tv"
-                app:layout_constraintStart_toEndOf="@id/minor_tv"
-                app:layout_constraintTop_toTopOf="@id/minor_tv"
-                tools:ignore="ContentDescription,HardcodedText"
-                tools:text="0 USD"/>
 
-            <TextView
-                android:id="@+id/minor_tv"
+            <LinearLayout
+                android:id="@+id/minor_ll"
+                android:orientation="horizontal"
                 android:layout_width="wrap_content"
-                android:textColor="?attr/text_assist"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:gravity="center"
+                android:gravity="center_vertical"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
                 app:layout_constraintTop_toBottomOf="@id/primary_tv"
                 app:layout_constraintBottom_toTopOf="@id/token_rl"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                tools:text="0 USDC" />
+                tools:ignore="UseCompoundDrawables">
 
+                <TextView
+                    android:id="@+id/minor_tv"
+                    android:layout_width="0dp"
+                    android:textColor="?attr/text_assist"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:layout_weight="1"
+                    tools:text="0 USD"/>
+
+                <ImageView
+                    android:id="@+id/switch_iv"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/mixin_ripple"
+                    android:src="@drawable/ic_switch"
+                    android:contentDescription="@null" />
+            </LinearLayout>
             <TextView
                 android:id="@+id/insufficient_balance"
                 android:layout_width="wrap_content"
@@ -176,7 +184,7 @@
                 android:layout_marginTop="10dp"
                 android:visibility="gone"
                 android:text="@string/insufficient_balance"
-                app:layout_constraintTop_toBottomOf="@id/minor_tv"
+                app:layout_constraintTop_toBottomOf="@id/minor_ll"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
