@@ -329,7 +329,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 } else {
                     primaryTv.text = "$value $tokenSymbol"
                     minorTv.text =
-                        "≈ ${getNumberFormat(String.format("%.2f", currentValue))} $currencyName"
+                        "≈ ${getNumberFormat(currentValue.toPlainString())} $currencyName"
                 }
             }
 
@@ -366,6 +366,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 "$it.00"
             } else if (v.endsWith(".0")) {
                 "$it.0"
+            } else if (Regex(".*\\.\\d0$").matches(v)){
+                "${it}0"
             } else {
                 it
             }
