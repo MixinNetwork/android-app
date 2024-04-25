@@ -23,9 +23,13 @@ sealed class Chain(
 
     object Solana : Chain(SOLANA_CHAIN_ID,"solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
-    val hexReference:String
+    val hexReference: String
         get() {
-            return "0x%x".format(chainReference)
+            if (assetId != SOLANA_CHAIN_ID) {
+                return "0x%x".format(chainReference.toInt())
+            } else {
+                throw IllegalArgumentException("Not support")
+            }
         }
 
     val chainId: String
