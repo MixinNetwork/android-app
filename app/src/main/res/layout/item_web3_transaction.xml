@@ -6,8 +6,8 @@
     android:background="?attr/bg_white"
     android:clickable="true"
     android:focusable="true"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
     android:foreground="?selectableItemBackground">

@@ -2,6 +2,7 @@ package one.mixin.android.web3.details
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -61,11 +62,14 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         binding.transactionsRv.adapter = adapter
         lifecycleScope.launch {
             try {
+                binding.progress.isVisible = true
                 val result = web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId)
                 if (result.isSuccess){
                     adapter.transactions = result.data?: emptyList()
                 }
+                binding.progress.isVisible = false
             } catch (e: Exception) {
+                binding.progress.isVisible = false
                 Timber.e(e)
             }
         }
