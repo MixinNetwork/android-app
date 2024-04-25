@@ -1489,4 +1489,7 @@
     <string name="Accounts">Accounts</string>
     <string name="to_mixin_wallet">To my Mixin Wallet</string>
     <string name="insufficient_gas">You do not have enough %1$s in your account to pay for network fees</string>
+    <string name="From_mixin_wallet">From Mixin Wallet</string>
+    <string name="From_address">From address</string>
+    <string name="From_address_desc">From another wallet or exchange</string>
 </resources>

@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
+import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -366,6 +367,8 @@ class TokenRepository
         fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
+
+        suspend fun web3TokenItems(): List<TokenItem> = tokenDao.web3TokenItems(Web3ChainIds)
 
         suspend fun fuzzySearchToken(
             query: String,

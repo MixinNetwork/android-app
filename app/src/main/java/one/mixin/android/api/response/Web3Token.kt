@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.web3.JsSignMessage
+import one.mixin.android.web3.js.JsSignMessage
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function
@@ -71,10 +71,17 @@ fun Web3Token.getChainAssetKey(): String {
     else throw IllegalArgumentException("Not support: $chainId")
 }
 
-fun Web3Token.supportDeposit():Boolean {
+fun Web3Token.supportDeposit(): Boolean {
     return when (chainId.lowercase(Locale.US)) {
         "ethereum", "polygon", "binance-smart-chain" -> true
         else -> false
+    }
+}
+
+fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
+    val chainAssetKey = getChainAssetKey()
+    return tokens.firstOrNull { token ->
+        token.chainId == chainId && token.assetKey == chainAssetKey
     }
 }
 

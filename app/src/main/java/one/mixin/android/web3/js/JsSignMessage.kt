@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.js
 
 import android.os.Parcelable
 import com.google.gson.reflect.TypeToken

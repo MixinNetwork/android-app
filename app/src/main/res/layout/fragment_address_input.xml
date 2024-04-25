@@ -41,17 +41,20 @@
                 android:paddingBottom="56dp"
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_assist"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:lines="2"
                 android:gravity="start|top"
                 tools:ignore="Autofill,TextFields" />
 
             <ViewAnimator
                 android:id="@+id/addr_va"
-                android:padding="16dp"
+                android:padding="6dp"
                 android:layout_gravity="bottom|end"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
+                android:foreground="@drawable/mixin_ripple">
 
                 <ImageView
                     android:layout_width="wrap_content"

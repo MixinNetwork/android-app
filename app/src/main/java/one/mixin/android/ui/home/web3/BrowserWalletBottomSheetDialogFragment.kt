@@ -54,10 +54,10 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.web3.InputAddressFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.web3.InputFragment
-import one.mixin.android.web3.JsSignMessage
-import one.mixin.android.web3.JsSigner
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -72,6 +72,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_MESSAGE = "args_message"
         const val ARGS_URL = "args_url"
         const val ARGS_TITLE = "args_title"
+        const val ARGS_AMOUNT = "args_amount"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
 
@@ -79,6 +80,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             jsSignMessage: JsSignMessage,
             url:String?,
             title:String?,
+            amount: String? = null,
             token: Web3Token? = null,
             chainToken: Web3Token? = null,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
@@ -87,6 +89,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 Uri.parse(this).host
             })
             putString(ARGS_TITLE, title)
+            putString(ARGS_AMOUNT, amount)
             putParcelable(ARGS_TOKEN, token)
             putParcelable(ARGS_CHAIN_TOKEN, chainToken)
         }
@@ -101,6 +104,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val signMessage: JsSignMessage by lazy { requireArguments().getParcelableCompat(ARGS_MESSAGE, JsSignMessage::class.java)!! }
     private val url: String? by lazy { requireArguments().getString(ARGS_URL) }
     private val title: String? by lazy { requireArguments().getString(ARGS_TITLE) }
+    private val amount: String? by lazy { requireArguments().getString(ARGS_AMOUNT) }
     private val token by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
     }
@@ -127,9 +131,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             setContent {
                 BrowserPage(
-                    JsSigner.address, currentChain, token, chainToken, signMessage.type, step, tipGas, asset,
-                    signMessage.wcEthereumTransaction, signMessage.reviewData,
-                    url, title, errorInfo, insufficientGas,
+                    JsSigner.address, currentChain, amount, token, chainToken, signMessage.type, step, tipGas, asset,
+                    signMessage.wcEthereumTransaction, signMessage.reviewData, url, title, errorInfo, insufficientGas,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     showPin = { showPin() },
                     onDismissRequest = { dismiss() },
@@ -214,7 +217,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
                     insufficientGas = checkGas(token, chainToken, tipGas, signMessage.wcEthereumTransaction?.value)
                     if (insufficientGas) {
-                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol)))
+                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
@@ -265,7 +268,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 true
             } else if (tipGas!=null){
                 val maxGas = tipGas.displayValue() ?: BigDecimal.ZERO
-                if (web3Token.id == chainToken.id) {
+                if (web3Token.id == chainToken.id && web3Token.chainId == chainToken.chainId) {
                     Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
                 } else {
                     maxGas > BigDecimal(chainToken.balance)
@@ -344,6 +347,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 fun showBrowserBottomSheetDialogFragment(
     fragmentActivity: FragmentActivity,
     signMessage: JsSignMessage,
+    amount: String? = null,
     token: Web3Token? = null,
     chainToken: Web3Token? = null,
     currentUrl: String? = null,
@@ -351,7 +355,7 @@ fun showBrowserBottomSheetDialogFragment(
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, token, chainToken)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken)
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)
     }

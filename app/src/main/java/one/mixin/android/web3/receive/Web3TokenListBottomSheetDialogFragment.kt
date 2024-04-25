@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -20,14 +20,14 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
-class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val ARGS_TOKENS = "args_tokens"
-        const val TAG = "TokenListBottomSheetDialogFragment"
+        const val TAG = "Web3TokenListBottomSheetDialogFragment"
 
         fun newInstance(tokens: ArrayList<Web3Token>) =
-            TokenListBottomSheetDialogFragment().withArgs {
+            Web3TokenListBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_TOKENS, tokens)
             }
     }
@@ -39,7 +39,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val adapter by lazy {
-        TokenAdapter()
+        Web3TokenAdapter()
     }
 
     @SuppressLint("RestrictedApi")
@@ -70,7 +70,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
                 dismiss()
             }
             searchEt.listener =

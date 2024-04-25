@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.js
 
 import android.content.Context
 import androidx.annotation.RawRes

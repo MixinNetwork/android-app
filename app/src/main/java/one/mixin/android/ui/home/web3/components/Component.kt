@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -100,6 +101,66 @@ fun TransactionPreview(
         }
         Text(
             text = balance.multiply(asset.priceUSD()).currencyFormat(),
+            color = MixinAppTheme.colors.textMinor,
+            fontSize = 12.sp,
+        )
+        Box(modifier = Modifier.height(10.dp))
+    }
+}
+
+@Composable
+fun TokenTransactionPreview(
+    amount: String,
+    token: Web3Token,
+) {
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Box(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(id = R.string.Balance_Change),
+            color = MixinAppTheme.colors.textSubtitle,
+            fontSize = 14.sp,
+        )
+        Box(modifier = Modifier.height(8.dp))
+        Row(
+            modifier =
+            Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = "-$amount",
+                color = Color(0xFFE86B67),
+                fontFamily = FontFamily(Font(R.font.mixin_font)),
+                fontSize = 30.sp,
+            )
+            Box(modifier = Modifier.width(4.dp))
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = token.symbol,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 12.sp,
+            )
+            Box(modifier = Modifier.weight(1f))
+            GlideImage(
+                data = token.iconUrl,
+                modifier =
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            )
+        }
+        Text(
+            text = BigDecimal(amount).multiply(BigDecimal(token.price)).currencyFormat(),
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
         )

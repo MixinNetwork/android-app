@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.send
 
 import android.Manifest
 import android.content.Context
@@ -38,6 +38,7 @@ import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.InputFragment
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint

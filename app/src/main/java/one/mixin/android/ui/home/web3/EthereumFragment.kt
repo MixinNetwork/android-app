@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.findChainToken
 import one.mixin.android.api.response.getChainAssetKey
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
@@ -40,9 +41,10 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.web3.InputAddressFragment
-import one.mixin.android.web3.TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.Wbe3DepositFragment
+import one.mixin.android.web3.send.InputAddressFragment
+import one.mixin.android.web3.receive.Wbe3ReceiveFragment
+import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
@@ -68,7 +70,7 @@ class EthereumFragment : BaseFragment() {
                     }
 
                     R.id.receive -> {
-                        navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+                        navTo(Web3ReceiveSelectionFragment(), Web3ReceiveSelectionFragment.TAG)
                     }
 
                     R.id.browser -> {
@@ -102,21 +104,14 @@ class EthereumFragment : BaseFragment() {
     }
 
     private val sendCallback = fun(list: List<Web3Token>) {
-        TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
+        Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
             setOnClickListener {token->
                 address?.let {add->
-                    navTo(InputAddressFragment.newInstance(add, token, getChainToken(token)), InputAddressFragment.TAG)
+                    navTo(InputAddressFragment.newInstance(add, token, token.findChainToken(tokens)), InputAddressFragment.TAG)
                 }
                 dismissNow()
             }
-        }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
-    }
-
-    private fun getChainToken(web3Token: Web3Token): Web3Token? {
-        val chainAssetKey = web3Token.getChainAssetKey()
-        return tokens.firstOrNull() {token->
-            token.assetKey == chainAssetKey
-        }
+        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
     }
 
     override fun onCreateView(
@@ -275,7 +270,7 @@ class EthereumFragment : BaseFragment() {
             titleTv.setText(R.string.No_asset)
             receiveTv.setText(R.string.Receive)
             receiveTv.setOnClickListener {
-                navTo(Wbe3DepositFragment(), Wbe3DepositFragment.TAG)
+                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
             }
         }
     }

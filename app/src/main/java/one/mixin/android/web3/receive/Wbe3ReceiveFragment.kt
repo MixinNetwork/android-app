@@ -1,5 +1,5 @@
 
-package one.mixin.android.web3
+package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.content.ClipData
@@ -18,7 +18,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWeb3DepositBinding
+import one.mixin.android.databinding.FragmentWeb3ReceiveBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -27,12 +27,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
-class Wbe3DepositFragment : BaseFragment() {
+class Wbe3ReceiveFragment : BaseFragment() {
     companion object {
-        const val TAG = "Wbe3DepositFragment"
+        const val TAG = "Wbe3ReceiveFragment"
     }
 
-    private var _binding: FragmentWeb3DepositBinding? = null
+    private var _binding: FragmentWeb3ReceiveBinding? = null
     private val binding get() = requireNotNull(_binding)
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
@@ -42,7 +42,7 @@ class Wbe3DepositFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentWeb3DepositBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
+        _binding = FragmentWeb3ReceiveBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         binding.root.setOnClickListener {  }
         binding.title.setOnClickListener {  }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -54,8 +54,8 @@ class Wbe3DepositFragment : BaseFragment() {
                 toast(R.string.copied_to_clipboard)
             }
             binding.address.text = address
-            val qr = this@Wbe3DepositFragment.binding.qr
-            val qrAvatar = this@Wbe3DepositFragment.binding.qrAvatar
+            val qr = this@Wbe3ReceiveFragment.binding.qr
+            val qrAvatar = this@Wbe3ReceiveFragment.binding.qrAvatar
             qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->

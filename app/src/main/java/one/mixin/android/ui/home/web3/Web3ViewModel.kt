@@ -94,4 +94,19 @@ internal constructor(
         withContext(Dispatchers.IO) {
             tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
         }
+
+    suspend fun web3TokenItems() = tokenRepository.web3TokenItems()
+
+    suspend fun getFees(
+        id: String,
+        destination: String,
+    ) = tokenRepository.getFees(id, destination)
+
+    suspend fun findTokensExtra(assetId: String) = withContext(Dispatchers.IO) {
+        tokenRepository.findTokensExtra(assetId)
+    }
+
+    suspend fun syncAsset(assetId: String) = withContext(Dispatchers.IO) {
+        tokenRepository.syncAsset(assetId)
+    }
 }
