@@ -163,6 +163,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.web3.js.JsSigner
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -652,6 +653,7 @@ class MainActivity : BlazeBaseActivity() {
         if (!WalletConnect.isEnabled()) return
 
         WalletConnectV2
+        lifecycleScope.launch { JsSigner.init() }
     }
 
     override fun onNewIntent(intent: Intent) {

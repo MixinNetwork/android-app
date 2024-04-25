@@ -23,7 +23,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -77,7 +76,10 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_MULTISIGS, true) ||
         startsWith(Constants.Scheme.MIXIN_MULTISIGS, true) ||
         startsWith(Constants.Scheme.HTTPS_SCHEME, true) ||
-        startsWith(Constants.Scheme.MIXIN_SCHEME, true)
+        startsWith(Constants.Scheme.MIXIN_SCHEME, true) ||
+        startsWith(Constants.Scheme.HTTPS_MIXIN_WC, true) ||
+        startsWith(Constants.Scheme.MIXIN_WC, true) ||
+        startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true)
     ) {
         true
     } else {
@@ -153,8 +155,6 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
-    } else if (startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled()) {
-        WalletConnect.connect(this)
     } else {
         if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)

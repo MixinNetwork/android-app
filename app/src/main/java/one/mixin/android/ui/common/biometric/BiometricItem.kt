@@ -15,6 +15,7 @@ open class BiometricItem(
     open val amount: String,
     open val memo: String?,
     open val state: String,
+    open val reference: String?
 ) : Parcelable
 
 @Parcelize
@@ -24,7 +25,8 @@ open class AssetBiometricItem(
     override var amount: String,
     override var memo: String?,
     override var state: String,
-) : BiometricItem(amount, memo, state)
+    override var reference: String?
+) : BiometricItem(amount, memo, state, reference)
 
 @Parcelize
 class TransferBiometricItem(
@@ -37,10 +39,11 @@ class TransferBiometricItem(
     override var state: String,
     var trace: Trace?,
     val returnTo: String?,
-) : AssetBiometricItem(asset, traceId, amount, memo, state)
+    override var reference: String?
+) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
 fun buildEmptyTransferBiometricItem(user: User) =
-    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null)
+    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null, null)
 
 fun buildTransferBiometricItem(
     user: User,
@@ -49,8 +52,9 @@ fun buildTransferBiometricItem(
     traceId: String?,
     memo: String?,
     returnTo: String?,
+    reference: String? = null,
 ) =
-    TransferBiometricItem(listOf(user), 1.toByte(), traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, null, returnTo)
+    TransferBiometricItem(listOf(user), 1.toByte(), traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, null, returnTo, reference)
 
 @Parcelize
 class AddressTransferBiometricItem(
@@ -61,7 +65,8 @@ class AddressTransferBiometricItem(
     override var memo: String?,
     override var state: String,
     val returnTo: String?,
-) : AssetBiometricItem(asset, traceId, amount, memo, state)
+    override var reference: String?,
+) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
 class AddressManageBiometricItem(
     override var asset: TokenItem?,
@@ -70,7 +75,7 @@ class AddressManageBiometricItem(
     val addressId: String?,
     val label: String?,
     val type: Int,
-) : AssetBiometricItem(asset, "", "0", null, "")
+) : AssetBiometricItem(asset, "", "0", null, "", null)
 
 fun buildAddressBiometricItem(
     mainnetAddress: String,
@@ -80,8 +85,9 @@ fun buildAddressBiometricItem(
     memo: String?,
     returnTo: String?,
     from: Int,
+    reference: String?
 ) =
-    AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo)
+    AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
 
 @Parcelize
 class WithdrawBiometricItem(
@@ -94,7 +100,7 @@ class WithdrawBiometricItem(
     override var memo: String?,
     override var state: String,
     var trace: Trace?,
-) : AssetBiometricItem(asset, traceId, amount, memo, state)
+) : AssetBiometricItem(asset, traceId, amount, memo, state, null)
 
 fun WithdrawBiometricItem.displayAddress(): String {
     return if (!address.tag.isNullOrEmpty()) {
@@ -127,7 +133,8 @@ open class SafeMultisigsBiometricItem(
     override var amount: String,
     override var memo: String?,
     override var state: String,
-) : AssetBiometricItem(asset, traceId, amount, memo, state)
+    override var reference:String?
+) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
 @Parcelize
 class NftBiometricItem(
@@ -142,4 +149,4 @@ class NftBiometricItem(
     override val amount: String,
     override val memo: String?,
     override val state: String,
-) : BiometricItem(amount, memo, state)
+) : BiometricItem(amount, memo, state, null)

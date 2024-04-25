@@ -14,7 +14,6 @@ sealed class Chain(
     val name: String,
     val symbol: String,
     private val rpcServers: List<String>,
-
 ) {
     object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 
@@ -23,6 +22,11 @@ sealed class Chain(
     object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
     object Solana : Chain(SOLANA_CHAIN_ID,"solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+
+    val hexReference:String
+        get() {
+            return "0x%x".format(chainReference)
+        }
 
     val chainId: String
         get() {

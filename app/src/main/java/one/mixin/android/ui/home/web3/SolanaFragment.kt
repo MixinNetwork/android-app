@@ -25,10 +25,8 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.WCUnlockEvent
-import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -41,9 +39,9 @@ class SolanaFragment : BaseFragment() {
     private var _binding: FragmentChainBinding? = null
     private val binding get() = requireNotNull(_binding)
 
-    private val connectionsViewModel by viewModels<ConnectionsViewModel>()
+    private val connectionsViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
-        WalletAdapter()
+        Web3WalletAdapter()
     }
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,7 +55,7 @@ class SolanaFragment : BaseFragment() {
         }
         RxBus.listen(WCUnlockEvent::class.java)
             .autoDispose(destroyScope)
-            .subscribe { e ->
+            .subscribe { _ ->
                 updateUI()
             }
         updateUI()
@@ -67,25 +65,25 @@ class SolanaFragment : BaseFragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData() {
-        lifecycleScope.launch {
-            val dapps = connectionsViewModel.dapps(Chain.Solana.chainId)
-            adapter.connections = dapps
-            adapter.notifyDataSetChanged()
-        }
+        // lifecycleScope.launch {
+        //     val dapps = connectionsViewModel.dapps(Chain.Solana.chainId)
+        //     adapter.connections = dapps
+        //     adapter.notifyDataSetChanged()
+        // }
     }
 
     private fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             if (address.isBlank()) {
-                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana, {
+                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana) {
                     WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_SOLANA).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                })
+                }
             } else {
-                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), address.formatPublicKey(), R.drawable.ic_solana, {
-                    requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, address))
-                    toast(R.string.copied_to_clipboard)
-                }, R.string.Copy)
+                // adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), address.formatPublicKey(), R.drawable.ic_solana, {
+                //     requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, address))
+                //     toast(R.string.copied_to_clipboard)
+                // }, R.string.Copy)
             }
         }
     }

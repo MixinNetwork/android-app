@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/bg_window"
@@ -10,9 +10,9 @@
 
     <RelativeLayout
         android:id="@+id/title_rl"
-        android:background="?attr/bg_white"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize">
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white">
 
         <TextView
             android:id="@+id/bot_title"
@@ -32,8 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/scan_ib"
             android:layout_marginEnd="14dp"
+            android:layout_toStartOf="@id/scan_ib"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_search_home"
@@ -43,9 +43,9 @@
             android:id="@+id/scan_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toStartOf="@id/setting_ib"
-            android:layout_marginEnd="14dp"
             android:layout_centerVertical="true"
+            android:layout_marginEnd="14dp"
+            android:layout_toStartOf="@id/setting_ib"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_bot_category_scan"
@@ -55,8 +55,8 @@
             android:id="@+id/setting_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginEnd="12dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
@@ -65,80 +65,41 @@
     </RelativeLayout>
 
     <HorizontalScrollView
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="?attr/bg_white"
         android:scrollbars="none">
 
         <RadioGroup
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:id="@+id/radio_group_explore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_favorite"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/Favorite"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
                 android:checked="true"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_bot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="@string/bots_title"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
+                android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
                 android:text="@string/Ethereum"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_polygon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Polygon"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_bsc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/BSC"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:layout_marginEnd="12dp"
-                android:button="@null" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_solana"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/Solana"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:background="@drawable/selector_radio"
-                android:button="@null" />
+                android:textColor="@drawable/radio_button_text_selector" />
 
         </RadioGroup>
     </HorizontalScrollView>
@@ -148,53 +109,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/favorite_rv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/favorite_rv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?attr/bg_white"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_favorite" />
-
-        </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="?attr/bg_white">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/bot_rv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_favorite" />
-
-            <FrameLayout
-                android:id="@+id/empty_fl"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="80dp"
-                    android:layout_marginBottom="80dp"
-                    android:text="@string/NO_BOTS" />
-            </FrameLayout>
-        </FrameLayout>
+            android:background="?attr/bg_white"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_favorite" />
 
         <one.mixin.android.widget.ContainerFrameLayout
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </ViewAnimator>
+
 </LinearLayout>
 

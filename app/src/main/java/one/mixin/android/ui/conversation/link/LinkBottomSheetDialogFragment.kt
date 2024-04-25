@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.link
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Intent
 import android.net.Uri
 import android.view.Gravity
 import android.view.View
@@ -23,6 +24,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
@@ -57,6 +59,7 @@ import one.mixin.android.tip.TAG_TIP_SIGN
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignAction
 import one.mixin.android.tip.matchTipSignAction
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
@@ -90,6 +93,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.convertWcLink
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -322,6 +326,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         index = multisigs.senders.indexOf(Session.getAccountId()),
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
+                        reference = null
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
@@ -761,6 +766,25 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)
             handleTipScheme(uri)
+        } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC)
+            || url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
+        ) {
+            val wcUri = convertWcLink(url.toString())
+            if (wcUri != null && WalletConnect.isEnabled()) {
+                if (MixinApplication.get().topActivity is WebActivity) {
+                    WalletConnect.connect(wcUri.toString())
+                } else {
+                    startActivity(
+                        Intent(requireContext(), MainActivity::class.java).apply {
+                            putExtra(MainActivity.WALLET_CONNECT, wcUri.toString())
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                        },
+                    )
+                }
+                dismiss()
+            } else {
+                showError(R.string.Not_recognized)
+            }
         } else {
             val isExternalTransferUrl = url.isExternalTransferUrl()
             if (isExternalTransferUrl) {

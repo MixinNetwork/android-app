@@ -69,7 +69,6 @@ import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.mlkit.entityInitialize
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.ChainDapp
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect

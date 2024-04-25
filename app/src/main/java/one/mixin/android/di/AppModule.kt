@@ -40,6 +40,7 @@ import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
+import one.mixin.android.Constants.RouteConfig.WEB3_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -66,6 +67,7 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
+import one.mixin.android.api.service.Web3Service
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
@@ -125,6 +127,9 @@ object AppModule {
 
     private const val mrAccessSign = "MR-ACCESS-SIGN"
     private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
+
+    private const val mwAccessSign = "MW-ACCESS-SIGN"
+    private const val mwAccessTimestamp = "MW-ACCESS-TIMESTAMP"
 
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
@@ -494,7 +499,7 @@ object AppModule {
                         .addHeader("Accept-Language", Locale.getDefault().language)
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getRouteSignature(sourceRequest)
+                    val (ts, signature) = Session.getBotSignature(Session.routePublicKey, sourceRequest)
                     if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
                         b.addHeader(mrAccessTimestamp, ts.toString())
                         b.addHeader(mrAccessSign, signature)
@@ -514,6 +519,47 @@ object AppModule {
                 .client(client)
                 .build()
         return retrofit.create(RouteService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideWeb3Service(
+        resolver: ContentResolver,
+        httpLoggingInterceptor: HttpLoggingInterceptor?,
+    ): Web3Service {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client =
+            builder.apply {
+                addInterceptor { chain ->
+                    val requestId = UUID.randomUUID().toString()
+                    val sourceRequest = chain.request()
+                    val b = sourceRequest.newBuilder()
+                    b.addHeader("User-Agent", API_UA)
+                        .addHeader("Accept-Language", Locale.getDefault().language)
+                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                        .addHeader(xRequestId, requestId)
+                    val (ts, signature) = Session.getBotSignature(Session.web3PublicKey, sourceRequest)
+                    b.addHeader(mwAccessTimestamp, ts.toString())
+                    b.addHeader(mwAccessSign, signature)
+                    val request = b.build()
+                    return@addInterceptor chain.proceed(request)
+                }
+                httpLoggingInterceptor?.let { interceptor ->
+                    addNetworkInterceptor(interceptor)
+                }
+            }.build()
+        val retrofit =
+            Retrofit.Builder()
+                .baseUrl(WEB3_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                .client(client)
+                .build()
+        return retrofit.create(Web3Service::class.java)
     }
 
     @Provides

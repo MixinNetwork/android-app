@@ -74,6 +74,7 @@ object Constants {
         const val PREF_LOGIN_VERIFY = "pref_login_verify"
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
+        const val PREF_EXPLORE_SELECT = "pref_explore_select"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -115,6 +116,10 @@ object Constants {
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
+
+        // web3
+        const val HTTPS_MIXIN_WC = "https://mixin.one/wc"
+        const val MIXIN_WC = "mixin://wc"
 
         // deprecated
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
@@ -172,6 +177,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
         const val BITCOIN_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
@@ -364,5 +370,9 @@ object Constants {
         val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
+
+        const val WEB3_URL = "https://web3-api.mixin.one"
+
+        const val WEB3_BOT_USER_ID = "57eff6cd-038b-4ad6-abab-5792f95e05d7"
     }
 }
