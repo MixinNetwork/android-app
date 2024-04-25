@@ -17,7 +17,6 @@ class SendBottomSheet(
     private val fragment: Fragment,
     @IdRes private val navContactAction: Int,
     @IdRes private val navAddressAction: Int,
-    private val navTipAction: (() -> Unit)? = null,
 ) {
     private var _bottomSendBinding: ViewWalletTransactionsSendBottomBinding? = null
     private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)

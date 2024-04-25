@@ -70,12 +70,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet =
-        SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management) {
-            VerifyBottomSheetDialogFragment.newInstance().setOnPinSuccess { pin ->
-                showTipWithdrawal(pin)
-            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-        }
+    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     @Inject
     lateinit var tip: Tip
@@ -281,31 +276,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                 }
             }
             headerAdapter.currentType = currentType
-        }
-
-    private fun showTipWithdrawal(pin: String) =
-        lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
-
-            val result = tip.getOrRecoverTipPriv(requireContext(), pin)
-            if (result.isSuccess) {
-                val destination = privateKeyToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
-                val addressFeeResponse =
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            walletViewModel.getFees(asset.assetId, destination)
-                        },
-                        successBlock = {
-                            it.data
-                        },
-                    ) ?: return@launch
-                val fee = addressFeeResponse.find { it.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID }
-
-                val mockAddress = Address("", "address", asset.assetId, destination, "TIP Wallet", nowInUtc(), "0", fee?.amount ?: "0", null, null, asset.chainId)
-                val withdrawalBiometricItem = buildWithdrawalBiometricItem(mockAddress, asset)
-                val transferFragment = TransferFragment.newInstance(withdrawalBiometricItem)
-                transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
-            }
         }
 
     inner class HeaderAdapter : RecyclerView.Adapter<HeaderAdapter.ViewHolder>() {
