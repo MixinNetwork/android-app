@@ -2,30 +2,26 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.text.toUpperCase
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
-import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.util.Locale
 
-class Web3TransactionAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = transactions.isEmpty()
 
     var transactions: List<Web3Transaction> = emptyList()
@@ -46,21 +42,30 @@ class Web3TransactionAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         parent: ViewGroup,
         viewType: Int,
     ): RecyclerView.ViewHolder {
-        return Web3TransactionHolder(ItemWeb3TransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        return if (viewType == 0) {
+            Web3HeaderHolder(ItemWeb3TokenHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        } else {
+            Web3TransactionHolder(ItemWeb3TransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        }
     }
 
     override fun getItemCount(): Int {
-        return transactions.size
+        return transactions.size + 1
     }
+
+    override fun getItemViewType(position: Int): Int = if (position == 0) 0 else 1
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-
-        (holder as Web3TransactionHolder).bind(transactions[position])
-        holder.itemView.setOnClickListener {
-            onClickListener?.invoke(transactions[position])
+        if (position > 0) {
+            (holder as Web3TransactionHolder).bind(transactions[position - 1])
+            holder.itemView.setOnClickListener {
+                onClickListener?.invoke(transactions[position - 1])
+            }
+        } else {
+            (holder as Web3HeaderHolder).bind(token) { id -> }
         }
     }
 }
@@ -69,9 +74,10 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
     @SuppressLint("SetTextI18n")
     fun bind(transaction: Web3Transaction) {
         binding.apply {
-            when(transaction.operationType) {
-                Web3TransactionType.Send.value ->{
+            when (transaction.operationType) {
+                Web3TransactionType.Send.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    avatar.badge.isVisible = false
                     titleTv.setText(R.string.Send_transfer)
                     subTitleTv.text = transaction.receiver.formatPublicKey(16)
                     if (transaction.transfers.isNotEmpty()) {
@@ -85,9 +91,11 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                         }
                     }
                 }
-                Web3TransactionType.Receive.value ->{
+
+                Web3TransactionType.Receive.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
                     titleTv.setText(R.string.Receive)
+                    avatar.badge.isVisible = false
                     subTitleTv.text = transaction.sender.formatPublicKey(16)
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
@@ -100,8 +108,10 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                         }
                     }
                 }
+
                 Web3TransactionType.Withdraw.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    avatar.badge.isVisible = false
                     titleTv.setText(R.string.Withdrawal)
                     subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
                     if (transaction.transfers.isNotEmpty()) {
@@ -122,11 +132,14 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Approve.value -> {
-                    avatar.bg.loadImage(transaction.approvals.first().iconUrl, R.drawable.ic_no_dapp)
+                    avatar.bg.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.badge.isVisible = false
                     titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                 }
+
                 Web3TransactionType.Trade.value -> {
                     avatar.bg.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.badge.isVisible = true
                     titleTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                     subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
                     if (transaction.transfers.isNotEmpty()) {
@@ -148,5 +161,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
             }
 
         }
+    }
+}
+
+class Web3HeaderHolder(val binding: ItemWeb3TokenHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
+
+    fun bind(token: Web3Token, onClickListener: ((Int) -> Unit)?) {
+        binding.header.setToken(token)
+        binding.header.setOnClickAction(onClickListener)
     }
 }

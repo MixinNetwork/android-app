@@ -46,7 +46,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
     private val adapter by lazy {
-        Web3TransactionAdapter()
+        Web3TransactionAdapter(token)
     }
 
     override fun onViewCreated(
@@ -70,6 +70,5 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             }
         }
     }
-
 
 }
