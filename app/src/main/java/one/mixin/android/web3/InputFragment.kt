@@ -268,6 +268,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             transaction,
                             token = token,
                             amount = amount,
+                            toAddress = toAddress,
                             chainToken = chainToken,
                         )
                     }
