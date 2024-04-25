@@ -56,7 +56,7 @@ import java.math.BigInteger
 
 @Composable
 fun BrowserPage(
-    account: String, chain: Chain, amount:String?, token: Web3Token?, chainToken: Web3Token?,
+    account: String, chain: Chain, amount:String?, token: Web3Token?, toAddress:String?,
     type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?, errorInfo: String?, insufficientGas: Boolean,
     showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit, onRejectAction: () -> Unit
@@ -212,6 +212,10 @@ fun BrowserPage(
                 }
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+                if (toAddress != null) {
+                    Box(modifier = Modifier.height(20.dp))
+                    ItemContent(title = stringResource(id = R.string.Receivers).uppercase(), subTitle = toAddress)
+                }
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))
