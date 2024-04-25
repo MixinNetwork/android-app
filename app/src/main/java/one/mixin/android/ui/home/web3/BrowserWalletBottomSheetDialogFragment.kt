@@ -272,7 +272,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 true
             } else if (tipGas!=null){
                 val maxGas = tipGas.displayValue() ?: BigDecimal.ZERO
-                if (web3Token.id == chainToken.id && web3Token.chainId == chainToken.chainId) {
+                if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
                     Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
                 } else {
                     maxGas > BigDecimal(chainToken.balance)

@@ -18,8 +18,6 @@ import java.util.Locale
 
 @Parcelize
 class Web3Token(
-    @SerializedName("id")
-    val id: String,
     @SerializedName("fungible_id")
     val fungibleId: String,
     @SerializedName("name")
