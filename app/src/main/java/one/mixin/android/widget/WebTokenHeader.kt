@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
+import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
@@ -12,7 +13,6 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.Fiats
-import java.math.BigDecimal
 
 class Web3TokenHeader : ConstraintLayout {
     private val _binding: ViewWeb3TokenHeaderBinding

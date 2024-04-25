@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white">
+
+    <View
+        android:id="@+id/ph"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="?attr/bg_white" />
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ph"
+        app:need_divider="false"
+        app:titleText="@string/Transaction" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title_view">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/top_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:ignore="UselessParent">
+
+                    <one.mixin.android.widget.BadgeCircleImageView
+                        android:id="@+id/avatar"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        tools:ignore="ContentDescription" />
+
+                    <TextView
+                        android:id="@+id/value_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/avatar"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:gravity="center_horizontal"
+                        android:textIsSelectable="true"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/value_as_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/value_tv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="@dimen/margin10"
+                        android:layout_marginBottom="6dp"
+                        android:textColor="?attr/text_assist" />
+
+                </RelativeLayout>
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="?attr/bg_window" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/transaction_id_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/transaction_id_title_tv"
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Transaction_Id" />
+
+                    <TextView
+                        android:id="@+id/transaction_id_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/transaction_hash_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/transaction_Hash" />
+
+                    <TextView
+                        android:id="@+id/transaction_hash_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/confirmation_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/confirmation_title"
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Confirmations" />
+
+                    <TextView
+                        android:id="@+id/confirmation_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/from_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/from_title"
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/From" />
+
+                    <TextView
+                        android:id="@+id/from_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/hash_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/hash_title"
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/deposit_hash" />
+
+                    <TextView
+                        android:id="@+id/hash_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/memo_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Memo" />
+
+                    <LinearLayout
+                        android:id="@+id/memo_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/memo_tv"
+                            style="@style/TransactionDescTextStyle"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:textIsSelectable="true" />
+
+                        <ImageView
+                            android:src="@drawable/ic_keyboard_arrow_down"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Date" />
+
+                    <TextView
+                        android:id="@+id/date_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

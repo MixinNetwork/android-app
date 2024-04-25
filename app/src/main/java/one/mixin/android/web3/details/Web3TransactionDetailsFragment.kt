@@ -9,9 +9,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -36,6 +38,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
     private val binding by viewBinding(FragmentWeb3TransactionDetailsBinding::bind)
     private val web3ViewModel by viewModels<Web3ViewModel>()
+
     @Inject
     lateinit var tip: Tip
 
@@ -47,7 +50,11 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
     private val adapter by lazy {
-        Web3TransactionAdapter(token)
+        Web3TransactionAdapter(token).apply {
+            setOnClickListener { transaction ->
+                navTo(Web3Web3TransactionFragment.newInstance(transaction), Web3Web3TransactionFragment.TAG)
+            }
+        }
     }
 
     override fun onViewCreated(
@@ -56,23 +63,21 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.apply {
-
+            leftIb.setOnClickListener {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
         }
         binding.transactionsRv.layoutManager = LinearLayoutManager(requireContext())
         binding.transactionsRv.adapter = adapter
         lifecycleScope.launch {
-            try {
-                binding.progress.isVisible = true
-                val result = web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId)
-                if (result.isSuccess){
-                    adapter.transactions = result.data?: emptyList()
-                }
+            binding.progress.isVisible = true
+            handleMixinResponse(invokeNetwork = {
+                web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId)
+            }, successBlock = { result ->
+                adapter.transactions = result.data ?: emptyList()
+            }, endBlock = {
                 binding.progress.isVisible = false
-            } catch (e: Exception) {
-                binding.progress.isVisible = false
-                Timber.e(e)
-            }
+            })
         }
     }
-
 }

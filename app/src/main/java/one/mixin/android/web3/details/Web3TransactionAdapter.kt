@@ -11,7 +11,6 @@ import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -79,7 +78,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
                     avatar.badge.isVisible = false
                     titleTv.setText(R.string.Send_transfer)
-                    subTitleTv.text = transaction.receiver.formatPublicKey(16)
+                    subTitleTv.text = transaction.receiver
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             inTv.textColorResource = R.color.wallet_pink
@@ -96,7 +95,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
                     titleTv.setText(R.string.Receive)
                     avatar.badge.isVisible = false
-                    subTitleTv.text = transaction.sender.formatPublicKey(16)
+                    subTitleTv.text = transaction.sender
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
@@ -132,15 +131,35 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Approve.value -> {
+                    avatar.bg.loadImage(transaction.fee.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.badge.isVisible = false
+                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    subTitleTv.text = transaction.transactionHash
+                    inTv.textColorResource = R.color.wallet_pink
+                    inTv.text = "-${transaction.fee.amount.numberFormat8()}"
+                    inSymbolTv.text = transaction.fee.symbol
+                    outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).numberFormat2()}"
+                    outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
+                    outTv.isVisible = false
+                }
+
+                Web3TransactionType.Mint.value -> {
                     avatar.bg.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = false
                     titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    subTitleTv.text = transaction.transactionHash
+                    inTv.textColorResource = R.color.wallet_pink
+                    inTv.text = "-${transaction.fee.amount.numberFormat8()}"
+                    inSymbolTv.text = transaction.fee.symbol
+                    outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).numberFormat2()}"
+                    outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
+                    outTv.isVisible = false
                 }
 
                 Web3TransactionType.Trade.value -> {
                     avatar.bg.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = true
-                    titleTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                     subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
@@ -157,6 +176,31 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
                         }
                     }
+                }
+
+                Web3TransactionType.Deposit.value -> {
+                    avatar.bg.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.badge.isVisible = true
+                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
+                    if (transaction.transfers.isNotEmpty()) {
+                        transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
+                            inTv.textColorResource = R.color.wallet_green
+                            inTv.text = "+${inTransfer.amount.numberFormat8()}"
+                            inSymbolTv.text = inTransfer.symbol
+                            avatar.badge.loadImage(inTransfer.iconUrl, R.drawable.ic_avatar_place_holder)
+                        }
+                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
+                            outTv.isVisible = true
+                            outTv.textColorResource = R.color.wallet_pink
+                            outTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            outSymbolTv.text = outTransfer.symbol
+                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
+                        }
+                    }
+                }
+                else ->{
+                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                 }
             }
 
