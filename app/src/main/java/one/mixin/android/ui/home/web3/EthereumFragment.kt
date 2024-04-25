@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.findChainToken
 import one.mixin.android.api.response.getChainAssetKey
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
@@ -106,18 +107,11 @@ class EthereumFragment : BaseFragment() {
         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
             setOnClickListener {token->
                 address?.let {add->
-                    navTo(InputAddressFragment.newInstance(add, token, getChainToken(token)), InputAddressFragment.TAG)
+                    navTo(InputAddressFragment.newInstance(add, token, token.findChainToken(tokens)), InputAddressFragment.TAG)
                 }
                 dismissNow()
             }
         }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
-    }
-
-    private fun getChainToken(web3Token: Web3Token): Web3Token? {
-        val chainAssetKey = web3Token.getChainAssetKey()
-        return tokens.firstOrNull() {token->
-            token.assetKey == chainAssetKey
-        }
     }
 
     override fun onCreateView(

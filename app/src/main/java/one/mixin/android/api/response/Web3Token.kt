@@ -71,10 +71,17 @@ fun Web3Token.getChainAssetKey(): String {
     else throw IllegalArgumentException("Not support: $chainId")
 }
 
-fun Web3Token.supportDeposit():Boolean {
+fun Web3Token.supportDeposit(): Boolean {
     return when (chainId.lowercase(Locale.US)) {
         "ethereum", "polygon", "binance-smart-chain" -> true
         else -> false
+    }
+}
+
+fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
+    val chainAssetKey = getChainAssetKey()
+    return tokens.firstOrNull { token ->
+        token.chainId == chainId && token.assetKey == chainAssetKey
     }
 }
 
