@@ -75,6 +75,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
+        const val ARGS_TO_ADDRESS = "args_to_address"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -83,6 +84,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             amount: String? = null,
             token: Web3Token? = null,
             chainToken: Web3Token? = null,
+            toAddress: String? = null
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(ARGS_URL, url?.run {
@@ -92,6 +94,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             putString(ARGS_AMOUNT, amount)
             putParcelable(ARGS_TOKEN, token)
             putParcelable(ARGS_CHAIN_TOKEN, chainToken)
+            putString(ARGS_TO_ADDRESS, toAddress)
         }
     }
 
@@ -105,6 +108,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val url: String? by lazy { requireArguments().getString(ARGS_URL) }
     private val title: String? by lazy { requireArguments().getString(ARGS_TITLE) }
     private val amount: String? by lazy { requireArguments().getString(ARGS_AMOUNT) }
+    private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val token by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
     }
@@ -131,7 +135,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             setContent {
                 BrowserPage(
-                    JsSigner.address, currentChain, amount, token, chainToken, signMessage.type, step, tipGas, asset,
+                    JsSigner.address, currentChain, amount, token, toAddress, signMessage.type, step, tipGas, asset,
                     signMessage.wcEthereumTransaction, signMessage.reviewData, url, title, errorInfo, insufficientGas,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     showPin = { showPin() },
@@ -350,12 +354,13 @@ fun showBrowserBottomSheetDialogFragment(
     amount: String? = null,
     token: Web3Token? = null,
     chainToken: Web3Token? = null,
+    toAddress: String? = null,
     currentUrl: String? = null,
     currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)
     }
