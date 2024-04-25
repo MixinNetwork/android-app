@@ -210,12 +210,12 @@ fun BrowserPage(
                     Box(modifier = Modifier.height(20.dp))
                     ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = title, footer = url)
                 }
-                Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
                 if (toAddress != null) {
                     Box(modifier = Modifier.height(20.dp))
                     ItemContent(title = stringResource(id = R.string.Receivers).uppercase(), subTitle = toAddress)
                 }
+                Box(modifier = Modifier.height(20.dp))
+                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))
