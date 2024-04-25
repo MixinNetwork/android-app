@@ -37,6 +37,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -288,7 +289,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
 
             val result = tip.getOrRecoverTipPriv(requireContext(), pin)
             if (result.isSuccess) {
-                val destination = "" // TODO tipPrivToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
+                val destination = privateKeyToAddress(result.getOrThrow(), Constants.ChainId.ETHEREUM_CHAIN_ID)
                 val addressFeeResponse =
                     handleMixinResponse(
                         invokeNetwork = {
