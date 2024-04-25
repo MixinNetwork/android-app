@@ -21,7 +21,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
-import one.mixin.android.api.response.getChainAssetKey
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -46,6 +45,7 @@ import one.mixin.android.web3.receive.Wbe3ReceiveFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
+import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -63,6 +63,11 @@ class EthereumFragment : BaseFragment() {
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
         Web3WalletAdapter().apply {
+            setOnWeb3Click {token->
+                address?.let {address->
+                    navTo(Web3TransactionDetailsFragment.newInstance(address, token), Web3TransactionDetailsFragment.TAG)
+                }
+            }
             setOnClickAction { id ->
                 when (id) {
                     R.id.send -> {
