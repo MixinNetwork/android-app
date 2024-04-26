@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -20,11 +19,8 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.receive.Wbe3ReceiveFragment
-import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.send.InputAddressFragment
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint

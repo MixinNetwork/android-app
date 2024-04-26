@@ -5,7 +5,6 @@ import android.os.Parcelable
 import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
@@ -14,6 +13,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
+import one.mixin.android.web3.details.Web3TransactionStatus
 import one.mixin.android.web3.details.Web3TransactionType
 import java.math.BigDecimal
 import java.util.Locale
@@ -59,7 +59,7 @@ data class Web3Transaction(
                     return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
                 }
 
-                Web3TransactionType.Approve.value->{
+                Web3TransactionType.Approve.value -> {
                     return fee.iconUrl
                 }
 
@@ -126,31 +126,32 @@ data class Web3Transaction(
     fun value(context: Context): SpannedString {
         return when (operationType) {
             Web3TransactionType.Receive.value -> {
+
                 transfers.find { it.direction == Web3TransactionDirection.In.value }?.run {
-                    buildAmountSymbol(context, "+${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
+                    buildAmountSymbol(context, "+${amount.numberFormat8()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
 
             Web3TransactionType.Deposit.value -> {
                 transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
-                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
 
             Web3TransactionType.Trade.value -> {
                 transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
-                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
 
             Web3TransactionType.Send.value -> {
                 transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
-                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
 
             else -> {
-                buildAmountSymbol(context, "-${fee.amount.numberFormat8()}", fee.symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                buildAmountSymbol(context, "-${fee.amount.numberFormat8()}", fee.symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
             }
         }
             ?: SpannedString(operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })

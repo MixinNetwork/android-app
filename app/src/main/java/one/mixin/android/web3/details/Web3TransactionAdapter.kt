@@ -18,7 +18,6 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
-import java.util.Locale
 
 class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = transactions.isEmpty()
