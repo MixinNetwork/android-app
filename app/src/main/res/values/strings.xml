@@ -1022,6 +1022,7 @@
     <string name="Today">Today</string>
     <string name="Touch_the_fingerprint_sensor">Touch the fingerprint sensor</string>
     <string name="Trace">Trace</string>
+    <string name="Trade">Trade</string>
     <string name="Transaction">Transaction</string>
     <string name="transaction_Hash">Transaction Hash</string>
     <string name="Transaction_Id">Transaction Id</string>

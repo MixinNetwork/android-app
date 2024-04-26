@@ -55,6 +55,10 @@ data class Web3Transaction(
                     return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
                 }
 
+                Web3TransactionType.Execute.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
+                }
+
                 Web3TransactionType.Deposit.value -> {
                     return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
                 }
@@ -90,6 +94,10 @@ data class Web3Transaction(
 
                 Web3TransactionType.Withdraw.value -> {
                     MixinApplication.appContext.getString(R.string.Withdrawal)
+                }
+
+                Web3TransactionType.Trade.value ->{
+                    MixinApplication.appContext.getString(R.string.Trade)
                 }
 
                 else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -150,6 +158,12 @@ data class Web3Transaction(
                 }
             }
 
+            Web3TransactionType.Execute.value -> {
+                transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                    buildAmountSymbol(context, "-${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                }
+            }
+
             else -> {
                 buildAmountSymbol(context, "-${fee.amount.numberFormat()}", fee.symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
             }
@@ -179,6 +193,12 @@ data class Web3Transaction(
                 }
 
                 Web3TransactionType.Send.value -> {
+                    transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                    }
+                }
+
+                Web3TransactionType.Execute.value -> {
                     transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
                         "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
                     }

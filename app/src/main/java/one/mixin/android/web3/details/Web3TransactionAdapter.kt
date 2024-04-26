@@ -132,6 +132,22 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     }
                 }
 
+                Web3TransactionType.Execute.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    avatar.badge.isVisible = false
+
+                    if (transaction.transfers.isNotEmpty()) {
+                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
+                            inTv.textColorResource = R.color.wallet_pink
+                            inTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            inSymbolTv.text = outTransfer.symbol
+                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).numberFormat2()}"
+                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
+                            outTv.isVisible = false
+                        }
+                    }
+                }
+
                 Web3TransactionType.Approve.value -> {
                     avatar.bg.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = false

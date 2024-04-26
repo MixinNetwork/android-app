@@ -92,9 +92,9 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             handleMixinResponse(invokeNetwork = {
                 web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId)
             }, successBlock = { result ->
-                adapter.transactions = result.data ?: emptyList()
+                if (isAdded) adapter.transactions = result.data ?: emptyList()
             }, endBlock = {
-                binding.progress.isVisible = false
+                if (isAdded) binding.progress.isVisible = false
             })
         }
     }
