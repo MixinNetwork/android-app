@@ -69,7 +69,7 @@
                         android:layout_below="@+id/value_tv"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="@dimen/margin10"
-                        android:layout_marginBottom="6dp"
+                        android:layout_marginBottom="24dp"
                         android:textColor="?attr/text_assist" />
 
                 </RelativeLayout>
@@ -170,6 +170,27 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/to_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/to_title"
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/To" />
+
+                    <TextView
+                        android:id="@+id/to_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/hash_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -192,40 +213,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/memo_ll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        style="@style/TransactionTitleTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Memo" />
-
-                    <LinearLayout
-                        android:id="@+id/memo_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/memo_tv"
-                            style="@style/TransactionDescTextStyle"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:textIsSelectable="true" />
-
-                        <ImageView
-                            android:src="@drawable/ic_keyboard_arrow_down"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="20dp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -238,6 +225,25 @@
 
                     <TextView
                         android:id="@+id/date_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Status" />
+
+                    <TextView
+                        android:id="@+id/status_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

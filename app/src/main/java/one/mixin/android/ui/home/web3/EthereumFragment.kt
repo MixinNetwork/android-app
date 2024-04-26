@@ -65,7 +65,7 @@ class EthereumFragment : BaseFragment() {
         Web3WalletAdapter().apply {
             setOnWeb3Click {token->
                 address?.let {address->
-                    navTo(Web3TransactionDetailsFragment.newInstance(address, token), Web3TransactionDetailsFragment.TAG)
+                    navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
                 }
             }
             setOnClickAction { id ->

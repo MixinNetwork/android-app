@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -19,6 +20,10 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.InputFragment
+import one.mixin.android.web3.receive.Wbe3ReceiveFragment
+import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -27,12 +32,14 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_TOKEN = "args_token"
+        const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
 
-        fun newInstance(address: String, web3Token: Web3Token) =
+        fun newInstance(address: String, web3Token: Web3Token, chainToken: Web3Token?) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putParcelable(ARGS_TOKEN, web3Token)
+                putParcelable(ARGS_CHAIN_TOKEN, chainToken)
             }
     }
 
@@ -49,8 +56,23 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)!!
     }
 
+    private val chainToken: Web3Token? by lazy {
+        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
+    }
+
     private val adapter by lazy {
         Web3TransactionAdapter(token).apply {
+            setOnClickAction { id ->
+                when (id) {
+                    R.id.send -> {
+                        navTo(InputAddressFragment.newInstance(address, token, chainToken), InputAddressFragment.TAG)
+                    }
+
+                    R.id.receive -> {
+                        navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                    }
+                }
+            }
             setOnClickListener { transaction ->
                 navTo(Web3Web3TransactionFragment.newInstance(transaction), Web3Web3TransactionFragment.TAG)
             }

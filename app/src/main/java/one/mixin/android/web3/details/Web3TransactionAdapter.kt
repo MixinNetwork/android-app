@@ -33,6 +33,10 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
         }
 
     private var onClickListener: ((Web3Transaction) -> Unit)? = null
+    private var onClickAction: ((Int) -> Unit)? = null
+    fun setOnClickAction(onClickListener: (Int) -> Unit) {
+        this.onClickAction = onClickListener
+    }
     fun setOnClickListener(onClickListener: (Web3Transaction) -> Unit) {
         this.onClickListener = onClickListener
     }
@@ -64,7 +68,9 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
                 onClickListener?.invoke(transactions[position - 1])
             }
         } else {
-            (holder as Web3HeaderHolder).bind(token) { id -> }
+            (holder as Web3HeaderHolder).bind(token) { id ->
+                onClickAction?.invoke(id)
+            }
         }
     }
 }
@@ -73,12 +79,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
     @SuppressLint("SetTextI18n")
     fun bind(transaction: Web3Transaction) {
         binding.apply {
+            titleTv.text = transaction.title
+            subTitleTv.text = transaction.subTitle
             when (transaction.operationType) {
                 Web3TransactionType.Send.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
                     avatar.badge.isVisible = false
-                    titleTv.setText(R.string.Send_transfer)
-                    subTitleTv.text = transaction.receiver
+
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             inTv.textColorResource = R.color.wallet_pink
@@ -93,9 +100,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
 
                 Web3TransactionType.Receive.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
-                    titleTv.setText(R.string.Receive)
                     avatar.badge.isVisible = false
-                    subTitleTv.text = transaction.sender
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
@@ -111,8 +116,6 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 Web3TransactionType.Withdraw.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
                     avatar.badge.isVisible = false
-                    titleTv.setText(R.string.Withdrawal)
-                    subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
@@ -131,10 +134,8 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Approve.value -> {
-                    avatar.bg.loadImage(transaction.fee.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.bg.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = false
-                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                    subTitleTv.text = transaction.transactionHash
                     inTv.textColorResource = R.color.wallet_pink
                     inTv.text = "-${transaction.fee.amount.numberFormat8()}"
                     inSymbolTv.text = transaction.fee.symbol
@@ -146,8 +147,6 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 Web3TransactionType.Mint.value -> {
                     avatar.bg.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = false
-                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                    subTitleTv.text = transaction.transactionHash
                     inTv.textColorResource = R.color.wallet_pink
                     inTv.text = "-${transaction.fee.amount.numberFormat8()}"
                     inSymbolTv.text = transaction.fee.symbol
@@ -159,8 +158,6 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 Web3TransactionType.Trade.value -> {
                     avatar.bg.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = true
-                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                    subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
@@ -181,8 +178,6 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 Web3TransactionType.Deposit.value -> {
                     avatar.bg.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = true
-                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                    subTitleTv.text = "${transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
@@ -199,8 +194,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                         }
                     }
                 }
-                else ->{
-                    titleTv.text = transaction.operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                else -> {
+                    avatar.bg.setImageResource(R.drawable.ic_no_dapp)
+                    avatar.badge.isVisible = false
+                    outSymbolTv.text = ""
+                    outTv.text = ""
+                    inSymbolTv.text = ""
+                    inTv.text = ""
                 }
             }
 

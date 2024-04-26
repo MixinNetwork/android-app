@@ -1,10 +1,22 @@
 package one.mixin.android.api.response
 
+import android.content.Context
 import android.os.Parcelable
+import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.MixinApp
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionType
+import java.math.BigDecimal
+import java.util.Locale
 
 @Parcelize
 data class Web3Transaction(
@@ -21,14 +33,12 @@ data class Web3Transaction(
     val approvals: List<Approval>,
     @SerializedName("app_metadata")
     val appMetadata: AppMetadata?,
+    @SerializedName("created_at")
+    val createdAt: String
 ) : Parcelable {
     val icon: String?
         get() {
             when (operationType) {
-                Web3TransactionType.Approve.value -> {
-                    return approvals.firstOrNull()?.iconUrl
-                }
-
                 Web3TransactionType.Withdraw.value -> {
                     return transfers.firstOrNull { it.direction == Web3TransactionDirection.In.value }?.iconUrl
                 }
@@ -42,7 +52,19 @@ data class Web3Transaction(
                 }
 
                 Web3TransactionType.Trade.value -> {
-                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.In.value }?.iconUrl
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
+                }
+
+                Web3TransactionType.Deposit.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
+                }
+
+                Web3TransactionType.Approve.value->{
+                    return fee.iconUrl
+                }
+
+                else -> {
+                    fee.iconUrl
                 }
             }
             return null
@@ -51,17 +73,119 @@ data class Web3Transaction(
     val badge: String?
         get() {
             return when (operationType) {
-                Web3TransactionType.Approve.value -> {
-                    approvals.firstOrNull()?.iconUrl
-                }
-                Web3TransactionType.Withdraw.value,
-                Web3TransactionType.Receive.value,
-                Web3TransactionType.Send.value,
-                Web3TransactionType.Trade.value -> {
-                    fee.iconUrl
-                }
-
                 else -> null
             }
+        }
+
+    val title: String
+        get() {
+            return when (operationType) {
+                Web3TransactionType.Send.value -> {
+                    MixinApplication.appContext.getString(R.string.Send_transfer)
+                }
+
+                Web3TransactionType.Receive.value -> {
+                    MixinApplication.appContext.getString(R.string.Receive)
+                }
+
+                Web3TransactionType.Withdraw.value -> {
+                    MixinApplication.appContext.getString(R.string.Withdrawal)
+                }
+
+                else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            }
+        }
+
+    val subTitle: String
+        get() {
+            return when (operationType) {
+                Web3TransactionType.Send.value -> {
+                    receiver
+                }
+
+                Web3TransactionType.Receive.value -> {
+                    sender
+                }
+
+                Web3TransactionType.Withdraw.value -> {
+                    "${transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
+                }
+
+                Web3TransactionType.Trade.value -> {
+                    "${transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
+                }
+
+                Web3TransactionType.Deposit.value -> {
+                    "${transfers.find { it.direction == Web3TransactionDirection.Out.value }?.symbol} -> ${transfers.find { it.direction == Web3TransactionDirection.In.value }?.symbol}"
+                }
+
+                else -> transactionHash
+            }
+        }
+
+    fun value(context: Context): SpannedString {
+        return when (operationType) {
+            Web3TransactionType.Receive.value -> {
+                transfers.find { it.direction == Web3TransactionDirection.In.value }?.run {
+                    buildAmountSymbol(context, "+${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
+                }
+            }
+
+            Web3TransactionType.Deposit.value -> {
+                transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                }
+            }
+
+            Web3TransactionType.Trade.value -> {
+                transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                }
+            }
+
+            Web3TransactionType.Send.value -> {
+                transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                    buildAmountSymbol(context, "-${amount.numberFormat8()}", symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                }
+            }
+
+            else -> {
+                buildAmountSymbol(context, "-${fee.amount.numberFormat8()}", fee.symbol, context.resources.getColor(R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+            }
+        }
+            ?: SpannedString(operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
+    }
+
+    val valueAs: String
+        get() {
+            return when (operationType) {
+                Web3TransactionType.Receive.value -> {
+                    transfers.find { it.direction == Web3TransactionDirection.In.value }?.run {
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                    }
+                }
+
+                Web3TransactionType.Deposit.value -> {
+                    transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                    }
+                }
+
+                Web3TransactionType.Trade.value -> {
+                    transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                    }
+                }
+
+                Web3TransactionType.Send.value -> {
+                    transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                    }
+                }
+
+                else -> {
+                    "≈ ${Fiats.getSymbol()}${BigDecimal(fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(fee.amount)).numberFormat2()}"
+                }
+            } ?: operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
 }
