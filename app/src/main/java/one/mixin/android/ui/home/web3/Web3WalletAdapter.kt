@@ -30,10 +30,16 @@ class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun isEmpty() = tokens.isEmpty()
     private var onClickAction: ((Int) -> Unit)? = null
+    private var onWeb3ClickListener: ((Web3Token) -> Unit)? = null
 
     fun setOnClickAction(onClickListener: (Int) -> Unit) {
         this.onClickAction = onClickListener
     }
+
+    fun setOnWeb3Click(onWeb3ClickListener: (Web3Token) -> Unit) {
+        this.onWeb3ClickListener = onWeb3ClickListener
+    }
+
 
     val tokens: List<Web3Token>
         get() {
@@ -111,7 +117,7 @@ class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }
             }
 
-            2 -> (holder as Web3Holder).bind(tokens[position - 1])
+            2 -> (holder as Web3Holder).bind(tokens[position - 1], onWeb3ClickListener)
         }
     }
 }
@@ -136,8 +142,9 @@ class Web3CardHolder(val binding: ItemChainCardBinding) : RecyclerView.ViewHolde
 
 class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(token: Web3Token) {
+    fun bind(token: Web3Token, onWeb3ClickListener: ((Web3Token) -> Unit)?) {
         binding.apply {
+            root.setOnClickListener{ onWeb3ClickListener?.invoke(token) }
             avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
             balance.text =
