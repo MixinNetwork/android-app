@@ -267,7 +267,7 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun parseSessionRequest(request: Wallet.Model.SessionRequest): WCSignData.V2SignData<*>? {
+    fun parseSessionRequest(localAddress:String, request: Wallet.Model.SessionRequest): WCSignData.V2SignData<*>? {
         val signData =
             when (request.request.method) {
                 Method.ETHSign.name -> {
@@ -275,20 +275,31 @@ object WalletConnectV2 : WalletConnect() {
                     val address = array[0].toString().trim('"')
                     val data = array[1].toString().trim('"')
                     Timber.d("$TAG eth sign: $data")
+                    if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
+                    }
                     WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.MESSAGE), request)
                 }
+
                 Method.ETHPersonalSign.name -> {
                     val array = JsonParser.parseString(request.request.params).asJsonArray
                     val data = array[0].toString().trim('"')
                     val address = array[1].toString().trim('"')
                     Timber.d("$TAG personal sign: $data")
+                    if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
+                    }
                     WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(data, address), WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE), request)
                 }
+
                 Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
                     val array = JsonParser.parseString(request.request.params).asJsonArray
                     val address = array[0].toString().trim('"')
                     val data = array[1].toString().trim('"')
                     Timber.d("$TAG sign typed data: $data")
+                    if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
+                        throw IllegalArgumentException("Address unequal")
+                    }
                     WCSignData.V2SignData(request.request.id, WCEthereumSignMessage(listOf(address, data), WCEthereumSignMessage.WCSignType.TYPED_MESSAGE), request)
                 }
                 Method.ETHSignTransaction.name -> {

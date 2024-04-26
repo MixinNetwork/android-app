@@ -90,8 +90,8 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
-            return WalletConnectV2.parseSessionRequest(sessionRequest)
+        fun parseV2SignData(address: String, sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
+            return WalletConnectV2.parseSessionRequest(address, sessionRequest)
         }
 
         suspend fun getTipPriv(
