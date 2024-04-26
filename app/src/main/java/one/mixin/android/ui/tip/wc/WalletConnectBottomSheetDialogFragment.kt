@@ -41,6 +41,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
@@ -288,7 +289,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             var signData = this@WalletConnectBottomSheetDialogFragment.signData
             if (signData == null) {
-                signData = viewModel.parseV2SignData(sessionRequest)
+                signData = try {
+                    val account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                    viewModel.parseV2SignData(account, sessionRequest)
+                } catch (e: Exception) {
+                    toast(e.message ?: "Unknown error")
+                    null
+                }
             }
 
             // not supported sessionRequest, like eth_call

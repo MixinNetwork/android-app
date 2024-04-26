@@ -1,0 +1,98 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:foreground="?selectableItemBackground">
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/avatar"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:textColor="?attr/text_primary"
+        android:layout_marginStart="12dp"
+        app:layout_constraintStart_toEndOf="@id/avatar"
+        app:layout_constraintTop_toTopOf="@id/avatar"/>
+
+    <TextView
+        android:id="@+id/sub_title_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:gravity="start"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:textColor="?attr/text_assist"
+        android:layout_marginStart="12dp"
+        app:layout_constraintStart_toEndOf="@id/avatar"
+        app:layout_constraintEnd_toEndOf="@id/out_tv"
+        app:layout_constraintBottom_toBottomOf="@id/avatar"/>
+
+    <TextView
+        android:id="@+id/out_symbol_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:textSize="14sp"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="?attr/text_primary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/avatar"/>
+
+    <TextView
+        android:id="@+id/out_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/in_symbol_tv"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textSize="14sp"
+        android:textColor="@color/wallet_pink"
+        android:layout_marginEnd="2dp"
+        app:layout_constraintEnd_toStartOf="@id/out_symbol_tv"
+        app:layout_constraintBottom_toBottomOf="@id/avatar"/>
+
+    <TextView
+        android:id="@+id/in_symbol_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="?attr/text_primary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/avatar"/>
+
+    <TextView
+        android:id="@+id/in_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textSize="14sp"
+        android:textColor="@color/wallet_green"
+        android:layout_marginEnd="2dp"
+        app:layout_constraintEnd_toStartOf="@id/in_symbol_tv"
+        app:layout_constraintTop_toTopOf="@id/avatar"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

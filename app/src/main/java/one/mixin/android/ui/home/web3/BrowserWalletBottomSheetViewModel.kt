@@ -77,10 +77,6 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
-            return WalletConnectV2.parseSessionRequest(sessionRequest)
-        }
-
         suspend fun getTipPriv(
             context: Context,
             pin: String,

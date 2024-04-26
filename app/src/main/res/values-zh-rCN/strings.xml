@@ -999,6 +999,7 @@
     </plurals>
     <string name="To">至</string>
     <string name="Today">今天</string>
+    <string name="Trade">交易</string>
     <string name="Touch_the_fingerprint_sensor">触摸指纹传感器</string>
     <string name="Transaction">交易详情</string>
     <string name="transaction_Hash">交易哈希</string>
