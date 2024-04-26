@@ -184,11 +184,8 @@ suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
             } else {
                 Timber.e("Insert filter ${signed.joinToString(", ") }")
                 // Exclude signed data
-                val list =
-                    outputs.filter {
-                        signed.contains(it.outputId)
-                    }
-                insertList(list)
+                val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
+                insertList(unsignedData)
             }
         }
     }
