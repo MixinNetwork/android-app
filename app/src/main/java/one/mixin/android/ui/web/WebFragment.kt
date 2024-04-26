@@ -847,6 +847,11 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript(e, Timber::d)
                     }
                 },
+                onWalletActionError = { id->
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${id}, null)") {}
+                    }
+                },
                 onBrowserSign = { message ->
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
@@ -1717,6 +1722,7 @@ class WebFragment : BaseFragment() {
     }
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
+        val onWalletActionError: (Long) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
     ) {
         @JavascriptInterface
@@ -1741,7 +1747,7 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
-                    signPersonalMessage(id, obj.getJSONObject("object").getString("data"))
+                    signPersonalMessage(id, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
@@ -1798,8 +1804,16 @@ class WebFragment : BaseFragment() {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
-        private fun signPersonalMessage(callbackId: Long, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data))
+        private fun signPersonalMessage(callbackId: Long, data:JSONObject) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(JsSigner.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
         }
 
         private fun signTypedMessage(callbackId: Long, data: String) {

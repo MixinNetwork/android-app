@@ -120,7 +120,7 @@ fun BrowserPage(
                     text =
                     stringResource(
                         id =
-                        if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE) {
+                        if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE || type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                             when (step) {
                                 WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_message_request
                                 WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
@@ -176,7 +176,7 @@ fun BrowserPage(
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.backgroundWindow),
                 )
-                if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE) {
+                if (type == JsSignMessage.TYPE_MESSAGE || type == JsSignMessage.TYPE_TYPED_MESSAGE || type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     MessagePreview(content = data ?: "") {
                         onPreviewMessage.invoke(it)
                     }

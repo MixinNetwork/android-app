@@ -7,6 +7,7 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
 import org.web3j.utils.Numeric
+import timber.log.Timber
 
 @Parcelize
 class JsSignMessage(
@@ -27,14 +28,7 @@ class JsSignMessage(
             val data = this.data ?: return null
             try {
                 if (type == TYPE_PERSONAL_MESSAGE) {
-                    val listType = object : TypeToken<List<String>>() {}.type
-                    val params = GsonHelper.customGson.fromJson<List<String>>(data, listType)
-                    if (params.size >= 2) {
-                        val encodedMessage = params[0]
-                        String(Numeric.cleanHexPrefix(encodedMessage).hexStringToByteArray())
-                    } else {
-                        throw IllegalArgumentException("IllegalArgument")
-                    }
+                    return String(Numeric.cleanHexPrefix(data).hexStringToByteArray())
                 } else if (type == TYPE_TYPED_MESSAGE) {
                     val listType = object : TypeToken<List<String>>() {}.type
                     val params = GsonHelper.customGson.fromJson<List<String>>(data, listType)
