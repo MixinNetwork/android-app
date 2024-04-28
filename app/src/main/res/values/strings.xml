@@ -1448,6 +1448,7 @@
     <string name="Ethereum">Ethereum</string>
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>
+    <string name="Solana">Solana</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access dApps and DeFi projects.</string>
@@ -1484,6 +1485,7 @@
     <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
     <string name="No_asset">Don’t have assets</string>
     <string name="Ethereum_Account">Ethereum Account</string>
+    <string name="Solana_Account">Solana Account</string>
     <string name="Review">Review</string>
     <string name="Max">Max</string>
     <string name="hint_address">Enter a wallet address</string>

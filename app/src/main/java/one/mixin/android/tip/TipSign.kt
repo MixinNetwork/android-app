@@ -8,6 +8,7 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
+import org.sol4k.Keypair
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -110,35 +111,59 @@ fun tipPrivToPrivateKey(
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
 ): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-    val bip44KeyPair =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
-            Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
-            else -> throw IllegalArgumentException("Not supported chainId")
+
+    when (chainId) {
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> {
+            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+            if (address != addressFromGo) {
+                throw IllegalArgumentException("Generate illegal Etherenum Address")
+            }
+            return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         }
-    val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
-    val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-    if (address != addressFromGo) {
-        throw IllegalArgumentException("Generate illegal Address")
+        Constants.ChainId.SOLANA_CHAIN_ID -> {
+            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+            val kp = Keypair.fromSecretKey(seed)
+            val address = kp.publicKey.toBase58()
+            if (address != addressFromGo) {
+                throw IllegalArgumentException("Generate illegal Solana Address")
+            }
+            return kp.secret
+        }
+        else -> throw IllegalArgumentException("Not supported chainId")
     }
-    return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
 }
 
-fun tipPrivToAddress(
+// private key
+fun privateKeyToAddress(
     priv: ByteArray,
     chainId: String,
 ): String {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-    val bip44KeyPair =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Bitcoin)
-            Constants.ChainId.ETHEREUM_CHAIN_ID -> generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
-            else -> throw IllegalArgumentException("Not supported chainId")
+    when (chainId) {
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> {
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
+            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+            if (address != addressFromGo) {
+                throw IllegalArgumentException("Generate illegal Address")
+            }
+            return address
         }
-    val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
-    val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-    if (address != addressFromGo) {
-        throw IllegalArgumentException("Generate illegal Address")
+        Constants.ChainId.SOLANA_CHAIN_ID -> {
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+            val kp = Keypair.fromSecretKey(seed)
+            val address = kp.publicKey.toBase58()
+            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
+            if (address != addressFromGo) {
+                throw IllegalArgumentException("Generate illegal Solana Address")
+            }
+            return address
+        }
+        else -> throw IllegalArgumentException("Not supported chainId")
     }
-    return address
 }

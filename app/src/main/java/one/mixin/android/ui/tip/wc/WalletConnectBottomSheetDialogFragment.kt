@@ -30,7 +30,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -50,6 +53,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
@@ -64,6 +68,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import org.sol4k.Transaction
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -119,16 +124,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var sessionProposal: Wallet.Model.SessionProposal? by mutableStateOf(null)
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
     private var account: String by mutableStateOf("")
-    private var signedTransactionData: String? = null
+    private var signedTransactionData: Any? = null
 
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launch {
-            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        }
     }
 
     override fun onCreateView(
@@ -276,6 +278,12 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 else -> {}
             }
 
+            account = if (chain != Chain.Solana) {
+                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            } else {
+                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            }
+
             if (requestType != RequestType.SessionRequest) return@launch
             val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@launch
 
@@ -341,20 +349,24 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
-                            val priv = viewModel.getTipPriv(requireContext(), pin)
-                            approveWithPriv(priv)
+                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, if (chain is Chain.Solana) SOLANA_CHAIN_ID else ETHEREUM_CHAIN_ID)
+                            approveWithPriv(privateKey)
                         }
                     }
                 if (error == null) {
                     step =
-                        if (isSignTransaction()) {
+                        if (isSignEvmTransaction() || isSignSolanaTransaction()) {
                             try {
                                 step = Step.Sending
                                 val sendError =
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData)
+                                        if (signedTransactionData is Transaction) {
+                                            viewModel.sendTransaction(signedTransactionData)
+                                        } else {
+                                            viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
+                                        }
                                     }
                                 if (sendError == null) {
                                     processCompleted = true
@@ -367,7 +379,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 handleException(e)
                                 Step.Error
                             }
-
                         } else {
                             processCompleted = true
                             Step.Done
@@ -435,6 +446,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         reportException("$TAG handleException", e)
+        Timber.e(e)
         step = Step.Error
     }
 
@@ -444,7 +456,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         step = Step.Error
     }
 
-    private fun isSignTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
+    private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
+    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is WcSolanaTransaction
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

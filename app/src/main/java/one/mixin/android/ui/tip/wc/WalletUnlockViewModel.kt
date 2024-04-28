@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import javax.inject.Inject
 
@@ -44,6 +45,6 @@ class WalletUnlockViewModel
         ): String {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToAddress(spendKey, chainId)
+            return privateKeyToAddress(spendKey, chainId)
         }
     }

@@ -7,6 +7,7 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
@@ -20,7 +21,7 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var account: Web3Account? = null
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
@@ -80,7 +81,9 @@ class Web3WalletAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         return if (viewType == 0) {
             Web3CardHolder(ItemChainCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else if (viewType == 1) {
-            Web3HeaderHolder(ItemWeb3HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            Web3HeaderHolder(ItemWeb3HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
+                this.binding.header.setTitle(if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) R.string.Solana_Account else R.string.Ethereum_Account)
+            }
         } else {
             Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }

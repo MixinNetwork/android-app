@@ -102,7 +102,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
+    private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
 
     private val signMessage: JsSignMessage by lazy { requireArguments().getParcelableCompat(ARGS_MESSAGE, JsSignMessage::class.java)!! }
     private val url: String? by lazy { requireArguments().getString(ARGS_URL) }

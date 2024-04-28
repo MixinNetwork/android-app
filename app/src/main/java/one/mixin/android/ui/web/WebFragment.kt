@@ -110,7 +110,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
-import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -951,7 +951,7 @@ class WebFragment : BaseFragment() {
                 callback = {
                     val address =
                         try {
-                            tipPrivToAddress(it, chainId)
+                            privateKeyToAddress(it, chainId)
                         } catch (e: IllegalArgumentException) {
                             Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
                             ""
@@ -1751,7 +1751,7 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
-                    signTypedMessage(id, obj.getJSONObject("object").getString("raw"))
+                    signTypedMessage(id, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
@@ -1816,8 +1816,16 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        private fun signTypedMessage(callbackId: Long, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data))
+        private fun signTypedMessage(callbackId: Long, data: JSONObject) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(JsSigner.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
         }
 
         private fun ethCall(callbackId: Long, recipient: String) {

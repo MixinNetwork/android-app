@@ -2,6 +2,7 @@ package one.mixin.android.ui.tip.wc
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -9,7 +10,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.DataErrorException
@@ -42,6 +45,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_ETH = "eth"
         const val TYPE_POLYGON = "polygon"
         const val TYPE_BSC = "bsc"
+        const val TYPE_SOLANA = "solana"
 
         @SuppressLint("StaticFieldLeak")
         private var instance: WalletUnlockBottomSheetDialogFragment? = null
@@ -98,18 +102,21 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             when (type) {
                 TYPE_POLYGON -> getString(R.string.Polygon)
                 TYPE_BSC -> getString(R.string.BSC)
+                TYPE_SOLANA -> getString(R.string.Solana)
                 else -> getString(R.string.Ethereum)
             }
         val otherChain =
             when (type) {
                 TYPE_POLYGON -> arrayOf(getString(R.string.Polygon), getString(R.string.Ethereum), getString(R.string.BSC))
                 TYPE_BSC -> arrayOf(getString(R.string.BSC), getString(R.string.Ethereum), getString(R.string.Polygon))
+                TYPE_SOLANA -> arrayOf(getString(R.string.Solana), getString(R.string.Ethereum), getString(R.string.Polygon))
                 else -> arrayOf(getString(R.string.Ethereum), getString(R.string.Polygon), getString(R.string.BSC))
             }
         binding.apply {
             agreement1.text = getString(R.string.unlock_web3_account_agreement_1, chain)
             agreement2.text = getString(R.string.unlock_web3_account_agreement_2, chain)
             agreement3.text = getString(R.string.unlock_web3_account_agreement_3, *otherChain)
+            agreementLayout.isVisible = type != TYPE_SOLANA
             bottom.setOnClickListener({
                 dismiss()
             }, {
@@ -208,11 +215,20 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 },
             ) {
                 keyViewModel.updateStatus(TransferStatus.IN_PROGRESS)
-                val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-                PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
-                JsSigner.updateAddress(address)
-                RxBus.publish(WCUnlockEvent())
-                keyViewModel.success(address)
+                if (type == TYPE_SOLANA) {
+                    val address = keyViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
+                    PropertyHelper.updateKeyValue(SOLANA_ADDRESS, address)
+                    // todo js
+                    RxBus.publish(WCUnlockEvent())
+                    keyViewModel.success(address)
+                } else {
+                    val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
+                    PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
+                    JsSigner.updateAddress(address)
+                    RxBus.publish(WCUnlockEvent())
+                    keyViewModel.success(address)
+                }
+
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }

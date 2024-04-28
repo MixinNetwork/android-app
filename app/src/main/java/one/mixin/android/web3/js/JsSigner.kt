@@ -62,6 +62,18 @@ object JsSigner {
                 currentChain = Chain.Ethereum
                 Result.success(Chain.Ethereum.name)
             }
+            Chain.Base.hexReference-> {
+                currentChain = Chain.Base
+                Result.success(Chain.Base.name)
+            }
+            Chain.Arbitrum.hexReference-> {
+                currentChain = Chain.Arbitrum
+                Result.success(Chain.Arbitrum.name)
+            }
+            Chain.Optimism.hexReference-> {
+                currentChain = Chain.Optimism
+                Result.success(Chain.Optimism.name)
+            }
             Chain.Polygon.hexReference -> {
                 currentChain = Chain.Polygon
                 Result.success(Chain.Polygon.name)
@@ -69,6 +81,10 @@ object JsSigner {
             Chain.BinanceSmartChain.hexReference -> {
                 currentChain = Chain.BinanceSmartChain
                 Result.success(Chain.BinanceSmartChain.name)
+            }
+            Chain.Avalanche.hexReference -> {
+                currentChain = Chain.Avalanche
+                Result.success(Chain.Avalanche.name)
             }
             else -> {
                 Result.failure(IllegalArgumentException("No support"))
