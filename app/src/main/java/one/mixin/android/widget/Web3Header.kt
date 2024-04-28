@@ -40,4 +40,8 @@ class Web3Header : ConstraintLayout {
         _binding.totalTv.text = (BigDecimal(string).multiply(BigDecimal(Fiats.getRate())).numberFormat2())
         _binding.symbol.text = Fiats.getSymbol()
     }
+
+    fun setTitle(titleRes: Int) {
+        _binding.title.setText(titleRes)
+    }
 }

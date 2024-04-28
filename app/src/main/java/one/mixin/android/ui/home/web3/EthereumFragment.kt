@@ -15,6 +15,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -62,7 +63,7 @@ class EthereumFragment : BaseFragment() {
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
-        Web3WalletAdapter().apply {
+        Web3WalletAdapter(ETHEREUM_CHAIN_ID).apply {
             setOnWeb3Click {token->
                 address?.let {address->
                     navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
