@@ -152,8 +152,21 @@ object WalletConnectV2 : WalletConnect() {
                             }
                         }
 
+                    val namespace = sessionProposal.requiredNamespaces.values.firstOrNull() ?: sessionProposal.optionalNamespaces.values.firstOrNull()
+                    if (namespace == null) {
+                        RxBus.publish(
+                            WCErrorEvent(
+                                WCError(
+                                    IllegalArgumentException(
+                                        "Empty namespace"
+                                    ),
+                                ),
+                            ),
+                        )
+                        return
+                    }
                     val requireChain = supportChainList.first {
-                        sessionProposal.requiredNamespaces.values.first().chains?.contains(it.chainId) == true
+                        (namespace).chains?.contains(it.chainId) == true
                     }
                     val chainType = when {
                         requireChain is Chain.Solana -> WalletUnlockBottomSheetDialogFragment.TYPE_SOLANA

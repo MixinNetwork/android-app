@@ -35,7 +35,7 @@ class BrowserWalletBottomSheetViewModel
             transaction: Transaction,
         ) = withContext(Dispatchers.IO) {
             WalletConnectV2.ethEstimateGas(chain, transaction)?.run {
-                val defaultLimit = if (chain.chainReference == "1") BigInteger.valueOf(4712380L) else null
+                val defaultLimit = if (chain.chainReference == Chain.Ethereum.chainReference) BigInteger.valueOf(4712380L) else null
                 convertToGasLimit(this, defaultLimit)
             }
         }

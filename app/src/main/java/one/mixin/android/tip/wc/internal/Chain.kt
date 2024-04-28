@@ -11,34 +11,28 @@ sealed class Chain(
     val assetId: String,
     val chainNamespace: String,
     val chainReference: String,
+    val hexReference: String,
     val name: String,
     val symbol: String,
     private val rpcServers: List<String>,
 ) {
-    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "0x1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
+    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 
-    object Arbitrum : Chain(ETHEREUM_CHAIN_ID, "eip155", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arbitrum.llamarpc.com"))
+    object Arbitrum : Chain(ETHEREUM_CHAIN_ID, "eip155", "42161", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arbitrum.llamarpc.com"))
 
-    object Optimism : Chain(ETHEREUM_CHAIN_ID, "eip155", "0xa", "OP Mainnet", "ETH", listOf("https://optimism.llamarpc.com"))
+    object Optimism : Chain(ETHEREUM_CHAIN_ID, "eip155", "10", "0xa", "OP Mainnet", "ETH", listOf("https://optimism.llamarpc.com"))
 
-    object Base : Chain(ETHEREUM_CHAIN_ID, "eip155", "0x2105", "Base", "ETH", listOf("https://base.llamarpc.com"))
+    object Base : Chain(ETHEREUM_CHAIN_ID, "eip155", "8453", "0x2105", "Base", "ETH", listOf("https://base.llamarpc.com"))
 
-    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "0x38", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
-    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "0x89", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
-    object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "0xa86a", "Avalanche", "AVAX", listOf("https://avalanche.drpc.org"))
+    object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche", "AVAX", listOf("https://avalanche.drpc.org"))
 
-    object Solana : Chain(SOLANA_CHAIN_ID,"solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+    object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
-    val hexReference: String
-        get() {
-            if (assetId != SOLANA_CHAIN_ID) {
-                return "0x%x".format(chainReference.toInt())
-            } else {
-                throw IllegalArgumentException("Not support")
-            }
-        }
+
 
     val chainId: String
         get() {
