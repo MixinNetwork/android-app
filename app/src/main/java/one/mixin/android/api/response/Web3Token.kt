@@ -63,16 +63,16 @@ fun Web3Token.getChainIdFromName(): String {
     return when {
         chainId.equals("ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
         chainId.equals("base", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
-        chainId.equals("arbitrum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
-        chainId.equals("optimism", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
+        chainId.equals("arbitrum", true) -> Constants.ChainId.Arbitrum
+        chainId.equals("optimism", true) -> Constants.ChainId.Optimism
         chainId.equals("polygon", true) -> Constants.ChainId.Polygon
         chainId.equals("binance-smart-chain", true) -> Constants.ChainId.BinanceSmartChain
         chainId.equals("avalanche", true) -> Constants.ChainId.Avalanche
-        else -> throw IllegalArgumentException("Not support: $chainId")
+        else -> ""
     }
 }
 
-fun Web3Token.getChainAssetKey(): String {
+private fun Web3Token.getChainAssetKey(): String {
     return if (chainId.equals("ethereum", true)) "0x0000000000000000000000000000000000000000"
     else if (chainId.equals("base", true)) "0x0000000000000000000000000000000000000000"
     else if (chainId.equals("arbitrum", true)) "0x0000000000000000000000000000000000000000"
@@ -80,7 +80,7 @@ fun Web3Token.getChainAssetKey(): String {
     else if (chainId.equals("polygon", true)) "0x0000000000000000000000000000000000001010"
     else if (chainId.equals("binance-smart-chain", true)) "0x0000000000000000000000000000000000000000"
     else if (chainId.equals("avalanche", true)) "0x0000000000000000000000000000000000000000"
-    else throw IllegalArgumentException("Not support: $chainId")
+    else ""
 }
 
 fun Web3Token.supportDeposit(): Boolean {
