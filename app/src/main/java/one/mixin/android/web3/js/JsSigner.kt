@@ -82,6 +82,10 @@ object JsSigner {
                 currentChain = Chain.BinanceSmartChain
                 Result.success(Chain.BinanceSmartChain.name)
             }
+            Chain.Avalanche.hexReference -> {
+                currentChain = Chain.Avalanche
+                Result.success(Chain.Avalanche.name)
+            }
             else -> {
                 Result.failure(IllegalArgumentException("No support"))
             }

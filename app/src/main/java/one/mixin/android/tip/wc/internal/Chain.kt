@@ -25,6 +25,8 @@ sealed class Chain(
 
     object Polygon : Chain(Constants.ChainId.Polygon, "eip155", 137, "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
 
+    object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", 0xa86a, "Avalanche", "AVAX", listOf("https://avalanche.drpc.org"))
+
     val hexReference:String
         get() {
             return "0x%x".format(chainReference)
@@ -40,7 +42,7 @@ sealed class Chain(
         }
 }
 
-internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon)
+internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -50,6 +52,7 @@ internal fun String.getChain(): Chain? {
         Chain.Optimism.chainId -> Chain.Ethereum
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
         Chain.Polygon.chainId -> Chain.Polygon
+        Chain.Avalanche.chainId -> Chain.Avalanche
         else -> null
     }
 }
@@ -62,6 +65,7 @@ internal fun Int.getChain(): Chain? {
         Chain.Optimism.chainReference -> Chain.Ethereum
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
         Chain.Polygon.chainReference -> Chain.Polygon
+        Chain.Avalanche.chainReference -> Chain.Avalanche
         else -> null
     }
 }
@@ -76,6 +80,7 @@ internal fun String?.getChainName(): String? {
         Chain.Optimism.chainId -> Chain.Optimism.name
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
         Chain.Polygon.chainId -> Chain.Polygon.name
+        Chain.Avalanche.chainId -> Chain.Avalanche.name
         else -> null
     }
 }
@@ -90,6 +95,7 @@ internal fun String?.getChainSymbol(): String? {
         Chain.Optimism.chainId -> Chain.Optimism.symbol
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
         Chain.Polygon.chainId -> Chain.Polygon.symbol
+        Chain.Avalanche.chainId -> Chain.Avalanche.symbol
         else -> null
     }
 }
@@ -102,6 +108,7 @@ val walletConnectChainIdMap =
         Chain.Optimism.symbol to Constants.ChainId.ETHEREUM_CHAIN_ID,
         Chain.Polygon.symbol to Constants.ChainId.Polygon,
         Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
+        Chain.Avalanche.symbol to Constants.ChainId.Avalanche,
     )
 
 fun getSupportedNamespaces(address: String): Map<String, Wallet.Model.Namespace.Session> {
