@@ -137,6 +137,7 @@ class ExploreFragment : BaseFragment() {
                 radioSolana.isChecked = false
                 navigate(ethereumFragment, EthereumFragment.TAG)
             }
+            radioSolana.isVisible = false
 
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
