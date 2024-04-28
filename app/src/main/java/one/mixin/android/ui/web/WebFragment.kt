@@ -1751,7 +1751,7 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
-                    signTypedMessage(id, obj.getJSONObject("object").getString("raw"))
+                    signTypedMessage(id, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
@@ -1816,8 +1816,16 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        private fun signTypedMessage(callbackId: Long, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data))
+        private fun signTypedMessage(callbackId: Long, data: JSONObject) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(JsSigner.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
         }
 
         private fun ethCall(callbackId: Long, recipient: String) {
