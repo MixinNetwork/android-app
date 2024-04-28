@@ -536,9 +536,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateAssetAutoComplete(asset: TokenItem) {
-        binding.amountEt.dropDownWidth = measureText(asset.balance) + 24.dp
-        autoCompleteAdapter.clear()
-        autoCompleteAdapter.add(asset.balance)
+        val balance = asset.balance.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString()
+        if (balance == null) {
+            autoCompleteAdapter.clear()
+        } else {
+            binding.amountEt.dropDownWidth = measureText(balance) + 24.dp
+            autoCompleteAdapter.clear()
+            autoCompleteAdapter.add(balance)
+        }
     }
 
     private fun getAmountView() = binding.amountEt
