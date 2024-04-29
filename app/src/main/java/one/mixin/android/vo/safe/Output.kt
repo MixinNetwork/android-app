@@ -14,6 +14,7 @@ import one.mixin.android.vo.ListConverter
     indices = [
         Index(value = arrayOf("asset", "state", "sequence")),
         Index(value = arrayOf("transaction_hash", "output_index"), unique = true),
+        Index(value = arrayOf("inscription_hash")),
     ],
 )
 data class Output(
@@ -70,6 +71,9 @@ data class Output(
     @SerializedName("spent_at")
     @ColumnInfo(name = "spent_at")
     val spentAt: String,
+    @SerializedName("inscription_hash")
+    @ColumnInfo(name = "inscription_hash")
+    val inscriptionHash: String?,
 )
 
 enum class OutputState {
