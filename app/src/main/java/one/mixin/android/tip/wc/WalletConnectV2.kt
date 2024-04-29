@@ -14,13 +14,12 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.hexString
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcSignature
 import one.mixin.android.tip.wc.internal.WcSolanaMessage
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
@@ -28,6 +27,8 @@ import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
+import one.mixin.android.util.decodeBase58
+import one.mixin.android.util.encodeToBase58String
 import org.sol4k.Keypair
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
@@ -428,19 +429,10 @@ object WalletConnectV2 : WalletConnect() {
             return transaction
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
-            val message = signMessage.message.decodeBase64()
-            val hexMessage = holder.sign(message)
-            val result = getWeb3j(chain).ethSendRawTransaction(hexMessage.hexString()).send()
-            if (result.hasError()) {
-                val msg = "error code: ${result.error.code}, message: ${result.error.message}"
-                Timber.d("$TAG transactionHash is null, $msg")
-                rejectRequest(msg, sessionRequest)
-                throw WalletConnectException(result.error.code, result.error.message)
-            } else {
-                val transactionHash = result.transactionHash
-                Timber.d("$TAG sendTransaction $transactionHash")
-                approveRequestInternal(transactionHash, sessionRequest)
-            }
+            val message = signMessage.message.decodeBase58()
+            val sig = holder.sign(message).encodeToBase58String()
+            val wcSig = WcSignature(signMessage.pubkey, sig)
+            approveRequestInternal(gson.toJson(wcSig), sessionRequest)
             return null
         }
         return null
