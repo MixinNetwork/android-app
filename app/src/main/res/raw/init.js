@@ -5,9 +5,13 @@
             rpcUrl: '%2$s',
             address: '%3$s',
         },
-        isDebug: true
+        solana: {
+            cluster: "mainnet-beta",
+        },
+        isDebug: false
     };
     mixinwallet.ethereum = new mixinwallet.Provider(config);
+    mixinwallet.solana = new mixinwallet.SolanaProvider(config);
     mixinwallet.postMessage = (json) => {
         window._mw_.postMessage(JSON.stringify(json));
     }
