@@ -241,10 +241,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val hash = JsSigner.sendTransaction(hex, token?.getChainFromName())
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
-                } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE) {
+                } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getTipPriv(requireContext(), pin)
                     val hex = JsSigner.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
+                } else {
+                    throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                 }
                 step = Step.Done
             } catch (e: Exception) {
