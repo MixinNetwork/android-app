@@ -6,6 +6,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +41,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -51,6 +55,7 @@ import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.ShimmerTheme
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
+import com.valentinilk.shimmer.shimmerSpec
 import com.walletconnect.util.bytesToHex
 import com.walletconnect.util.randomBytes
 import dagger.hilt.android.AndroidEntryPoint
@@ -89,6 +94,32 @@ class InscriptionActivity : AppCompatActivity() {
 
         setContent {
             val scrollState = rememberScrollState()
+            val shimmerInstance = rememberShimmer(
+                shimmerBounds = ShimmerBounds.View, theme = ShimmerTheme(
+                    animationSpec = infiniteRepeatable(
+                        animation = shimmerSpec(
+                            durationMillis = 800,
+                            easing = LinearEasing,
+                            delayMillis = 1_500,
+                        ),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+                    blendMode = BlendMode.DstIn,
+                    rotation = 15.0f,
+                    shaderColors = listOf(
+                        Color.Unspecified.copy(alpha = 1.0f),
+                        Color.Unspecified.copy(alpha = 0.75f),
+                        Color.Unspecified.copy(alpha = 1.0f),
+                    ),
+                    shaderColorStops = listOf(
+                        0.0f,
+                        0.5f,
+                        1.0f,
+                    ),
+                    shimmerWidth = 400.dp,
+                )
+            )
+
             Box(Modifier.background(Color(0xFF000000))) {
                 GlideImage(
                     data = iconUrl,
@@ -97,7 +128,8 @@ class InscriptionActivity : AppCompatActivity() {
                         .blur(30.dp)
                         .graphicsLayer {
                             alpha = 0.5f
-                        },
+                        }
+                        .shimmer(shimmerInstance),
                     placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
                     contentScale = ContentScale.Crop
                 )

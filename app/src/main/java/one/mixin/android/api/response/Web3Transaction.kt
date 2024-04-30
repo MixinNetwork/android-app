@@ -4,19 +4,19 @@ import android.content.Context
 import android.os.Parcelable
 import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
+import java.util.Locale
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
 import one.mixin.android.web3.details.Web3TransactionType
-import java.math.BigDecimal
-import java.util.Locale
 
 @Parcelize
 data class Web3Transaction(
@@ -96,7 +96,7 @@ data class Web3Transaction(
                     MixinApplication.appContext.getString(R.string.Withdrawal)
                 }
 
-                Web3TransactionType.Trade.value ->{
+                Web3TransactionType.Trade.value -> {
                     MixinApplication.appContext.getString(R.string.Trade)
                 }
 
