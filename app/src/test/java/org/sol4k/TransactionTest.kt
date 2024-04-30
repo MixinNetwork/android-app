@@ -1,0 +1,25 @@
+package org.sol4k
+
+import one.mixin.android.extension.base64Encode
+import org.junit.Test
+
+class TransactionTest {
+    @Test
+    fun testTransactionFromString() {
+        // https://jup.ag/ swap
+        var t = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAoVQxhqYIKKYYeMpA6TRO9mmZnz7F7ey0Arxzusf/Es0tJwccDT11PCgZnvGncl43WttfK2QUfCBVUqNg8vpBi7S3yqkxCBRoNKvUQM6+vM7hdUBgKi+akZpbvaCpd1sVYfl6fiMQT0LnAXBDu2lQOARhtYi5QbgO4L6/gDqyD/dS+fPs/q96K8ow96krYAokWVzZaNzbWKSIcxNgQQzBKEgwkKzcQCjJktPFDq/uMmm1vR0JPHfzTSU/YmDHMVPYs3qLLQ4QY0S20HU2ioqmnunsWIpHYgUUVifOcbOi5XS4HL5/Tq7ETeVhqOTtChh/pFHz+eEhBUyQfl0VMvc6/zgMjqi5tCwzl46rfpfq7Ar6aeSwFEFdHMOzjAsCPJTqq91ipydsU+eIhTH/m/TKngg0D0n/6oHyWCREj1ntWq4ZfgINIPkc3KG4eh6BHDA91d4BVdrP+dBe5F+DHttZ3bCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALzjEbkBDAlaM77NkXMPfqXNLSveCkWI7UEgNs31WEWCMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WaXVyp4Ez121kLcUui/jLLFZEz/BwZK3Ilf9B9OcsEAeAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAC0P/on9df2SnTAmx8pWHneSwmrNt/J3VFLMhqns4zl6Mb6evO+2606PWXzaqvJdDGxu+TC0vbg5HymAgNFL11hBHnVW/IxwG7udMVuzmgVB/2xst6j9I5RArHNola8E48Gm4hX/quBhPtof2NGGMA12sQ53BrrO1WYoPAAAAAAAQbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpfwvmlw/gXULgLIhT912jP0NhVJRdx73Gp6B8AFCvBgsIDwAFAvPQAgAPAAkDjA4AAAAAAAANBgAFABMLFAEBCwIABQwCAAAAgJaYAAAAAAAUAQUBEQ0GAAkAEQsUAQESGBQABQkSERIQEg4ADAgFCQoCBBQBAwYHEiPlF8uXeuOtKgEAAAAaZAABgJaYAAAAAAA2mRQAAAAAADIAABQDBQAAAQk="
+        var tx = Transaction.from(t)
+        var st = tx.serialize().base64Encode()
+        println(st)
+
+        var recoverTx = Transaction.from(st)
+        var recoverSt = recoverTx.serialize().base64Encode()
+        println(recoverSt)
+
+        // https://app.kamino.finance/
+        t = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAEB0MYamCCimGHjKQOk0TvZpmZ8+xe3stAK8c7rH/xLNLStExEJwCeATGPfxBzH9gkB2fvbJIYKXNiu7XgXBjBclErN2qry+w2aU0iJe+IV8wEf1OOBiTX0EoyFNZOXVQoNwJ3pq+XM5t6yI0YkskERvUAAjCSZvYuU8EYJEmCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEsqyxEljM42gsQYuocv89+RECcS8VrxK2vmmzQ1sACAan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAAokLuXIau+0OyaVk/k2sXMyWzf+lyGC5upHJg9htEfJwCAwQBAAAEDQAAAABjpK0PAAAAAP4FBgAAAgUGBCh1qbBFxRcPorRMRCcAngExj38Qcx/YJAdn72ySGClzYru14FwYwXJRAA=="
+        tx = Transaction.from(t)
+        st = tx.serialize().base64Encode()
+        println(st)
+    }
+}

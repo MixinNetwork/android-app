@@ -1,15 +1,21 @@
 package one.mixin.android.tip.wc.internal
 
+import one.mixin.android.extension.decodeBase64
 import org.sol4k.AccountMeta
+import org.sol4k.Base58
+import org.sol4k.Binary
 import org.sol4k.PublicKey
 import org.sol4k.Transaction
+import org.sol4k.instruction.BaseInstruction
 import org.sol4k.instruction.Instruction
+import timber.log.Timber
+import java.nio.ByteBuffer
 
 class WcSolanaTransaction(
-    val signatures: List<WcSignature>,
-    val feePayer: String,
-    val instructions: List<WcInstruction>,
-    val recentBlockhash: String,
+    val signatures: List<WcSignature>?,
+    val feePayer: String?,
+    val instructions: List<WcInstruction>?,
+    val recentBlockhash: String?,
     val transaction: String,
 )
 
@@ -19,7 +25,7 @@ class WcSolanaMessage(
 )
 
 class WcSignature(
-    val publicKey: String,
+    val publicKey: String? = null,
     val signature: String?
 )
 
@@ -38,9 +44,17 @@ class WcAccountMeta(
 class SolanaInstruction(override val data: ByteArray, override val keys: List<AccountMeta>, override val programId: PublicKey) : Instruction
 
 private fun WcInstruction.toInstruction(): Instruction {
-    return SolanaInstruction(data.foldIndexed(ByteArray(data.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }, keys.map {
+    val filterKeys = keys.distinctBy { it.pubkey }
+    return SolanaInstruction(data.foldIndexed(ByteArray(data.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }, filterKeys.map {
         AccountMeta(PublicKey(it.pubkey), it.isSigner, it.isWritable)
     }, PublicKey(programId))
 }
 
-fun WcSolanaTransaction.toTransaction(): Transaction = Transaction(recentBlockhash, instructions.map { it.toInstruction() }, PublicKey(feePayer))
+fun WcSolanaTransaction.toTransaction(blockHash: String?): Transaction? {
+    if (instructions == null || feePayer == null) {
+        return null
+    }
+    val bh = blockHash ?: recentBlockhash ?: return null
+    return Transaction(bh, instructions.map { it.toInstruction() }, PublicKey(feePayer))
+}
+

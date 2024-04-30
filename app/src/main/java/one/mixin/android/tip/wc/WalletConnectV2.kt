@@ -14,6 +14,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -25,11 +26,12 @@ import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
-import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import org.sol4k.Connection
 import org.sol4k.Keypair
+import org.sol4k.RpcUrl
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -417,15 +419,15 @@ object WalletConnectV2 : WalletConnect() {
                 }
             }
         } else if (signMessage is WcSolanaTransaction) {
+            val s = gson.toJson(signMessage)
+            Timber.d("$TAG signMessage $s")
             val holder = Keypair.fromSecretKey(priv)
-            val transaction = signMessage.toTransaction()
-            Timber.e("${signMessage.feePayer} address ${holder.publicKey.toBase58()}")
+            val conn = Connection(RpcUrl.MAINNNET)
+            val blockhash = conn.getLatestBlockhash()
+            val transaction = org.sol4k.Transaction.from(signMessage.transaction)
+            transaction.recentBlockhash = blockhash
+            Timber.d("$TAG transaction ${transaction.serialize().base64Encode()}")
             transaction.sign(holder)
-
-            // val solana = com.solana.transaction.Transaction.from(signMessage.transaction.decodeBase64())
-            // Timber.e(signMessage.transaction)
-            // Timber.e("isLegacyMessage:${solana.message is LegacyMessage} isVersionedMessage: ${solana.message is VersionedMessage}")
-
             return transaction
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
@@ -635,6 +637,14 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG sendTransaction $transactionHash")
             approveRequestInternal(transactionHash, sessionRequest)
         }
+    }
+
+    fun approveSolanaTransaction(
+        signature: String,
+        sessionRequest: Wallet.Model.SessionRequest,
+    ) {
+        val wcSig = WcSignature("", signature)
+        approveRequestInternal(gson.toJson(wcSig), sessionRequest)
     }
 
     private fun waitActionCheckError(action: (CountDownLatch) -> String?) {
