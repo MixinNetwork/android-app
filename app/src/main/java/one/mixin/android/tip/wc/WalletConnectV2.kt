@@ -266,11 +266,15 @@ object WalletConnectV2 : WalletConnect() {
             return
         }
         val requiredNamespaces:Collection<String> = flattenCollections(sessionProposal.requiredNamespaces.values.map { it.chains })
-        val chain = supportChainList.firstOrNull {
-            it.chainId in requiredNamespaces
+        val chain = if (requiredNamespaces.isEmpty()) {
+            supportChainList.firstOrNull()
+        } else {
+            supportChainList.find {
+                it.chainId in requiredNamespaces
+            }
         }
         if (chain == null) {
-            Timber.e("$TAG approveSession sessionProposal is null")
+            Timber.e("$TAG approveSession sessionProposal chain is null")
             return
         }
         val address = if (chain == Chain.Solana) {
