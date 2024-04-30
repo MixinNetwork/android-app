@@ -416,7 +416,7 @@ object WalletConnectV2 : WalletConnect() {
             signData as WCSignData.V2SignData<WCEthereumTransaction>
             when (signData.sessionRequest.request.method) {
                 Method.ETHSignTransaction.name -> {
-                    ethSignTransaction(priv, chain, sessionRequest, signData, true)
+                    return ethSignTransaction(priv, chain, sessionRequest, signData, true)
                 }
                 Method.ETHSendTransaction.name -> {
                     return ethSignTransaction(priv, chain, sessionRequest, signData, false)
