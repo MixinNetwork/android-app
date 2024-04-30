@@ -324,6 +324,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val json = Base64.decode(data.data)
             val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
             processSystemSafeSnapshotMessage(data, systemSnapshot)
+        } else if (data.category == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name) {
+            Timber.e("SYSTEM_SAFE_INSCRIPTION")
+            Timber.e(data.data)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)

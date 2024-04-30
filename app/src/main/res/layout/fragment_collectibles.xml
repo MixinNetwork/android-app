@@ -21,7 +21,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:text="@string/Explore"
+            android:text="@string/Collectibles"
             android:textColor="?attr/text_primary"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -64,73 +64,41 @@
             tools:ignore="ContentDescription" />
     </RelativeLayout>
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
-        android:scrollbars="none">
-
-        <RadioGroup
-            android:id="@+id/radio_group_explore"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingTop="12dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="12dp">
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_favorite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:checked="true"
-                android:text="@string/bots_title"
-                android:textColor="@drawable/radio_button_text_selector" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_eth"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Ethereum"
-                android:textColor="@drawable/radio_button_text_selector" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_solana"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Solana"
-                android:textColor="@drawable/radio_button_text_selector" />
-
-        </RadioGroup>
-    </HorizontalScrollView>
-
     <ViewAnimator
-        android:id="@+id/explore_va"
+        android:id="@+id/collectibles_va"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/bg_white">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/favorite_rv"
+            android:id="@+id/collectibles_rv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/bg_white"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_favorite" />
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/item_inscription"
+            tools:itemCount="5"/>
 
-        <one.mixin.android.widget.ContainerFrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_collectibles" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:textColor="?attr/text_primary"
+                android:text="@string/NO_COLLECTIBLES" />
+        </LinearLayout>
+
     </ViewAnimator>
 
 </LinearLayout>

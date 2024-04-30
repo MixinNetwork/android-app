@@ -236,6 +236,7 @@
     <string name="Click_to_unlock">Click to unlock</string>
     <string name="Close">Close</string>
     <string name="Closing_Balance">Closing Balance</string>
+    <string name="Collectibles">Collectibles</string>
     <string name="Combine_and_forward">Combine and forward</string>
     <string name="Confirm">Confirm</string>
     <string name="Confirm_fingerprint">Confirm fingerprint</string>
@@ -1495,4 +1496,5 @@
     <string name="From_mixin_wallet">From Mixin Wallet</string>
     <string name="From_address">From address</string>
     <string name="From_address_desc">From another wallet or exchange</string>
+    <string name="NO_COLLECTIBLES">NO COLLECTIBLES</string>
 </resources>

@@ -3,15 +3,17 @@
     <item
         android:id="@+id/nav_chat"
         android:icon="@drawable/ic_tab_chat"
-        android:title="@string/Chat_bottom"
-        />
+        android:title="@string/Chat_bottom" />
     <item
         android:id="@+id/nav_wallet"
         android:icon="@drawable/ic_tab_wallet"
         android:title="@string/Wallet" />
     <item
+        android:id="@+id/nav_collectibles"
+        android:icon="@drawable/ic_tab_collectibles"
+        android:title="@string/Collectibles" />
+    <item
         android:id="@+id/nav_explore"
         android:icon="@drawable/ic_tab_app"
-        android:title="@string/Explore"
-        />
+        android:title="@string/Explore" />
 </menu>

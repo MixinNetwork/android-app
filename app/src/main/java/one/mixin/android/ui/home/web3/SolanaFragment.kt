@@ -148,14 +148,17 @@ class SolanaFragment : BaseFragment() {
     fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-            this@SolanaFragment.address = address
-            if (address.isBlank()) {
-                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana) {
-                    WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_SOLANA).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+            if (isAdded) {
+                this@SolanaFragment.address = address
+
+                if (address.isBlank()) {
+                    adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana) {
+                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_SOLANA).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    adapter.address = address
+                    refreshAccount(address)
                 }
-            } else {
-                adapter.address = address
-                refreshAccount(address)
             }
         }
     }

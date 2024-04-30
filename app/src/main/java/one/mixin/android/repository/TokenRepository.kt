@@ -43,6 +43,7 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
@@ -118,6 +119,7 @@ class TokenRepository
         private val rawTransactionDao: RawTransactionDao,
         private val outputDao: OutputDao,
         private val userDao: UserDao,
+        private val inscriptionDao: InscriptionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -832,4 +834,6 @@ class TokenRepository
             orderId: String,
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
+
+        fun inscriptions() = inscriptionDao.inscriptions()
     }

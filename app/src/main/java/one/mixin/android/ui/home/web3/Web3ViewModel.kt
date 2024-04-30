@@ -111,4 +111,6 @@ internal constructor(
     suspend fun syncAsset(assetId: String) = withContext(Dispatchers.IO) {
         tokenRepository.syncAsset(assetId)
     }
+
+    fun inscriptions() = tokenRepository.inscriptions()
 }

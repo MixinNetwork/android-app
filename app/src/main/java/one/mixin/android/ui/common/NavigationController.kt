@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
+import one.mixin.android.ui.home.CollectiblesFragment
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.MainActivity
@@ -32,7 +33,9 @@ class NavigationController(mainActivity: MainActivity) {
 
     data object Explore : Destination(ExploreFragment.TAG)
 
-    private val destinations = listOf(ConversationList, Wallet, Explore)
+    data object Collectibles : Destination(CollectiblesFragment.TAG)
+
+    private val destinations = listOf(ConversationList, Wallet, Collectibles, Explore)
 
     fun navigate(
         destination: Destination,

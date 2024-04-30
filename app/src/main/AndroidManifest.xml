@@ -328,6 +328,14 @@
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Music" />
+
+        <activity
+            android:name=".ui.home.web3.inscription.InscriptionActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.Music" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

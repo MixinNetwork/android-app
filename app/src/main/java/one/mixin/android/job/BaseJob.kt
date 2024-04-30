@@ -40,6 +40,8 @@ import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HyperlinkDao
+import one.mixin.android.db.InscriptionCollectionDao
+import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
@@ -291,6 +293,14 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var safeSnapshotDao: SafeSnapshotDao
+
+    @Inject
+    @Transient
+    lateinit var inscriptionDao: InscriptionDao
+
+    @Inject
+    @Transient
+    lateinit var inscriptionCollectionDao: InscriptionCollectionDao
 
     @Inject
     @Transient

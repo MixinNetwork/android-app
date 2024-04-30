@@ -237,6 +237,10 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun rawTransactionDao(): RawTransactionDao
 
+    abstract fun inscriptionCollectionDao(): InscriptionCollectionDao
+
+    abstract fun inscriptionDao(): InscriptionDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 

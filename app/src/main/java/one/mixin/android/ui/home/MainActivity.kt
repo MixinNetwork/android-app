@@ -863,6 +863,10 @@ class MainActivity : BlazeBaseActivity() {
         ExploreFragment()
     }
 
+    private val collectiblesFragment by lazy {
+        CollectiblesFragment()
+    }
+
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
@@ -879,6 +883,13 @@ class MainActivity : BlazeBaseActivity() {
                         conversationListFragment.hideCircles()
                         true
                     }
+
+                    R.id.nav_collectibles -> {
+                        navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+                        conversationListFragment.hideCircles()
+                        true
+                    }
+
 
                     R.id.nav_explore -> {
                         navigationController.navigate(NavigationController.Explore, exploreFragment)
