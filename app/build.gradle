@@ -333,6 +333,7 @@ dependencies {
     implementation("com.github.yalantis:ucrop:${ucropVersion}")
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
     implementation "com.facebook.shimmer:shimmer:${shimmerVersion}"
+    implementation "com.valentinilk.shimmer:compose-shimmer:${composeShimmerVersion}"
 
     implementation "com.uber.autodispose:autodispose:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android:${autodisposeVersion}"

@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemInscriptionBinding
 import one.mixin.android.vo.InscriptionItem
 
-class CollectiblesAdapter : RecyclerView.Adapter<InscriptionHolder>() {
+class CollectiblesAdapter(val callback: (InscriptionItem) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
 
     var list: List<InscriptionItem> = emptyList()
 
@@ -24,12 +24,13 @@ class CollectiblesAdapter : RecyclerView.Adapter<InscriptionHolder>() {
         holder: InscriptionHolder,
         position: Int,
     ) {
-        holder.bind(list[position])
+        holder.bind(list[position], callback)
     }
 }
 
 class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(inscriptionItem: InscriptionItem) {
+    fun bind(inscriptionItem: InscriptionItem, callback: (InscriptionItem) -> Unit) {
+        binding.root.setOnClickListener { callback.invoke(inscriptionItem) }
     }
 }

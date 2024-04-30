@@ -17,9 +17,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
-import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.web3.CollectiblesAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import javax.inject.Inject
@@ -45,7 +45,9 @@ class CollectiblesFragment : BaseFragment() {
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val collectiblesAdapter by lazy {
-        CollectiblesAdapter()
+        CollectiblesAdapter {
+            InscriptionActivity.show(requireContext())
+        }
     }
 
     override fun onCreateView(

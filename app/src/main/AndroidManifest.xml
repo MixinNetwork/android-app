@@ -334,7 +334,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Music" />
+            android:theme="@style/AppTheme.Transparent" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

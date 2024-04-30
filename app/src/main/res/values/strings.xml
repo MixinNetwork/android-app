@@ -1497,4 +1497,10 @@
     <string name="From_address">From address</string>
     <string name="From_address_desc">From another wallet or exchange</string>
     <string name="NO_COLLECTIBLES">NO COLLECTIBLES</string>
+    <string name="HASH">HASH</string>
+    <string name="ID">ID</string>
+    <string name="COLLECTION">COLLECTION</string>
+    <string name="NFT_TOKEN">NFT TOKEN</string>
+    <string name="CREATOR">CREATOR</string>
+    <string name="RARITY">RARITY</string>
 </resources>
