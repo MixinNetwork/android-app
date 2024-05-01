@@ -82,7 +82,11 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
             subTitleTv.text = transaction.subTitle
             when (transaction.operationType) {
                 Web3TransactionType.Send.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    if (transaction.sender == transaction.receiver) {
+                        avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
+                    } else {
+                        avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    }
                     avatar.badge.isVisible = false
 
                     if (transaction.transfers.isNotEmpty()) {

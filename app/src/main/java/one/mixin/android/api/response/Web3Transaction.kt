@@ -44,7 +44,7 @@ data class Web3Transaction(
                 }
 
                 Web3TransactionType.Send.value -> {
-                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
+                    return (transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value } ?: transfers.firstOrNull { it.direction == Web3TransactionDirection.Self.value })?.iconUrl
                 }
 
                 Web3TransactionType.Receive.value -> {
@@ -85,7 +85,11 @@ data class Web3Transaction(
         get() {
             return when (operationType) {
                 Web3TransactionType.Send.value -> {
-                    MixinApplication.appContext.getString(R.string.Send_transfer)
+                    if (sender == receiver) {
+                        MixinApplication.appContext.getString(R.string.Receive)
+                    } else {
+                        MixinApplication.appContext.getString(R.string.Send_transfer)
+                    }
                 }
 
                 Web3TransactionType.Receive.value -> {
@@ -134,7 +138,6 @@ data class Web3Transaction(
     fun value(context: Context): SpannedString {
         return when (operationType) {
             Web3TransactionType.Receive.value -> {
-
                 transfers.find { it.direction == Web3TransactionDirection.In.value }?.run {
                     buildAmountSymbol(context, "+${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
                 }
@@ -153,7 +156,7 @@ data class Web3Transaction(
             }
 
             Web3TransactionType.Send.value -> {
-                transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                (transfers.find { it.direction == Web3TransactionDirection.Out.value } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value })?.run {
                     buildAmountSymbol(context, "-${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
@@ -193,7 +196,7 @@ data class Web3Transaction(
                 }
 
                 Web3TransactionType.Send.value -> {
-                    transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                    (transfers.find { it.direction == Web3TransactionDirection.Out.value } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value })?.run {
                         "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
                     }
                 }
