@@ -156,8 +156,10 @@ data class Web3Transaction(
             }
 
             Web3TransactionType.Send.value -> {
-                (transfers.find { it.direction == Web3TransactionDirection.Out.value } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value })?.run {
+                transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
                     buildAmountSymbol(context, "-${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value }?.run {
+                    buildAmountSymbol(context, "+${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
 
