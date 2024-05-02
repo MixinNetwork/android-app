@@ -26,4 +26,4 @@ val InternalSupport = Bot(INTERNAL_SUPPORT_ID, R.string.Contact_Support, R.strin
 
 val InternalLinkDesktopLogged = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.Logined, R.drawable.ic_bot_desktop_logged)
 
-val InternalBots = listOf(InternalCamera, InternalBuy, InternalLinkDesktop, InternalSupport)
+val InternalBots = listOf(InternalCamera, InternalLinkDesktop, InternalSupport)

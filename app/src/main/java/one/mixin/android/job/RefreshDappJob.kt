@@ -38,6 +38,10 @@ class RefreshDappJob : BaseJob(
                         MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Polygon.chainId}", gson.toJson(it.dapps))
                         MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Polygon.chainId, it.rpc)
                     }
+                    Chain.Solana.assetId-> {
+                        MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Solana.chainId}", gson.toJson(it.dapps))
+                        MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Solana.chainId, it.rpc)
+                    }
                 }
             }
             RxBus.publish(WCUnlockEvent())

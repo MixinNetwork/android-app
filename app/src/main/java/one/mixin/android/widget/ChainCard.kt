@@ -31,5 +31,4 @@ class ChainCard : FrameLayout {
         _binding.actionTv.setOnClickListener(onClickListener)
         _binding.actionTv.setText(R.string.Unlock)
     }
-
 }

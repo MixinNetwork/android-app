@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.js
 
 import android.util.LruCache
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -8,6 +8,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.web3.Web3Exception
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -43,7 +44,7 @@ object JsSigner {
         private set
 
     fun updateAddress(address: String) {
-        this.address = address
+        JsSigner.address = address
     }
     var currentChain: Chain = Chain.Ethereum
         private set
@@ -61,6 +62,18 @@ object JsSigner {
                 currentChain = Chain.Ethereum
                 Result.success(Chain.Ethereum.name)
             }
+            Chain.Base.hexReference-> {
+                currentChain = Chain.Base
+                Result.success(Chain.Base.name)
+            }
+            Chain.Arbitrum.hexReference-> {
+                currentChain = Chain.Arbitrum
+                Result.success(Chain.Arbitrum.name)
+            }
+            Chain.Optimism.hexReference-> {
+                currentChain = Chain.Optimism
+                Result.success(Chain.Optimism.name)
+            }
             Chain.Polygon.hexReference -> {
                 currentChain = Chain.Polygon
                 Result.success(Chain.Polygon.name)
@@ -69,6 +82,10 @@ object JsSigner {
                 currentChain = Chain.BinanceSmartChain
                 Result.success(Chain.BinanceSmartChain.name)
             }
+            Chain.Avalanche.hexReference -> {
+                currentChain = Chain.Avalanche
+                Result.success(Chain.Avalanche.name)
+            }
             else -> {
                 Result.failure(IllegalArgumentException("No support"))
             }
@@ -76,9 +93,10 @@ object JsSigner {
     }
 
     fun sendTransaction(
-        signedTransactionData: String
+        signedTransactionData: String,
+        chain: Chain?
     ): String? {
-        val tx = getWeb3j(currentChain).ethSendRawTransaction(signedTransactionData).send()
+        val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
         if (tx.hasError()) {
             val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
             Timber.d("$TAG transactionHash is null, $msg")
@@ -93,13 +111,13 @@ object JsSigner {
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
+        chain: Chain?
     ): String {
         val value = transaction.value ?: "0x0"
-
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
         val transactionCount =
-            getWeb3j(currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
+            getWeb3j(chain ?: currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
@@ -120,7 +138,7 @@ object JsSigner {
         )
         Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
         val rawTransaction = RawTransaction.createTransaction(
-            currentChain.chainReference.toLong(),
+            (chain ?: currentChain).chainReference.toLong(),
             nonce,
             gasLimit,
             transaction.to,
@@ -130,7 +148,7 @@ object JsSigner {
             maxFeePerGas,
         )
 
-        val signedMessage = TransactionEncoder.signMessage(rawTransaction, currentChain.chainReference.toLong(), credential)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         return hexMessage

@@ -2,9 +2,14 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -20,6 +25,7 @@ class Web3ViewModel
 @Inject
 internal constructor(
     private val userRepository: UserRepository,
+    private val tokenRepository: TokenRepository,
     private val web3Service: Web3Service,
 ) : ViewModel() {
     fun disconnect(
@@ -69,6 +75,8 @@ internal constructor(
 
     suspend fun web3Account(address: String) = web3Service.web3Account(address)
 
+    suspend fun web3Transaction(address: String, chainId: String, fungibleId: String) = web3Service.transactions(address, chainId, fungibleId)
+
     suspend fun saveSession(participantSession: ParticipantSession) {
         userRepository.saveSession(participantSession)
     }
@@ -79,4 +87,28 @@ internal constructor(
         conversationId: String,
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
+
+    suspend fun findAddres(token: Web3Token): String? {
+        return tokenRepository.findDepositEntry(token.getChainIdFromName())?.destination
+    }
+
+    suspend fun findAndSyncDepositEntry(token: Web3Token): String? =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
+        }
+
+    suspend fun web3TokenItems() = tokenRepository.web3TokenItems()
+
+    suspend fun getFees(
+        id: String,
+        destination: String,
+    ) = tokenRepository.getFees(id, destination)
+
+    suspend fun findTokensExtra(assetId: String) = withContext(Dispatchers.IO) {
+        tokenRepository.findTokensExtra(assetId)
+    }
+
+    suspend fun syncAsset(assetId: String) = withContext(Dispatchers.IO) {
+        tokenRepository.syncAsset(assetId)
+    }
 }

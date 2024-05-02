@@ -5,8 +5,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,10 +39,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
-import one.mixin.android.ui.tip.wc.sessionrequest.ActionBottom
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal
@@ -104,6 +108,65 @@ fun TransactionPreview(
     }
 }
 
+@Composable
+fun TokenTransactionPreview(
+    amount: String,
+    token: Web3Token,
+) {
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Box(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(id = R.string.Balance_Change),
+            color = MixinAppTheme.colors.textSubtitle,
+            fontSize = 14.sp,
+        )
+        Box(modifier = Modifier.height(8.dp))
+        Row(
+            modifier =
+            Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = "-$amount",
+                color = Color(0xFFE86B67),
+                fontFamily = FontFamily(Font(R.font.mixin_font)),
+                fontSize = 30.sp,
+            )
+            Box(modifier = Modifier.width(4.dp))
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = token.symbol,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 12.sp,
+            )
+            Box(modifier = Modifier.weight(1f))
+            GlideImage(
+                data = token.iconUrl,
+                modifier =
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            )
+        }
+        Text(
+            text = BigDecimal(amount).multiply(BigDecimal(token.price)).currencyFormat(),
+            color = MixinAppTheme.colors.textMinor,
+            fontSize = 12.sp,
+        )
+        Box(modifier = Modifier.height(10.dp))
+    }
+}
 
 @Composable
 fun MessagePreview(
@@ -217,7 +280,6 @@ private fun TransactionPreview() {
     TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
 }
 
-
 @Preview
 @Composable
 private fun WarningPreview() {
@@ -236,5 +298,68 @@ private fun WarningPreview() {
         }
 
         Warning(modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@Composable
+fun ActionBottom(
+    modifier: Modifier,
+    cancelTitle: String,
+    confirmTitle: String,
+    cancelAction: () -> Unit,
+    confirmAction: () -> Unit,
+) {
+    Row(
+        modifier =
+        modifier
+            .background(MixinAppTheme.colors.background)
+            .padding(20.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Button(
+            onClick = cancelAction,
+            colors =
+            ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.backgroundGray,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            elevation = ButtonDefaults.elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp
+            )
+        ) {
+            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
+        }
+        Box(modifier = Modifier.width(36.dp))
+        Button(
+            onClick = confirmAction,
+            colors =
+            ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.accent,
+            ),
+            shape = RoundedCornerShape(20.dp),
+            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+            elevation = ButtonDefaults.elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp
+            )
+        ) {
+            Text(text = confirmTitle, color = Color.White)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun TransferBottomPreview() {
+    Column {
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
+        ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
 }

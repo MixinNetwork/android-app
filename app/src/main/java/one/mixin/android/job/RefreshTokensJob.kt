@@ -34,13 +34,9 @@ class RefreshTokensJob(
                     }
                 }
             } else {
+                refreshAsset()
                 val tokenIds = tokenDao.findAllTokenIds()
-                val response =
-                    if (tokenIds.isEmpty()) {
-                        tokenService.fetchAllTokenSuspend()
-                    } else {
-                        tokenService.fetchTokenSuspend(tokenIds)
-                    }
+                val response = tokenService.fetchTokenSuspend(tokenIds)
                 if (response.isSuccess && response.data != null) {
                     val list = response.data as List<Token>
                     assetRepo.insertList(list)
@@ -49,6 +45,14 @@ class RefreshTokensJob(
                 refreshFiats()
             }
         }
+
+    private suspend fun refreshAsset() {
+        val response = tokenService.fetchAllTokenSuspend()
+        if (response.isSuccess && response.data != null) {
+            val list = response.data as List<Token>
+            assetRepo.insertList(list)
+        }
+    }
 
     private suspend fun refreshFiats() {
         val resp = accountService.getFiats()

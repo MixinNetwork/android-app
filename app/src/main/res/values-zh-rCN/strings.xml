@@ -999,6 +999,7 @@
     </plurals>
     <string name="To">至</string>
     <string name="Today">今天</string>
+    <string name="Trade">交易</string>
     <string name="Touch_the_fingerprint_sensor">触摸指纹传感器</string>
     <string name="Transaction">交易详情</string>
     <string name="transaction_Hash">交易哈希</string>
@@ -1450,4 +1451,14 @@
     <string name="web3_deposit_description">使用此地址在 Ethereum、Polygon、BSC 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
     <string name="Ethereum_Account">Ethereum 账户</string>
+    <string name="Solana_Account">Solana 账户</string>
+    <string name="Review">预览</string>
+    <string name="Max">最大值</string>
+    <string name="hint_address">输入钱包地址</string>
+    <string name="Accounts">账户</string>
+    <string name="to_mixin_wallet">划转到 Mixin 钱包</string>
+    <string name="insufficient_gas">您的账户中没有足够的 %1$s 来支付网络费用</string>
+    <string name="From_mixin_wallet">从 Mixin 钱包转入</string>
+    <string name="From_address">从地址转入</string>
+    <string name="From_address_desc">从其他钱包或交易所转入</string>
 </resources>

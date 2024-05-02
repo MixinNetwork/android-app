@@ -6,6 +6,7 @@ import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.service.TipService
 import one.mixin.android.repository.TokenRepository
@@ -15,6 +16,8 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import org.sol4k.Connection
+import org.sol4k.RpcUrl
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -48,7 +51,7 @@ class WalletConnectBottomSheetViewModel
             transaction: Transaction,
         ) = withContext(Dispatchers.IO) {
             WalletConnectV2.ethEstimateGas(chain, transaction)?.run {
-                val defaultLimit = if (chain.chainReference == 1) BigInteger.valueOf(4712380L) else null
+                val defaultLimit = if (chain.chainReference == "1") BigInteger.valueOf(4712380L) else null
                 convertToGasLimit(this, defaultLimit)
             }
         }
@@ -90,20 +93,30 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
-            return WalletConnectV2.parseSessionRequest(sessionRequest)
+        fun parseV2SignData(address: String, sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
+            return WalletConnectV2.parseSessionRequest(address, sessionRequest)
         }
 
-        suspend fun getTipPriv(
+        suspend fun getWeb3Priv(
             context: Context,
             pin: String,
+            chainId: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey)
+            return tipPrivToPrivateKey(spendKey, chainId)
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+
+        fun sendTransaction(
+            transaction: org.sol4k.Transaction
+        ): String? {
+            val connection = Connection(RpcUrl.MAINNNET)
+            val signature: String = connection.sendTransaction(transaction)
+            Timber.d("signature $signature")
+            return null
+        }
 
         fun sendTransaction(
             version: WalletConnect.Version,

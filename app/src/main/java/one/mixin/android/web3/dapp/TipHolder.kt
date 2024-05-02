@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchTipBinding
 import one.mixin.android.extension.highLight
-import one.mixin.android.ui.search.SearchFragment
 
 class TipHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")

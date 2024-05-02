@@ -1022,6 +1022,7 @@
     <string name="Today">Today</string>
     <string name="Touch_the_fingerprint_sensor">Touch the fingerprint sensor</string>
     <string name="Trace">Trace</string>
+    <string name="Trade">Trade</string>
     <string name="Transaction">Transaction</string>
     <string name="transaction_Hash">Transaction Hash</string>
     <string name="Transaction_Id">Transaction Id</string>
@@ -1447,6 +1448,7 @@
     <string name="Ethereum">Ethereum</string>
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>
+    <string name="Solana">Solana</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access dApps and DeFi projects.</string>
@@ -1483,4 +1485,14 @@
     <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
     <string name="No_asset">Don’t have assets</string>
     <string name="Ethereum_Account">Ethereum Account</string>
+    <string name="Solana_Account">Solana Account</string>
+    <string name="Review">Review</string>
+    <string name="Max">Max</string>
+    <string name="hint_address">Enter a wallet address</string>
+    <string name="Accounts">Accounts</string>
+    <string name="to_mixin_wallet">To my Mixin Wallet</string>
+    <string name="insufficient_gas">You do not have enough %1$s in your account to pay for network fees</string>
+    <string name="From_mixin_wallet">From Mixin Wallet</string>
+    <string name="From_address">From address</string>
+    <string name="From_address_desc">From another wallet or exchange</string>
 </resources>

@@ -49,6 +49,7 @@ import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.web3.EthereumFragment
+import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -122,12 +123,21 @@ class ExploreFragment : BaseFragment() {
                 exploreVa.displayedChild = 0
                 radioFavorite.isChecked = true
                 radioEth.isChecked = false
+                radioSolana.isChecked = false
+            } else if (defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 2) == 0) {
+                exploreVa.displayedChild = 2
+                radioFavorite.isChecked = false
+                radioEth.isChecked = false
+                radioSolana.isChecked = true
+                navigate(solanaFragment, SolanaFragment.TAG)
             } else {
                 exploreVa.displayedChild = 1
-                radioEth.isChecked = true
                 radioFavorite.isChecked = false
+                radioEth.isChecked = true
+                radioSolana.isChecked = false
                 navigate(ethereumFragment, EthereumFragment.TAG)
             }
+            radioSolana.isVisible = false
 
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
@@ -140,6 +150,12 @@ class ExploreFragment : BaseFragment() {
                         defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 1)
                         exploreVa.displayedChild = 1
                         navigate(ethereumFragment, EthereumFragment.TAG)
+                    }
+
+                    R.id.radio_solana -> {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 2)
+                        exploreVa.displayedChild = 1
+                        navigate(solanaFragment, SolanaFragment.TAG)
                     }
 
                 }
@@ -186,6 +202,9 @@ class ExploreFragment : BaseFragment() {
     private val ethereumFragment by lazy {
         EthereumFragment()
     }
+    private val solanaFragment by lazy {
+        SolanaFragment()
+    }
 
     private fun loadData() {
         lifecycleScope.launch {
@@ -198,6 +217,7 @@ class ExploreFragment : BaseFragment() {
         super.onHiddenChanged(hidden)
         if (!hidden) {
             ethereumFragment.updateUI()
+            solanaFragment.updateUI()
         }
     }
 

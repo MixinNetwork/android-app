@@ -1,12 +1,12 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -680,12 +680,12 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     private val resolvePaymentForResult =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
             when (result.resultCode) {
-                ComponentActivity.RESULT_OK ->
+                Activity.RESULT_OK ->
                     result.data?.let { intent ->
                         PaymentData.getFromIntent(intent)?.let(::handlePaymentSuccess)
                     }
 
-                ComponentActivity.RESULT_CANCELED -> {
+                Activity.RESULT_CANCELED -> {
                     showError(R.string.Cancel)
                 }
             }

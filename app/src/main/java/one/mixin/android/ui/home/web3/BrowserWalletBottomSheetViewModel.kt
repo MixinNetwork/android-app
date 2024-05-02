@@ -35,7 +35,7 @@ class BrowserWalletBottomSheetViewModel
             transaction: Transaction,
         ) = withContext(Dispatchers.IO) {
             WalletConnectV2.ethEstimateGas(chain, transaction)?.run {
-                val defaultLimit = if (chain.chainReference == 1) BigInteger.valueOf(4712380L) else null
+                val defaultLimit = if (chain.chainReference == Chain.Ethereum.chainReference) BigInteger.valueOf(4712380L) else null
                 convertToGasLimit(this, defaultLimit)
             }
         }
@@ -75,10 +75,6 @@ class BrowserWalletBottomSheetViewModel
                     result?.run { Numeric.toBigInt(this) }
                 }
             }
-        }
-
-        fun parseV2SignData(sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
-            return WalletConnectV2.parseSessionRequest(sessionRequest)
         }
 
         suspend fun getTipPriv(

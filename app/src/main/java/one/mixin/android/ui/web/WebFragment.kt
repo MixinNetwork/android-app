@@ -62,7 +62,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.trust.web3.demo.DAppMethod
+import one.mixin.android.web3.js.DAppMethod
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -110,7 +110,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
-import one.mixin.android.tip.tipPrivToAddress
+import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -148,10 +148,10 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.web3.JsInjectorClient
-import one.mixin.android.web3.JsSignMessage
-import one.mixin.android.web3.JsSigner
-import one.mixin.android.web3.SwitchChain
+import one.mixin.android.web3.js.JsInjectorClient
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SwitchChain
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
@@ -847,17 +847,21 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript(e, Timber::d)
                     }
                 },
+                onWalletActionError = { id->
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${id}, null)") {}
+                    }
+                },
                 onBrowserSign = { message ->
                     lifecycleScope.launch {
                         showBrowserBottomSheetDialogFragment(
-                            tip,
-                            message,
-                            currentUrl,
-                            currentTitle,
                             requireActivity(),
+                            message,
+                            currentUrl = currentUrl,
+                            currentTitle = currentTitle,
                             onReject = {
                                 lifecycleScope.launch {
-                                    webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse($id, null)") {}
+                                    webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
                                 }
                             },
                             onDone = { callback ->
@@ -947,7 +951,7 @@ class WebFragment : BaseFragment() {
                 callback = {
                     val address =
                         try {
-                            tipPrivToAddress(it, chainId)
+                            privateKeyToAddress(it, chainId)
                         } catch (e: IllegalArgumentException) {
                             Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
                             ""
@@ -1718,6 +1722,7 @@ class WebFragment : BaseFragment() {
     }
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
+        val onWalletActionError: (Long) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
     ) {
         @JavascriptInterface
@@ -1742,11 +1747,11 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
-                    signPersonalMessage(id, obj.getJSONObject("object").getString("data"))
+                    signPersonalMessage(id, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
-                    signTypedMessage(id, obj.getJSONObject("object").getString("raw"))
+                    signTypedMessage(id, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
@@ -1799,12 +1804,28 @@ class WebFragment : BaseFragment() {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
-        private fun signPersonalMessage(callbackId: Long, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
+        private fun signPersonalMessage(callbackId: Long, data:JSONObject) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(JsSigner.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
         }
 
-        private fun signTypedMessage(callbackId: Long, data: String) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data))
+        private fun signTypedMessage(callbackId: Long, data: JSONObject) {
+            try {
+                val address = data.getString("address")
+                if (!address.equals(JsSigner.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
         }
 
         private fun ethCall(callbackId: Long, recipient: String) {

@@ -87,6 +87,7 @@ object Constants {
 
         object ChainAddress {
             const val EVM_ADDRESS = "evm_address"
+            const val SOLANA_ADDRESS = "solana_address"
         }
     }
 
@@ -176,12 +177,14 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
         const val BITCOIN_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
         const val ETHEREUM_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
+        const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
 
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Litecoin = "76c802a2-7c88-447f-a93e-c29c9e5dd9c8"

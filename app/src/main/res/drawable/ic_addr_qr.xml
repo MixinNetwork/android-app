@@ -1,4 +1,16 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="30" android:viewportHeight="30">
-    <path android:pathData="M4 11V8c0-2.21 1.79-4 4-4h3m0 22H8c-2.21 0-4-1.79-4-4v-3M19 4h3c2.21 0 4 1.79 4 4v3m0 8v3c0 2.21-1.79 4-4 4h-3" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:strokeLineCap="round" android:strokeLineJoin="round"/>
-    <path android:fillColor="?attr/icon_default" android:pathData="M4 14h22a1 1 0 0 1 1 1 1 1 0 0 1-1 1H4a1 1 0 0 1-1-1 1 1 0 0 1 1-1z" android:strokeWidth="1"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="30"
+    android:viewportHeight="30">
+    <path
+        android:pathData="M4 11V8c0-2.21 1.79-4 4-4h3m0 22H8c-2.21 0-4-1.79-4-4v-3M19 4h3c2.21 0 4 1.79 4 4v3m0 8v3c0 2.21-1.79 4-4 4h-3"
+        android:strokeWidth="2"
+        android:strokeColor="?attr/icon_gray"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="?attr/icon_gray"
+        android:pathData="M4 14h22a1 1 0 0 1 1 1 1 1 0 0 1-1 1H4a1 1 0 0 1-1-1 1 1 0 0 1 1-1z"
+        android:strokeWidth="1" />
 </vector>
