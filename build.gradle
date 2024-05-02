@@ -21,7 +21,7 @@ buildscript {
         ext.hiltVersion = '2.51.1'
         ext.hiltAndroidxVersion = '1.2.0'
         ext.androidxVersion = '1.13.1'
-        ext.viewpagerVersion = '1.1.0-beta02'
+        ext.viewpagerVersion = '1.1.0-rc01'
         ext.sharetargetVersion = '1.2.0'
         ext.coordinatorVersion = '1.2.0'
         ext.espressoVersion = '3.5.1'
