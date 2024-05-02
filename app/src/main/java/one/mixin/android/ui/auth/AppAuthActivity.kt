@@ -2,7 +2,6 @@
 
 package one.mixin.android.ui.auth
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
@@ -42,7 +41,6 @@ class AppAuthActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAppAuthBinding
 
-    @SuppressLint("RestrictedApi")
     private var fingerprintManager: FingerprintManagerCompat? = null
     private var biometricManager: BiometricManager? = null
 
@@ -50,7 +48,6 @@ class AppAuthActivity : BaseActivity() {
 
     private var cancellationSignal: CancellationSignal? = null
 
-    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
@@ -102,7 +99,6 @@ class AppAuthActivity : BaseActivity() {
         moveTaskToBack(true)
     }
 
-    @SuppressLint("RestrictedApi")
     private fun showPrompt() {
         cancellationSignal?.cancel()
         cancellationSignal = CancellationSignal()
@@ -204,7 +200,6 @@ class AppAuthActivity : BaseActivity() {
             }
         }
 
-    @SuppressLint("RestrictedApi")
     private val fingerprintCallback =
         object : FingerprintManagerCompat.AuthenticationCallback() {
             override fun onAuthenticationError(
