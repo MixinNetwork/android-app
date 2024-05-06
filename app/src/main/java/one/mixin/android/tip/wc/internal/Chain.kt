@@ -95,6 +95,22 @@ internal fun String?.getChainSymbol(): String? {
     }
 }
 
+internal fun getChainByChainId(chainId: String?): Chain? {
+    if (chainId == null) return null
+
+    return when (chainId) {
+        Chain.Ethereum.chainId -> Chain.Ethereum
+        Chain.Base.chainId -> Chain.Base
+        Chain.Arbitrum.chainId -> Chain.Arbitrum
+        Chain.Optimism.chainId -> Chain.Optimism
+        Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
+        Chain.Polygon.chainId -> Chain.Polygon
+        Chain.Avalanche.chainId -> Chain.Avalanche
+        Chain.Solana.chainId -> Chain.Solana
+        else -> null
+    }
+}
+
 val walletConnectChainIdMap =
     mapOf(
         Chain.Ethereum.symbol to ETHEREUM_CHAIN_ID,
@@ -131,7 +147,7 @@ private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespac
             Wallet.Model.Namespace.Session(
                 chains = chainIds,
                 methods = evmSupportedMethods,
-                events = listOf("chainChanged", "accountsChanged"),
+                events = listOf("connect", "disconnect", "chainChanged", "accountsChanged", "message"),
                 accounts = accounts,
             )
     )

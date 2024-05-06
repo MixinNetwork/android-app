@@ -279,6 +279,7 @@
     <string name="Conversation_not_found">找不到该会话</string>
     <string name="copied_to_clipboard">已拷贝</string>
     <string name="Copy">复制</string>
+    <string name="Copy_hash">复制 Hash</string>
     <string name="Copy_invite">复制邀请链接</string>
     <string name="Copy_link">复制链接</string>
     <string name="Create">创建</string>
@@ -794,8 +795,10 @@
     <string name="Refuse">拒绝</string>
     <string name="Registering">注册中…</string>
     <string name="Reload">重新载入</string>
+    <string name="Remove">删除</string>
     <string name="Remove_all">全部删除</string>
     <string name="Remove_all_floats">确定删除全部浮窗？</string>
+    <string name="Remove_UTXO">删除这个 UTXO?</string>
     <string name="Remove_Bot">删除机器人</string>
     <string name="Remove_Contact">删除联系人</string>
     <string name="Remove_emergency_contact">移除紧急联系人</string>

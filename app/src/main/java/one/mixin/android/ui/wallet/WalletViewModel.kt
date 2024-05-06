@@ -350,6 +350,8 @@ class WalletViewModel
             return tokenRepository.utxoItem(asset)
         }
 
+        suspend fun removeUtxo(outputId: String) = tokenRepository.removeUtxo(outputId)
+
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
         suspend fun findLatestOutputSequenceByAsset(asset: String) = tokenRepository.findLatestOutputSequenceByAsset(asset)

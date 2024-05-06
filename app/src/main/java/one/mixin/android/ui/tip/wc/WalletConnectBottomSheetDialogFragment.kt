@@ -34,6 +34,7 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -55,6 +56,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.getChain
+import one.mixin.android.tip.wc.internal.getChainByChainId
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
@@ -272,7 +274,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 RequestType.SessionRequest -> {
                     sessionRequest =
                         viewModel.getV2SessionRequest(topic)?.apply {
-                            chainId?.getChain()?.let { chain = it }
+                            getChainByChainId(chainId)?.let { chain = it }
                         }
                 }
                 else -> {}
@@ -349,7 +351,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
-                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, if (chain is Chain.Solana) SOLANA_CHAIN_ID else ETHEREUM_CHAIN_ID)
+                            val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chain.assetId)
                             approveWithPriv(privateKey)
                         }
                     }
