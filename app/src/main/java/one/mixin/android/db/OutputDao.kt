@@ -44,4 +44,7 @@ interface OutputDao : BaseDao<Output> {
         asset: String,
         offset: Long,
     )
+
+    @Query("DELETE FROM outputs WHERE output_id =:outputId")
+    suspend fun removeUtxo(outputId: String)
 }
