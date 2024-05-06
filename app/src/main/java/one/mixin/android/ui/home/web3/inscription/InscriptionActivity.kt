@@ -63,6 +63,8 @@ import one.mixin.android.R
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.inTransaction
+import one.mixin.android.ui.conversation.FriendsFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.util.SystemUIManager
 
@@ -171,7 +173,7 @@ class InscriptionActivity : AppCompatActivity() {
 
                         Row(modifier = Modifier.padding(horizontal = 12.dp)) {
                             Button(
-                                onClick = {},
+                                onClick = onSendAction,
                                 colors =
                                 ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F)
@@ -197,7 +199,7 @@ class InscriptionActivity : AppCompatActivity() {
                             Box(modifier = Modifier.width(28.dp))
 
                             Button(
-                                onClick = {},
+                                onClick = onShareAction,
                                 colors =
                                 ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F)
@@ -281,6 +283,32 @@ class InscriptionActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private val onSendAction = {
+        supportFragmentManager.inTransaction {
+            setCustomAnimations(
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom,
+                R.anim.slide_out_bottom,
+            )
+                .add(
+                    R.id.container,
+                    FriendsFragment.newInstance().apply {
+                        setOnFriendClick {
+                            // Todo send nft
+                            supportFragmentManager.popBackStackImmediate()
+                        }
+                    },
+                    FriendsFragment.TAG,
+                )
+                .addToBackStack(null)
+        }
+    }
+
+    private val onShareAction = {
+        // Todo
     }
 }
 

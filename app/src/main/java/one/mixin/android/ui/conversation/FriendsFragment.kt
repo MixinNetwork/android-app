@@ -31,21 +31,13 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
     companion object {
         const val TAG = "FriendsFragment"
 
-        fun newInstance(conversationId: String) =
-            FriendsFragment().apply {
-                arguments =
-                    bundleOf(
-                        CONVERSATION_ID to conversationId,
-                    )
-            }
+        fun newInstance() = FriendsFragment()
     }
 
     private val viewModel by viewModels<ConversationViewModel>()
 
     @Inject
     lateinit var jobManager: MixinJobManager
-
-    private val conversationId: String by lazy { requireArguments().getString(CONVERSATION_ID)!! }
 
     override fun getTitleResId() = R.string.Share_Contact
 
@@ -70,8 +62,6 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
             } catch (ignored: IllegalStateException) {
             }
         } else {
-            val fw = ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(ContactMessagePayload(user.userId), ContactMessagePayload::class.java))
-            ForwardActivity.show(requireContext(), arrayListOf(fw), ForwardAction.App.Resultless(conversationId))
         }
     }
 }

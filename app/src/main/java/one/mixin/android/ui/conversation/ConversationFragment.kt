@@ -2614,7 +2614,7 @@ class ConversationFragment() :
                                 )
                                     .add(
                                         R.id.container,
-                                        FriendsFragment.newInstance(conversationId).apply {
+                                        FriendsFragment.newInstance().apply {
                                             setOnFriendClick {
                                                 sendContactMessage(it.userId)
                                                 parentFragmentManager.popBackStackImmediate()
