@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect

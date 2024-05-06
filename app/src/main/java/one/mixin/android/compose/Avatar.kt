@@ -1,6 +1,5 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
-import GlideImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -20,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView

@@ -48,16 +48,15 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetViewModel
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.send.InputAddressFragment
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber

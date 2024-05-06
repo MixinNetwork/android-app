@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,7 +10,6 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import org.web3j.exceptions.MessageDecodingException

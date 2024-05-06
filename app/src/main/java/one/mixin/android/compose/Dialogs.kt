@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Suppress("DEPRECATION")
 @Composable

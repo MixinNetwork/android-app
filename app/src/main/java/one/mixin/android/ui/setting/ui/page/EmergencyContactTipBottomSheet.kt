@@ -18,8 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.MixinBottomSheetDialog
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun EmergencyContactTipBottomSheet(

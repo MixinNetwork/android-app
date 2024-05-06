@@ -1,6 +1,6 @@
 package one.mixin.android.ui.tip.wc.connections
 
-import GlideImage
+import one.mixin.android.compose.GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,9 +44,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.ui.common.compose.SearchTextField
-import one.mixin.android.ui.setting.ui.compose.HighlightText
-import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.HighlightText
+import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun ConnectionsPage(

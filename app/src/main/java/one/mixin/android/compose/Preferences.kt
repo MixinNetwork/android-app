@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
 import android.content.SharedPreferences
 import androidx.compose.runtime.Composable

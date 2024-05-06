@@ -1,6 +1,6 @@
 package one.mixin.android.ui.home.web3.components
 
-import GlideImage
+import one.mixin.android.compose.GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,7 +42,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import java.math.BigDecimal

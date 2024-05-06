@@ -31,11 +31,11 @@ import one.mixin.android.R
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingBlockedViewModel
-import one.mixin.android.ui.setting.ui.compose.MixinBackButton
-import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
-import one.mixin.android.ui.setting.ui.compose.UserAvatarImage
-import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.MixinBackButton
+import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.UserAvatarImage
+import one.mixin.android.compose.rememberComposeScope
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.User
 
 @Composable

@@ -14,14 +14,14 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
-import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -41,12 +41,12 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.web3.send.InputAddressFragment
+import one.mixin.android.web3.dapp.SearchDappFragment
+import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.web3.receive.Wbe3ReceiveFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.dapp.SearchDappFragment
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
