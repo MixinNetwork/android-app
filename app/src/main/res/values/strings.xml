@@ -283,6 +283,7 @@
     <string name="Conversation_not_found">Conversation not found.</string>
     <string name="copied_to_clipboard">Copied to Clipboard</string>
     <string name="Copy">Copy</string>
+    <string name="Copy_hash">Copy Hash</string>
     <string name="Copy_invite">Copy Invite Link</string>
     <string name="Copy_link">Copy Link</string>
     <string name="Create">Create</string>
@@ -812,8 +813,10 @@
     <string name="Refuse">Refuse</string>
     <string name="Registering">Registering…</string>
     <string name="Reload">Reload</string>
+    <string name="Remove">Remove</string>
     <string name="Remove_all">Remove All</string>
     <string name="Remove_all_floats">Remove all floats?</string>
+    <string name="Remove_UTXO">Remove the UTXO?</string>
     <string name="Remove_Bot">Remove Bot</string>
     <string name="Remove_Contact">Remove Contact</string>
     <string name="Remove_emergency_contact">Remove emergency contact</string>
