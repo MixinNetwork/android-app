@@ -1,6 +1,5 @@
 package org.sol4k
 
-import com.google.gson.Gson
 import org.sol4k.instruction.BaseInstruction
 import org.sol4k.instruction.Instruction
 import timber.log.Timber
@@ -17,6 +16,10 @@ class Transaction(
         instruction: Instruction,
         feePayer: PublicKey,
     ) : this(recentBlockhash, listOf(instruction), feePayer)
+
+    enum class MessageVersion {
+        Legacy, V0
+    }
 
     private val signatures: MutableList<String> = mutableListOf()
 
@@ -123,14 +126,23 @@ class Transaction(
                 }
 
                 // 2. decompile Message
+                val v = byteArray.first().toUByte()
+                val version = if (v > 127.toUByte()) {
+                    byteArray = byteArray.drop(1).toByteArray()
+                    MessageVersion.V0
+                } else {
+                    MessageVersion.Legacy
+                }
+                Timber.d("@@@ message version $version")
+
                 val numRequiredSignatures = byteArray.first().toInt().also { byteArray = byteArray.drop(1).toByteArray() }
                 val numReadonlySignedAccounts = byteArray.first().toInt().also { byteArray = byteArray.drop(1).toByteArray() }
                 val numReadonlyUnsignedAccounts = byteArray.first().toInt().also { byteArray = byteArray.drop(1).toByteArray() }
 
-                val accountCount = Binary.decodeLength(byteArray)
-                byteArray = accountCount.second
+                val accountKeyCount = Binary.decodeLength(byteArray)
+                byteArray = accountKeyCount.second
                 val accountKeys = mutableListOf<String>() // list of all accounts
-                for (i in 0 until accountCount.first) {
+                for (i in 0 until accountKeyCount.first) {
                     val account = byteArray.slice(0 until PUBLIC_KEY_LENGTH)
                     byteArray = byteArray.drop(PUBLIC_KEY_LENGTH).toByteArray()
                     accountKeys.add(Base58.encode(account.toByteArray()))
@@ -149,8 +161,7 @@ class Transaction(
                     val accountCount = Binary.decodeLength(byteArray)
                     byteArray = accountCount.second
 
-                    val accountIndices =
-                        byteArray.slice(0 until accountCount.first).toByteArray().toList().map(Byte::toInt)
+                    val accountIndices = byteArray.slice(0 until accountCount.first).map(Byte::toInt)
                     byteArray = byteArray.drop(accountCount.first).toByteArray()
 
                     val dataLength = Binary.decodeLength(byteArray)

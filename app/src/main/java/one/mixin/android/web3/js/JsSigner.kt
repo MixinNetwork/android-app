@@ -2,13 +2,23 @@ package one.mixin.android.web3.js
 
 import android.util.LruCache
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcSignature
+import one.mixin.android.tip.wc.internal.WcSolanaTransaction
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.decodeBase58
+import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
+import org.sol4k.Connection
+import org.sol4k.Keypair
+import org.sol4k.RpcUrl
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -29,6 +39,8 @@ object JsSigner {
 
     private var web3jPool = LruCache<Chain, Web3j>(3)
 
+    private val gson = GsonHelper.customGson
+
     private fun getWeb3j(chain: Chain): Web3j {
         val exists = web3jPool[chain]
         return if (exists == null) {
@@ -40,23 +52,35 @@ object JsSigner {
         }
     }
 
+    private lateinit var evmAddress: String
+    private lateinit var solanaAddress: String
+
     lateinit var address: String
         private set
 
     fun updateAddress(address: String) {
         JsSigner.address = address
     }
+    fun useEvmAddress() {
+        address = evmAddress
+    }
+    fun useSolanaAddress() {
+        address = solanaAddress
+    }
     var currentChain: Chain = Chain.Ethereum
         private set
 
-    // now only ETH
+    // now only ETH and SOL
     var currentNetwork = "ethereum"
 
     suspend fun init() {
-        address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+        evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+        solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+        address = evmAddress
     }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {
+        currentNetwork = "ethereum"
         return when (switchChain.chainId) {
             Chain.Ethereum.hexReference-> {
                 currentChain = Chain.Ethereum
@@ -85,6 +109,11 @@ object JsSigner {
             Chain.Avalanche.hexReference -> {
                 currentChain = Chain.Avalanche
                 Result.success(Chain.Avalanche.name)
+            }
+            Chain.Solana.hexReference -> {
+                currentChain = Chain.Solana
+                currentNetwork = "solana"
+                Result.success(Chain.Solana.name)
             }
             else -> {
                 Result.failure(IllegalArgumentException("No support"))
@@ -172,6 +201,32 @@ object JsSigner {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
+    }
+
+    fun signSolanaMessage(
+        priv: ByteArray,
+        message: String,
+    ): String {
+        val holder = Keypair.fromSecretKey(priv)
+        val sig = holder.sign(message.decodeBase58()).encodeToBase58String()
+        val wcSig = WcSignature("", sig)
+        return gson.toJson(wcSig)
+    }
+
+    fun signSolanaTransaction(
+        priv: ByteArray,
+        signMessage: WcSolanaTransaction,
+    ): String {
+        val s = gson.toJson(signMessage)
+        Timber.d("$TAG signMessage $s")
+        val holder = Keypair.fromSecretKey(priv)
+        val conn = Connection(RpcUrl.MAINNNET)
+        val blockhash = conn.getLatestBlockhash()
+        val transaction = org.sol4k.Transaction.from(signMessage.transaction)
+        transaction.recentBlockhash = blockhash
+        Timber.d("$TAG transaction ${transaction.serialize().base64Encode()}")
+        transaction.sign(holder)
+        return conn.sendTransaction(transaction)
     }
 
     private fun throwError(

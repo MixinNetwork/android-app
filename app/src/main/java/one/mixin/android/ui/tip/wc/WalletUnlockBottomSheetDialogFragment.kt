@@ -218,7 +218,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (type == TYPE_SOLANA) {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                     PropertyHelper.updateKeyValue(SOLANA_ADDRESS, address)
-                    // todo js
+                    JsSigner.updateAddress(address)
                     RxBus.publish(WCUnlockEvent())
                     keyViewModel.success(address)
                 } else {
@@ -228,7 +228,6 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     RxBus.publish(WCUnlockEvent())
                     keyViewModel.success(address)
                 }
-
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }

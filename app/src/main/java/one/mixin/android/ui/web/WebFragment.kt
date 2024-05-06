@@ -1734,6 +1734,11 @@ class WebFragment : BaseFragment() {
             val network = obj.getString("network")
             when(method) {
                 DAppMethod.REQUESTACCOUNTS -> {
+                    if (network == "solana") {
+                        JsSigner.useSolanaAddress()
+                    } else {
+                        JsSigner.useEvmAddress()
+                    }
                     onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");")
                     onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);")
                 }
@@ -1785,6 +1790,10 @@ class WebFragment : BaseFragment() {
                     }
 
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                }
+
+                DAppMethod.SIGNRAWTRANSACTION -> {
+
                 }
 
                 else -> {

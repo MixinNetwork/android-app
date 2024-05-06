@@ -10,6 +10,7 @@ enum class DAppMethod {
     WATCHASSET,
     ADDETHEREUMCHAIN,
     SWITCHETHEREUMCHAIN,
+    SIGNRAWTRANSACTION, // solana sign tx
     UNKNOWN;
 
     companion object {
@@ -26,6 +27,7 @@ enum class DAppMethod {
                 "addEthereumChain" -> ADDETHEREUMCHAIN
                 "switchChain" -> SWITCHETHEREUMCHAIN
                 "switchEthereumChain" -> SWITCHETHEREUMCHAIN
+                "signRawTransaction" -> SIGNRAWTRANSACTION
                 else -> UNKNOWN
             }
         }
