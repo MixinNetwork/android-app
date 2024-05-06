@@ -1462,4 +1462,6 @@
     <string name="From_mixin_wallet">从 Mixin 钱包转入</string>
     <string name="From_address">从地址转入</string>
     <string name="From_address_desc">从其他钱包或交易所转入</string>
+    <string name="NO_COLLECTIBLES">没有藏品</string>
+    <string name="COLLECTION">藏品</string>
 </resources>
