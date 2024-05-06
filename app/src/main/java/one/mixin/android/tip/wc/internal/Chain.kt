@@ -147,7 +147,7 @@ private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespac
             Wallet.Model.Namespace.Session(
                 chains = chainIds,
                 methods = evmSupportedMethods,
-                events = listOf("chainChanged", "accountsChanged"),
+                events = listOf("connect", "disconnect", "chainChanged", "accountsChanged", "message"),
                 accounts = accounts,
             )
     )
