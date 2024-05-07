@@ -428,11 +428,10 @@ object WalletConnectV2 : WalletConnect() {
             val holder = Keypair.fromSecretKey(priv)
             val conn = Connection(RpcUrl.MAINNNET)
             val blockhash = conn.getLatestBlockhash()
-            val transaction = org.sol4k.Transaction.from(signMessage.transaction)
-            transaction.recentBlockhash = blockhash
-            Timber.d("$TAG transaction ${transaction.serialize().base64Encode()}")
-            transaction.sign(holder)
-            return transaction
+            val tx = org.sol4k.CompiledTransaction.from(signMessage.transaction)
+            tx.message.recentBlockhash = blockhash
+            tx.sign(holder)
+            return tx
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
             val message = signMessage.message.decodeBase58()

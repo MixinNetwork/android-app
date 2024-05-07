@@ -30,11 +30,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
-import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
-import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -70,7 +67,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import org.sol4k.Transaction
+import org.sol4k.CompiledTransaction
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -364,7 +361,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        if (signedTransactionData is Transaction) {
+                                        if (signedTransactionData is CompiledTransaction) {
                                             viewModel.sendTransaction(signedTransactionData, sessionRequest)
                                         }  else {
                                             viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)

@@ -77,13 +77,14 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun getTipPriv(
+        suspend fun getWeb3Priv(
             context: Context,
             pin: String,
+            chainId: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey)
+            return tipPrivToPrivateKey(spendKey, chainId)
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)

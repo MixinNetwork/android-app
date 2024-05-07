@@ -1799,7 +1799,9 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNRAWTRANSACTION -> {
-
+                    val o = obj.getJSONObject("object")
+                    val raw = o.getString("raw")
+                    signRawTransaction(id, raw)
                 }
 
                 else -> {
@@ -1813,6 +1815,13 @@ class WebFragment : BaseFragment() {
             wcEthereumTransaction: WCEthereumTransaction,
         ) {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
+        }
+
+        private fun signRawTransaction(
+            callbackId: Long,
+            raw: String,
+        ) {
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw))
         }
 
         private fun signMessage(callbackId: Long, data: String) {

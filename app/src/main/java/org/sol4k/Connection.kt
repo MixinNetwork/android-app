@@ -1,7 +1,6 @@
 package org.sol4k
 
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -160,8 +159,8 @@ class Connection @JvmOverloads constructor(
         )
     }
 
-    fun sendTransaction(transaction: Transaction): String {
-        val encodedTransaction = Base64.getEncoder().encodeToString(transaction.serialize())
+    fun sendTransaction(transactionBytes: ByteArray): String {
+        val encodedTransaction = Base64.getEncoder().encodeToString(transactionBytes)
         return rpcCall(
             "sendTransaction",
             listOf(
@@ -171,7 +170,7 @@ class Connection @JvmOverloads constructor(
         )
     }
 
-    fun simulateTransaction(transaction: Transaction): TransactionSimulation {
+    fun simulateTransaction(transaction: CompiledTransaction): TransactionSimulation {
         val encodedTransaction = Base64.getEncoder().encodeToString(transaction.serialize())
         val result: SimulateTransactionResponse = rpcCall(
             "simulateTransaction",

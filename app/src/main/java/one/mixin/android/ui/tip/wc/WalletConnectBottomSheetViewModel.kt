@@ -6,7 +6,6 @@ import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.service.TipService
 import one.mixin.android.repository.TokenRepository
@@ -18,8 +17,6 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import org.sol4k.Connection
 import org.sol4k.RpcUrl
-import org.sol4k.api.TransactionSimulationError
-import org.sol4k.api.TransactionSimulationSuccess
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -112,11 +109,11 @@ class WalletConnectBottomSheetViewModel
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         fun sendTransaction(
-            transaction: org.sol4k.Transaction,
+            transaction: org.sol4k.CompiledTransaction,
             sessionRequest: Wallet.Model.SessionRequest,
         ): String? {
             val connection = Connection(RpcUrl.MAINNNET)
-            val signature: String = connection.sendTransaction(transaction)
+            val signature: String = connection.sendTransaction(transaction.serialize())
             Timber.d("signature $signature")
             WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
             return null

@@ -5,7 +5,6 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
@@ -13,11 +12,8 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
-import one.mixin.android.tip.wc.internal.WcSignature
-import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
-import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Connection
 import org.sol4k.Keypair
@@ -35,7 +31,6 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
-import java.nio.charset.Charset
 
 object JsSigner {
 
@@ -239,18 +234,20 @@ object JsSigner {
 
     fun signSolanaTransaction(
         priv: ByteArray,
-        signMessage: WcSolanaTransaction,
-    ): String {
-        val s = gson.toJson(signMessage)
-        Timber.d("$TAG signMessage $s")
+        raw: String,
+    ): org.sol4k.CompiledTransaction {
         val holder = Keypair.fromSecretKey(priv)
+        val tx = org.sol4k.CompiledTransaction.from(raw)
         val conn = Connection(RpcUrl.MAINNNET)
         val blockhash = conn.getLatestBlockhash()
-        val transaction = org.sol4k.Transaction.from(signMessage.transaction)
-        transaction.recentBlockhash = blockhash
-        Timber.d("$TAG transaction ${transaction.serialize().base64Encode()}")
-        transaction.sign(holder)
-        return conn.sendTransaction(transaction)
+        tx.message.recentBlockhash = blockhash
+        tx.sign(holder)
+        return tx
+    }
+
+    fun sendSolanaTransaction(tx: org.sol4k.CompiledTransaction): String {
+        val conn = Connection(RpcUrl.MAINNNET)
+        return conn.sendTransaction(tx.serialize())
     }
 
     private fun throwError(

@@ -21,6 +21,7 @@ class JsSignMessage(
         const val TYPE_PERSONAL_MESSAGE = 1
         const val TYPE_MESSAGE = 2
         const val TYPE_TRANSACTION = 3
+        const val TYPE_RAW_TRANSACTION = 4
     }
 
     val reviewData: String?

@@ -1,15 +1,8 @@
 package one.mixin.android.tip.wc.internal
 
-import one.mixin.android.extension.decodeBase64
 import org.sol4k.AccountMeta
-import org.sol4k.Base58
-import org.sol4k.Binary
 import org.sol4k.PublicKey
-import org.sol4k.Transaction
-import org.sol4k.instruction.BaseInstruction
 import org.sol4k.instruction.Instruction
-import timber.log.Timber
-import java.nio.ByteBuffer
 
 class WcSolanaTransaction(
     val signatures: List<WcSignature>?,
@@ -50,11 +43,11 @@ private fun WcInstruction.toInstruction(): Instruction {
     }, PublicKey(programId))
 }
 
-fun WcSolanaTransaction.toTransaction(blockHash: String?): Transaction? {
-    if (instructions == null || feePayer == null) {
-        return null
-    }
-    val bh = blockHash ?: recentBlockhash ?: return null
-    return Transaction(bh, instructions.map { it.toInstruction() }, PublicKey(feePayer))
-}
+//fun WcSolanaTransaction.toTransaction(blockHash: String?): Transaction? {
+//    if (instructions == null || feePayer == null) {
+//        return null
+//    }
+//    val bh = blockHash ?: recentBlockhash ?: return null
+//    return Transaction(bh, instructions.map { it.toInstruction() }, PublicKey(feePayer))
+//}
 
