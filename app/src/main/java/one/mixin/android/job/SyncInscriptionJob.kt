@@ -2,10 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.db.insertUnspentOutputs
-import one.mixin.android.session.Session
-import one.mixin.android.session.buildHashMembers
-import timber.log.Timber
 
 class SyncInscriptionJob(val hash: List<String>) : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).requireNetwork(),

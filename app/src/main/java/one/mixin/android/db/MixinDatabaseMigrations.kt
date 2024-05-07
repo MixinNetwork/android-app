@@ -448,6 +448,7 @@ class MixinDatabaseMigrations private constructor() {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE `outputs` ADD COLUMN `inscription_hash` TEXT")
                     db.execSQL("ALTER TABLE `tokens` ADD COLUMN `collection_hash` TEXT")
+                    db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN `inscription_hash` TEXT")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_inscription_hash` ON `outputs` (`inscription_hash`)")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_tokens_collection_hash` ON `tokens` (`collection_hash`)")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `inscription_collection` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `icon_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`collection_hash`))")

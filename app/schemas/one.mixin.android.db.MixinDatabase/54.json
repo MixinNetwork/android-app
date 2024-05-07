@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 54,
-    "identityHash": "f6426693afb02dcc42e40c682667df05",
+    "identityHash": "b607a8e6f2e8be9ef336ed23845deb21",
     "entities": [
       {
         "tableName": "users",
@@ -2706,7 +2706,7 @@
       },
       {
         "tableName": "safe_snapshots",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `user_id` TEXT NOT NULL, `opponent_id` TEXT NOT NULL, `memo` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `created_at` TEXT NOT NULL, `trace_id` TEXT, `confirmations` INTEGER, `opening_balance` TEXT, `closing_balance` TEXT, `deposit` TEXT, `withdrawal` TEXT, PRIMARY KEY(`snapshot_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `user_id` TEXT NOT NULL, `opponent_id` TEXT NOT NULL, `memo` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `created_at` TEXT NOT NULL, `trace_id` TEXT, `confirmations` INTEGER, `opening_balance` TEXT, `closing_balance` TEXT, `deposit` TEXT, `withdrawal` TEXT, `inscription_hash` TEXT, PRIMARY KEY(`snapshot_id`))",
         "fields": [
           {
             "fieldPath": "snapshotId",
@@ -2795,6 +2795,12 @@
           {
             "fieldPath": "withdrawal",
             "columnName": "withdrawal",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "inscriptionHash",
+            "columnName": "inscription_hash",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -3003,7 +3009,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f6426693afb02dcc42e40c682667df05')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b607a8e6f2e8be9ef336ed23845deb21')"
     ]
   }
 }

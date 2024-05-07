@@ -21,6 +21,7 @@ fun PendingDeposit.toSnapshot(): SafeSnapshot =
     SafeSnapshot(
         this.depositId, SafeSnapshotType.pending.name, this.assetId, this.amount, "",
         "", "", "", this.createdAt, "", this.confirmations, "", "", SafeDeposit(this.transactionHash), null,
+        null
     )
 
 data class DestinationTag(

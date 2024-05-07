@@ -1,8 +1,10 @@
 package one.mixin.android.db
 
+import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 
@@ -47,4 +49,11 @@ interface OutputDao : BaseDao<Output> {
 
     @Query("DELETE FROM outputs WHERE output_id =:outputId")
     suspend fun removeUtxo(outputId: String)
+
+    @Query(
+        """
+        SELECT * FROM outputs o LEFT JOIN inscription_item i ON i.inscription_hash == o.inscription_hash WHERE o.inscription_hash NOT NULL AND o.state = 'unspent' ORDER BY sequence ASC
+        """
+    )
+    fun inscriptions(): LiveData<List<InscriptionItem>>
 }

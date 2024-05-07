@@ -764,7 +764,8 @@ class TokenRepository
             type: SafeSnapshotType,
             withdrawal: SafeWithdrawal? = null,
         ) {
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal)
+            // todo
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, null)
             safeSnapshotDao.insert(snapshot)
         }
 
@@ -837,5 +838,5 @@ class TokenRepository
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
-        fun inscriptions() = inscriptionDao.inscriptions()
+        fun inscriptions() = outputDao.inscriptions()
     }

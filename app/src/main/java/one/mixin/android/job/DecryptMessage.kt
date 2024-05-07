@@ -325,8 +325,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
             processSystemSafeSnapshotMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name) {
+            val json = Base64.decode(data.data)
             Timber.e("SYSTEM_SAFE_INSCRIPTION")
-            Timber.e(data.data)
+            Timber.e(String(json))
+            processSystemSafeInscriptionMessage(data)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
@@ -1093,6 +1095,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
         }
+    }
+
+    private fun processSystemSafeInscriptionMessage(data: BlazeMessageData) {
+        // todo create message and refresh inscription
+        // jobManager.addJobInBackground(SyncInscriptionJob(listOf()))
     }
 
     private fun processSystemConversationMessage(
