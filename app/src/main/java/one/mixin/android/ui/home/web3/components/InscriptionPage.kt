@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemGesturesPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
@@ -92,13 +91,13 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
 
     val iconUrl = inscriptionItem.contentURL
     val idTitle = "#${inscriptionItem.sequence}"
-    var collection = remember {
+    val collection = remember {
         mutableStateOf("")
     }
-    var tokenTotal = remember {
+    val tokenTotal = remember {
         mutableStateOf("")
     }
-    var tokenValue = remember {
+    val tokenValue = remember {
         mutableStateOf("")
     }
 

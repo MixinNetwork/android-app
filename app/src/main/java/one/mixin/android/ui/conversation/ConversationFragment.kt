@@ -181,6 +181,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -691,6 +692,10 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onNftClick(inscriptionHash: String) {
+                InscriptionActivity.show(requireContext(), inscriptionHash)
             }
 
             override fun onUrlLongClick(url: String) {

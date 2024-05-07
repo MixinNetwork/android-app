@@ -1040,6 +1040,8 @@ class MessageAdapter(
 
         open fun onBlockClick() {}
 
+        open fun onNftClick(inscriptionHash: String) {}
+
         open fun onActionClick(
             action: String,
             userId: String,

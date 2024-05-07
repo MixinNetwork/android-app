@@ -84,7 +84,9 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
 
         binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onContactCardClick(messageItem.sharedUserId!!)
+                safeNft?.let {
+                    onItemListener.onNftClick(it.inscriptionHash)
+                }
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
