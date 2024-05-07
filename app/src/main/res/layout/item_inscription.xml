@@ -8,25 +8,27 @@
     android:focusable="true"
     android:background="@drawable/bg_inscription">
 
-    <com.facebook.shimmer.ShimmerFrameLayout
+    <FrameLayout
         android:id="@+id/inscription"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
         tools:duration="800">
 
         <ImageView
-            android:id="@+id/chat_inscription_iv"
+            android:id="@+id/inscription_iv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:contentDescription="@null"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_default_inscription" />
 
-    </com.facebook.shimmer.ShimmerFrameLayout>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/title"
@@ -37,6 +39,7 @@
         android:textColor="?attr/text_primary"
         android:layout_marginTop="10dp"
         android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/inscription" />
@@ -50,11 +53,11 @@
         android:textColor="?attr/text_assist"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="8dp"
+        android:layout_marginEnd="10dp"
         android:layout_marginTop="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintBottom_toBottomOf="parent"/>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

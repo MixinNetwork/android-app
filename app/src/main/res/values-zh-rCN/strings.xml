@@ -268,6 +268,7 @@
     <string name="Content_too_long">内容过长</string>
     <string name="content_transcript">[聊天记录]</string>
     <string name="content_transfer">[转账]</string>
+    <string name="content_collection">[藏品]</string>
     <string name="content_video">[视频]</string>
     <string name="content_voice">[语音电话]</string>
     <string name="Continue">继续</string>

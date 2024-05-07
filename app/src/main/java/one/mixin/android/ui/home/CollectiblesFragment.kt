@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
@@ -21,7 +20,6 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.web3.CollectiblesAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
-import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -49,7 +47,7 @@ class CollectiblesFragment : BaseFragment() {
 
     private val collectiblesAdapter by lazy {
         CollectiblesAdapter {
-            InscriptionActivity.show(requireContext())
+            InscriptionActivity.show(requireContext(), it.inscriptionHash)
         }
     }
 

@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 
 class SyncInscriptionJob(val hash: List<String>) : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).requireNetwork(),
@@ -23,15 +24,24 @@ class SyncInscriptionJob(val hash: List<String>) : BaseJob(
             if (response.isSuccess) {
                 val inscription = response.data ?: return@forEach
                 inscriptionDao.insert(inscription)
-                if (inscriptionCollectionDao.exits(inscription.collectionHash) == null) {
-                    val collectionResponse = tokenService.getInscriptionCollection(inscription.collectionHash)
-                    val inscriptionCollection = collectionResponse.data ?: return@forEach
-                    inscriptionCollectionDao.insert(inscriptionCollection)
-                } else {
-                    // Todo
-                }
+                syncInscriptionCollection(inscription.collectionHash)
             } else {
-                // Todo
+                Timber.e(response.errorDescription)
+            }
+        }
+        inscriptionDao.getInscriptionCollectionIds(hash).forEach {
+            syncInscriptionCollection(it)
+        }
+    }
+
+    private suspend fun syncInscriptionCollection(collectionHash: String) {
+        if (inscriptionCollectionDao.exits(collectionHash) == null) {
+            val collectionResponse = tokenService.getInscriptionCollection(collectionHash)
+            if (collectionResponse.isSuccess) {
+                val inscriptionCollection = collectionResponse.data ?: return
+                inscriptionCollectionDao.insert(inscriptionCollection)
+            } else {
+                Timber.e(collectionResponse.errorDescription)
             }
         }
     }

@@ -3,25 +3,12 @@ package one.mixin.android.ui.home.web3.inscription
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.replaceFragment
-import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.FriendsFragment
-import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.web.WebFragment
-import one.mixin.android.util.ShareHelper
-import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.User
 
 @AndroidEntryPoint
 class InscriptionSendActivity : BlazeBaseActivity() {

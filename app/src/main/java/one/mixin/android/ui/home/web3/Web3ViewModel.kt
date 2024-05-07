@@ -113,4 +113,6 @@ internal constructor(
     }
 
     fun inscriptions() = tokenRepository.inscriptions()
+
+    fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
 }

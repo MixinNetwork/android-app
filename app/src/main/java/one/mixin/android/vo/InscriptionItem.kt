@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "inscription_item")
+@Entity(tableName = "inscription_items")
 data class InscriptionItem(
     @PrimaryKey
     @ColumnInfo(name = "inscription_hash")

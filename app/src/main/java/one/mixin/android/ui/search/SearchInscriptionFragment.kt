@@ -41,7 +41,7 @@ class SearchInscriptionFragment : BaseFragment(R.layout.fragment_search_inscript
 
     private val searchAdapter by lazy {
         CollectiblesAdapter {
-            InscriptionActivity.show(requireContext())
+            InscriptionActivity.show(requireContext(), it.inscriptionHash)
         }
     }
 

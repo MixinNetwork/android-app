@@ -137,6 +137,7 @@ class DataProvider {
             $PREFIX_ASSET_ITEM
             WHERE ae.balance > 0 
             AND (a1.symbol LIKE '%' || ? || '%'  ESCAPE '\' OR a1.name LIKE '%' || ? || '%'  ESCAPE '\')
+            AND a1.collection_hash = ''
             ORDER BY 
             a1.symbol = ? COLLATE NOCASE OR a1.name = ? COLLATE NOCASE DESC,
             a1.price_usd*ae.balance DESC

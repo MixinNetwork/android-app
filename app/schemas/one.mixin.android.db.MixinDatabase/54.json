@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 54,
-    "identityHash": "b607a8e6f2e8be9ef336ed23845deb21",
+    "identityHash": "6e342c2e1f298a113400cd7fd52f9843",
     "entities": [
       {
         "tableName": "users",
@@ -2876,8 +2876,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "inscription_collection",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `icon_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`collection_hash`))",
+        "tableName": "inscription_collections",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`collection_hash`))",
         "fields": [
           {
             "fieldPath": "collectionHash",
@@ -2917,7 +2917,7 @@
           },
           {
             "fieldPath": "createdAt",
-            "columnName": "icon_at",
+            "columnName": "created_at",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -2938,7 +2938,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "inscription_item",
+        "tableName": "inscription_items",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`inscription_hash` TEXT NOT NULL, `collection_hash` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `content_type` TEXT NOT NULL, `content_url` TEXT NOT NULL, `occupied_by` TEXT, `occupied_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`inscription_hash`))",
         "fields": [
           {
@@ -3009,7 +3009,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b607a8e6f2e8be9ef336ed23845deb21')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6e342c2e1f298a113400cd7fd52f9843')"
     ]
   }
 }

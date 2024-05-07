@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "inscription_collection")
+@Entity(tableName = "inscription_collections")
 data class InscriptionCollection(
     @PrimaryKey
     @ColumnInfo(name = "collection_hash")
@@ -26,8 +26,8 @@ data class InscriptionCollection(
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
     val iconURL: String,
-    @ColumnInfo(name = "icon_at")
-    @SerializedName("icon_at")
+    @ColumnInfo(name = "created_at")
+    @SerializedName("created_at")
     val createdAt: String,
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")

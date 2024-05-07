@@ -273,6 +273,7 @@
     <string name="Content_too_long">Content too long</string>
     <string name="content_transcript">[Transcript]</string>
     <string name="content_transfer">[Transfer]</string>
+    <string name="content_collection">[Collection]</string>
     <string name="content_video">[Video]</string>
     <string name="content_voice">[Voice call]</string>
     <string name="Continue">Continue</string>
@@ -1505,5 +1506,4 @@
     <string name="COLLECTION">COLLECTION</string>
     <string name="NFT_TOKEN">NFT TOKEN</string>
     <string name="CREATOR">CREATOR</string>
-    <string name="RARITY">RARITY</string>
 </resources>

@@ -52,7 +52,7 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT * FROM outputs o LEFT JOIN inscription_item i ON i.inscription_hash == o.inscription_hash WHERE o.inscription_hash NOT NULL AND o.state = 'unspent' ORDER BY sequence ASC
+        SELECT * FROM outputs o LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash WHERE i.inscription_hash IS NOT NULL AND o.state = 'unspent' ORDER BY sequence ASC
         """
     )
     fun inscriptions(): LiveData<List<InscriptionItem>>

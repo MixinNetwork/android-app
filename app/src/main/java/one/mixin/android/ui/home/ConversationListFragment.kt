@@ -858,6 +858,10 @@ class ConversationListFragment : LinkFragment() {
                         binding.msgTv.setText(R.string.content_transfer)
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                     }
+                    conversationItem.contentType == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> {
+                        binding.msgTv.setText(R.string.content_collection)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
+                    }
                     conversationItem.isSticker() -> {
                         setConversationName(conversationItem)
                         binding.msgTv.setText(R.string.content_sticker)

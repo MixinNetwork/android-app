@@ -114,6 +114,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
+import one.mixin.android.vo.safe.SafeNft
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -326,9 +327,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             processSystemSafeSnapshotMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name) {
             val json = Base64.decode(data.data)
-            Timber.e("SYSTEM_SAFE_INSCRIPTION")
-            Timber.e(String(json))
-            processSystemSafeInscriptionMessage(data)
+            val safeNft = gson.fromJson(String(json), SafeNft::class.java)
+            processSystemSafeInscriptionMessage(data, safeNft)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
@@ -1097,9 +1097,20 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
     }
 
-    private fun processSystemSafeInscriptionMessage(data: BlazeMessageData) {
-        // todo create message and refresh inscription
-        // jobManager.addJobInBackground(SyncInscriptionJob(listOf()))
+    private fun processSystemSafeInscriptionMessage(data: BlazeMessageData, safeNft: SafeNft) {
+
+        val message =
+            createMessage(
+                data.messageId, data.conversationId, data.userId, data.category, gson.toJson(safeNft),
+                data.createdAt, data.status,)
+
+        insertMessage(message, data)
+        jobManager.addJobInBackground(SyncInscriptionJob(listOf(safeNft.inscriptionHash)))
+        jobManager.addJobInBackground(SyncOutputJob())
+
+        // if (safeNft.amount.toFloat() > 0) {
+        //     generateNotification(message, data)
+        // }
     }
 
     private fun processSystemConversationMessage(

@@ -843,6 +843,8 @@ class TokenRepository
 
         fun inscriptions() = outputDao.inscriptions()
 
+        fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
+
         suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<InscriptionItem>? {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }

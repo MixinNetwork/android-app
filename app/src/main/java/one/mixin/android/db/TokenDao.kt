@@ -32,19 +32,19 @@ interface TokenDao : BaseDao<Token> {
         const val POSTFIX_ASSET_ITEM =
             " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
-            " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
+            " WHERE ae.hidden IS NULL OR NOT ae.hidden AND a1.collection_hash = '' $POSTFIX_ASSET_ITEM"
     }
 
-    @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
+    @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE a1.collection_hash = '' $POSTFIX")
     fun assets(): LiveData<List<Token>>
 
-    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 AND a1.collection_hash = '' $POSTFIX")
     fun assetsWithBalance(): LiveData<List<Token>>
 
-    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 AND a1.collection_hash = '' $POSTFIX")
     suspend fun simpleAssetsWithBalance(): List<Token>
 
-    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 AND a1.collection_hash = '' $POSTFIX")
     suspend fun tokenEntry(): List<TokenEntry>
 
     @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE a1.asset_id IN (:ids)")
@@ -72,7 +72,7 @@ interface TokenDao : BaseDao<Token> {
     suspend fun simpleAsset(id: String): Token?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 AND a1.collection_hash = '' $POSTFIX_ASSET_ITEM")
     fun hiddenAssetItems(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -80,7 +80,7 @@ interface TokenDao : BaseDao<Token> {
     fun assetItemsNotHidden(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.collection_hash = '' $POSTFIX_ASSET_ITEM")
     fun assetItems(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -98,22 +98,7 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
-        WHERE ae.balance > 0 
-        AND (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
-        ORDER BY 
-            a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
-            a1.price_usd*ae.balance DESC
-        """,
-    )
-    suspend fun fuzzySearchAsset(
-        name: String,
-        symbol: String,
-    ): List<TokenItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        """$PREFIX_ASSET_ITEM 
-        WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
+        WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX) AND a1.collection_hash = ''
         ORDER BY 
             a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
             a1.price_usd*ae.balance DESC
@@ -133,7 +118,7 @@ interface TokenDao : BaseDao<Token> {
     suspend fun simpleAssetItem(assetId: String): TokenItem?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND a1.collection_hash = '' $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<TokenItem>>
 
     @Query("SELECT icon_url FROM tokens WHERE asset_id = :id")
