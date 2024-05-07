@@ -10,6 +10,7 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
@@ -19,9 +20,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
 
@@ -137,5 +140,32 @@ internal constructor(
             inscriptionItem = inscriptionItem,
             inscriptionCollection = inscriptionCollection
         )
+    }
+
+    suspend fun loadData(inscriptionHash: String) = withContext(Dispatchers.IO) {
+        val output = tokenRepository.findUnspentOutputByHash(inscriptionHash) ?: return@withContext null
+        val inscriptionItem = tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
+        val inscriptionCollection = tokenRepository.findInscriptionCollectionByHash(inscriptionHash) ?: return@withContext null
+        val asset = tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
+        Triple("${inscriptionCollection.name} #${inscriptionItem.sequence}", "${output.amount} ${asset.symbol}", amountAs(output.amount, asset))
+    }
+
+    private fun amountAs(
+        amount: String,
+        asset: TokenItem,
+    ): String {
+        val value =
+            try {
+                if (asset.priceFiat().toDouble() == 0.0) {
+                    BigDecimal.ZERO
+                } else {
+                    BigDecimal(amount) * asset.priceFiat()
+                }
+            } catch (e: ArithmeticException) {
+                BigDecimal.ZERO
+            } catch (e: NumberFormatException) {
+                BigDecimal.ZERO
+            }
+        return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 }

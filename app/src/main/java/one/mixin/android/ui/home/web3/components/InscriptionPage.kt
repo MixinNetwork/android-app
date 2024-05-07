@@ -27,7 +27,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -46,11 +50,14 @@ import com.valentinilk.shimmer.ShimmerTheme
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.shimmerSpec
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.web3.compose.Barcode
+import timber.log.Timber
 
 @Composable
 fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAction: () -> Unit) {
@@ -84,25 +91,31 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
     )
 
     val iconUrl = inscriptionItem.contentURL
-    val avatarUrl = ""
     val idTitle = "#${inscriptionItem.sequence}"
-    val collection = ""
-    val tokenTotal = ""
-    val tokenValue= ""
-    val userName = ""
-    val rarity = ""
+    var collection = remember {
+        mutableStateOf("")
+    }
+    var tokenTotal = remember {
+        mutableStateOf("")
+    }
+    var tokenValue = remember {
+        mutableStateOf("")
+    }
 
+    LaunchedEffect(key1 = Unit) {
+        val result = viewModel.loadData(inscriptionHash) ?: return@LaunchedEffect
+        collection.value = result.first
+        tokenTotal.value = result.second
+        tokenValue.value = result.third
+    }
     Box(Modifier.background(Color(0xFF000000))) {
         GlideImage(
-            data = iconUrl,
-            modifier = Modifier
+            data = iconUrl, modifier = Modifier
                 .fillMaxSize()
                 .blur(30.dp)
                 .graphicsLayer {
                     alpha = 0.5f
-                },
-            placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
-            contentScale = ContentScale.Crop
+                }, placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription), contentScale = ContentScale.Crop
         )
         Column(
             modifier = Modifier.systemGesturesPadding()
@@ -130,8 +143,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                 ) {
                     GlideImage(
                         data = iconUrl,
-                        modifier =
-                        Modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(8.dp))
@@ -143,24 +155,14 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
 
                 Row(modifier = Modifier.padding(horizontal = 12.dp)) {
                     Button(
-                        onClick = onSendAction,
-                        colors =
-                        ButtonDefaults.outlinedButtonColors(
+                        onClick = onSendAction, colors = ButtonDefaults.outlinedButtonColors(
                             backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F)
-                        ),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues( vertical = 12.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp
+                        ), modifier = Modifier.weight(1f), shape = RoundedCornerShape(20.dp), contentPadding = PaddingValues(vertical = 12.dp), elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp, defaultElevation = 0.dp, hoveredElevation = 0.dp, focusedElevation = 0.dp
                         )
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
+                            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
                         ) {
                             Text(text = stringResource(id = R.string.Send), color = Color.White)
                         }
@@ -171,24 +173,14 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                     Button(
                         onClick = {
                             onShareAction.invoke()
-                        },
-                        colors =
-                        ButtonDefaults.outlinedButtonColors(
+                        }, colors = ButtonDefaults.outlinedButtonColors(
                             backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F)
-                        ),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(vertical = 11.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp
+                        ), modifier = Modifier.weight(1f), shape = RoundedCornerShape(20.dp), contentPadding = PaddingValues(vertical = 11.dp), elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp, defaultElevation = 0.dp, hoveredElevation = 0.dp, focusedElevation = 0.dp
                         )
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
+                            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
                         ) {
                             Text(text = stringResource(id = R.string.Share), color = Color.White)
                         }
@@ -201,8 +193,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                 Text(text = stringResource(id = R.string.HASH), fontSize = 16.sp, color = Color(0xFF999999))
                 Box(modifier = Modifier.height(8.dp))
                 Barcode(
-                    inscriptionHash, modifier =
-                    Modifier
+                    inscriptionHash, modifier = Modifier
                         .width(128.dp)
                         .height(24.dp)
                 )
@@ -217,36 +208,18 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                 Box(modifier = Modifier.height(20.dp))
                 Text(text = stringResource(id = R.string.COLLECTION), fontSize = 16.sp, color = Color(0xFF999999))
                 Box(modifier = Modifier.height(8.dp))
-                Text(text = collection, fontSize = 16.sp, color = Color.White)
+                Text(text = collection.value, fontSize = 16.sp, color = Color.White)
 
 
                 Box(modifier = Modifier.height(20.dp))
                 Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
                 Box(modifier = Modifier.height(8.dp))
-                Text(text = tokenTotal, fontSize = 16.sp, color = Color.White)
+                Text(text = tokenTotal.value, fontSize = 16.sp, color = Color.White)
                 Box(modifier = Modifier.height(5.dp))
-                Text(text = tokenValue, fontSize = 14.sp, color = Color(0xFF999999))
-
-                Box(modifier = Modifier.height(20.dp))
-                Text(text = stringResource(id = R.string.CREATOR), fontSize = 16.sp, color = Color(0xFF999999))
-                Box(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically){
-                    GlideImage(
-                        data = avatarUrl,
-                        modifier =
-                        Modifier
-                            .width(18.dp)
-                            .height(18.dp)
-                            .clip(CircleShape),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
-                    )
-                    Box(modifier = Modifier.width(4.dp))
-                    Text(text = userName, fontSize = 16.sp, color = Color.White)
-                }
+                Text(text = tokenValue.value, fontSize = 14.sp, color = Color(0xFF999999))
 
                 Box(modifier = Modifier.height(70.dp))
             }
         }
     }
-
 }
