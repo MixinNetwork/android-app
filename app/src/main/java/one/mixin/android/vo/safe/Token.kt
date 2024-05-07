@@ -75,6 +75,7 @@ data class Token(
     val dust: String,
     @SerializedName("collection_hash")
     @ColumnInfo(name = "collection_hash")
+    @SerialName("collection_hash")
     val collectionHash: String?,
 ) : Parcelable
 

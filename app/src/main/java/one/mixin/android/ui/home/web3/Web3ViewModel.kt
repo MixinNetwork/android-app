@@ -16,6 +16,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.biometric.NftBiometricItem
+import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ConnectionUI
@@ -143,11 +144,11 @@ internal constructor(
     }
 
     suspend fun loadData(inscriptionHash: String) = withContext(Dispatchers.IO) {
-        val output = tokenRepository.findUnspentOutputByHash(inscriptionHash) ?: return@withContext null
+        val output = tokenRepository.findOutputByHash(inscriptionHash) ?: return@withContext null
         val inscriptionItem = tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
         val inscriptionCollection = tokenRepository.findInscriptionCollectionByHash(inscriptionHash) ?: return@withContext null
         val asset = tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
-        Triple("${inscriptionCollection.name} #${inscriptionItem.sequence}", "${output.amount} ${asset.symbol}", amountAs(output.amount, asset))
+        InscriptionState(output.state, "${inscriptionCollection.name} #${inscriptionItem.sequence}", "${output.amount} ${asset.symbol}", amountAs(output.amount, asset))
     }
 
     private fun amountAs(

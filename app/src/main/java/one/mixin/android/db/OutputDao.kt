@@ -61,4 +61,9 @@ interface OutputDao : BaseDao<Output> {
         SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash AND state = 'unspent'
     """)
     suspend fun findUnspentOutputByHash(inscriptionHash: String): Output?
+
+    @Query("""
+        SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash 
+    """)
+    suspend fun findOutputByHash(inscriptionHash: String): Output?
 }
