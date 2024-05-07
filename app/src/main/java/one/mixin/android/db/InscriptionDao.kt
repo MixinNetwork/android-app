@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 
 @Dao
@@ -16,4 +17,10 @@ interface InscriptionDao : BaseDao<InscriptionItem> {
 
     @Query("SELECT * FROM inscription_items WHERE inscription_hash = :hash")
     fun inscriptionByHash(hash: String): LiveData<InscriptionItem?>
+
+    @Query("SELECT * FROM inscription_items WHERE inscription_hash = :hash")
+    fun findInscriptionByHash(hash: String): InscriptionItem?
+
+    @Query("SELECT ic.* FROM inscription_items i LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash WHERE i.inscription_hash = :hash")
+    fun findInscriptionCollectionByHash(hash: String): InscriptionCollection?
 }

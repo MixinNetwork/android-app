@@ -20,8 +20,11 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.isSecret
+import one.mixin.android.vo.safe.SafeNft
 import one.mixin.android.vo.showVerifiedOrBot
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
@@ -56,10 +59,17 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         } else {
             binding.chatName.visibility = View.GONE
         }
-
-        binding.chatTitleTv.text = "Azra Games -The  Hopeful"
-        binding.chatNumberTv.text = "#104655"
-        binding.chatBarcode.setData(randomBytes(32).toHex())
+        val safeNft =
+            try {
+                GsonHelper.customGson.fromJson(messageItem.content, SafeNft::class.java)
+            } catch (e: Exception) {
+                null
+            }
+        if (safeNft != null) {
+            binding.chatTitleTv.text = safeNft.inscriptionHash
+            binding.chatNumberTv.text = safeNft.amount
+            binding.chatBarcode.setData(safeNft.inscriptionHash)
+        }
 
         binding.chatTime.load(
             isMe,

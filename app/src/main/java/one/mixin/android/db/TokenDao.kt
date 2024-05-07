@@ -56,6 +56,9 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT * FROM tokens WHERE kernel_asset_id = :asset")
     suspend fun findTokenByAsset(asset: String): Token?
 
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.kernel_asset_id = :asset")
+    suspend fun findTokenItemByAsset(asset: String): TokenItem?
+
     @Query("SELECT kernel_asset_id FROM tokens WHERE kernel_asset_id IN (:kernelIds)")
     suspend fun findExistByKernelAssetId(kernelIds: List<String>): List<String>
 

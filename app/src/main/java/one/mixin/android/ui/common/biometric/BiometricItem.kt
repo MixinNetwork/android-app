@@ -5,6 +5,8 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -143,5 +145,8 @@ class NftBiometricItem(
     override var amount: String,
     override var memo: String?,
     override var state: String,
-    override var reference: String?
+    override var reference: String?,
+    val receivers:List<User>,
+    val inscriptionItem: InscriptionItem,
+    val inscriptionCollection: InscriptionCollection,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)

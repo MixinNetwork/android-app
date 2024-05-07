@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.service.Web3Service
@@ -13,11 +14,15 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -115,4 +120,22 @@ internal constructor(
     fun inscriptions() = tokenRepository.inscriptions()
 
     fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
+
+    suspend fun buildNftTransaction(inscriptionHash: String, receiver: User): NftBiometricItem? = withContext(Dispatchers.IO) {
+        val output = tokenRepository.findUnspentOutputByHash(inscriptionHash) ?: return@withContext null
+        val inscriptionItem = tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
+        val inscriptionCollection = tokenRepository.findInscriptionCollectionByHash(inscriptionHash) ?: return@withContext null
+        val asset = tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
+        return@withContext NftBiometricItem(
+            asset = asset,
+            traceId = UUID.randomUUID().toString(),
+            amount = output.amount,
+            memo = null,
+            state = PaymentStatus.pending.name,
+            receivers = listOf(receiver),
+            reference = inscriptionHash,
+            inscriptionItem = inscriptionItem,
+            inscriptionCollection = inscriptionCollection
+        )
+    }
 }

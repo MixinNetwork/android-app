@@ -1,10 +1,13 @@
 package one.mixin.android.vo
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 @Entity(tableName = "inscription_collections")
 data class InscriptionCollection(
     @PrimaryKey
@@ -32,5 +35,4 @@ data class InscriptionCollection(
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String
-)
-
+) : Parcelable

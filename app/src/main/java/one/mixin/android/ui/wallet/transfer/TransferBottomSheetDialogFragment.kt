@@ -131,7 +131,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             is NftBiometricItem -> {
-                // todo
+                binding.content.render(t) { user ->
+                    if (user.userId == Session.getAccountId()) return@render
+                    showUserBottom(parentFragmentManager, user)
+                }
             }
 
             else -> {
@@ -162,7 +165,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
-                        binding.header.awaiting(transferType, t.asset!!)
+                        if (t is NftBiometricItem) {
+                            binding.header.awaiting(transferType, (t as NftBiometricItem).inscriptionItem, t.asset!!)
+                        } else {
+                            binding.header.awaiting(transferType, t.asset!!)
+                        }
                         preCheck()
                     }
 
@@ -513,6 +520,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo, t.reference)
                             }
 
+                            is NftBiometricItem -> {
+                                trace = null
+                                bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), t.amount, pin, t.traceId, t.memo, t.reference)
+                            }
+
                             is AddressTransferBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
                                 bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
@@ -600,6 +612,21 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         getDescription(),
                     )
                 }
+            }
+
+            is NftBiometricItem -> {
+                val user = t.receivers.first()
+                BiometricInfo(
+                    getString(
+                        R.string.transfer_to,
+                        user.fullName,
+                    ),
+                    getString(
+                        R.string.contact_mixin_id,
+                        user.identityNumber,
+                    ),
+                    getDescription(),
+                )
             }
 
             is AddressTransferBiometricItem -> {

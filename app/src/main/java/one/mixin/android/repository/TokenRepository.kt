@@ -711,6 +711,14 @@ class TokenRepository
             asset: String,
         ) = outputDao.findUnspentOutputsByAsset(limit, asset)
 
+        suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
+
+        fun findInscriptionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionByHash(inscriptionHash)
+
+        fun findInscriptionCollectionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionCollectionByHash(inscriptionHash)
+
+        suspend fun findTokenItemByAsset(kernelAssetId: String) = tokenDao.findTokenItemByAsset(kernelAssetId)
+
         fun insertOutput(output: Output) = outputDao.insert(output)
 
         fun insertDeposit(data: List<DepositEntry>) {

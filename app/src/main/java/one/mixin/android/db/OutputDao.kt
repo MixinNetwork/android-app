@@ -56,4 +56,9 @@ interface OutputDao : BaseDao<Output> {
         """
     )
     fun inscriptions(): LiveData<List<InscriptionItem>>
+
+    @Query("""
+        SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash AND state = 'unspent'
+    """)
+    suspend fun findUnspentOutputByHash(inscriptionHash: String): Output?
 }

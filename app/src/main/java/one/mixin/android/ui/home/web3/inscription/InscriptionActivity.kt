@@ -5,14 +5,22 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.common.biometric.NftBiometricItem
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionPage
 import one.mixin.android.ui.home.web3.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class InscriptionActivity : AppCompatActivity() {
@@ -29,6 +37,12 @@ class InscriptionActivity : AppCompatActivity() {
 
     private lateinit var getSendResult: ActivityResultLauncher<String>
 
+    private val web3ViewModel by viewModels<Web3ViewModel>()
+
+    private val inscriptionHash by lazy {
+        requireNotNull( intent.getStringExtra(ARGS_HASH))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,7 +54,6 @@ class InscriptionActivity : AppCompatActivity() {
             )
         SystemUIManager.lightUI(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-        val inscriptionHash = requireNotNull( intent.getStringExtra(ARGS_HASH))
         setContent {
             InscriptionPage(inscriptionHash, onSendAction, onShareAction)
         }
@@ -51,11 +64,11 @@ class InscriptionActivity : AppCompatActivity() {
     }
 
     private fun callbackSend(data: Intent?) {
-        val user = data?.getParcelableExtraCompat(ARGS_RESULT,User::class.java)?:return
-        toast(user.userId)
-        // todo
-        // TransferBottomSheetDialogFragment.newInstance(NftBiometricItem())
-
+        val user = data?.getParcelableExtraCompat(ARGS_RESULT, User::class.java) ?: return
+        lifecycleScope.launch {
+            val nftBiometricItem = web3ViewModel.buildNftTransaction(inscriptionHash, user) ?: return@launch
+            TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).show(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        }
     }
 
     private val onShareAction = {

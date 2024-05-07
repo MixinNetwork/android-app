@@ -12,6 +12,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
 
 class TransferHeader : LinearLayout {
@@ -154,7 +155,17 @@ class TransferHeader : LinearLayout {
         }
     }
 
-    // todo nft icon
+    fun awaiting(
+        type: TransferType,
+        inscriptionItem: InscriptionItem,
+        asset: TokenItem,
+    ) {
+        _binding.apply {
+            nftIcon.loadImage(inscriptionItem.contentURL, R.drawable.ic_default_inscription)
+        }
+        awaiting(type, asset)
+    }
+
     fun awaiting(
         type: TransferType,
         asset: TokenItem,
