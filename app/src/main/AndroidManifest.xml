@@ -336,6 +336,13 @@
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Transparent" />
 
+        <activity
+            android:name=".ui.home.web3.inscription.InscriptionSendActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

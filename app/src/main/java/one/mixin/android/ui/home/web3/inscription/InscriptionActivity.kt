@@ -4,7 +4,9 @@ import one.mixin.android.compose.GlideImage
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -52,11 +54,14 @@ import com.valentinilk.shimmer.shimmerSpec
 import com.walletconnect.util.randomBytes
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.hexString
-import one.mixin.android.extension.inTransaction
-import one.mixin.android.ui.conversation.FriendsFragment
+import one.mixin.android.extension.toast
+import one.mixin.android.extension.toastShort
+import one.mixin.android.ui.home.web3.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.User
 import one.mixin.android.web3.compose.Barcode
 
 @AndroidEntryPoint
@@ -69,8 +74,17 @@ class InscriptionActivity : AppCompatActivity() {
         }
     }
 
+    lateinit var getSendResult: ActivityResultLauncher<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        getSendResult =
+            registerForActivityResult(
+                InscriptionSendActivity.SendContract(),
+                activityResultRegistry,
+                ::callbackSend,
+            )
         SystemUIManager.lightUI(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
 
@@ -121,8 +135,7 @@ class InscriptionActivity : AppCompatActivity() {
                         .blur(30.dp)
                         .graphicsLayer {
                             alpha = 0.5f
-                        }
-                        .shimmer(shimmerInstance),
+                        },
                     placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
                     contentScale = ContentScale.Crop
                 )
@@ -156,7 +169,8 @@ class InscriptionActivity : AppCompatActivity() {
                                 Modifier
                                     .fillMaxWidth()
                                     .fillMaxHeight()
-                                    .clip(RoundedCornerShape(8.dp)),
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .shimmer(shimmerInstance),
                                 placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
                             )
                         }
@@ -190,7 +204,9 @@ class InscriptionActivity : AppCompatActivity() {
                             Box(modifier = Modifier.width(28.dp))
 
                             Button(
-                                onClick = onShareAction,
+                                onClick = {
+                                    onShareAction.invoke()
+                                },
                                 colors =
                                 ButtonDefaults.outlinedButtonColors(
                                     backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F)
@@ -277,29 +293,18 @@ class InscriptionActivity : AppCompatActivity() {
     }
 
     private val onSendAction = {
-        supportFragmentManager.inTransaction {
-            setCustomAnimations(
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-                R.anim.slide_in_bottom,
-                R.anim.slide_out_bottom,
-            )
-                .add(
-                    R.id.container,
-                    FriendsFragment.newInstance().apply {
-                        setOnFriendClick {
-                            // Todo send nft
-                            supportFragmentManager.popBackStackImmediate()
-                        }
-                    },
-                    FriendsFragment.TAG,
-                )
-                .addToBackStack(null)
-        }
+        getSendResult.launch("")
+    }
+
+    private fun callbackSend(data: Intent?) {
+        val user = data?.getParcelableExtraCompat(ARGS_RESULT,User::class.java)?:return
+        toast(user.userId)
+        // todo
     }
 
     private val onShareAction = {
         // Todo
+        toast("Coming soon")
     }
 }
 

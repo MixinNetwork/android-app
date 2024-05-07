@@ -4,6 +4,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
 import one.mixin.android.ui.common.friends.FriendsListener
@@ -30,16 +31,26 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
     companion object {
         const val TAG = "FriendsFragment"
+        const val ARGS_SEND = "args_send"
 
-        fun newInstance() = FriendsFragment()
+        fun newInstance(send: Boolean = false) = FriendsFragment().apply {
+            withArgs {
+                putBoolean(ARGS_SEND, send)
+            }
+        }
     }
+
+    private val send by lazy {
+        requireArguments().getBoolean(ARGS_SEND, false)
+    }
+
 
     private val viewModel by viewModels<ConversationViewModel>()
 
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    override fun getTitleResId() = R.string.Share_Contact
+    override fun getTitleResId() = if(send)R.string.Send else R.string.Share_Contact
 
     override suspend fun getFriends() = viewModel.getFriends()
 
@@ -50,7 +61,11 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
     }
 
     override fun onBackPressed(): Boolean {
-        parentFragmentManager.popBackStackImmediate()
+        if (send) {
+            requireActivity().finish()
+        } else {
+            parentFragmentManager.popBackStackImmediate()
+        }
         return true
     }
 
