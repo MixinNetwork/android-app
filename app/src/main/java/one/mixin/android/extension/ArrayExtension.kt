@@ -1,6 +1,11 @@
 package one.mixin.android.extension
 
+import kotlin.contracts.contract
+
 fun ByteArray?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
     return this == null || this.isEmpty()
 }
 

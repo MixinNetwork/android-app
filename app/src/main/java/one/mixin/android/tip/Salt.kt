@@ -14,7 +14,8 @@ import timber.log.Timber
 internal fun readEncryptedSalt(context: Context): ByteArray? {
     val salts = context.defaultSharedPreferences.getString(Constants.Tip.SPEND_SALT, null) ?: return null
     val historicalSalts = salts.split(",")
-    val salt = historicalSalts.firstOrNull()?.hexStringToByteArray() ?: return null
+    val salt = historicalSalts.firstOrNull()?.hexStringToByteArray()
+    if (salt.isNullOrEmpty()) return null
     return decryptSalt(salt)
 }
 
@@ -41,6 +42,31 @@ internal fun storeEncryptedSalt(
     val newSalt = (cipher.iv + ciphertext).toHex()
     historicalSalts.add(0, newSalt)
     edit.putString(Constants.Tip.SPEND_SALT, historicalSalts.joinToString())
+    return edit.commit()
+}
+
+// for debug
+internal fun readAllEncryptedSalts(context: Context): List<ByteArray> {
+    val salts = context.defaultSharedPreferences.getString(Constants.Tip.SPEND_SALT, null) ?: return emptyList()
+    val historicalSalts = salts.split(",")
+    if (historicalSalts.isEmpty()) {
+        return emptyList()
+    }
+    return historicalSalts.mapNotNull {
+        if (it.isBlank()) return@mapNotNull null
+        decryptSalt(it.hexStringToByteArray())
+    }
+}
+
+// for debug
+internal fun deleteLatestSalts(context: Context): Boolean {
+    val salts = context.defaultSharedPreferences.getString(Constants.Tip.SPEND_SALT, null) ?: return true
+    val historicalSalts = salts.split(",")
+    if (historicalSalts.isEmpty()) {
+        return true
+    }
+    val edit = context.defaultSharedPreferences.edit()
+    edit.putString(Constants.Tip.SPEND_SALT,  historicalSalts.drop(1).joinToString())
     return edit.commit()
 }
 
