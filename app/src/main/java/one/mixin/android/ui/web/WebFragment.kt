@@ -1732,13 +1732,13 @@ class WebFragment : BaseFragment() {
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
             val network = obj.getString("network")
+            if (network == "solana") {
+                JsSigner.useSolana()
+            } else {
+                JsSigner.useEvm()
+            }
             when(method) {
                 DAppMethod.REQUESTACCOUNTS -> {
-                    if (network == "solana") {
-                        JsSigner.useSolanaAddress()
-                    } else {
-                        JsSigner.useEvmAddress()
-                    }
                     onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");")
                     onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);")
                 }
@@ -1748,7 +1748,13 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNMESSAGE -> {
-                    signMessage(id, obj.getJSONObject("object").toString())
+                    val o = obj.getJSONObject("object")
+                    val data = if (network == "solana") {
+                        o.getString("data")
+                    } else {
+                        o.toString()
+                    }
+                    signMessage(id, data)
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {

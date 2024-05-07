@@ -5,6 +5,9 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.fromJson
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -32,6 +35,7 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.nio.charset.Charset
 
 object JsSigner {
 
@@ -61,11 +65,15 @@ object JsSigner {
     fun updateAddress(address: String) {
         JsSigner.address = address
     }
-    fun useEvmAddress() {
+    fun useEvm() {
         address = evmAddress
+        currentChain = Chain.Ethereum
+        currentNetwork = "ethereum"
     }
-    fun useSolanaAddress() {
+    fun useSolana() {
         address = solanaAddress
+        currentChain = Chain.Solana
+        currentNetwork = "solana"
     }
     var currentChain: Chain = Chain.Ethereum
         private set
@@ -188,6 +196,18 @@ object JsSigner {
         message: String,
         type: Int,
     ): String {
+        return if (currentChain == Chain.Solana) {
+            signSolanaMessage(priv, message)
+        } else {
+            signEthMessage(priv, message, type)
+        }
+    }
+
+    private fun signEthMessage(
+        priv: ByteArray,
+        message: String,
+        type: Int,
+    ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
             if (type == JsSignMessage.TYPE_TYPED_MESSAGE) {
@@ -203,14 +223,18 @@ object JsSigner {
         return Numeric.toHexString(b)
     }
 
-    fun signSolanaMessage(
+    private fun signSolanaMessage(
         priv: ByteArray,
         message: String,
     ): String {
         val holder = Keypair.fromSecretKey(priv)
-        val sig = holder.sign(message.decodeBase58()).encodeToBase58String()
-        val wcSig = WcSignature("", sig)
-        return gson.toJson(wcSig)
+        val m = try {
+            message.decodeBase58()
+        } catch (e: Exception) {
+            message.removePrefix("0x").hexStringToByteArray()
+        }
+        val sig = holder.sign(m)
+        return sig.toHex()
     }
 
     fun signSolanaTransaction(
