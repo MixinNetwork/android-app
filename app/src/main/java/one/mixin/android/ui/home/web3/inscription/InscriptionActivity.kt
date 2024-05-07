@@ -4,7 +4,6 @@ import one.mixin.android.compose.GlideImage
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
@@ -57,7 +56,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.toastShort
 import one.mixin.android.ui.home.web3.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.util.SystemUIManager
@@ -300,6 +298,8 @@ class InscriptionActivity : AppCompatActivity() {
         val user = data?.getParcelableExtraCompat(ARGS_RESULT,User::class.java)?:return
         toast(user.userId)
         // todo
+        // TransferBottomSheetDialogFragment.newInstance(NftBiometricItem())
+
     }
 
     private val onShareAction = {

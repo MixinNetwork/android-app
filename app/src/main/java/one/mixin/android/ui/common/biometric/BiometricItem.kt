@@ -138,15 +138,10 @@ open class SafeMultisigsBiometricItem(
 
 @Parcelize
 class NftBiometricItem(
-    val requestId: String,
-    val senders: Array<String>,
-    val receivers: Array<String>,
-    val sendersThreshold: Int,
-    val receiversThreshold: Int,
-    val tokenId: String,
-    val action: String,
-    val rawTransaction: String,
-    override val amount: String,
-    override val memo: String?,
-    override val state: String,
-) : BiometricItem(amount, memo, state, null)
+    override var asset: TokenItem?,
+    override val traceId: String,
+    override var amount: String,
+    override var memo: String?,
+    override var state: String,
+    override var reference: String?
+) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
