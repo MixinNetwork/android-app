@@ -62,18 +62,21 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
@@ -839,4 +842,8 @@ class TokenRepository
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
         fun inscriptions() = outputDao.inscriptions()
-    }
+
+        suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<InscriptionItem>? {
+            return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
+        }
+}

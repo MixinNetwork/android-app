@@ -19,6 +19,7 @@ import one.mixin.android.fts.rawSearch
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -291,6 +292,18 @@ class DataProvider {
                 cancellationSignal,
                 callableUser(db, _statement, cancellationSignal),
             )
+        }
+
+        @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
+        suspend fun fuzzyInscription(
+            keyword: String?,
+            db: MixinDatabase,
+            cancellationSignal: CancellationSignal,
+        ): List<InscriptionItem> {
+            val _sql = """
+            """
+            // Todo
+            return emptyList()
         }
 
         @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")

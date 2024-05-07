@@ -33,6 +33,7 @@ import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -106,6 +107,15 @@ class SearchViewModel
             } else {
                 val escapedQuery = query.trim().escapeSql()
                 userRepository.fuzzySearchBots(escapedQuery, cancellationSignal)
+            }
+        }
+
+        suspend fun fuzzyInscription(cancellationSignal: CancellationSignal, query: String?): List<InscriptionItem>? {
+            return if (query.isNullOrBlank()) {
+                null
+            } else {
+                val escapedQuery = query.trim().escapeSql()
+                tokenRepository.fuzzyInscription(escapedQuery, cancellationSignal)
             }
         }
 
@@ -228,4 +238,5 @@ class SearchViewModel
             }.filterNotNull()
 
         suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
-    }
+
+}

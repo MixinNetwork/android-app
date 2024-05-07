@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentCollectiblesBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -20,6 +21,8 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.web3.CollectiblesAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
+import one.mixin.android.ui.search.SearchBotsFragment
+import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import javax.inject.Inject
@@ -70,8 +73,13 @@ class CollectiblesFragment : BaseFragment() {
                 // do nothing
             }
 
-            // Todo
-            searchIb.isVisible = false
+            searchIb.setOnClickListener {
+                activity?.addFragment(
+                    this@CollectiblesFragment,
+                    SearchInscriptionFragment(),
+                    SearchInscriptionFragment.TAG,
+                )
+            }
 
             scanIb.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
