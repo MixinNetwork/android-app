@@ -64,8 +64,8 @@ class SolanaFragment : BaseFragment() {
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
         Web3WalletAdapter(SOLANA_CHAIN_ID).apply {
-            setOnWeb3Click {token->
-                address?.let {address->
+            setOnWeb3Click { token ->
+                address?.let { address ->
                     navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
                 }
             }
@@ -111,8 +111,8 @@ class SolanaFragment : BaseFragment() {
 
     private val sendCallback = fun(list: List<Web3Token>) {
         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
-            setOnClickListener {token->
-                address?.let {add->
+            setOnClickListener { token ->
+                address?.let { add ->
                     navTo(InputAddressFragment.newInstance(add, token, token.findChainToken(tokens)), InputAddressFragment.TAG)
                 }
                 dismissNow()
@@ -149,13 +149,15 @@ class SolanaFragment : BaseFragment() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             this@SolanaFragment.address = address
-            if (address.isBlank()) {
-                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana) {
-                    WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_SOLANA).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+            if (isAdded) {
+                if (address.isBlank()) {
+                    adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Solana)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_solana) {
+                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_SOLANA).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    adapter.address = address
+                    refreshAccount(address)
                 }
-            } else {
-                adapter.address = address
-                refreshAccount(address)
             }
         }
     }

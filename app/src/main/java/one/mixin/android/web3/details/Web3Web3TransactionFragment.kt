@@ -11,6 +11,7 @@ import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -63,6 +64,7 @@ class Web3Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transact
                 avatar.badge.isVisible = true
                 avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
             }
+            feeTv.text = "${transaction.fee.amount.numberFormat8()} ${transaction.fee.symbol}"
             dateTv.text = transaction.createdAt.fullDate()
             statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
