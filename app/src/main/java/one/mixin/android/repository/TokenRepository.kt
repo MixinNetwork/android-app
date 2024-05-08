@@ -62,6 +62,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
@@ -84,6 +85,7 @@ import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -756,11 +758,20 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
+            reference: String?
         ) {
             val snapshotId = data.getSnapshotId
             if (conversationId != "") {
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
+                val category = if (reference != null) {
+                    MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                } else {
+                    MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                }
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, reference?:"", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
+                if (reference != null) {
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, reference, snapshotId))
+                }
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
@@ -851,7 +862,7 @@ class TokenRepository
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
-        fun inscriptions() = outputDao.inscriptions()
+        fun inscriptions(): LiveData<List<SafeInscription>> = outputDao.inscriptions()
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 

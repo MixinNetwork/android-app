@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.util.UUID
@@ -121,7 +123,7 @@ internal constructor(
         tokenRepository.syncAsset(assetId)
     }
 
-    fun inscriptions() = tokenRepository.inscriptions()
+    fun inscriptions(): LiveData<List<SafeInscription>> = tokenRepository.inscriptions()
 
     fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
 

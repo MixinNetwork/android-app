@@ -110,6 +110,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
         rowId: Long,
     ): List<SafeSnapshot>
 
+    @Query("SELECT inscription_hash FROM safe_snapshots WHERE snapshot_id = :snapshotId")
+    suspend fun findHashBySnapshotId(snapshotId: String):String?
+
     @Query("SELECT rowid FROM safe_snapshots WHERE snapshot_id = :snapshotId")
     fun getSnapshotRowId(snapshotId: String): Long?
 

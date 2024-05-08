@@ -11,8 +11,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.HelpLink.INSCRIPTION
+import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionPage
@@ -72,9 +75,19 @@ class InscriptionActivity : AppCompatActivity() {
     }
 
     private val onShareAction = {
-        // Todo
-        toast("Coming soon")
-        Unit
+        val sendIntent = Intent()
+        sendIntent.action = Intent.ACTION_SEND
+        sendIntent.putExtra(
+            Intent.EXTRA_TEXT,
+            "$INSCRIPTION$inscriptionHash"
+        )
+        sendIntent.type = "text/plain"
+        startActivity(
+            Intent.createChooser(
+                sendIntent,
+                resources.getText(R.string.Share),
+            ),
+        )
     }
 }
 

@@ -1,33 +1,30 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.annotation.SuppressLint
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.walletconnect.util.randomBytes
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
-import one.mixin.android.databinding.ItemChatSafeSnapshBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.toHex
+import one.mixin.android.extension.round
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.safe.SafeNft
-import one.mixin.android.vo.showVerifiedOrBot
+import one.mixin.android.vo.safe.SafeInscription
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
+    init {
+        binding.chatContentLayout.round(8)
+    }
+
+    @SuppressLint("SetTextI18n")
     fun bind(
         messageItem: MessageItem,
         isFirst: Boolean,
@@ -59,16 +56,17 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         } else {
             binding.chatName.visibility = View.GONE
         }
-        val safeNft =
+        val safeInscription =
             try {
-                GsonHelper.customGson.fromJson(messageItem.content, SafeNft::class.java)
+                GsonHelper.customGson.fromJson(messageItem.content, SafeInscription::class.java)
             } catch (e: Exception) {
                 null
             }
-        if (safeNft != null) {
-            binding.chatTitleTv.text = safeNft.inscriptionHash
-            binding.chatNumberTv.text = safeNft.amount
-            binding.chatBarcode.setData(safeNft.inscriptionHash)
+        if (safeInscription != null) {
+            binding.chatTitleTv.text = safeInscription.name
+            binding.chatNumberTv.text = "#${safeInscription.sequence}"
+            binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
+            binding.chatBarcode.setData(safeInscription.inscriptionHash)
         }
 
         binding.chatTime.load(
@@ -84,9 +82,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
 
         binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
-                safeNft?.let {
-                    onItemListener.onNftClick(it.inscriptionHash)
-                }
+                onItemListener.onInscriptionClick(messageItem.conversationId, messageItem.messageId, safeInscription?.inscriptionHash, messageItem.snapshotId)
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }

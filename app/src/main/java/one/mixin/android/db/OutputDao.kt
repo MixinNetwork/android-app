@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
+import one.mixin.android.vo.safe.SafeInscription
 
 @Dao
 interface OutputDao : BaseDao<Output> {
@@ -52,10 +52,13 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT * FROM outputs o LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash WHERE i.inscription_hash IS NOT NULL AND o.state = 'unspent' ORDER BY sequence ASC
+        SELECT i.*, ic.* FROM outputs o 
+        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        WHERE i.inscription_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
         """
     )
-    fun inscriptions(): LiveData<List<InscriptionItem>>
+    fun inscriptions(): LiveData<List<SafeInscription>>
 
     @Query("""
         SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash AND state = 'unspent'

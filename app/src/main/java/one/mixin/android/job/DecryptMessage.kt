@@ -114,7 +114,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
-import one.mixin.android.vo.safe.SafeNft
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -327,8 +326,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             processSystemSafeSnapshotMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name) {
             val json = Base64.decode(data.data)
-            val safeNft = gson.fromJson(String(json), SafeNft::class.java)
-            processSystemSafeInscriptionMessage(data, safeNft)
+            val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
+            processSystemSafeInscriptionMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
@@ -1097,20 +1096,19 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
     }
 
-    private fun processSystemSafeInscriptionMessage(data: BlazeMessageData, safeNft: SafeNft) {
-
+    private fun processSystemSafeInscriptionMessage(data: BlazeMessageData, snapshot: SafeSnapshot) {
         val message =
             createMessage(
-                data.messageId, data.conversationId, data.userId, data.category, gson.toJson(safeNft),
-                data.createdAt, data.status,)
+                data.messageId, data.conversationId, data.userId, data.category, snapshot.inscriptionHash ?: "",
+                data.createdAt, data.status, snapshotId = snapshot.snapshotId)
 
         insertMessage(message, data)
-        jobManager.addJobInBackground(SyncInscriptionJob(listOf(safeNft.inscriptionHash)))
+        safeSnapshotDao.insert(snapshot)
+        jobManager.addJobInBackground(SyncInscriptionMessageJob(data.conversationId, data.messageId, snapshot.inscriptionHash, snapshot.snapshotId))
         jobManager.addJobInBackground(SyncOutputJob())
-
-        // if (safeNft.amount.toFloat() > 0) {
-        //     generateNotification(message, data)
-        // }
+        if (snapshot.amount.toFloat() > 0) {
+            generateNotification(message, data)
+        }
     }
 
     private fun processSystemConversationMessage(

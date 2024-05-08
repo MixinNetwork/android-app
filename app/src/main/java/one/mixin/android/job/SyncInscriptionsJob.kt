@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
-class SyncInscriptionJob(val hash: List<String>) : BaseJob(
+class SyncInscriptionsJob(val hash: List<String>) : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).requireNetwork(),
 ) {
     companion object {

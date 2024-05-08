@@ -91,7 +91,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
         mutableStateOf(InscriptionState("","","",""))
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = inscriptionItem) {
         val result = viewModel.loadData(inscriptionHash) ?: return@LaunchedEffect
         state.value = result
     }

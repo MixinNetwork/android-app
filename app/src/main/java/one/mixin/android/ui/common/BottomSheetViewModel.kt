@@ -350,7 +350,7 @@ class BottomSheetViewModel
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction?.state == OutputState.unspent) {
                 Timber.e("Kernel Address Transaction($trace): sync restore")
-                return innerTransaction(rawTransaction.rawTransaction, trace, listOf())
+                return innerTransaction(rawTransaction.rawTransaction, trace, listOf(), reference)
             }
 
             val senderId = Session.getAccountId()!!
@@ -405,7 +405,7 @@ class BottomSheetViewModel
             }
             Timber.e("Kernel Address Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            val innerTransactionResponse = innerTransaction(signResult.raw, trace, listOf())
+            val innerTransactionResponse = innerTransaction(signResult.raw, trace, listOf(), reference)
             Timber.e("Kernel Address Transaction($trace): end")
             return innerTransactionResponse
         }
@@ -429,7 +429,7 @@ class BottomSheetViewModel
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction != null) {
                 Timber.e("Kernel Transaction($trace): sync restore")
-                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds)
+                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds, reference)
             }
             Timber.e("Kernel Transaction($trace): request ghost key")
             val senderIds = listOf(Session.getAccountId()!!)
@@ -498,7 +498,7 @@ class BottomSheetViewModel
             }
             Timber.e("Kernel Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            val innerTransactionResponse = innerTransaction(signResult.raw, trace, receiverIds, isConsolidation)
+            val innerTransactionResponse = innerTransaction(signResult.raw, trace, receiverIds, reference, isConsolidation)
             Timber.e("Kernel Transaction($trace): end")
             return innerTransactionResponse
         }
@@ -507,7 +507,8 @@ class BottomSheetViewModel
             raw: String,
             traceId: String,
             receiverIds: List<String>,
-            isConsolidation: Boolean = false,
+            reference: String?,
+            isConsolidation: Boolean = false
         ): MixinResponse<List<TransactionResponse>> {
             Timber.e("Kernel Transaction($traceId): innerTransaction")
             val transactionRsp =
@@ -533,11 +534,11 @@ class BottomSheetViewModel
                     val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
                     initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
                     Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage $conversationId")
-                    tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId)
+                    tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, reference)
                 }
             } else if (receiverIds.size > 1) {
                 Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage")
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "")
+                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "", reference)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             Timber.e("Kernel Transaction($traceId): innerTransaction end")

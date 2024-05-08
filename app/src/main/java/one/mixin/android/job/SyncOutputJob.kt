@@ -37,7 +37,7 @@ class SyncOutputJob() : BaseJob(
             outputDao.insertUnspentOutputs(outputs)
             outputs.mapNotNull {it.inscriptionHash }.apply {
                 if (isNotEmpty()) {
-                    jobManager.addJobInBackground(SyncInscriptionJob(this))
+                    jobManager.addJobInBackground(SyncInscriptionsJob(this))
                 }
             }
             val list =

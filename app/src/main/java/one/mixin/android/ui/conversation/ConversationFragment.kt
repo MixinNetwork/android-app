@@ -147,6 +147,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -694,8 +695,13 @@ class ConversationFragment() :
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             }
 
-            override fun onNftClick(inscriptionHash: String) {
-                InscriptionActivity.show(requireContext(), inscriptionHash)
+            override fun onInscriptionClick(conversationId: String, messageId: String, inscriptionHash: String?, snapshotId: String?) {
+                if (inscriptionHash == null) {
+                    toast(R.string.Data_loading)
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, messageId, null, snapshotId))
+                } else {
+                    InscriptionActivity.show(requireActivity(), inscriptionHash)
+                }
             }
 
             override fun onUrlLongClick(url: String) {
