@@ -235,13 +235,19 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 step = Step.Loading
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
-                    val priv = viewModel.getTipPriv(requireContext(), pin)
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName())
                     step = Step.Sending
                     val hash = JsSigner.sendTransaction(hex, token?.getChainFromName())
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
+                } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
+                    val tx = JsSigner.signSolanaTransaction(priv, signMessage.data ?: "")
+                    step = Step.Sending
+                    val sig = JsSigner.sendSolanaTransaction(tx)
+                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
-                    val priv = viewModel.getTipPriv(requireContext(), pin)
+                    val priv =viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val hex = JsSigner.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
                 } else {

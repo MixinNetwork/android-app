@@ -1732,6 +1732,11 @@ class WebFragment : BaseFragment() {
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
             val network = obj.getString("network")
+            if (network == JsSigner.JsSignerNetwork.Solana.name) {
+                JsSigner.useSolana()
+            } else {
+                JsSigner.useEvm()
+            }
             when(method) {
                 DAppMethod.REQUESTACCOUNTS -> {
                     onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");")
@@ -1743,7 +1748,13 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNMESSAGE -> {
-                    signMessage(id, obj.getJSONObject("object").toString())
+                    val o = obj.getJSONObject("object")
+                    val data = if (network == JsSigner.JsSignerNetwork.Solana.name) {
+                        o.getString("data")
+                    } else {
+                        o.toString()
+                    }
+                    signMessage(id, data)
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
@@ -1787,6 +1798,12 @@ class WebFragment : BaseFragment() {
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 
+                DAppMethod.SIGNRAWTRANSACTION -> {
+                    val o = obj.getJSONObject("object")
+                    val raw = o.getString("raw")
+                    signRawTransaction(id, raw)
+                }
+
                 else -> {
                     Timber.e("json $json")
                 }
@@ -1798,6 +1815,13 @@ class WebFragment : BaseFragment() {
             wcEthereumTransaction: WCEthereumTransaction,
         ) {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
+        }
+
+        private fun signRawTransaction(
+            callbackId: Long,
+            raw: String,
+        ) {
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw))
         }
 
         private fun signMessage(callbackId: Long, data: String) {

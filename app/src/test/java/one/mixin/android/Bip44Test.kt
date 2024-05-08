@@ -4,11 +4,11 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.junit.Test
-import org.sol4k.Base58.decode
 import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
+import org.sol4k.CompiledTransaction
 import org.sol4k.Transaction
 import org.sol4k.instruction.TransferInstruction
 import org.web3j.crypto.Bip32ECKeyPair
@@ -77,7 +77,7 @@ class Bip44Test {
             sender.publicKey
         )
         transaction.sign(sender)
-        val signature: String = connection.sendTransaction(transaction)
+        val signature: String = connection.sendTransaction(transaction.serialize())
         println("Transaction Signature: $signature")
     }
 }

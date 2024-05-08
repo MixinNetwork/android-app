@@ -109,11 +109,13 @@ class WalletConnectBottomSheetViewModel
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         fun sendTransaction(
-            transaction: org.sol4k.Transaction
+            transaction: org.sol4k.CompiledTransaction,
+            sessionRequest: Wallet.Model.SessionRequest,
         ): String? {
             val connection = Connection(RpcUrl.MAINNNET)
-            val signature: String = connection.sendTransaction(transaction)
+            val signature: String = connection.sendTransaction(transaction.serialize())
             Timber.d("signature $signature")
+            WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
             return null
         }
 
