@@ -10,13 +10,13 @@ import one.mixin.android.vo.safe.SafeInscription
 
 @Dao
 interface OutputDao : BaseDao<Output> {
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY sequence ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash IS NULL ORDER BY sequence ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(
         limit: Int,
         asset: String,
     ): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash IS NULL ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(
         limit: Int,
         asset: String,
@@ -61,13 +61,13 @@ interface OutputDao : BaseDao<Output> {
     fun inscriptions(): LiveData<List<SafeInscription>>
 
     @Query("""
-        SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash AND state = 'unspent'
+        SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash AND state = 'unspent'
     """)
     suspend fun findUnspentOutputByHash(inscriptionHash: String): Output?
 
     // Get the latest inscription, inscription UTXO cannot be separated
     @Query("""
-        SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash ORDER BY sequence DESC LIMIT 1
+        SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash ORDER BY sequence DESC LIMIT 1
     """)
     suspend fun findOutputByHash(inscriptionHash: String): Output?
 
