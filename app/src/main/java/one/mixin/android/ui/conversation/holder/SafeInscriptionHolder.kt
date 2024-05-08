@@ -10,7 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
+import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -21,7 +21,7 @@ import one.mixin.android.vo.safe.SafeInscription
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
     init {
-        binding.chatContentLayout.round(8)
+        binding.chatInscriptionIv.roundLeftOrRight(20f, true, false)
     }
 
     @SuppressLint("SetTextI18n")
@@ -66,6 +66,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
             binding.chatTitleTv.text = safeInscription.name
             binding.chatNumberTv.text = "#${safeInscription.sequence}"
             binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
+            binding.chatInscriptionIcon.loadImage(safeInscription.iconURL, R.drawable.ic_inscription_icon)
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
         }
 

@@ -52,7 +52,8 @@ class SyncInscriptionMessageJob(val conversationId:String, val messageId: String
                     inscription.sequence,
                     inscriptionCollection.name,
                     inscription.contentType,
-                    inscription.contentURL
+                    inscription.contentURL,
+                    inscriptionCollection.iconURL
                 )
             ), messageId
         )

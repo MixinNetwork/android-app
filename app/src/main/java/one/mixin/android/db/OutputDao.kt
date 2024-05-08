@@ -65,8 +65,9 @@ interface OutputDao : BaseDao<Output> {
     """)
     suspend fun findUnspentOutputByHash(inscriptionHash: String): Output?
 
+    // Get the latest inscription, inscription UTXO cannot be separated
     @Query("""
-        SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash 
+        SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash ORDER BY sequence DESC LIMIT 1
     """)
     suspend fun findOutputByHash(inscriptionHash: String): Output?
 }

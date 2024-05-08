@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
@@ -84,7 +85,8 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
         )
     )
 
-    val iconUrl = inscriptionItem.contentURL
+    val contentURL = inscriptionItem.contentURL
+    val iconURL = inscriptionItem.iconURL
     val idTitle = "#${inscriptionItem.sequence}"
 
     val state = remember {
@@ -97,12 +99,13 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
     }
     Box(Modifier.background(Color(0xFF000000))) {
         GlideImage(
-            data = iconUrl, modifier = Modifier
+            data = contentURL, modifier = Modifier
                 .fillMaxSize()
-                .blur(30.dp)
                 .graphicsLayer {
                     alpha = 0.5f
-                }, placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription), contentScale = ContentScale.Crop
+                }
+                .blur(30.dp)
+                .shimmer(shimmerInstance), placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription), contentScale = ContentScale.Crop
         )
         Column(
             modifier = Modifier.systemGesturesPadding()
@@ -129,7 +132,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                         .aspectRatio(1f)
                 ) {
                     GlideImage(
-                        data = iconUrl,
+                        data = contentURL,
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
@@ -200,11 +203,22 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
 
 
                 Box(modifier = Modifier.height(20.dp))
-                Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
-                Box(modifier = Modifier.height(8.dp))
-                Text(text = state.value.tokenTotal, fontSize = 16.sp, color = Color.White)
-                Box(modifier = Modifier.height(5.dp))
-                Text(text = state.value.tokenValue, fontSize = 14.sp, color = Color(0xFF999999))
+                Box(Modifier.fillMaxWidth()) {
+                    Column {
+                        Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
+                        Box(modifier = Modifier.height(8.dp))
+                        Text(text = state.value.tokenTotal, fontSize = 16.sp, color = Color.White)
+                        Box(modifier = Modifier.height(5.dp))
+                        Text(text = state.value.tokenValue, fontSize = 14.sp, color = Color(0xFF999999))
+                    }
+
+                    // GlideImage(
+                    //     data = iconURL,
+                    //     modifier = Modifier.align(Alignment.CenterEnd),
+                    //     placeHolderPainter = painterResource(id = R.drawable.ic_inscription_icon),
+                    // )
+                }
+
 
                 Box(modifier = Modifier.height(70.dp))
             }

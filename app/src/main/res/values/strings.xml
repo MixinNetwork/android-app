@@ -1505,6 +1505,5 @@
     <string name="ID">ID</string>
     <string name="COLLECTION">COLLECTION</string>
     <string name="NFT_TOKEN">NFT TOKEN</string>
-    <string name="CREATOR">CREATOR</string>
     <string name="Collectible">Collectible</string>
 </resources>

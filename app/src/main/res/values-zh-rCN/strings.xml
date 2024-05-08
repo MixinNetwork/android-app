@@ -1469,5 +1469,5 @@
     <string name="NO_COLLECTIBLES">没有藏品</string>
     <string name="COLLECTION">藏品</string>
     <string name="NFT_TOKEN">NFT 代币</string>
-    <string name="CREATOR">创建者</string>
+    <string name="Collectible">藏品</string>
 </resources>

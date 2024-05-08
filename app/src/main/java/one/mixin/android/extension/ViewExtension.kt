@@ -267,6 +267,35 @@ fun View.roundTopOrBottom(
     this.clipToOutline = true
 }
 
+fun View.roundLeftOrRight(
+    radius: Float,
+    left: Boolean,
+    right: Boolean,
+) {
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                val l =
+                    if (!left) {
+                        -radius.toInt()
+                    } else {
+                        0
+                    }
+                val r =
+                    if (!right) {
+                        (width + radius).toInt()
+                    } else {
+                        width
+                    }
+                outline.setRoundRect(l, 0, r, height, radius)
+            }
+        }
+    this.clipToOutline = true
+}
+
 fun View.circularReveal() {
     val centerX = width / 2
     val centerY: Int = height / 2
