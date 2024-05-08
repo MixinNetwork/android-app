@@ -3,7 +3,6 @@ package org.sol4k
 import okio.Buffer
 import org.sol4k.CompiledTransaction.Companion.PUBLIC_KEY_LENGTH
 import org.sol4k.instruction.CompiledInstruction
-import timber.log.Timber
 
 data class Message(
     val version: MessageVersion,
