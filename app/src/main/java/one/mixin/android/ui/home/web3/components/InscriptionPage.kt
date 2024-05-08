@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.ShimmerTheme
 import com.valentinilk.shimmer.rememberShimmer
@@ -85,8 +86,8 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
         )
     )
 
-    val contentURL = inscriptionItem.contentURL
-    val iconURL = inscriptionItem.iconURL
+    val contentUrl = inscriptionItem.contentURL
+    val iconUrl = inscriptionItem.iconURL
     val idTitle = "#${inscriptionItem.sequence}"
 
     val state = remember {
@@ -98,14 +99,16 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
         state.value = result
     }
     Box(Modifier.background(Color(0xFF000000))) {
-        GlideImage(
-            data = contentURL, modifier = Modifier
-                .fillMaxSize()
+        AsyncImage(
+            model = contentUrl, contentDescription = null,
+            modifier = Modifier
+                .fillMaxHeight()
                 .graphicsLayer {
                     alpha = 0.5f
                 }
-                .blur(30.dp)
-                .shimmer(shimmerInstance), placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription), contentScale = ContentScale.Crop
+                .blur(30.dp),
+            placeholder = painterResource(R.drawable.ic_default_inscription),
+            contentScale = ContentScale.Crop
         )
         Column(
             modifier = Modifier.systemGesturesPadding()
@@ -132,7 +135,8 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                         .aspectRatio(1f)
                 ) {
                     GlideImage(
-                        data = contentURL,
+                        data = contentUrl,
+                        contentDescription = null,
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
@@ -212,11 +216,11 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                         Text(text = state.value.tokenValue, fontSize = 14.sp, color = Color(0xFF999999))
                     }
 
-                    // GlideImage(
-                    //     data = iconURL,
-                    //     modifier = Modifier.align(Alignment.CenterEnd),
-                    //     placeHolderPainter = painterResource(id = R.drawable.ic_inscription_icon),
-                    // )
+                    AsyncImage(
+                        model = iconUrl, contentDescription = null,
+                        modifier = Modifier.align(Alignment.CenterEnd).width(20.dp).height(20.dp).clip(RoundedCornerShape(4.dp)),
+                        placeholder = painterResource(R.drawable.ic_inscription_icon),
+                    )
                 }
 
 
