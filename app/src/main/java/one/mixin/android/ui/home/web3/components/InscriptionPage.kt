@@ -140,8 +140,8 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .shimmer(shimmerInstance),
+                            .shimmer(shimmerInstance)
+                            .clip(RoundedCornerShape(8.dp)),
                         placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
                     )
                 }

@@ -79,8 +79,6 @@ class CollectiblesFragment : BaseFragment() {
                     SearchInscriptionFragment.TAG,
                 )
             }
-            // todo
-            searchIb.isVisible = false
 
             scanIb.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->

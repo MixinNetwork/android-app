@@ -873,6 +873,7 @@
     <string name="search_hint">assets, contacts and messages</string>
     <string name="SEARCH_MESSAGES">SEARCH MESSAGES</string>
     <string name="search_placeholder_asset">Name, Symbol</string>
+    <string name="search_placeholder_inscription">Search name</string>
     <string name="search_placeholder_number">Search Mixin ID or phone number: </string>
     <plurals name="search_related_message">
         <item quantity="one">%1$d related message</item>

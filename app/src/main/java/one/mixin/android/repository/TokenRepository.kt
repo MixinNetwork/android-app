@@ -787,9 +787,9 @@ class TokenRepository
             memo: String?,
             type: SafeSnapshotType,
             withdrawal: SafeWithdrawal? = null,
+            reference: String? = null,
         ) {
-            // todo
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, null)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
             safeSnapshotDao.insert(snapshot)
         }
 
@@ -866,7 +866,7 @@ class TokenRepository
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 
-        suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<InscriptionItem>? {
+        suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<SafeInscription> {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }
 }

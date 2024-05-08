@@ -7,6 +7,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -24,10 +25,12 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchInscriptionBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.CollectiblesAdapter
 import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
@@ -73,6 +76,9 @@ class SearchInscriptionFragment : BaseFragment(R.layout.fragment_search_inscript
     }
 
     private val binding by viewBinding(FragmentSearchInscriptionBinding::bind)
+    private val padding: Int by lazy {
+        15.dp
+    }
 
     override fun onViewCreated(
         view: View,
@@ -84,8 +90,10 @@ class SearchInscriptionFragment : BaseFragment(R.layout.fragment_search_inscript
                 (requireActivity() as MainActivity).closeSearch()
             }
         }
-        binding.searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+        binding.searchRv.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.searchRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true))
         binding.searchRv.adapter = searchAdapter
+
         binding.backIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
@@ -158,7 +166,7 @@ class SearchInscriptionFragment : BaseFragment(R.layout.fragment_search_inscript
             } else {
                 val cancellationSignal = CancellationSignal()
                 val inscriptions = searchViewModel.fuzzyInscription(cancellationSignal, keyword)
-                // todo load data
+                searchAdapter.list = inscriptions ?: emptyList()
                 if (searchAdapter.itemCount <= 0) {
                     binding.searchRv.isVisible = false
                     binding.empty.isVisible = true

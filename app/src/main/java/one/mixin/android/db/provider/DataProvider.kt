@@ -23,6 +23,7 @@ import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.TokenItem
 
 @SuppressLint("RestrictedApi")
@@ -300,11 +301,26 @@ class DataProvider {
             keyword: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<InscriptionItem> {
+        ): List<SafeInscription> {
             val _sql = """
-                
+            SELECT `i`.`collection_hash`, `i`.`inscription_hash`, `i`.`sequence`, `i`.`content_type`, `i`.`content_url`, `ic`.`collection_hash`, `ic`.`name`, `ic`.`icon_url` FROM outputs o 
+            LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+            LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+            WHERE i.inscription_hash IS NOT NULL AND o.state = 'unspent' AND (`ic`.name LIKE '%' || ? || '%'  ESCAPE '\') 
             """
-            return emptyList()
+            val _statement = RoomSQLiteQuery.acquire(_sql, 1)
+            val _argIndex = 1
+            if (keyword == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, keyword)
+            }
+            return CoroutinesRoom.execute(
+                db,
+                false,
+                cancellationSignal,
+                callableSafeInscription(db, _statement, cancellationSignal),
+            )
         }
 
         @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
