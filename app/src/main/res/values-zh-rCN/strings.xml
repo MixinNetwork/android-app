@@ -1470,6 +1470,6 @@
     <string name="From_address_desc">从其他钱包或交易所转入</string>
     <string name="NO_COLLECTIBLES">没有藏品</string>
     <string name="COLLECTION">藏品</string>
-    <string name="NFT_TOKEN">NFT 代币</string>
-    <string name="Collectible">藏品</string>
+    <string name="Collection">藏品</string>
+    <string name="inscription_Hash">藏品 Hash</string>
 </resources>

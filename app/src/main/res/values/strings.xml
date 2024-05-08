@@ -1506,6 +1506,8 @@
     <string name="HASH">HASH</string>
     <string name="ID">ID</string>
     <string name="COLLECTION">COLLECTION</string>
+    <string name="Collection">Collection</string>
     <string name="NFT_TOKEN">NFT TOKEN</string>
     <string name="Collectible">Collectible</string>
+    <string name="inscription_Hash">Inscription Hash</string>
 </resources>

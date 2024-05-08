@@ -16,6 +16,10 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
 
     var pos: Int = START_BOTTOM
 
+    init {
+        clipToPadding = false
+    }
+
     override fun onMeasure(
         widthMeasureSpec: Int,
         heightMeasureSpec: Int,

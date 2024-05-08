@@ -5,13 +5,18 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
 import android.view.View
+import android.widget.RelativeLayout
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.round
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
@@ -22,6 +27,10 @@ import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
+
+    init {
+        binding.symbolIv.round(20)
+    }
 
     open fun bind(
         snapshot: SnapshotItem,
@@ -88,19 +97,37 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
         }
 
-        binding.value.text =
+        binding.value.text = if (snapshot.inscriptionHash.isNullOrEmpty()) {
             if (isPositive) {
                 "+${snapshot.amount.numberFormat()}"
             } else {
                 snapshot.amount.numberFormat()
             }
+        } else {
+            if (isPositive) {
+                "+1"
+            } else {
+                "-1"
+            }
+        }
         binding.value.textColorResource =
             when {
                 snapshot.type == SafeSnapshotType.pending.name -> R.color.wallet_pending_text_color
                 isPositive -> R.color.wallet_green
                 else -> R.color.wallet_pink
             }
-        binding.symbolTv.text = snapshot.assetSymbol
+
+        if (snapshot.inscriptionHash.isNullOrBlank()) {
+            binding.symbolIv.isVisible = false
+            binding.symbolTv.isVisible = true
+            (binding.value.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, R.id.symbol_tv)
+            binding.symbolTv.text = snapshot.assetSymbol
+        } else {
+            binding.symbolIv.isVisible = true
+            binding.symbolTv.isVisible = false
+            (binding.value.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, R.id.symbol_iv)
+            binding.symbolIv.loadImage(snapshot.contentUrl, R.drawable.ic_default_inscription)
+        }
 
         itemView.setOnClickListener {
             listener?.onNormalItemClick(snapshot)

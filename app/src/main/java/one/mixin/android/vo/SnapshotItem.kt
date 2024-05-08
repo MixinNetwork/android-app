@@ -81,6 +81,27 @@ data class SnapshotItem(
     @SerializedName("label")
     @ColumnInfo(name = "label")
     var label: String?,
+    @SerializedName("inscription_hash")
+    @ColumnInfo(name = "inscription_hash")
+    val inscriptionHash: String?,
+    @SerializedName("label")
+    @ColumnInfo(name = "collection_hash")
+    val collectionHash: String?,
+    @SerializedName("name")
+    @ColumnInfo(name = "name")
+    val name: String?,
+    @SerializedName("sequence")
+    @ColumnInfo(name = "sequence")
+    val sequence: Long?,
+    @SerializedName("content_type")
+    @ColumnInfo(name = "content_type")
+    val contentType: String?,
+    @SerializedName("content_url")
+    @ColumnInfo(name = "content_url")
+    val contentUrl: String?,
+    @SerializedName("icon_url")
+    @ColumnInfo(name = "icon_url")
+    val iconUrl: String?,
 ) : Parcelable {
     val formatMemo: FormatMemo?
         get() {
@@ -106,33 +127,6 @@ data class SnapshotItem(
                 ) =
                     oldItem == newItem
             }
-
-        fun fromSnapshot(
-            snapshot: SafeSnapshot,
-            avatarUrl: String? = null,
-            symbol: String? = null,
-        ) =
-            SnapshotItem(
-                snapshotId = snapshot.snapshotId,
-                type = snapshot.type,
-                assetId = snapshot.assetId,
-                amount = snapshot.amount,
-                createdAt = snapshot.createdAt,
-                opponentId = snapshot.opponentId,
-                opponentFullName = null,
-                transactionHash = snapshot.transactionHash,
-                memo = snapshot.memo,
-                assetSymbol = symbol,
-                confirmations = snapshot.confirmations,
-                avatarUrl = avatarUrl,
-                assetConfirmations = 0,
-                traceId = snapshot.traceId,
-                openingBalance = snapshot.openingBalance,
-                closingBalance = snapshot.closingBalance,
-                deposit = snapshot.deposit,
-                withdrawal = snapshot.withdrawal,
-                label = null,
-            )
     }
 
     fun simulateType(): SafeSnapshotType =
