@@ -4,7 +4,6 @@ import android.util.LruCache
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
@@ -12,7 +11,6 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Connection
@@ -34,11 +32,14 @@ import java.math.BigInteger
 
 object JsSigner {
 
+    sealed class JsSignerNetwork(val name: String) {
+        data object Ethereum: JsSignerNetwork("ethereum")
+        data object Solana: JsSignerNetwork("solana")
+    }
+
     private const val TAG = "JsSigner"
 
     private var web3jPool = LruCache<Chain, Web3j>(3)
-
-    private val gson = GsonHelper.customGson
 
     private fun getWeb3j(chain: Chain): Web3j {
         val exists = web3jPool[chain]
@@ -63,18 +64,18 @@ object JsSigner {
     fun useEvm() {
         address = evmAddress
         currentChain = Chain.Ethereum
-        currentNetwork = "ethereum"
+        currentNetwork = JsSignerNetwork.Ethereum.name
     }
     fun useSolana() {
         address = solanaAddress
         currentChain = Chain.Solana
-        currentNetwork = "solana"
+        currentNetwork =JsSignerNetwork.Solana.name
     }
     var currentChain: Chain = Chain.Ethereum
         private set
 
     // now only ETH and SOL
-    var currentNetwork = "ethereum"
+    var currentNetwork = JsSignerNetwork.Ethereum.name
 
     suspend fun init() {
         evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
@@ -83,7 +84,7 @@ object JsSigner {
     }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {
-        currentNetwork = "ethereum"
+        currentNetwork = JsSignerNetwork.Ethereum.name
         return when (switchChain.chainId) {
             Chain.Ethereum.hexReference-> {
                 currentChain = Chain.Ethereum
@@ -115,7 +116,7 @@ object JsSigner {
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana
-                currentNetwork = "solana"
+                currentNetwork = JsSignerNetwork.Solana.name
                 Result.success(Chain.Solana.name)
             }
             else -> {

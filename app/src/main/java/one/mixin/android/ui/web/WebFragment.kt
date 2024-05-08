@@ -1732,7 +1732,7 @@ class WebFragment : BaseFragment() {
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
             val network = obj.getString("network")
-            if (network == "solana") {
+            if (network == JsSigner.JsSignerNetwork.Solana.name) {
                 JsSigner.useSolana()
             } else {
                 JsSigner.useEvm()
@@ -1749,7 +1749,7 @@ class WebFragment : BaseFragment() {
 
                 DAppMethod.SIGNMESSAGE -> {
                     val o = obj.getJSONObject("object")
-                    val data = if (network == "solana") {
+                    val data = if (network == JsSigner.JsSignerNetwork.Solana.name) {
                         o.getString("data")
                     } else {
                         o.toString()
