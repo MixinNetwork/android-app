@@ -70,4 +70,9 @@ interface OutputDao : BaseDao<Output> {
         SELECT * FROM outputs WHERE inscription_hash =:inscriptionHash ORDER BY sequence DESC LIMIT 1
     """)
     suspend fun findOutputByHash(inscriptionHash: String): Output?
+
+    @Query("""
+        SELECT DISTINCT inscription_hash FROM outputs WHERE inscription_hash IS NOT NULL AND state = 'unspent' 
+    """)
+    suspend fun findUnspentInscriptionHash(): List<String>
 }

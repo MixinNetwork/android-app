@@ -84,6 +84,7 @@ object Constants {
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT = "pref_migration_transcript_attachment"
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
+            const val PREF_MIGRATION_INSCRIPTION = "pref_migration_inscription"
         }
 
         object ChainAddress {
