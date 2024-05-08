@@ -1,7 +1,7 @@
 package org.sol4k
 
 import okio.Buffer
-import org.sol4k.CompiledTransaction.Companion.PUBLIC_KEY_LENGTH
+import org.sol4k.VersionedTransaction.Companion.PUBLIC_KEY_LENGTH
 import org.sol4k.instruction.CompiledInstruction
 
 data class Message(

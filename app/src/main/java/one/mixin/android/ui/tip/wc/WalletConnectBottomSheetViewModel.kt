@@ -109,7 +109,7 @@ class WalletConnectBottomSheetViewModel
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         fun sendTransaction(
-            transaction: org.sol4k.CompiledTransaction,
+            transaction: org.sol4k.VersionedTransaction,
             sessionRequest: Wallet.Model.SessionRequest,
         ): String? {
             val connection = Connection(RpcUrl.MAINNNET)

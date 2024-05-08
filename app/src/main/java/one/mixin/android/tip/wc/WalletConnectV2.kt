@@ -425,7 +425,7 @@ object WalletConnectV2 : WalletConnect() {
             val holder = Keypair.fromSecretKey(priv)
             val conn = Connection(RpcUrl.MAINNNET)
             val blockhash = conn.getLatestBlockhash()
-            val tx = org.sol4k.CompiledTransaction.from(signMessage.transaction)
+            val tx = org.sol4k.VersionedTransaction.from(signMessage.transaction)
             tx.message.recentBlockhash = blockhash
             tx.sign(holder)
             return tx

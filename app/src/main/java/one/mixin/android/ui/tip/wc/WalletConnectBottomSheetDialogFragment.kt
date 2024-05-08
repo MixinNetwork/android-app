@@ -67,7 +67,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import org.sol4k.CompiledTransaction
+import org.sol4k.VersionedTransaction
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -361,7 +361,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        if (signedTransactionData is CompiledTransaction) {
+                                        if (signedTransactionData is VersionedTransaction) {
                                             viewModel.sendTransaction(signedTransactionData, sessionRequest)
                                         }  else {
                                             viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
