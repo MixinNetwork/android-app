@@ -182,7 +182,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
-import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity

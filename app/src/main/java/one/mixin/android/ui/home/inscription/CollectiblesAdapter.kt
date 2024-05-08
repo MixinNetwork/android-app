@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3
+package one.mixin.android.ui.home.inscription
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

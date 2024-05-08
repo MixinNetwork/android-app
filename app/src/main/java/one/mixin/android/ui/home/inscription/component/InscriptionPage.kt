@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.components
+package one.mixin.android.ui.home.inscription.component
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -53,7 +53,8 @@ import one.mixin.android.R
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
-import one.mixin.android.web3.compose.Barcode
+import one.mixin.android.inscription.compose.Barcode
+import one.mixin.android.ui.home.web3.components.InscriptionState
 
 @Composable
 fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAction: () -> Unit) {

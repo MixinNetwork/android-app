@@ -1,4 +1,4 @@
-package one.mixin.android.web3.compose
+package one.mixin.android.inscription.compose
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box

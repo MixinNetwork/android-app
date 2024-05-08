@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.inscription
+package one.mixin.android.ui.home.inscription
 
 import android.content.Context
 import android.content.Intent
@@ -7,23 +7,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
-import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
-import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.components.InscriptionPage
-import one.mixin.android.ui.home.web3.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.home.inscription.component.InscriptionPage
+import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
 class InscriptionActivity : AppCompatActivity() {

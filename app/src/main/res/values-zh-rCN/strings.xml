@@ -58,6 +58,7 @@
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_transcript_message">分享一个聊天记录</string>
     <string name="alert_key_contact_transfer_message">发送一笔转账</string>
+    <string name="alert_key_contact_inscription_message">发送一个藏品</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
     <string name="alert_key_group_audio_invite_message">%1$s邀请你进行语音通话</string>
     <string name="alert_key_group_audio_message">%1$s发送一条语音</string>

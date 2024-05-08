@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.inscription
+package one.mixin.android.ui.home.inscription
 
 import android.app.Activity
 import android.content.Context

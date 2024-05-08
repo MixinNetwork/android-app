@@ -8,8 +8,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,8 +30,8 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.home.web3.CollectiblesAdapter
-import one.mixin.android.ui.home.web3.inscription.InscriptionActivity
+import one.mixin.android.ui.home.inscription.CollectiblesAdapter
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
