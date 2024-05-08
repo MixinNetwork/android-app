@@ -25,11 +25,12 @@ import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
-import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import org.sol4k.Connection
 import org.sol4k.Keypair
+import org.sol4k.RpcUrl
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -422,15 +423,12 @@ object WalletConnectV2 : WalletConnect() {
             }
         } else if (signMessage is WcSolanaTransaction) {
             val holder = Keypair.fromSecretKey(priv)
-            val transaction = signMessage.toTransaction()
-            Timber.e("${signMessage.feePayer} address ${holder.publicKey.toBase58()}")
-            transaction.sign(holder)
-
-            // val solana = com.solana.transaction.Transaction.from(signMessage.transaction.decodeBase64())
-            // Timber.e(signMessage.transaction)
-            // Timber.e("isLegacyMessage:${solana.message is LegacyMessage} isVersionedMessage: ${solana.message is VersionedMessage}")
-
-            return transaction
+            val conn = Connection(RpcUrl.MAINNNET)
+            val blockhash = conn.getLatestBlockhash()
+            val tx = org.sol4k.CompiledTransaction.from(signMessage.transaction)
+            tx.message.recentBlockhash = blockhash
+            tx.sign(holder)
+            return tx
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
             val message = signMessage.message.decodeBase58()
@@ -639,6 +637,14 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG sendTransaction $transactionHash")
             approveRequestInternal(transactionHash, sessionRequest)
         }
+    }
+
+    fun approveSolanaTransaction(
+        signature: String,
+        sessionRequest: Wallet.Model.SessionRequest,
+    ) {
+        val wcSig = WcSignature("", signature)
+        approveRequestInternal(gson.toJson(wcSig), sessionRequest)
     }
 
     private fun waitActionCheckError(action: (CountDownLatch) -> String?) {
