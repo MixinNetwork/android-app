@@ -14,7 +14,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -423,8 +422,6 @@ object WalletConnectV2 : WalletConnect() {
                 }
             }
         } else if (signMessage is WcSolanaTransaction) {
-            val s = gson.toJson(signMessage)
-            Timber.d("$TAG signMessage $s")
             val holder = Keypair.fromSecretKey(priv)
             val conn = Connection(RpcUrl.MAINNNET)
             val blockhash = conn.getLatestBlockhash()
