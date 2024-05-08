@@ -8,7 +8,7 @@
     android:focusable="true"
     android:background="@drawable/bg_inscription">
 
-    <FrameLayout
+    <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/inscription"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -17,7 +17,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintDimensionRatio="1:1"
-        tools:duration="800">
+        app:shimmer_base_alpha="1"
+        app:shimmer_highlight_alpha="0.3"
+        app:shimmer_duration="1500">
 
         <ImageView
             android:id="@+id/inscription_iv"
@@ -28,7 +30,7 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default_inscription" />
 
-    </FrameLayout>
+    </com.facebook.shimmer.ShimmerFrameLayout>
 
     <TextView
         android:id="@+id/title"

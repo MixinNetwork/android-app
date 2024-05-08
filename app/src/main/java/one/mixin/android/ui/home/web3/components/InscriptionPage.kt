@@ -62,7 +62,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
         shimmerBounds = ShimmerBounds.View, theme = ShimmerTheme(
             animationSpec = infiniteRepeatable(
                 animation = shimmerSpec(
-                    durationMillis = 800,
+                    durationMillis = 1_500,
                     easing = LinearEasing,
                     delayMillis = 1_500,
                 ),
@@ -72,7 +72,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
             rotation = 15.0f,
             shaderColors = listOf(
                 Color.Unspecified.copy(alpha = 1.0f),
-                Color.Unspecified.copy(alpha = 0.75f),
+                Color.Unspecified.copy(alpha = 0.7f),
                 Color.Unspecified.copy(alpha = 1.0f),
             ),
             shaderColorStops = listOf(

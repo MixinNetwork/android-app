@@ -85,7 +85,9 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                tools:duration="800">
+                app:shimmer_base_alpha="1"
+                app:shimmer_highlight_alpha="0.3"
+                app:shimmer_duration="1500">
 
                 <ImageView
                     android:id="@+id/chat_inscription_iv"
