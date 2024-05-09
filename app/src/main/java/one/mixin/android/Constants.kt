@@ -29,6 +29,7 @@ object Constants {
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
         const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
+        const val INSCRIPTION = "https://mixin.space/inscriptions/"
     }
 
     object Tip {
@@ -83,6 +84,7 @@ object Constants {
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT = "pref_migration_transcript_attachment"
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
+            const val PREF_MIGRATION_INSCRIPTION = "pref_migration_inscription"
         }
 
         object ChainAddress {
@@ -131,7 +133,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 53
+        const val CURRENT_VERSION = 54
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

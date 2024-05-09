@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.Outline
+import android.graphics.Path
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
@@ -17,6 +18,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewOutlineProvider
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
@@ -45,7 +47,9 @@ import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.lang.reflect.Field
+import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.sin
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
@@ -234,6 +238,35 @@ fun View.round(radius: Float) {
     this.clipToOutline = true
 }
 
+fun View.hexagonal() {
+    this.outlineProvider = object : ViewOutlineProvider() {
+        override fun getOutline(
+            view: View,
+            outline: Outline,
+        ) {
+            val width = view.width
+            val height = view.height
+            val hexagonPath = Path()
+            val radius = width.coerceAtMost(height) / 2.toFloat()
+            val centerX = width / 2.toFloat()
+            val centerY = height / 2.toFloat()
+
+            hexagonPath.moveTo(centerX + radius, centerY)
+
+            for (i in 1 until 6) {
+                val angle = 2.0 * Math.PI / 6 * i
+                val x = (centerX + radius * cos(angle)).toFloat()
+                val y = (centerY + radius * sin(angle)).toFloat()
+                hexagonPath.lineTo(x, y)
+            }
+
+            hexagonPath.close()
+            outline.setConvexPath(hexagonPath)
+        }
+    }
+    this.clipToOutline = true
+}
+
 fun View.round(radius: Int) {
     round(radius.toFloat())
 }
@@ -262,6 +295,35 @@ fun View.roundTopOrBottom(
                         height
                     }
                 outline.setRoundRect(0, t, view.width, b, radius)
+            }
+        }
+    this.clipToOutline = true
+}
+
+fun View.roundLeftOrRight(
+    radius: Float,
+    left: Boolean,
+    right: Boolean,
+) {
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                val l =
+                    if (!left) {
+                        -radius.toInt()
+                    } else {
+                        0
+                    }
+                val r =
+                    if (!right) {
+                        (width + radius).toInt()
+                    } else {
+                        width
+                    }
+                outline.setRoundRect(l, 0, r, height, radius)
             }
         }
     this.clipToOutline = true
@@ -468,7 +530,7 @@ var View.backgroundResource: Int
     get() = error("Property does not have a getter")
     set(v) = setBackgroundResource(v)
 
-var ViewGroup.MarginLayoutParams.margin: Int
+var MarginLayoutParams.margin: Int
     @Deprecated("Property does not have a getter")
     get() = error("Property does not have a getter")
     set(v) {

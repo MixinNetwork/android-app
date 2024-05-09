@@ -324,6 +324,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val json = Base64.decode(data.data)
             val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
             processSystemSafeSnapshotMessage(data, systemSnapshot)
+        } else if (data.category == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name) {
+            val json = Base64.decode(data.data)
+            val systemSnapshot = gson.fromJson(String(json), SafeSnapshot::class.java)
+            processSystemSafeInscriptionMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
@@ -1087,6 +1091,21 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
 
+        if (snapshot.amount.toFloat() > 0) {
+            generateNotification(message, data)
+        }
+    }
+
+    private fun processSystemSafeInscriptionMessage(data: BlazeMessageData, snapshot: SafeSnapshot) {
+        val message =
+            createMessage(
+                data.messageId, data.conversationId, data.userId, data.category, snapshot.inscriptionHash ?: "",
+                data.createdAt, data.status, snapshotId = snapshot.snapshotId)
+
+        insertMessage(message, data)
+        safeSnapshotDao.insert(snapshot)
+        jobManager.addJobInBackground(SyncInscriptionMessageJob(data.conversationId, data.messageId, snapshot.inscriptionHash, snapshot.snapshotId))
+        jobManager.addJobInBackground(SyncOutputJob())
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
         }

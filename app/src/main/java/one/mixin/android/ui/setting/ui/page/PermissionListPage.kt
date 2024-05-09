@@ -31,12 +31,12 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PermissionListFragment
 import one.mixin.android.ui.setting.SettingViewModel
-import one.mixin.android.ui.setting.ui.compose.IndeterminateProgressDialog
-import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.SettingTile
-import one.mixin.android.ui.setting.ui.compose.rememberComposeScope
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.IndeterminateProgressDialog
+import one.mixin.android.compose.MixinAlertDialog
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.rememberComposeScope
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 
 @Composable

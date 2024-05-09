@@ -62,7 +62,6 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.web3.js.DAppMethod
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -148,11 +147,12 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.web3.convertWcLink
+import one.mixin.android.web3.js.DAppMethod
 import one.mixin.android.web3.js.JsInjectorClient
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SwitchChain
-import one.mixin.android.web3.convertWcLink
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView

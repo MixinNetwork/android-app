@@ -24,7 +24,7 @@ fun changeToOutput(
     }
     val outputId = UUID.nameUUIDFromBytes("${change.hash}:${change.index}".toByteArray()).toString()
     return Output(
-        outputId, change.hash, change.index.toInt(), asset, 0, change.amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", OutputState.unspent.name, nowInUtc(), "", "", "", "",
+        outputId, change.hash, change.index.toInt(), asset, 0, change.amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", OutputState.unspent.name, nowInUtc(), "", "", "", "", ""
     )
 }
 
@@ -41,6 +41,6 @@ fun consolidationOutput(
     }
     val outputId = UUID.nameUUIDFromBytes("$hash:0".toByteArray()).toString()
     return Output(
-        outputId, hash, 0, asset, 0, amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", "unspent", nowInUtc(), "", "", "", "",
+        outputId, hash, 0, asset, 0, amount, mask, keys, lastOutput.receivers, lastOutput.receiversHash, 1, "", "unspent", nowInUtc(), "", "", "", "", ""
     )
 }

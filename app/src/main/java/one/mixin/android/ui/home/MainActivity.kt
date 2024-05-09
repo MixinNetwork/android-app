@@ -91,6 +91,7 @@ import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
 import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
+import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -131,6 +132,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -447,6 +449,10 @@ class MainActivity : BlazeBaseActivity() {
 
             PropertyHelper.checkCleanupQuoteContent {
                 jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
+            }
+
+            PropertyHelper.checkInscriptionMigrated {
+                jobManager.addJobInBackground(InscriptionMigrationJob())
             }
 
             jobManager.addJobInBackground(RefreshContactJob())
@@ -863,6 +869,10 @@ class MainActivity : BlazeBaseActivity() {
         ExploreFragment()
     }
 
+    private val collectiblesFragment by lazy {
+        CollectiblesFragment()
+    }
+
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
@@ -879,6 +889,13 @@ class MainActivity : BlazeBaseActivity() {
                         conversationListFragment.hideCircles()
                         true
                     }
+
+                    R.id.nav_collectibles -> {
+                        navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+                        conversationListFragment.hideCircles()
+                        true
+                    }
+
 
                     R.id.nav_explore -> {
                         navigationController.navigate(NavigationController.Explore, exploreFragment)

@@ -442,6 +442,20 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_raw_transactions_state_type` ON `raw_transactions` (`state`, `type`)")
                 }
             }
+
+        val MIGRATION_53_54: Migration =
+            object : Migration(53, 54) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `outputs` ADD COLUMN `inscription_hash` TEXT")
+                    db.execSQL("ALTER TABLE `tokens` ADD COLUMN `collection_hash` TEXT")
+                    db.execSQL("ALTER TABLE `safe_snapshots` ADD COLUMN `inscription_hash` TEXT")
+                    db.execSQL("ALTER TABLE `raw_transactions` ADD COLUMN `inscription_hash` TEXT")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_inscription_hash` ON `outputs` (`inscription_hash`)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_tokens_collection_hash` ON `tokens` (`collection_hash`)")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `inscription_collections` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`collection_hash`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `inscription_items` (`inscription_hash` TEXT NOT NULL, `collection_hash` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `content_type` TEXT NOT NULL, `content_url` TEXT NOT NULL, `occupied_by` TEXT, `occupied_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`inscription_hash`))")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

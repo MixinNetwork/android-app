@@ -1,3 +1,5 @@
+package one.mixin.android.compose
+
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri

@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.ui.setting.LocalSettingNav
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun MixinBackButton() {

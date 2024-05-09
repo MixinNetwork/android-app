@@ -232,6 +232,7 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
+    implementation "io.coil-kt:coil-compose:${coilVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
@@ -333,6 +334,8 @@ dependencies {
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}")
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
+    implementation "com.facebook.shimmer:shimmer:${shimmerVersion}"
+    implementation "com.valentinilk.shimmer:compose-shimmer:${composeShimmerVersion}"
 
     implementation "com.uber.autodispose:autodispose:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android:${autodisposeVersion}"

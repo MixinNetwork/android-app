@@ -36,9 +36,9 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.ui.compose.MixinBackButton
-import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.MixinBackButton
+import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.widget.DebugClickHandler
 
 private fun Modifier.debugClickable(

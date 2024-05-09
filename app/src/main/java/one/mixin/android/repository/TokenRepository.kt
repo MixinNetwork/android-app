@@ -43,6 +43,7 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
@@ -61,18 +62,22 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncInscriptionMessageJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
@@ -80,6 +85,7 @@ import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -118,6 +124,7 @@ class TokenRepository
         private val rawTransactionDao: RawTransactionDao,
         private val outputDao: OutputDao,
         private val userDao: UserDao,
+        private val inscriptionDao: InscriptionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -704,7 +711,18 @@ class TokenRepository
         suspend fun findOutputs(
             limit: Int,
             asset: String,
-        ) = outputDao.findUnspentOutputsByAsset(limit, asset)
+            inscriptionHash: String? = null
+        ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findUnspentOutputsByAsset(limit, asset)
+
+        suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
+
+        suspend fun findOutputByHash(inscriptionHash: String) = outputDao.findOutputByHash(inscriptionHash)
+
+        fun findInscriptionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionByHash(inscriptionHash)
+
+        fun findInscriptionCollectionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionCollectionByHash(inscriptionHash)
+
+        suspend fun findTokenItemByAsset(kernelAssetId: String) = tokenDao.findTokenItemByAsset(kernelAssetId)
 
         fun insertOutput(output: Output) = outputDao.insert(output)
 
@@ -741,11 +759,20 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
+            inscriptionHash: String?
         ) {
             val snapshotId = data.getSnapshotId
             if (conversationId != "") {
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
+                val category = if (inscriptionHash != null) {
+                    MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                } else {
+                    MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                }
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash?:"", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
+                if (inscriptionHash != null) {
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, snapshotId))
+                }
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
@@ -761,8 +788,9 @@ class TokenRepository
             memo: String?,
             type: SafeSnapshotType,
             withdrawal: SafeWithdrawal? = null,
+            reference: String? = null,
         ) {
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
             safeSnapshotDao.insert(snapshot)
         }
 
@@ -834,4 +862,12 @@ class TokenRepository
             orderId: String,
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
-    }
+
+        fun inscriptions(): LiveData<List<SafeInscription>> = outputDao.inscriptions()
+
+        fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
+
+        suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<SafeInscription> {
+            return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
+        }
+}

@@ -68,8 +68,8 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
-import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.booleanValueAsState
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
 @Composable

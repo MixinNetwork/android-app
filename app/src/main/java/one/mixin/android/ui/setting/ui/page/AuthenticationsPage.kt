@@ -39,10 +39,10 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.ui.common.compose.SearchTextField
 import one.mixin.android.ui.setting.LocalSettingNav
-import one.mixin.android.ui.setting.ui.compose.AppAvatarImage
-import one.mixin.android.ui.setting.ui.compose.HighlightText
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.AppAvatarImage
+import one.mixin.android.compose.HighlightText
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.App
 
 @Composable

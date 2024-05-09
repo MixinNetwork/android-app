@@ -147,6 +147,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -181,6 +182,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -691,6 +693,15 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onInscriptionClick(conversationId: String, messageId: String, inscriptionHash: String?, snapshotId: String?) {
+                if (inscriptionHash == null) {
+                    toast(R.string.Data_loading)
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, messageId, null, snapshotId))
+                } else {
+                    InscriptionActivity.show(requireActivity(), inscriptionHash)
+                }
             }
 
             override fun onUrlLongClick(url: String) {
@@ -2614,7 +2625,7 @@ class ConversationFragment() :
                                 )
                                     .add(
                                         R.id.container,
-                                        FriendsFragment.newInstance(conversationId).apply {
+                                        FriendsFragment.newInstance().apply {
                                             setOnFriendClick {
                                                 sendContactMessage(it.userId)
                                                 parentFragmentManager.popBackStackImmediate()

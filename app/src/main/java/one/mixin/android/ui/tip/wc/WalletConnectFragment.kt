@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.connections.ConnectionDetailsPage
 import one.mixin.android.ui.tip.wc.connections.ConnectionsPage
 

@@ -21,11 +21,11 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.SettingViewModel
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.SettingTile
-import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
-import one.mixin.android.ui.setting.ui.compose.intValueAsState
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.booleanValueAsState
+import one.mixin.android.compose.intValueAsState
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun AccountPrivacyPage() {

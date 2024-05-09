@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_window"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/title_rl"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white">
+
+        <TextView
+            android:id="@+id/bot_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:text="@string/Collectibles"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="RelativeOverlap" />
+
+        <ImageButton
+            android:id="@+id/search_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="14dp"
+            android:layout_toStartOf="@id/scan_ib"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_search_home"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/scan_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="14dp"
+            android:layout_toStartOf="@id/setting_ib"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_bot_category_scan"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/setting_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_home_setting"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
+
+    <ViewAnimator
+        android:id="@+id/collectibles_va"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/bg_white">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/collectibles_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/item_inscription"
+            tools:itemCount="5"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_collectibles" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:textColor="?attr/text_primary"
+                android:text="@string/NO_COLLECTIBLES" />
+        </LinearLayout>
+
+    </ViewAnimator>
+
+</LinearLayout>
+

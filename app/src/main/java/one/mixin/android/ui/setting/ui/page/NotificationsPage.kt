@@ -58,11 +58,11 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.SettingViewModel
-import one.mixin.android.ui.setting.ui.compose.IndeterminateProgressDialog
-import one.mixin.android.ui.setting.ui.compose.MixinBackButton
-import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
-import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.IndeterminateProgressDialog
+import one.mixin.android.compose.MixinBackButton
+import one.mixin.android.compose.MixinBottomSheetDialog
+import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.util.ChannelManager
 import one.mixin.android.vo.Fiats
 import timber.log.Timber

@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.setting.ui.compose.HighlightStarLinkText
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.UserAvatarImage
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.HighlightStarLinkText
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.UserAvatarImage
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createSystemUser
 

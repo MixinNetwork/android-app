@@ -43,10 +43,10 @@ import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.getLanguagePos
-import one.mixin.android.ui.setting.ui.compose.MixinAlertDialog
-import one.mixin.android.ui.setting.ui.compose.MixinBackButton
-import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.MixinAlertDialog
+import one.mixin.android.compose.MixinBackButton
+import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.vo.Fiats

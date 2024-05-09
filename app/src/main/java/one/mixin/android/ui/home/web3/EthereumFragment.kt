@@ -41,12 +41,12 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.web3.send.InputAddressFragment
+import one.mixin.android.web3.dapp.SearchDappFragment
+import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.web3.receive.Wbe3ReceiveFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.dapp.SearchDappFragment
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -148,14 +148,16 @@ class EthereumFragment : BaseFragment() {
     fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            this@EthereumFragment.address = address
-            if (address.isBlank()) {
-                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum) {
-                    WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+            if (isAdded) {
+                this@EthereumFragment.address = address
+                if (address.isBlank()) {
+                    adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum) {
+                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    adapter.address = address
+                    refreshAccount(address)
                 }
-            } else {
-                adapter.address = address
-                refreshAccount(address)
             }
         }
     }

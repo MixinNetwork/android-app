@@ -32,10 +32,10 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.ui.auth.showAppAuthPrompt
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.SettingTile
-import one.mixin.android.ui.setting.ui.compose.intValueAsState
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.intValueAsState
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.util.BiometricUtil
 
 private const val FINGERPRINT_DISABLED = -1

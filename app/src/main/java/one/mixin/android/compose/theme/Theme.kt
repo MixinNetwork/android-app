@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.theme
+package one.mixin.android.compose.theme
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material.MaterialTheme

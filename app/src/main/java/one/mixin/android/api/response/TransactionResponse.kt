@@ -39,6 +39,8 @@ data class TransactionResponse(
     val snapshotAt: String,
     @SerializedName("views")
     val views: List<String>?,
+    @SerializedName("inscription_hash")
+    val inscriptionHash: String?,
 ) {
     val getSnapshotId: String
         get() {

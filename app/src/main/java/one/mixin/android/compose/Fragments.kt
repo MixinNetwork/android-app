@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable

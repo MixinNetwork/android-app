@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.compose
+package one.mixin.android.compose
 
 import android.view.ContextThemeWrapper
 import android.view.View

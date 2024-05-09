@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/chat_jump"
+        android:padding="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/chat_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="17dp"
+        android:maxWidth="280dp"
+        android:minWidth="30dp"
+        android:ellipsize="end"
+        android:gravity="start|center_vertical"
+        android:lines="1"
+        android:textColor="#19BEF1"
+        android:textSize="14sp"
+        android:layout_marginBottom="1.5dp"
+        app:layout_constraintBottom_toTopOf="@id/chat_layout"
+        app:layout_constraintStart_toStartOf="@id/chat_layout" />
+
+    <LinearLayout
+        android:id="@+id/chat_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:orientation="vertical"
+        android:paddingTop="0.5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/chat_content_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_bubble_post_me"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="1.5dp">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/chat_inscription"
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:shimmer_base_alpha="1"
+                app:shimmer_highlight_alpha="0.3"
+                app:shimmer_duration="1500">
+
+                <ImageView
+                    android:id="@+id/chat_inscription_iv"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_default_inscription"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="start" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <one.mixin.android.widget.BarcodeView
+                android:id="@+id/chat_barcode"
+                android:layout_width="93dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintBottom_toBottomOf="@id/chat_inscription_icon"
+                app:layout_constraintEnd_toStartOf="@id/chat_inscription_icon"
+                app:layout_constraintStart_toEndOf="@id/chat_inscription" />
+
+            <ImageView
+                android:id="@+id/chat_inscription_icon"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_inscription_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="12dp"
+                app:layout_constraintBottom_toBottomOf="@id/chat_inscription"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/chat_title_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="14dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                android:maxLines="2"
+                android:textSize="14sp"
+                android:textColor="?attr/text_primary"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/chat_inscription" />
+
+            <TextView
+                android:id="@+id/chat_number_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="14dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="10dp"
+                android:maxLines="1"
+                android:textSize="12sp"
+                android:textColor="?attr/text_assist"
+                app:layout_constraintTop_toBottomOf="@+id/chat_title_tv"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/chat_inscription" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

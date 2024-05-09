@@ -16,7 +16,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.SettingConversationViewModel
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingPageScaffold
 import one.mixin.android.vo.SearchSource
 
 @Composable

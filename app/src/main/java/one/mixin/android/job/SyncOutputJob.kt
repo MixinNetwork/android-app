@@ -35,6 +35,11 @@ class SyncOutputJob() : BaseJob(
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         if (outputs.isNotEmpty()) {
             outputDao.insertUnspentOutputs(outputs)
+            outputs.mapNotNull {it.inscriptionHash }.apply {
+                if (isNotEmpty()) {
+                    jobManager.addJobInBackground(SyncInscriptionsJob(this))
+                }
+            }
             val list =
                 arrayListOf<String>().apply {
                     addAll(outputs.groupBy { it.asset }.keys)

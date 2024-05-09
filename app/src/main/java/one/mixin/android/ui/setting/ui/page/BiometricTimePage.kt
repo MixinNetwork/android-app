@@ -22,11 +22,11 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.setting.ui.compose.MixinBottomSheetDialog
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.compose.SettingTile
-import one.mixin.android.ui.setting.ui.compose.longValueAsState
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.MixinBottomSheetDialog
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.longValueAsState
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import timber.log.Timber
 
