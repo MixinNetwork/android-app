@@ -235,10 +235,9 @@ object JsSigner {
 
     fun signSolanaTransaction(
         priv: ByteArray,
-        raw: String,
-    ): org.sol4k.CompiledTransaction {
+        tx: org.sol4k.VersionedTransaction,
+    ): org.sol4k.VersionedTransaction {
         val holder = Keypair.fromSecretKey(priv)
-        val tx = org.sol4k.CompiledTransaction.from(raw)
         val conn = Connection(RpcUrl.MAINNNET)
         val blockhash = conn.getLatestBlockhash()
         tx.message.recentBlockhash = blockhash
@@ -246,7 +245,7 @@ object JsSigner {
         return tx
     }
 
-    fun sendSolanaTransaction(tx: org.sol4k.CompiledTransaction): String {
+    fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
         val conn = Connection(RpcUrl.MAINNNET)
         return conn.sendTransaction(tx.serialize())
     }

@@ -1,9 +1,12 @@
 package org.sol4k
 
 import okio.Buffer
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Base64
+import kotlin.math.pow
 
-class CompiledTransaction(
+class VersionedTransaction(
     val message: Message,
     val signatures: MutableList<String>,
 ) {
@@ -36,12 +39,26 @@ class CompiledTransaction(
         return b.readByteArray()
     }
 
+    fun calcFee(): BigDecimal {
+        val sigFee = BigDecimal(5000 * signatures.size).divide(BigDecimal(10.0.pow(9)))
+        val accounts = message.accounts
+        val data = mutableListOf<ByteArray>()
+        for (i in message.instructions) {
+            if (accounts[i.programIdIndex] != Constants.COMPUTE_BUDGET__PROGRAM_ID) {
+                continue
+            }
+            data.add(i.data)
+        }
+        val msgFee = computeBudget(data)
+        return sigFee.add(msgFee).setScale(9, RoundingMode.CEILING)
+    }
+
     companion object {
         const val PUBLIC_KEY_LENGTH = 32
         private const val SIGNATURE_LENGTH = 64
 
         @JvmStatic
-        fun from(encodedTransaction: String): CompiledTransaction {
+        fun from(encodedTransaction: String): VersionedTransaction {
             return try {
                 var byteArray = Base64.getDecoder().decode(encodedTransaction)
                 val signaturesCount = Binary.decodeLength(byteArray)
@@ -59,7 +76,7 @@ class CompiledTransaction(
                 if(message.header.numRequireSignatures != signaturesCount.first) {
                     throw Exception("numRequireSignatures is not equal to signatureCount")
                 }
-                CompiledTransaction(message, signatures)
+                VersionedTransaction(message, signatures)
             } catch (e: Exception) {
                 throw e
             }

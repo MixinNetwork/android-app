@@ -48,7 +48,6 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetViewModel
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
@@ -125,6 +124,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
+    private var solanaTx: org.sol4k.VersionedTransaction? by mutableStateOf(null)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -135,7 +136,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             setContent {
                 BrowserPage(
-                    JsSigner.address, currentChain, amount, token, toAddress, signMessage.type, step, tipGas, asset,
+                    JsSigner.address, currentChain, amount, token, toAddress, signMessage.type, step, tipGas, solanaTx?.calcFee(), asset,
                     signMessage.wcEthereumTransaction, signMessage.reviewData, url, title, errorInfo, insufficientGas,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     showPin = { showPin() },
@@ -205,6 +206,15 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
+        if (chain == Chain.Solana) {
+            lifecycleScope.launch {
+                asset = viewModel.refreshAsset(Chain.Solana.assetId)
+                if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
+                    solanaTx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
+                }
+            }
+            return
+        }
         val assetId = walletConnectChainIdMap[chain.symbol]
         val transaction = signMessage.wcEthereumTransaction ?: return
         if (assetId == null) {
@@ -243,7 +253,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val tx = JsSigner.signSolanaTransaction(priv, signMessage.data ?: "")
+                    val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
                     val sig = JsSigner.sendSolanaTransaction(tx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")

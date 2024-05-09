@@ -170,7 +170,7 @@ class Connection @JvmOverloads constructor(
         )
     }
 
-    fun simulateTransaction(transaction: CompiledTransaction): TransactionSimulation {
+    fun simulateTransaction(transaction: VersionedTransaction): TransactionSimulation {
         val encodedTransaction = Base64.getEncoder().encodeToString(transaction.serialize())
         val result: SimulateTransactionResponse = rpcCall(
             "simulateTransaction",

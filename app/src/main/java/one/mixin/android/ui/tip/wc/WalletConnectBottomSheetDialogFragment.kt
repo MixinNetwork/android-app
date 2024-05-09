@@ -67,7 +67,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import org.sol4k.CompiledTransaction
+import org.sol4k.VersionedTransaction
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -289,7 +289,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             var signData = this@WalletConnectBottomSheetDialogFragment.signData
             if (signData == null) {
                 signData = try {
-                    val account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                     viewModel.parseV2SignData(account, sessionRequest)
                 } catch (e: Exception) {
                     toast(e.message ?: "Unknown error")
@@ -307,6 +306,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             if (signData.signMessage is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
+            } else if (signData.signMessage is VersionedTransaction) {
+                asset = viewModel.refreshAsset(Chain.Solana.assetId)
             }
         }
 
@@ -361,7 +362,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        if (signedTransactionData is CompiledTransaction) {
+                                        if (signedTransactionData is VersionedTransaction) {
                                             viewModel.sendTransaction(signedTransactionData, sessionRequest)
                                         }  else {
                                             viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
@@ -456,7 +457,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
-    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is WcSolanaTransaction
+    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransaction
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
