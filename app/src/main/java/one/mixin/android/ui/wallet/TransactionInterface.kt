@@ -281,10 +281,8 @@ interface TransactionInterface {
             val isPositive = if (amountVal == null) false else amountVal > 0
             if (snapshot.inscriptionHash.isNullOrEmpty()) {
                 avatarVa.displayedChild = 0
-                ViewBadgeCircleImageBinding.bind(contentBinding.avatar).apply {
-                    bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                    badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                }
+                contentBinding.avatar.loadToken(asset)
+                avatar
             } else {
                 avatarVa.displayedChild = 1
                 iconIv.round(20)

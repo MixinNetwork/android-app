@@ -401,10 +401,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                         } catch (ignored: NumberFormatException) {
                             "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
                         }
-                    ViewBadgeCircleImageBinding.bind(avatar).apply {
-                        bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                        badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                    }
+                    avatar.loadToken(asset)
                     avatar.setOnClickListener(
                         object : DebugClickListener() {
                             override fun onDebugClick() {

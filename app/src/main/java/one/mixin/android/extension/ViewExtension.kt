@@ -238,35 +238,6 @@ fun View.round(radius: Float) {
     this.clipToOutline = true
 }
 
-fun View.hexagonal() {
-    this.outlineProvider = object : ViewOutlineProvider() {
-        override fun getOutline(
-            view: View,
-            outline: Outline,
-        ) {
-            val width = view.width
-            val height = view.height
-            val hexagonPath = Path()
-            val radius = width.coerceAtMost(height) / 2.toFloat()
-            val centerX = width / 2.toFloat()
-            val centerY = height / 2.toFloat()
-
-            hexagonPath.moveTo(centerX + radius, centerY)
-
-            for (i in 1 until 6) {
-                val angle = 2.0 * Math.PI / 6 * i
-                val x = (centerX + radius * cos(angle)).toFloat()
-                val y = (centerY + radius * sin(angle)).toFloat()
-                hexagonPath.lineTo(x, y)
-            }
-
-            hexagonPath.close()
-            outline.setConvexPath(hexagonPath)
-        }
-    }
-    this.clipToOutline = true
-}
-
 fun View.round(radius: Int) {
     round(radius.toFloat())
 }

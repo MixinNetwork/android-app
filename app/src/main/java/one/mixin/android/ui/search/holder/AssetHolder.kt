@@ -25,8 +25,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         target: String,
         onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
-        binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.avatar.loadToken(asset)
         binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }
 
         binding.balance.text = asset.balance.numberFormat8() + " " + asset.symbol

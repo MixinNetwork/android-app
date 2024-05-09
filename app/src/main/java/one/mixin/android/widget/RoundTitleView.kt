@@ -66,8 +66,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
 
     fun showBadgeCircleView(asset: TokenItem) {
         binding.badgeCircleIv.isVisible = true
-        binding.badgeCircleIv.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.badgeCircleIv.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.badgeCircleIv.loadToken(asset)
         binding.titleLl.updateLayoutParams<LayoutParams> {
             marginStart = 0
         }
