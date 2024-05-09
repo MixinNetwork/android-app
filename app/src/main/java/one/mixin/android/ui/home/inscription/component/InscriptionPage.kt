@@ -61,31 +61,6 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
     val scrollState = rememberScrollState()
     val viewModel = hiltViewModel<Web3ViewModel>()
     val inscriptionItem = viewModel.inscriptionByHash(inscriptionHash).observeAsState().value ?: return
-    val shimmerInstance = rememberShimmer(
-        shimmerBounds = ShimmerBounds.View, theme = ShimmerTheme(
-            animationSpec = infiniteRepeatable(
-                animation = shimmerSpec(
-                    durationMillis = 1_500,
-                    easing = LinearEasing,
-                    delayMillis = 1_500,
-                ),
-                repeatMode = RepeatMode.Restart,
-            ),
-            blendMode = BlendMode.DstIn,
-            rotation = 15.0f,
-            shaderColors = listOf(
-                Color.Unspecified.copy(alpha = 1.0f),
-                Color.Unspecified.copy(alpha = 0.7f),
-                Color.Unspecified.copy(alpha = 1.0f),
-            ),
-            shaderColorStops = listOf(
-                0.0f,
-                0.5f,
-                1.0f,
-            ),
-            shimmerWidth = 400.dp,
-        )
-    )
 
     val contentUrl = inscriptionItem.contentURL
     val iconUrl = inscriptionItem.iconURL
@@ -141,7 +116,6 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
-                            .shimmer(shimmerInstance)
                             .clip(RoundedCornerShape(8.dp)),
                         placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
                     )

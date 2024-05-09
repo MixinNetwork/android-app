@@ -16,7 +16,7 @@ interface InscriptionDao : BaseDao<InscriptionItem> {
     @Query("SELECT DISTINCT collection_hash FROM inscription_items WHERE inscription_hash IN (:hash)")
     suspend fun getInscriptionCollectionIds(hash: List<String>): List<String>
 
-    @Query("SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, ic.icon_url FROM inscription_items i LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash WHERE inscription_hash = :hash")
+    @Query("SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, ic.icon_url FROM inscription_items i LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash WHERE inscription_hash = :hash AND ic.collection_hash IS NOT NULL")
     fun inscriptionByHash(hash: String): LiveData<SafeInscription?>
 
     @Query("SELECT * FROM inscription_items WHERE inscription_hash = :hash")

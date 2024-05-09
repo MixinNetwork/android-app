@@ -62,7 +62,7 @@ interface OutputDao : BaseDao<Output> {
         SELECT i.*, ic.* FROM outputs o 
         LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
-        WHERE i.inscription_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
+        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
         """
     )
     fun inscriptions(): LiveData<List<SafeInscription>>
