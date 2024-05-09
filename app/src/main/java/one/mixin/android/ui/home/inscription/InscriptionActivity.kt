@@ -53,7 +53,7 @@ class InscriptionActivity : AppCompatActivity() {
         SystemUIManager.lightUI(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         setContent {
-            InscriptionPage(inscriptionHash, onSendAction, onShareAction)
+            InscriptionPage(inscriptionHash, { finish() }, onSendAction, onShareAction)
         }
     }
 

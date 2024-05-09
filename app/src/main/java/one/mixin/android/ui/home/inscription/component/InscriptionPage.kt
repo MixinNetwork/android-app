@@ -1,8 +1,5 @@
 package one.mixin.android.ui.home.inscription.component
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -44,26 +40,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.ShimmerTheme
-import com.valentinilk.shimmer.rememberShimmer
-import com.valentinilk.shimmer.shimmer
-import com.valentinilk.shimmer.shimmerSpec
 import one.mixin.android.R
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.components.InscriptionState
 
 @Composable
-fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAction: () -> Unit) {
+fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendAction: () -> Unit, onShareAction: () -> Unit) {
     val scrollState = rememberScrollState()
     val viewModel = hiltViewModel<Web3ViewModel>()
     val inscriptionItem = viewModel.inscriptionByHash(inscriptionHash).observeAsState().value ?: return
 
     val contentUrl = inscriptionItem.contentURL
-    val iconUrl = inscriptionItem.iconURL
     val idTitle = "#${inscriptionItem.sequence}"
 
     val state = remember {
@@ -89,8 +78,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
         Column(
             modifier = Modifier.systemGesturesPadding()
         ) {
-            val navController = LocalSettingNav.current
-            IconButton(onClick = { navController.pop() }) {
+            IconButton(onClick = onCloseAction) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = null,
