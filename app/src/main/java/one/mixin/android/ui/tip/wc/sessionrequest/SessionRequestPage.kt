@@ -47,6 +47,7 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
@@ -258,7 +259,7 @@ fun SessionRequestPage(
                 }
                 Box(modifier = Modifier.height(20.dp))
 
-                val fee = tipGas?.displayValue() ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue() ?: signData?.solanaFee ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",

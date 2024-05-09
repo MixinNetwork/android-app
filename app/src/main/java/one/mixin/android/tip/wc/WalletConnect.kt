@@ -19,6 +19,7 @@ import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigDecimal
 
 abstract class WalletConnect {
     companion object {
@@ -76,6 +77,7 @@ abstract class WalletConnect {
             override val signMessage: T,
             val sessionRequest: Wallet.Model.SessionRequest,
             var tipGas: TipGas? = null,
+            var solanaFee: BigDecimal? = null,
         ) : WCSignData<T>(requestId, signMessage)
 
         data class TIPSignData(

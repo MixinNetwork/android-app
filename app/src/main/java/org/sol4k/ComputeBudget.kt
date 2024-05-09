@@ -26,6 +26,7 @@ internal fun computeBudget(data: List<ByteArray>): BigDecimal {
                 unitLimit = d.readIntLe()
             }
             InstructionSetComputeUnitPrice -> {
+                // micro-lamports
                 unitPrice = d.readLongLe()
             }
             else -> {

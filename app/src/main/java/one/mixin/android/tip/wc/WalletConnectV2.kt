@@ -31,6 +31,7 @@ import one.mixin.android.util.encodeToBase58String
 import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.RpcUrl
+import org.sol4k.VersionedTransaction
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -380,7 +381,8 @@ object WalletConnectV2 : WalletConnect() {
                 }
                 Method.SolanaSignTransaction.name -> {
                     val transaction = gson.fromJson<WcSolanaTransaction>(request.request.params)
-                    WCSignData.V2SignData(request.request.id, transaction, request)
+                    val tx = org.sol4k.VersionedTransaction.from(transaction.transaction)
+                    WCSignData.V2SignData(request.request.id, tx, request, solanaFee = tx.calcFee())
                 }
                 Method.SolanaSignMessage.name -> {
                     val message = gson.fromJson<WcSolanaMessage>(request.request.params)
@@ -421,14 +423,13 @@ object WalletConnectV2 : WalletConnect() {
                     return ethSignTransaction(priv, chain, sessionRequest, signData, false)
                 }
             }
-        } else if (signMessage is WcSolanaTransaction) {
+        } else if (signMessage is VersionedTransaction) {
             val holder = Keypair.fromSecretKey(priv)
             val conn = Connection(RpcUrl.MAINNNET)
             val blockhash = conn.getLatestBlockhash()
-            val tx = org.sol4k.VersionedTransaction.from(signMessage.transaction)
-            tx.message.recentBlockhash = blockhash
-            tx.sign(holder)
-            return tx
+            signMessage.message.recentBlockhash = blockhash
+            signMessage.sign(holder)
+            return signMessage
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
             val message = signMessage.message.decodeBase58()

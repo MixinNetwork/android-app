@@ -289,7 +289,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             var signData = this@WalletConnectBottomSheetDialogFragment.signData
             if (signData == null) {
                 signData = try {
-                    val account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                     viewModel.parseV2SignData(account, sessionRequest)
                 } catch (e: Exception) {
                     toast(e.message ?: "Unknown error")
@@ -307,6 +306,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             if (signData.signMessage is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
+            } else if (signData.signMessage is VersionedTransaction) {
+                asset = viewModel.refreshAsset(Chain.Solana.assetId)
             }
         }
 
@@ -456,7 +457,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
-    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is WcSolanaTransaction
+    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransaction
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
