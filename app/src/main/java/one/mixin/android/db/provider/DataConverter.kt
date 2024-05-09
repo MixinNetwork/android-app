@@ -169,6 +169,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfAssetSymbol = cursor.getColumnIndexOrThrow("assetSymbol")
     val cursorIndexOfAssetId = cursor.getColumnIndexOrThrow("assetId")
     val cursorIndexOfAssetIcon = cursor.getColumnIndexOrThrow("assetIcon")
+    val cursorIndexOfAssetCollectionHash = cursor.getColumnIndexOrThrow("assetCollectionHash")
     val cursorIndexOfAssetUrl = cursor.getColumnIndexOrThrow("assetUrl")
     val cursorIndexOfAssetWidth = cursor.getColumnIndexOrThrow("assetWidth")
     val cursorIndexOfAssetHeight = cursor.getColumnIndexOrThrow("assetHeight")
@@ -258,6 +259,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpAssetSymbol: String? = cursor.getString(cursorIndexOfAssetSymbol)
         val tmpAssetId: String? = cursor.getString(cursorIndexOfAssetId)
         val tmpAssetIcon: String? = cursor.getString(cursorIndexOfAssetIcon)
+        val tmpAssetCollectionHash: String? = cursor.getString(cursorIndexOfAssetCollectionHash)
         val tmpAssetUrl: String? = cursor.getString(cursorIndexOfAssetUrl)
         val tmpAssetWidth: Int? =
             if (cursor.isNull(cursorIndexOfAssetWidth)) {
@@ -271,6 +273,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             } else {
                 cursor.getInt(cursorIndexOfAssetHeight)
             }
+
         val tmpStickerId: String? = cursor.getString(cursorIndexOfStickerId)
         val tmpAssetName: String? = cursor.getString(cursorIndexOfAssetName)
         val tmpAssetType: String? = cursor.getString(cursorIndexOfAssetType)
@@ -353,6 +356,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tmpAssetType,
                 tmpAssetSymbol,
                 tmpAssetIcon,
+                tmpAssetCollectionHash,
                 tmpAssetUrl,
                 tmpAssetHeight,
                 tmpAssetWidth,
@@ -601,6 +605,7 @@ fun callableTokenItem(
             val cursorIndexOfAssetKey = 16
             val cursorIndexOfDust = 17
             val cursorIndexOfWithdrawalMemoPossibility = 18
+            val cursorIndexOfCollectionHash = 19
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -716,6 +721,12 @@ fun callableTokenItem(
                     } else {
                         WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
                     }
+                val tmpCollectionHash: String? =
+                    if (cursor.isNull(cursorIndexOfCollectionHash)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfCollectionHash)
+                    }
 
                 item =
                     TokenItem(
@@ -738,6 +749,7 @@ fun callableTokenItem(
                         tmpAssetKey,
                         tmpDust,
                         tmpDepositWithdrawalMemoPossibility,
+                        tmpCollectionHash
                     )
                 result.add(item)
             }

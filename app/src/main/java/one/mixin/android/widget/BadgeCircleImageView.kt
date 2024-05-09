@@ -5,8 +5,13 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
+import one.mixin.android.R
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.loadHexagonImage
+import one.mixin.android.extension.loadImage
+import one.mixin.android.vo.safe.TokenItem
 
 open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
     FrameLayout(context, attrs) {
@@ -57,6 +62,21 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
     ) {
         binding.bg.borderWidth = context.dpToPx(width)
         binding.bg.borderColor = color
+    }
+
+    fun loadToken(tokenItem: TokenItem){
+        loadToken(tokenItem.iconUrl, tokenItem.chainIconUrl, tokenItem.collectionHash)
+    }
+
+    fun loadToken(assetUrl: String, chainUrl: String?, collectionHash: String?) {
+        if (collectionHash.isNullOrEmpty()) {
+            binding.badge.isVisible = true
+            binding.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
+            binding.badge.loadImage(chainUrl, R.drawable.ic_avatar_place_holder)
+        } else {
+            binding.badge.isVisible = false
+            binding.bg.loadHexagonImage(assetUrl, R.drawable.ic_avatar_place_holder)
+        }
     }
 
     companion object {

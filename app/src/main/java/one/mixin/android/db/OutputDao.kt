@@ -59,9 +59,10 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT i.*, ic.* FROM outputs o 
+        SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o 
         LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        LEFT JOIN tokens t on t.collection_hash = i.collection_hash
         WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
         """
     )

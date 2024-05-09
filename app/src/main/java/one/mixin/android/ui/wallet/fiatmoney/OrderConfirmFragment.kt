@@ -105,8 +105,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             titleView.rightAnimator.setOnClickListener { }
             titleView.setSubTitle(getString(R.string.Order_Confirm), "")
             buyVa.displayedChild = 2
-            assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetAvatar.loadToken(asset)
             TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
                 payWith,
                 8,
