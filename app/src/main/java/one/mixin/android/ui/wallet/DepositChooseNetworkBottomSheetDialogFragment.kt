@@ -111,7 +111,10 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             } else {
                 binding.icon.isVisible = false
                 binding.assetIcon.isVisible = true
-                binding.assetIcon.loadToken(tokenItem)
+                binding.assetIcon.bg.loadImage(
+                    tokenItem.chainIconUrl,
+                    R.drawable.ic_avatar_place_holder,
+                )
                 binding.content.text = getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey)
                 binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
