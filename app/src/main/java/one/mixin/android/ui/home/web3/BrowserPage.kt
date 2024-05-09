@@ -57,7 +57,8 @@ import java.math.BigInteger
 @Composable
 fun BrowserPage(
     account: String, chain: Chain, amount:String?, token: Web3Token?, toAddress:String?,
-    type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, asset: Token?, transaction: WCEthereumTransaction?, data: String?,
+    type: Int, step: WalletConnectBottomSheetDialogFragment.Step, tipGas: TipGas?, solanaFee: BigDecimal?,
+    asset: Token?, transaction: WCEthereumTransaction?, data: String?,
     url: String?, title: String?, errorInfo: String?, insufficientGas: Boolean,
     showPin: () -> Unit, onPreviewMessage: (String) -> Unit, onDismissRequest: () -> Unit, onRejectAction: () -> Unit
 ) {
@@ -194,7 +195,7 @@ fun BrowserPage(
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
-                val fee = tipGas?.displayValue() ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue() ?: solanaFee ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",

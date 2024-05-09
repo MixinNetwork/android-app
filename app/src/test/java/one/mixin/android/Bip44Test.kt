@@ -8,7 +8,6 @@ import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
-import org.sol4k.CompiledTransaction
 import org.sol4k.Transaction
 import org.sol4k.instruction.TransferInstruction
 import org.web3j.crypto.Bip32ECKeyPair
