@@ -123,7 +123,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         binding.nameTv.text = name
         binding.balanceTv.text = "$balance $symbol"
         val chainNetwork = getChainNetwork(assetId, chainId, assetKey)
-        binding.networkTv.isVisible = chainNetwork != null
+        binding.networkTv.isVisible = chainNetwork != null && collectionHash.isNullOrEmpty()
         if (chainNetwork != null) {
             binding.networkTv.text = chainNetwork
         }
