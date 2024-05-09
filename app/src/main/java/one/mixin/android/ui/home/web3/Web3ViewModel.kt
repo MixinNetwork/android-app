@@ -150,7 +150,7 @@ internal constructor(
         val inscriptionItem = tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
         val inscriptionCollection = tokenRepository.findInscriptionCollectionByHash(inscriptionHash) ?: return@withContext null
         val asset = tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
-        InscriptionState(output.state, "${inscriptionCollection.name} #${inscriptionItem.sequence}", "${output.amount} ${asset.symbol}", amountAs(output.amount, asset))
+        InscriptionState(output.state, "${inscriptionCollection.name} #${inscriptionItem.sequence}", "${output.amount} ${asset.symbol}", amountAs(output.amount, asset), asset.iconUrl)
     }
 
     private fun amountAs(

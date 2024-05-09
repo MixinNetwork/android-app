@@ -92,7 +92,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
     val idTitle = "#${inscriptionItem.sequence}"
 
     val state = remember {
-        mutableStateOf(InscriptionState("","","",""))
+        mutableStateOf(InscriptionState("","","","", ""))
     }
 
     LaunchedEffect(key1 = inscriptionItem) {
@@ -218,7 +218,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                     }
 
                     AsyncImage(
-                        model = iconUrl, contentDescription = null,
+                        model = state.value.assetIcon, contentDescription = null,
                         modifier = Modifier.align(Alignment.CenterEnd).width(20.dp).height(20.dp).clip(RoundedCornerShape(4.dp)),
                         placeholder = painterResource(R.drawable.ic_inscription_icon),
                     )

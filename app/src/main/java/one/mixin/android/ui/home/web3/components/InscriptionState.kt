@@ -5,4 +5,5 @@ class InscriptionState(
     val collection: String,
     val tokenTotal: String,
     val tokenValue: String,
+    val assetIcon: String?
 )
