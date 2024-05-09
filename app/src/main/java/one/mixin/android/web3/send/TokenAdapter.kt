@@ -67,8 +67,7 @@ class TokenHolder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(b
     @SuppressLint("SetTextI18n")
     fun bind(token: TokenItem) {
         binding.apply {
-            avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-            avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            avatar.loadToken(token)
             balance.text =
                 try {
                     if (token.balance.numberFormat().toFloat() == 0f) {

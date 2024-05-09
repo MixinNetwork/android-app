@@ -50,8 +50,7 @@ class AddressChangedBottomSheet : MixinBottomSheetDialogFragment() {
         contentView = bottomSendBinding.root
         (dialog as BottomSheet).setCustomView(contentView)
         bottomSendBinding.apply {
-            assetIcon.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetIcon.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.loadToken(token)
             title.text = getString(R.string.depost_address_updated, token.symbol)
             content.text = getString(R.string.depost_address_updated_description, token.symbol)
             gotItTv.setOnClickListener { dismiss() }

@@ -113,4 +113,5 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         assetKey,
         dust,
         null,
+        collectionHash
     )

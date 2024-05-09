@@ -96,11 +96,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
         ) {
             val itemAssert = getItem(position)
             val binding = ItemAssetBinding.bind(holder.itemView)
-            binding.typeAvatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.typeAvatar.badge.loadImage(
-                itemAssert.chainIconUrl,
-                R.drawable.ic_avatar_place_holder,
-            )
+            binding.typeAvatar.loadToken(itemAssert)
             binding.name.text = itemAssert.name
             binding.value.text = itemAssert.balance.numberFormat()
             binding.valueEnd.text = itemAssert.symbol

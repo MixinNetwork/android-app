@@ -85,10 +85,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     addrTv.text = selectedDestination ?: depositEntry.destination
                 }
             }
-            badgeView.apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            }
+            badgeView.loadToken(asset)
 
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())

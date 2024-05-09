@@ -112,8 +112,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.titleView.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
-        binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.avatar.loadToken(asset)
         binding.saveTv.setOnClickListener {
             if (memoEnabled) {
                 val memo = binding.tagEt.text.toString()

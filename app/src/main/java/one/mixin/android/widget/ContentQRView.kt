@@ -54,8 +54,7 @@ class ContentQRView : ViewAnimator {
             if (showPb) return
 
             qrAvatar.apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                loadToken(asset)
                 setBorder()
             }
             val destination = selectedDestination ?: depositEntry.destination

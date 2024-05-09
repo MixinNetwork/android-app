@@ -120,6 +120,7 @@ fun Asset.toTopAssetItem(chainIconUrl: String?) =
         assetKey,
         priceUsd,
         changeUsd,
+        null
     )
 
 fun Token?.priceUSD(): BigDecimal =

@@ -213,8 +213,7 @@ class TransferHeader : LinearLayout {
                 }
             }
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
-            assetIcon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetIcon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.loadToken(asset)
         }
     }
 }
