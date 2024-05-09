@@ -34,17 +34,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.compose.GlideImage
-import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.inscription.compose.Barcode
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
 fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendAction: () -> Unit, onShareAction: () -> Unit) {
@@ -180,8 +183,16 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
                     }
 
                     AsyncImage(
-                        model = state.value.assetIcon, contentDescription = null,
-                        modifier = Modifier.align(Alignment.CenterEnd).width(20.dp).height(20.dp).clip(RoundedCornerShape(4.dp)),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(state.value.assetIcon)
+                            .transformations(CoilRoundedHexagonTransformation())
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .width(20.dp)
+                            .height(20.dp)
+                            .clip(RoundedCornerShape(4.dp)),
                         placeholder = painterResource(R.drawable.ic_inscription_icon),
                     )
                 }
