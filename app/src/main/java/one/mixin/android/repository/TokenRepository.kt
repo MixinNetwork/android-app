@@ -711,7 +711,8 @@ class TokenRepository
         suspend fun findOutputs(
             limit: Int,
             asset: String,
-        ) = outputDao.findUnspentOutputsByAsset(limit, asset)
+            inscriptionHash: String? = null
+        ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findUnspentOutputsByAsset(limit, asset)
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
 
@@ -758,19 +759,19 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
-            reference: String?
+            inscriptionHash: String?
         ) {
             val snapshotId = data.getSnapshotId
             if (conversationId != "") {
-                val category = if (reference != null) {
+                val category = if (inscriptionHash != null) {
                     MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
                 } else {
                     MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
                 }
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, reference?:"", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash?:"", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
-                if (reference != null) {
-                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, reference, snapshotId))
+                if (inscriptionHash != null) {
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, snapshotId))
                 }
                 MessageFlow.insert(message.conversationId, message.messageId)
             }

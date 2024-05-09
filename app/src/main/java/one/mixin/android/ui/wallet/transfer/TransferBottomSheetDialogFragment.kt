@@ -522,7 +522,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                             is NftBiometricItem -> {
                                 trace = null
-                                bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), t.amount, pin, t.traceId, t.memo, t.reference)
+                                bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), t.amount, pin, t.traceId, t.memo, inscriptionHash = t.inscriptionItem.inscriptionHash)
                             }
 
                             is AddressTransferBiometricItem -> {

@@ -139,7 +139,7 @@ internal constructor(
             memo = null,
             state = PaymentStatus.pending.name,
             receivers = listOf(receiver),
-            reference = inscriptionHash,
+            reference = null,
             inscriptionItem = inscriptionItem,
             inscriptionCollection = inscriptionCollection
         )

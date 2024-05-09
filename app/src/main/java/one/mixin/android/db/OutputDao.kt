@@ -16,6 +16,13 @@ interface OutputDao : BaseDao<Output> {
         asset: String,
     ): List<Output>
 
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash = :inscriptionHash ORDER BY sequence ASC LIMIT :limit")
+    suspend fun findUnspentOutputsByAsset(
+        limit: Int,
+        asset: String,
+        inscriptionHash: String
+    ): List<Output>
+
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash IS NULL ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(
         limit: Int,
