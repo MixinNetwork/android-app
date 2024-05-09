@@ -6,7 +6,6 @@ import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
 import android.view.View
 import android.widget.RelativeLayout
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
@@ -24,12 +23,13 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
+import one.mixin.android.extension.dp
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
 
     init {
-        binding.symbolIv.round(20)
+        binding.symbolIv.round(12.dp)
     }
 
     open fun bind(
@@ -121,11 +121,13 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             binding.symbolIv.isVisible = false
             binding.symbolTv.isVisible = true
             (binding.value.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, R.id.symbol_tv)
+            (binding.value.layoutParams as RelativeLayout.LayoutParams).marginEnd = 6.dp
             binding.symbolTv.text = snapshot.assetSymbol
         } else {
             binding.symbolIv.isVisible = true
             binding.symbolTv.isVisible = false
             (binding.value.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, R.id.symbol_iv)
+            (binding.value.layoutParams as RelativeLayout.LayoutParams).marginEnd = 8.dp
             binding.symbolIv.loadImage(snapshot.contentUrl, R.drawable.ic_default_inscription)
         }
 
