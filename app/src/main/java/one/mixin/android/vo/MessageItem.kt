@@ -88,9 +88,11 @@ data class MessageItem(
     val assetType: String?,
     val assetSymbol: String?,
     val assetIcon: String?,
+    val assetCollectionHash: String?,
     val assetUrl: String?,
     val assetHeight: Int?,
     val assetWidth: Int?,
+
     @Deprecated(
         "Deprecated at database version 15",
         ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.MessageItem.stickerId"),
@@ -223,7 +225,7 @@ fun create(
         MessageStatus.READ.name, null, null,
         null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null,
-        null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
     )
 
 fun MessageItem.isCallMessage() =
