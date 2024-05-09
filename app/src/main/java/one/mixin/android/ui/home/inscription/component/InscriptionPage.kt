@@ -202,7 +202,7 @@ fun InscriptionPage(inscriptionHash: String, onSendAction: () -> Unit, onShareAc
                 Text(text = idTitle, fontSize = 16.sp, color = Color.White)
 
                 Box(modifier = Modifier.height(20.dp))
-                Text(text = stringResource(id = R.string.COLLECTION), fontSize = 16.sp, color = Color(0xFF999999))
+                Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                 Box(modifier = Modifier.height(8.dp))
                 Text(text = state.value.collection, fontSize = 16.sp, color = Color.White)
 
