@@ -13,12 +13,15 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncInscriptionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class InscriptionActivity : AppCompatActivity() {
@@ -40,10 +43,11 @@ class InscriptionActivity : AppCompatActivity() {
     private val inscriptionHash by lazy {
         requireNotNull( intent.getStringExtra(ARGS_HASH))
     }
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         getSendResult =
             registerForActivityResult(
                 InscriptionSendActivity.SendContract(),
@@ -55,6 +59,7 @@ class InscriptionActivity : AppCompatActivity() {
         setContent {
             InscriptionPage(inscriptionHash, { finish() }, onSendAction, onShareAction)
         }
+        jobManager.addJobInBackground(SyncInscriptionsJob(listOf(inscriptionHash)))
     }
 
     private val onSendAction = {
