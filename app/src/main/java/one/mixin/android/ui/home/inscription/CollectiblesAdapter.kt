@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemInscriptionBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.vo.safe.SafeInscription
-import one.mixin.android.extension.dp
 
 class CollectiblesAdapter(val callback: (SafeInscription) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
 
