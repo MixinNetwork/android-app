@@ -218,13 +218,13 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (type == TYPE_SOLANA) {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                     PropertyHelper.updateKeyValue(SOLANA_ADDRESS, address)
-                    JsSigner.updateAddress(address)
+                    JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, address)
                     RxBus.publish(WCUnlockEvent())
                     keyViewModel.success(address)
                 } else {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                     PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
-                    JsSigner.updateAddress(address)
+                    JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, address)
                     RxBus.publish(WCUnlockEvent())
                     keyViewModel.success(address)
                 }
