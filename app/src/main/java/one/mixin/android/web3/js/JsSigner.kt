@@ -58,7 +58,12 @@ object JsSigner {
     lateinit var address: String
         private set
 
-    fun updateAddress(address: String) {
+    fun updateAddress(network: String, address: String) {
+        if (network == JsSignerNetwork.Solana.name) {
+            solanaAddress = address
+        } else {
+            evmAddress = address
+        }
         JsSigner.address = address
     }
     fun useEvm() {

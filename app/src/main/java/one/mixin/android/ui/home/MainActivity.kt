@@ -44,6 +44,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
@@ -308,11 +309,15 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 lifecycleScope.launch {
                     if (e is WCEvent.V2) {
-                        val type = e.chainType ?: TYPE_ETH
-                        if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                        } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        if (e.requestType != WalletConnect.RequestType.Connect) {
+                            val type = e.chainType ?: TYPE_ETH
+                            if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            } else {
+                                WalletConnectActivity.show(this@MainActivity, e)
+                            }
                         } else {
                             WalletConnectActivity.show(this@MainActivity, e)
                         }

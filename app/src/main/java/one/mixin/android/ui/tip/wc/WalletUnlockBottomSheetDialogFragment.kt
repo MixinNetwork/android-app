@@ -20,7 +20,6 @@ import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.databinding.FragmentWalletUnlockBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
@@ -94,10 +93,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-            setCustomViewHeight(requireActivity().visibleDisplayHeight())
-        }
+        (dialog as BottomSheet).setCustomView(contentView)
         val chain =
             when (type) {
                 TYPE_POLYGON -> getString(R.string.Polygon)
@@ -105,18 +101,22 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 TYPE_SOLANA -> getString(R.string.Solana)
                 else -> getString(R.string.Ethereum)
             }
-        val otherChain =
-            when (type) {
-                TYPE_POLYGON -> arrayOf(getString(R.string.Polygon), getString(R.string.Ethereum), getString(R.string.BSC))
-                TYPE_BSC -> arrayOf(getString(R.string.BSC), getString(R.string.Ethereum), getString(R.string.Polygon))
-                TYPE_SOLANA -> arrayOf(getString(R.string.Solana), getString(R.string.Ethereum), getString(R.string.Polygon))
-                else -> arrayOf(getString(R.string.Ethereum), getString(R.string.Polygon), getString(R.string.BSC))
-            }
+
         binding.apply {
             agreement1.text = getString(R.string.unlock_web3_account_agreement_1, chain)
             agreement2.text = getString(R.string.unlock_web3_account_agreement_2, chain)
-            agreement3.text = getString(R.string.unlock_web3_account_agreement_3, *otherChain)
+            if (type != TYPE_SOLANA) {
+                val otherChain =
+                    when (type) {
+                        TYPE_POLYGON -> arrayOf(getString(R.string.Polygon), getString(R.string.Ethereum), getString(R.string.BSC))
+                        TYPE_BSC -> arrayOf(getString(R.string.BSC), getString(R.string.Ethereum), getString(R.string.Polygon))
+                        else -> arrayOf(getString(R.string.Ethereum), getString(R.string.Polygon), getString(R.string.BSC))
+                    }
+                agreement3.text = getString(R.string.unlock_web3_account_agreement_3, *otherChain)
+            }
             agreementLayout.isVisible = type != TYPE_SOLANA
+            contentVa.displayedChild = 0
+            header.awaiting(getString(R.string.unlock_web3_account, chain), getString(R.string.unlock_web3_account_description, chain))
             bottom.setOnClickListener({
                 dismiss()
             }, {
@@ -218,13 +218,13 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (type == TYPE_SOLANA) {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                     PropertyHelper.updateKeyValue(SOLANA_ADDRESS, address)
-                    JsSigner.updateAddress(address)
+                    JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, address)
                     RxBus.publish(WCUnlockEvent())
                     keyViewModel.success(address)
                 } else {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                     PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
-                    JsSigner.updateAddress(address)
+                    JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, address)
                     RxBus.publish(WCUnlockEvent())
                     keyViewModel.success(address)
                 }
