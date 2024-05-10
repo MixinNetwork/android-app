@@ -58,7 +58,7 @@
     <string name="alert_key_contact_text_message">sent you a message</string>
     <string name="alert_key_contact_transcript_message">sent you an transcript</string>
     <string name="alert_key_contact_transfer_message">sent you a transfer</string>
-    <string name="alert_key_contact_collectible_message">sent you a inscription</string>
+    <string name="alert_key_contact_collectible_message">sent you an inscription</string>
     <string name="alert_key_contact_video_message">sent you a video</string>
     <string name="alert_key_group_audio_invite_message">%1$s invites you to a voice call</string>
     <string name="alert_key_group_audio_message">%1$s sent an audio</string>

@@ -19,7 +19,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
@@ -33,12 +32,14 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
+import timber.log.Timber
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -60,8 +61,8 @@ interface TransactionInterface {
                     if (asset == null || snapshot == null) {
                         toast(R.string.Data_error)
                     } else {
-                        contentBinding.avatar.setOnClickListener {
-                            clickAvatar(fragment, asset)
+                        contentBinding.avatarVa.setOnClickListener {
+                            clickAvatar(fragment, asset, snapshot.inscriptionHash)
                         }
                         updateUI(fragment, contentBinding, asset, snapshot)
                         fetchThatTimePrice(
@@ -86,8 +87,8 @@ interface TransactionInterface {
                 toast(R.string.Data_error)
             }
         } else {
-            contentBinding.avatar.setOnClickListener {
-                clickAvatar(fragment, tokenItem)
+            contentBinding.avatarVa.setOnClickListener {
+                clickAvatar(fragment, tokenItem, snapshotItem.inscriptionHash)
             }
             updateUI(fragment, contentBinding, tokenItem, snapshotItem)
             fetchThatTimePrice(
@@ -112,9 +113,12 @@ interface TransactionInterface {
     private fun clickAvatar(
         fragment: Fragment,
         asset: TokenItem,
+        inscriptionHash: String?
     ) {
         val curActivity = fragment.requireActivity()
-        if (curActivity is WalletActivity) {
+        if (inscriptionHash != null) {
+            InscriptionActivity.show(curActivity, inscriptionHash)
+        } else if (curActivity is WalletActivity) {
             if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
                 fragment.view?.navigate(
                     R.id.action_transaction_fragment_to_transactions,

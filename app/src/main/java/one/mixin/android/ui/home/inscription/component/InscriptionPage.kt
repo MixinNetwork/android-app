@@ -23,10 +23,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -46,7 +43,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
