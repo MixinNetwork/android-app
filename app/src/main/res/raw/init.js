@@ -1,12 +1,13 @@
 (function() {
     var config = {
         ethereum: {
-            chainId: %1$s,
-            rpcUrl: '%2$s',
-            address: '%3$s',
+            chainId: "%1$s",
+            rpcUrl: "%2$s",
+            address: "%3$s",
         },
         solana: {
             cluster: "mainnet-beta",
+            address: "%4$s",
         },
         isDebug: false
     };
@@ -27,6 +28,9 @@
     };
 
     window.ethereum.setAddress(config.ethereum.address);
+    if (config.solana.address) {
+        window.solana.setAddress(config.solana.address);
+    }
 
     function initializeEIP6963(provider, options = {}) {
         const providerDetail = {
