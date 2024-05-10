@@ -9,6 +9,7 @@ import one.mixin.android.databinding.ItemInscriptionBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.extension.dp
 
 class CollectiblesAdapter(val callback: (SafeInscription) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
 
@@ -38,7 +39,7 @@ class CollectiblesAdapter(val callback: (SafeInscription) -> Unit) : RecyclerVie
 
 class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewHolder(binding.root) {
     init {
-        binding.root.round(20)
+        binding.root.round(8.dp)
     }
     @SuppressLint("SetTextI18n")
     fun bind(inscriptionItem: SafeInscription, callback: (SafeInscription) -> Unit) {

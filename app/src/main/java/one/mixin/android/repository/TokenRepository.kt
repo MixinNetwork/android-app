@@ -870,4 +870,6 @@ class TokenRepository
         suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<SafeInscription> {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }
+
+        fun inscriptionStateByHash(hash: String) = outputDao.inscriptionStateByHash(hash)
 }
