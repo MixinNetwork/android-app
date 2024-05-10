@@ -85,7 +85,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
 
         binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onInscriptionClick(messageItem.conversationId, messageItem.messageId, safeInscription?.inscriptionHash, messageItem.snapshotId)
+                onItemListener.onInscriptionClick(messageItem.conversationId, messageItem.messageId, messageItem.assetId, safeInscription?.inscriptionHash, messageItem.snapshotId)
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
