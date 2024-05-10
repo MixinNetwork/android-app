@@ -133,6 +133,8 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -872,6 +874,11 @@ class WebFragment : BaseFragment() {
                         )
                     }
                 },
+                onEmptyAddress = { network ->
+                    lifecycleScope.launch {
+                        WalletUnlockBottomSheetDialogFragment.getInstance(network).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    }
+                }
             ), "_mw_")
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
@@ -1724,6 +1731,7 @@ class WebFragment : BaseFragment() {
         val onWalletActionSuccessful: (String) -> Unit,
         val onWalletActionError: (Long) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
+        val onEmptyAddress: (String) -> Unit,
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
@@ -1736,6 +1744,9 @@ class WebFragment : BaseFragment() {
                 JsSigner.useSolana()
             } else {
                 JsSigner.useEvm()
+            }
+            if (isAddressEmpty(network)) {
+                return
             }
             when(method) {
                 DAppMethod.REQUESTACCOUNTS -> {
@@ -1808,6 +1819,14 @@ class WebFragment : BaseFragment() {
                     Timber.e("json $json")
                 }
             }
+        }
+
+        private fun isAddressEmpty(network: String): Boolean {
+            if (JsSigner.address.isBlank()) {
+                onEmptyAddress(network)
+                return true
+            }
+            return false
         }
 
         private fun signTransaction(
