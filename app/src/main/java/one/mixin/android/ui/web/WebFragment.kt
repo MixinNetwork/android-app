@@ -1598,7 +1598,7 @@ class WebFragment : BaseFragment() {
             Timber.e("onPageStarted ${JsSigner.currentChain.name}")
             if (!redirect) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
-                view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.currentChain, JsSigner.address), null)
+                view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }
             redirect = false
         }

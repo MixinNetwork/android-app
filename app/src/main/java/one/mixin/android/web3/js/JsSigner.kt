@@ -52,8 +52,10 @@ object JsSigner {
         }
     }
 
-    private lateinit var evmAddress: String
-    private lateinit var solanaAddress: String
+    lateinit var evmAddress: String
+        private set
+    lateinit var solanaAddress: String
+        private set
 
     lateinit var address: String
         private set
