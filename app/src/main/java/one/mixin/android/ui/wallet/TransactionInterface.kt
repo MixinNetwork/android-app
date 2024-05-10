@@ -294,7 +294,7 @@ interface TransactionInterface {
                 collectionLayout.isVisible = true
                 inscriptionHashTv.text = snapshot.inscriptionHash
                 idTv.text = "#${snapshot.sequence}"
-                collectionTv.text = snapshot.inscriptionHash
+                collectionTv.text = snapshot.name
             }
 
             val amountText =
