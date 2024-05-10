@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 class SyncInscriptionsJob(val hash: List<String>) : BaseJob(
-    Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).requireNetwork(),
+    Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).persist().requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

@@ -182,7 +182,6 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
-import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -695,13 +694,18 @@ class ConversationFragment() :
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             }
 
-            override fun onInscriptionClick(conversationId: String, messageId: String, inscriptionHash: String?, snapshotId: String?) {
+            override fun onInscriptionClick(conversationId: String, messageId: String, assetId: String?, inscriptionHash: String?, snapshotId: String?) {
                 if (inscriptionHash == null) {
-                    toast(R.string.Data_loading)
                     jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, messageId, null, snapshotId))
-                } else {
-                    InscriptionActivity.show(requireActivity(), inscriptionHash)
                 }
+                activity?.addFragment(
+                    this@ConversationFragment,
+                    TransactionFragment.newInstance(
+                        assetId = assetId,
+                        snapshotId = snapshotId,
+                    ),
+                    TransactionFragment.TAG,
+                )
             }
 
             override fun onUrlLongClick(url: String) {

@@ -53,29 +53,18 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendAction: () -> Unit, onShareAction: () -> Unit) {
     val scrollState = rememberScrollState()
     val viewModel = hiltViewModel<Web3ViewModel>()
-    val inscriptionItem = viewModel.inscriptionByHash(inscriptionHash).observeAsState().value ?: return
+    val inscription = viewModel.inscriptionStateByHash(inscriptionHash).observeAsState().value ?: return
 
-    val contentUrl = inscriptionItem.contentURL
-    val idTitle = "#${inscriptionItem.sequence}"
-
-    val state = remember {
-        mutableStateOf(InscriptionState("","","","", ""))
-    }
-
-    LaunchedEffect(key1 = inscriptionItem) {
-        val result = viewModel.loadData(inscriptionHash) ?: return@LaunchedEffect
-        state.value = result
-    }
     Box(Modifier.background(Color(0xFF000000))) {
         AsyncImage(
-            model = contentUrl, contentDescription = null,
+            model = inscription.contentURL ?: "", contentDescription = null,
             modifier = Modifier
                 .fillMaxHeight()
                 .graphicsLayer {
                     alpha = 0.5f
                 }
                 .blur(30.dp),
-            placeholder = painterResource(R.drawable.ic_default_inscription),
+            placeholder = painterResource(R.drawable.ic_inscription_content),
             contentScale = ContentScale.Crop
         )
         Column(
@@ -102,19 +91,19 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
                         .aspectRatio(1f)
                 ) {
                     GlideImage(
-                        data = contentUrl,
+                        data = inscription.contentURL ?: "",
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(8.dp)),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_default_inscription),
+                        placeHolderPainter = painterResource(id = R.drawable.ic_inscription_content),
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
 
                 Row(modifier = Modifier.padding(horizontal = 12.dp)) {
-                    if (state.value.state == "unspent") {
+                    if (inscription.state == "unspent") {
                         Button(
                             onClick = onSendAction, colors = ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F)
@@ -164,12 +153,12 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
                 Box(modifier = Modifier.height(20.dp))
                 Text(text = stringResource(id = R.string.ID), fontSize = 16.sp, color = Color(0xFF999999))
                 Box(modifier = Modifier.height(8.dp))
-                Text(text = idTitle, fontSize = 16.sp, color = Color.White)
+                Text(text = inscription.id, fontSize = 16.sp, color = Color.White)
 
                 Box(modifier = Modifier.height(20.dp))
                 Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                 Box(modifier = Modifier.height(8.dp))
-                Text(text = state.value.collection, fontSize = 16.sp, color = Color.White)
+                Text(text = inscription.collection, fontSize = 16.sp, color = Color.White)
 
 
                 Box(modifier = Modifier.height(20.dp))
@@ -177,14 +166,14 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
                     Column {
                         Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
                         Box(modifier = Modifier.height(8.dp))
-                        Text(text = state.value.tokenTotal, fontSize = 16.sp, color = Color.White)
+                        Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
                         Box(modifier = Modifier.height(5.dp))
-                        Text(text = state.value.tokenValue, fontSize = 14.sp, color = Color(0xFF999999))
+                        Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
                     }
 
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(state.value.assetIcon)
+                            .data(inscription.iconUrl)
                             .transformations(CoilRoundedHexagonTransformation())
                             .build(),
                         contentDescription = null,

@@ -337,7 +337,7 @@ object NotificationGenerator : Injector() {
             }
 
             message.type == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> {
-                notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_inscription_message))
+                notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_collectible_message))
                 notificationBuilder.setContentTitle(user.fullName)
                 contentText = context.getString(R.string.alert_key_contact_transfer_message)
             }

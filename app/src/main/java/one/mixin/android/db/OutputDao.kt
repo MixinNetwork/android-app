@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeInscription
@@ -67,6 +68,18 @@ interface OutputDao : BaseDao<Output> {
         """
     )
     fun inscriptions(): LiveData<List<SafeInscription>>
+
+    // Get the latest inscription, inscription UTXO cannot be separated
+    @Query("""
+        SELECT ic.name, i.sequence, o.amount, t.symbol, t.price_usd, t.icon_url, o.state, i.content_url
+        FROM outputs o 
+        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        LEFT JOIN tokens t on t.collection_hash = i.collection_hash
+        WHERE o.inscription_hash = :hash
+        ORDER BY o.sequence DESC LIMIT 1
+    """)
+    fun inscriptionStateByHash(hash: String): LiveData<InscriptionState?>
 
     @Query("""
         SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash AND state = 'unspent'

@@ -145,30 +145,6 @@ internal constructor(
         )
     }
 
-    suspend fun loadData(inscriptionHash: String) = withContext(Dispatchers.IO) {
-        val output = tokenRepository.findOutputByHash(inscriptionHash) ?: return@withContext null
-        val inscriptionItem = tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
-        val inscriptionCollection = tokenRepository.findInscriptionCollectionByHash(inscriptionHash) ?: return@withContext null
-        val asset = tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
-        InscriptionState(output.state, "${inscriptionCollection.name} #${inscriptionItem.sequence}", "${output.amount} ${asset.symbol}", amountAs(output.amount, asset), asset.iconUrl)
-    }
+    fun inscriptionStateByHash(inscriptionHash: String) = tokenRepository.inscriptionStateByHash(inscriptionHash)
 
-    private fun amountAs(
-        amount: String,
-        asset: TokenItem,
-    ): String {
-        val value =
-            try {
-                if (asset.priceFiat().toDouble() == 0.0) {
-                    BigDecimal.ZERO
-                } else {
-                    BigDecimal(amount) * asset.priceFiat()
-                }
-            } catch (e: ArithmeticException) {
-                BigDecimal.ZERO
-            } catch (e: NumberFormatException) {
-                BigDecimal.ZERO
-            }
-        return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
-    }
 }
