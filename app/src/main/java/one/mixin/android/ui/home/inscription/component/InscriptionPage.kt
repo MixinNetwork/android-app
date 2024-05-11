@@ -92,7 +92,7 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp)),
+                            .clip(RoundedCornerShape(12.dp)),
                         placeHolderPainter = painterResource(id = R.drawable.ic_inscription_content),
                     )
                 }
@@ -136,50 +136,52 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
 
                 Box(modifier = Modifier.height(28.dp))
 
-                Text(text = stringResource(id = R.string.HASH), fontSize = 16.sp, color = Color(0xFF999999))
-                Box(modifier = Modifier.height(8.dp))
-                Barcode(
-                    inscriptionHash, modifier = Modifier
-                        .width(128.dp)
-                        .height(24.dp)
-                )
-                Box(modifier = Modifier.height(4.dp))
-                Text(text = inscriptionHash, fontSize = 16.sp, color = Color(0xFF999999))
-
-                Box(modifier = Modifier.height(20.dp))
-                Text(text = stringResource(id = R.string.ID), fontSize = 16.sp, color = Color(0xFF999999))
-                Box(modifier = Modifier.height(8.dp))
-                Text(text = inscription.id, fontSize = 16.sp, color = Color.White)
-
-                Box(modifier = Modifier.height(20.dp))
-                Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
-                Box(modifier = Modifier.height(8.dp))
-                Text(text = inscription.collection, fontSize = 16.sp, color = Color.White)
-
-
-                Box(modifier = Modifier.height(20.dp))
-                Box(Modifier.fillMaxWidth()) {
-                    Column {
-                        Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
-                        Box(modifier = Modifier.height(8.dp))
-                        Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
-                        Box(modifier = Modifier.height(5.dp))
-                        Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
-                    }
-
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(inscription.iconUrl)
-                            .transformations(CoilRoundedHexagonTransformation())
-                            .build(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .width(20.dp)
-                            .height(20.dp)
-                            .clip(RoundedCornerShape(4.dp)),
-                        placeholder = painterResource(R.drawable.ic_inscription_icon),
+                Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+                    Text(text = stringResource(id = R.string.HASH), fontSize = 16.sp, color = Color(0xFF999999))
+                    Box(modifier = Modifier.height(8.dp))
+                    Barcode(
+                        inscriptionHash, modifier = Modifier
+                            .width(128.dp)
+                            .height(24.dp)
                     )
+                    Box(modifier = Modifier.height(4.dp))
+                    Text(text = inscriptionHash, fontSize = 16.sp, color = Color(0xFF999999))
+
+                    Box(modifier = Modifier.height(20.dp))
+                    Text(text = stringResource(id = R.string.ID), fontSize = 16.sp, color = Color(0xFF999999))
+                    Box(modifier = Modifier.height(8.dp))
+                    Text(text = inscription.id, fontSize = 16.sp, color = Color.White)
+
+                    Box(modifier = Modifier.height(20.dp))
+                    Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+                    Box(modifier = Modifier.height(8.dp))
+                    Text(text = inscription.collection, fontSize = 16.sp, color = Color.White)
+
+
+                    Box(modifier = Modifier.height(20.dp))
+                    Box(Modifier.fillMaxWidth()) {
+                        Column {
+                            Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
+                            Box(modifier = Modifier.height(8.dp))
+                            Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
+                            Box(modifier = Modifier.height(5.dp))
+                            Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
+                        }
+
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(inscription.iconUrl)
+                                .transformations(CoilRoundedHexagonTransformation())
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .width(20.dp)
+                                .height(20.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+                            placeholder = painterResource(R.drawable.ic_inscription_icon),
+                        )
+                    }
                 }
 
 

@@ -944,4 +944,4 @@ class ConversationViewModel
             withContext(Dispatchers.IO) {
                 conversationRepository.refreshCountByConversationId(conversationId)
             }
-    }
+}
