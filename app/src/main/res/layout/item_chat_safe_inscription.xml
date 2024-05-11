@@ -94,7 +94,7 @@
                 android:layout_height="20dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                app:layout_constraintBottom_toBottomOf="@id/chat_inscription_iv"
+                app:layout_constraintBottom_toBottomOf="@id/chat_inscription_icon"
                 app:layout_constraintEnd_toStartOf="@id/chat_inscription_icon"
                 app:layout_constraintStart_toEndOf="@id/chat_inscription_iv" />
 
