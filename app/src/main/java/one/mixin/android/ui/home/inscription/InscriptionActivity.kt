@@ -47,7 +47,16 @@ class InscriptionActivity : BaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_Transparent
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_Transparent
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
         getSendResult =
             registerForActivityResult(
