@@ -76,27 +76,17 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="1.5dp">
 
-            <com.facebook.shimmer.ShimmerFrameLayout
-                android:id="@+id/chat_inscription"
+            <ImageView
+                android:id="@+id/chat_inscription_iv"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_default_inscription"
                 android:layout_width="112dp"
                 android:layout_height="112dp"
                 android:layout_gravity="center"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:shimmer_base_alpha="1"
-                app:shimmer_highlight_alpha="0.3"
-                app:shimmer_duration="1500">
-
-                <ImageView
-                    android:id="@+id/chat_inscription_iv"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_default_inscription"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="start" />
-            </com.facebook.shimmer.ShimmerFrameLayout>
+                app:layout_constraintStart_toStartOf="parent" />
 
             <one.mixin.android.widget.BarcodeView
                 android:id="@+id/chat_barcode"
@@ -104,9 +94,9 @@
                 android:layout_height="20dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                app:layout_constraintBottom_toBottomOf="@id/chat_inscription_icon"
+                app:layout_constraintBottom_toBottomOf="@id/chat_inscription_iv"
                 app:layout_constraintEnd_toStartOf="@id/chat_inscription_icon"
-                app:layout_constraintStart_toEndOf="@id/chat_inscription" />
+                app:layout_constraintStart_toEndOf="@id/chat_inscription_iv" />
 
             <ImageView
                 android:id="@+id/chat_inscription_icon"
@@ -116,7 +106,7 @@
                 android:layout_height="20dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="12dp"
-                app:layout_constraintBottom_toBottomOf="@id/chat_inscription"
+                app:layout_constraintBottom_toBottomOf="@id/chat_inscription_iv"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
@@ -131,7 +121,7 @@
                 android:textColor="?attr/text_primary"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/chat_inscription" />
+                app:layout_constraintStart_toEndOf="@id/chat_inscription_iv" />
 
             <TextView
                 android:id="@+id/chat_number_tv"
@@ -145,7 +135,7 @@
                 android:textColor="?attr/text_assist"
                 app:layout_constraintTop_toBottomOf="@+id/chat_title_tv"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/chat_inscription" />
+                app:layout_constraintStart_toEndOf="@id/chat_inscription_iv" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

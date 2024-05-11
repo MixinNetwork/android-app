@@ -43,7 +43,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
     override fun getTitleResId() = if (send)R.string.Send else R.string.Share_Contact
 
-    override suspend fun getFriends() = viewModel.getFriends()
+    override suspend fun getFriends() = if(send) viewModel.findFriendsNotBot() else viewModel.getFriends()
 
     private var friendClick: ((User) -> Unit)? = null
 

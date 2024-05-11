@@ -8,12 +8,14 @@ import android.widget.LinearLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
+
 
 class TransferHeader : LinearLayout {
     private val _binding: ViewTransferHeaderBinding
@@ -23,7 +25,7 @@ class TransferHeader : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
         _binding = ViewTransferHeaderBinding.inflate(LayoutInflater.from(context), this)
-        _binding.nftIcon.round(8)
+        _binding.nftIcon.round(12.dp)
         gravity = Gravity.CENTER_HORIZONTAL
     }
 

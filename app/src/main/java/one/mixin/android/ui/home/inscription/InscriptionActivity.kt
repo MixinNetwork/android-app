@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionsJob
+import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
@@ -24,7 +25,7 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class InscriptionActivity : AppCompatActivity() {
+class InscriptionActivity : BaseActivity() {
     companion object {
         private const val ARGS_HASH = "args_hash"
         fun show(context: Context, inscriptionHash:String) {
