@@ -52,13 +52,4 @@ class InscriptionState(
         get() {
             return "$amount ${symbol ?: ""}"
         }
-
-    val collection: String
-        get() {
-            return if (name.isNullOrEmpty()) {
-                ""
-            } else {
-                "$name #${sequence ?: ""}"
-            }
-        }
 }

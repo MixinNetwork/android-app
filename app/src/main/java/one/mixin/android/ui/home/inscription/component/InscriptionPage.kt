@@ -155,7 +155,7 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction:()->Unit, onSendActio
                     Box(modifier = Modifier.height(20.dp))
                     Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                     Box(modifier = Modifier.height(8.dp))
-                    Text(text = inscription.collection, fontSize = 16.sp, color = Color.White)
+                    Text(text = inscription.name ?: "", fontSize = 16.sp, color = Color.White)
 
 
                     Box(modifier = Modifier.height(20.dp))
