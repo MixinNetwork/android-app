@@ -71,6 +71,9 @@
 
     <attr name="code_border" format="color|reference" />
 
+    <attr name="nft_border" format="color|reference" />
+    <attr name="bg_nft" format="color|reference" />
+
     <attr name="bg_divider" format="color|reference" />
 
     <attr name="bg_chain_gradient_start" format="color|reference" />

@@ -53,6 +53,9 @@
     <color name="bgBlockNight">#23272B</color>
     <color name="codeBorderNight">#545859</color>
 
+    <color name="nftBorderNight">#6E7073</color>
+    <color name="bgNftNight">#3B3F44</color>
+
     <color name="dividerNight">#424649</color>
 
     <color name="musicPlayedNight">#99FFFFFF</color>

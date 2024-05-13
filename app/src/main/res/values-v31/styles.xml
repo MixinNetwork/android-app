@@ -88,6 +88,9 @@
 
         <item name="code_border">@color/codeBorder</item>
 
+        <item name="nft_border">@color/nftBorder</item>
+        <item name="bg_nft">@color/bgNft</item>
+
         <item name="map_default">@drawable/ic_map_default</item>
 
         <item name="android:colorControlHighlight">@color/highlight</item>

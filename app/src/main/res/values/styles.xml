@@ -82,6 +82,8 @@
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>
+        <item name="nft_border">@color/nftBorder</item>
+        <item name="bg_nft">@color/bgNft</item>
 
         <item name="map_default">@drawable/ic_map_default</item>
 
