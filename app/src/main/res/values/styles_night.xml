@@ -69,6 +69,8 @@
 
         <item name="flag_night">true</item>
         <item name="code_border">@color/codeBorderNight</item>
+        <item name="nft_border">@color/nftBorderNight</item>
+        <item name="bg_nft">@color/bgNftNight</item>
         <item name="map_default">@drawable/ic_map_default_night</item>
 
         <item name="android:colorControlHighlight">@color/highlight_night</item>
