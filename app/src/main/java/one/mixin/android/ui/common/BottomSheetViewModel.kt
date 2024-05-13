@@ -75,6 +75,8 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
@@ -892,9 +894,32 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun findInscriptionCollectionByHash(hash: String): InscriptionCollection? = withContext(Dispatchers.IO) {
+            tokenRepository.findInscriptionCollectionByHash(hash)
+        }
+
+        suspend fun findInscriptionByHash(hash: String): InscriptionItem? = withContext(Dispatchers.IO) {
+            tokenRepository.findInscriptionByHash(hash)
+        }
+
+        suspend fun findUnspentOutputByHash(hash: String): Output? = withContext(Dispatchers.IO) {
+            tokenRepository.findUnspentOutputByHash(hash)
+        }
+
         suspend fun refreshAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
                 tokenRepository.findOrSyncAsset(assetId)
+            }
+        }
+
+        suspend fun refreshInscriptionItem(assetId: String): InscriptionItem? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.getInscriptionItem(assetId)
+            }
+        }
+        suspend fun refreshInscriptionCollection(hash: String): InscriptionCollection? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.getInscriptionCollection(hash)
             }
         }
 

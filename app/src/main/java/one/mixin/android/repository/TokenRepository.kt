@@ -10,6 +10,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import androidx.room.withTransaction
+import com.mapbox.maps.extension.style.expressions.dsl.generated.has
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -43,6 +44,7 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
@@ -69,6 +71,8 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
@@ -122,6 +126,7 @@ class TokenRepository
         private val outputDao: OutputDao,
         private val userDao: UserDao,
         private val inscriptionDao: InscriptionDao,
+        private val inscriptionCollectionDao: InscriptionCollectionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -869,4 +874,24 @@ class TokenRepository
         }
 
         fun inscriptionStateByHash(hash: String) = outputDao.inscriptionStateByHash(hash)
+
+        suspend fun getInscriptionItem(hash:String): InscriptionItem? {
+            val response = tokenService.getInscriptionItem(hash)
+            if (response.isSuccess) {
+                inscriptionDao.insert(response.data!!)
+                return response.data!!
+            } else {
+                return null
+            }
+        }
+
+        suspend fun getInscriptionCollection(hash: String): InscriptionCollection? {
+            val response = tokenService.getInscriptionCollection(hash)
+            if (response.isSuccess) {
+                inscriptionCollectionDao.insert(response.data!!)
+                return response.data!!
+            } else {
+                return null
+            }
+        }
 }
