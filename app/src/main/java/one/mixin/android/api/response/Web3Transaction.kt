@@ -3,6 +3,9 @@ package one.mixin.android.api.response
 import android.content.Context
 import android.os.Parcelable
 import android.text.SpannedString
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 import java.util.Locale
@@ -18,22 +21,35 @@ import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
 import one.mixin.android.web3.details.Web3TransactionType
 
+@Entity(tableName = "web3_transactions")
 @Parcelize
 data class Web3Transaction(
+    @PrimaryKey
+    @ColumnInfo("id")
     val id: String,
     @SerializedName("transaction_hash")
+    @ColumnInfo("transaction_hash")
     val transactionHash: String,
     @SerializedName("operation_type")
+    @ColumnInfo("operation_type")
     val operationType: String,
+    @ColumnInfo("status")
     val status: String,
+    @ColumnInfo("sender")
     val sender: String,
+    @ColumnInfo("receiver")
     val receiver: String,
+    @ColumnInfo("fee")
     val fee: Web3Fee,
+    @ColumnInfo("transfers")
     val transfers: List<Web3Transfer>,
+    @ColumnInfo("approvals")
     val approvals: List<Approval>,
     @SerializedName("app_metadata")
+    @ColumnInfo("app_metadata")
     val appMetadata: AppMetadata?,
     @SerializedName("created_at")
+    @ColumnInfo("created_at")
     val createdAt: String
 ) : Parcelable {
     val icon: String?

@@ -9,6 +9,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.db.web3.Web3Database
 import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
@@ -37,6 +38,10 @@ internal object BaseDbModule {
         app: Application,
         mixinDatabase: MixinDatabase,
     ): PendingDatabase = PendingDatabaseImp.getDatabase(app.applicationContext, mixinDatabase.floodMessageDao(), mixinDatabase.jobDao())
+
+    @Singleton
+    @Provides
+    fun provideWeb3Database(app: Application) = Web3Database.getDatabase(app)
 
     @Singleton
     @Provides
