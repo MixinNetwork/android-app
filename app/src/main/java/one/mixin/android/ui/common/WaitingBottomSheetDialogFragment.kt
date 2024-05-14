@@ -3,7 +3,7 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.databinding.FragmentWatingBottomSheetBinding
+import one.mixin.android.databinding.FragmentWaitingBottomSheetBinding
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.util.viewBinding
@@ -18,7 +18,7 @@ class WaitingBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance() = WaitingBottomSheetDialogFragment()
     }
 
-    private val binding by viewBinding(FragmentWatingBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentWaitingBottomSheetBinding::inflate)
 
     @Inject
     lateinit var jobManager: MixinJobManager

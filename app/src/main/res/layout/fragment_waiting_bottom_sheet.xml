@@ -5,13 +5,19 @@
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical">
 
+    <ImageView
+        android:layout_marginTop="70dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_transfer_waiting"
+        android:layout_gravity="center_horizontal" />
+
     <TextView
         android:id="@+id/title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="70dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginTop="24dp"
         android:text="@string/Waiting_transaction"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
@@ -26,7 +32,7 @@
         android:layout_marginTop="@dimen/margin16"
         android:gravity="center_horizontal"
         android:textColor="?attr/text_primary"
-        android:text="@string/Waiting_transaction_description"/>
+        android:text="@string/Waiting_transaction_description" />
 
     <Button
         style="@style/AppTheme.MaterialButton"
