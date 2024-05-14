@@ -297,6 +297,19 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     binding.transferAlert.isVisible = true
                     binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
                 }
+            } else if (t is NftBiometricItem) {
+                // check Stranger
+                val transferBiometricItem = t as NftBiometricItem
+                val tips = mutableListOf<String>()
+                if (!isStrangerTransferDisable() && transferBiometricItem.receivers.size == 1 && transferBiometricItem.receivers.first().relationship != UserRelationship.FRIEND.name) {
+                    tips.add(getString(R.string.unfamiliar_person_reminder, transferBiometricItem.receivers.first().fullName, transferBiometricItem.receivers.first().identityNumber))
+                }
+                if (tips.isEmpty()) {
+                    binding.transferAlert.isVisible = false
+                } else {
+                    binding.transferAlert.isVisible = true
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
+                }
             } else if (t is WithdrawBiometricItem) {
                 // check withdraw within 30 days
                 val withdrawBiometricItem = t as WithdrawBiometricItem
