@@ -14,6 +14,7 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.web3ChainId
+import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
@@ -82,7 +83,9 @@ object JsSigner {
     }
     fun useEvm() {
         address = evmAddress
-        currentChain = Chain.Ethereum
+        if (!evmChainList.contains(currentChain)) {
+            currentChain = Chain.Ethereum
+        }
         currentNetwork = JsSignerNetwork.Ethereum.name
     }
     fun useSolana() {
