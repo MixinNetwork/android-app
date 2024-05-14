@@ -33,6 +33,7 @@ import one.mixin.android.tip.wc.internal.web3ChainId
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.webrtc.CallDebugLiveData
 import org.sol4k.Connection
 import org.sol4k.Keypair
@@ -596,7 +597,7 @@ object WalletConnectV2 : WalletConnect() {
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
-        val nonce = transactionCount.transactionCount
+        val nonce = transactionDao.lastNonce()?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
@@ -626,8 +627,8 @@ object WalletConnectV2 : WalletConnect() {
         if (approve) {
             approveRequestInternal(hexMessage, sessionRequest)
         }
-        // Todo replace address, assetKey
-        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, chain.web3ChainId(), "", hexMessage, "", nonce.toLong(), nowInUtc()))
+        // Todo replace address
+        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, chain.web3ChainId(), "", hexMessage, nonce.toLong(), nowInUtc()))
         return hexMessage
     }
 

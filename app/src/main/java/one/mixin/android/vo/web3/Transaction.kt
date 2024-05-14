@@ -16,8 +16,6 @@ class Transaction(
     val address: String,
     @ColumnInfo("raw_transaction")
     val rawTransaction: String,
-    @ColumnInfo("asset_key")
-    val assetKey: String,
     @ColumnInfo("nonce")
     val nonce: Long,
     @ColumnInfo("created_at")

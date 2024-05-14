@@ -173,7 +173,7 @@ object JsSigner {
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
-        val nonce = transactionCount.transactionCount
+        val nonce = transactionDao.lastNonce()?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
 
         val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas
@@ -202,7 +202,7 @@ object JsSigner {
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
-        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, (chain ?: currentChain).web3ChainId(), address, hexMessage, "", nonce.toLong(), nowInUtc()))
+        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, (chain ?: currentChain).web3ChainId(), address, hexMessage, nonce.toLong(), nowInUtc()))
         Timber.d("$TAG signTransaction $hexMessage")
         return hexMessage
     }
