@@ -627,8 +627,7 @@ object WalletConnectV2 : WalletConnect() {
         if (approve) {
             approveRequestInternal(hexMessage, sessionRequest)
         }
-        // Todo replace address
-        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, chain.web3ChainId(), "", hexMessage, nonce.toLong(), nowInUtc()))
+        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, chain.web3ChainId(), credential.address, hexMessage, nonce.toLong(), nowInUtc()))
         return hexMessage
     }
 
