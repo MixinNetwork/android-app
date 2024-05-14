@@ -3,14 +3,17 @@ package one.mixin.android.web3.js
 import android.util.LruCache
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.web3ChainId
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
@@ -40,6 +43,10 @@ object JsSigner {
     sealed class JsSignerNetwork(val name: String) {
         data object Ethereum: JsSignerNetwork("ethereum")
         data object Solana: JsSignerNetwork("solana")
+    }
+
+    private val transactionDao by lazy {
+        MixinApplication.get().web3Database.transactionDao()
     }
 
     private const val TAG = "JsSigner"
@@ -195,6 +202,7 @@ object JsSigner {
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
+        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, (chain ?: currentChain).web3ChainId(), address, hexMessage, "", nonce.toLong(), nowInUtc()))
         Timber.d("$TAG signTransaction $hexMessage")
         return hexMessage
     }

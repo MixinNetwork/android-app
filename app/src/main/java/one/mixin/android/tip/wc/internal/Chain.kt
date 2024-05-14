@@ -45,6 +45,20 @@ sealed class Chain(
         }
 }
 
+fun Chain.web3ChainId():String {
+    return when {
+        this is Chain.Ethereum-> "ethereum"
+        this is Chain.Arbitrum-> "arbitrum"
+        this is Chain.Optimism-> "optimism"
+        this is Chain.Base-> "base"
+        this is Chain.BinanceSmartChain-> "binance-smart-chain"
+        this is Chain.Polygon-> "polygon"
+        this is Chain.Avalanche-> "avalanche"
+        this is Chain.Solana-> "solana"
+        else -> throw IllegalArgumentException("Not support chain")
+    }
+}
+
 internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
 internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
 
