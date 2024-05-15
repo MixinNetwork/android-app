@@ -1490,6 +1490,7 @@
     <string name="copy_address">Copy Address</string>
     <string name="coming_soon">Coming soon</string>
     <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
+    <string name="web3_sol_deposit_description">Use this address for receiving tokens on Solana.</string>
     <string name="No_asset">Don’t have assets</string>
     <string name="Ethereum_Account">Ethereum Account</string>
     <string name="Solana_Account">Solana Account</string>

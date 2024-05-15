@@ -17,10 +17,8 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceiveBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
@@ -57,11 +55,20 @@ class Wbe3ReceiveFragment : BaseFragment() {
             binding.address.text = address
             val qr = this@Wbe3ReceiveFragment.binding.qr
             val qrAvatar = this@Wbe3ReceiveFragment.binding.qrAvatar
-            // TODO logo
             val isSolana = exploreSolana(requireContext())
-            binding.bottomHintFl.isVisible = !isSolana
-            binding.bottomHintTv.isVisible = !isSolana
-            qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
+            if (isSolana) {
+                qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)
+                binding.avatar2.isVisible = false
+                binding.avatar3.isVisible = false
+                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_sol)
+                binding.bottomHintTv.setText(R.string.web3_sol_deposit_description)
+            } else {
+                qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
+                binding.avatar2.isVisible = true
+                binding.avatar3.isVisible = true
+                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_eth)
+                binding.bottomHintTv.setText(R.string.web3_deposit_description)
+            }
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
                     val r = address.generateQRCode(qr.width)
