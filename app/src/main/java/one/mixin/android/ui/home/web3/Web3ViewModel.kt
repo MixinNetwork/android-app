@@ -103,7 +103,7 @@ internal constructor(
             tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
         }
 
-    suspend fun web3TokenItems() = tokenRepository.web3TokenItems()
+    suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
 
     suspend fun getFees(
         id: String,

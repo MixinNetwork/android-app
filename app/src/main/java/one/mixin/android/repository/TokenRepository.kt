@@ -376,7 +376,7 @@ class TokenRepository
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
 
-        suspend fun web3TokenItems(): List<TokenItem> = tokenDao.web3TokenItems(Web3ChainIds)
+        suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
         suspend fun fuzzySearchToken(
             query: String,

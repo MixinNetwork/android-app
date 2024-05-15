@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceuceSelectionBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -49,7 +50,12 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
                 if (address.isEmpty()) {
                     return@launch
                 }
-                val list = web3ViewModel.web3TokenItems()
+                val chainIds = if (exploreSolana(requireContext())) {
+                    listOf(Constants.ChainId.SOLANA_CHAIN_ID)
+                } else {
+                    Web3ChainIds
+                }
+                val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
                         navTo(InputFragment.newInstance(token, address), InputFragment.TAG)

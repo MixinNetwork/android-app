@@ -2,6 +2,8 @@ package one.mixin.android.api.response
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.extension.base64Encode
@@ -10,11 +12,9 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import org.sol4k.Connection
-import org.sol4k.Keypair
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
 import org.sol4k.Transaction
-import org.sol4k.exception.RpcException
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
 import org.sol4k.instruction.Instruction
 import org.sol4k.instruction.SplTransferInstruction
@@ -113,7 +113,7 @@ fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
     }
 }
 
-fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String): JsSignMessage {
+suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String): JsSignMessage {
     if (chainName.equals("solana", true)) {
         JsSigner.useSolana()
         val sender = PublicKey(fromAddress)
@@ -126,19 +126,16 @@ fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String
             val tokenMintAddress = PublicKey(assetKey)
             val (receiveAssociatedAccount) = PublicKey.findProgramDerivedAddress(receiver, tokenMintAddress)
             val conn =  Connection(RpcUrl.MAINNNET)
-            try {
+            val receiveAssociatedAccountInfo = withContext(Dispatchers.IO) {
                 conn.getAccountInfo(receiveAssociatedAccount)
-            } catch (e: RpcException) {
-                if (!e.message.contains("could not find account")) {
-                    instructions.add(CreateAssociatedTokenAccountInstruction(
-                        payer = sender,
-                        associatedToken = receiveAssociatedAccount,
-                        owner = receiver,
-                        mint = tokenMintAddress,
-                    ))
-                } else {
-                    throw IllegalStateException("get associatedAccount ${e.stackTraceToString()}")
-                }
+            }
+            if (receiveAssociatedAccountInfo == null) {
+                instructions.add(CreateAssociatedTokenAccountInstruction(
+                    payer = sender,
+                    associatedToken = receiveAssociatedAccount,
+                    owner = receiver,
+                    mint = tokenMintAddress,
+                ))
             }
             val (sendAssociatedAccount) = PublicKey.findProgramDerivedAddress(sender, tokenMintAddress)
             instructions.add(SplTransferInstruction(
@@ -153,7 +150,8 @@ fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String
             instructions,
             sender,
         )
-        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = transaction.serialize().base64Encode())
+        val tx = transaction.serialize().base64Encode()
+        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx)
     } else {
         JsSigner.useEvm()
         val transaction =

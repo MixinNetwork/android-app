@@ -89,6 +89,7 @@ class SolanaFragment : BaseFragment() {
                         builder.setCustomView(bottomBinding.root)
                         val bottomSheet = builder.create()
                         bottomBinding.apply {
+                            title.setText(R.string.Solana_Account)
                             addressTv.text = this@SolanaFragment.address?.formatPublicKey()
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))

@@ -219,7 +219,11 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
 
     private fun isValidAddress(address: String): Boolean {
         return if (token.chainName.equals("solana", true)) {
-            PublicKey(address).isOnCurve()
+            try {
+                PublicKey(address).isOnCurve()
+            } catch (e: Exception) {
+                false
+            }
         } else {
             WalletUtils.isValidAddress(address)
         }
