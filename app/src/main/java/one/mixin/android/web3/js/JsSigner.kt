@@ -176,7 +176,7 @@ object JsSigner {
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
-        val nonce = transactionDao.lastNonce()?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
+        val nonce = transactionDao.lastNonce((chain ?: currentChain).web3ChainId())?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
 
         val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas

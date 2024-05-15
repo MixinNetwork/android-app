@@ -7,6 +7,6 @@ import one.mixin.android.vo.web3.Transaction
 
 @Dao
 interface TransactionDao : BaseDao<Transaction> {
-    @Query("SELECT nonce FROM transactions ORDER BY nonce DESC LIMIT 1")
-    fun lastNonce(): Long?
+    @Query("SELECT nonce FROM transactions WHERE chain_id = :chainId ORDER BY nonce DESC LIMIT 1")
+    fun lastNonce(chainId: String): Long?
 }

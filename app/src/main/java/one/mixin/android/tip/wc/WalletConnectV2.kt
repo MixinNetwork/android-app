@@ -597,7 +597,7 @@ object WalletConnectV2 : WalletConnect() {
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
-        val nonce = transactionDao.lastNonce()?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
+        val nonce = transactionDao.lastNonce(chain.web3ChainId())?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
