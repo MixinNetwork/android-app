@@ -61,14 +61,14 @@ internal constructor(
         return v2List
     }
 
-    fun dapps(chainIds: List<String>): List<Dapp> {
+    fun dapps(chainId: String): List<Dapp> {
         val gson = GsonHelper.customGson
-        val result = mutableListOf<Dapp>()
-        for (id in chainIds) {
-            val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$id", null)
-            result.addAll(gson.fromJson(dapps, Array<Dapp>::class.java).toList())
+        val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$chainId", null)
+        return if (dapps == null) {
+            emptyList()
+        } else {
+            gson.fromJson(dapps, Array<Dapp>::class.java).toList()
         }
-        return result
     }
 
     suspend inline fun fuzzySearchUrl(query: String?): String? {
