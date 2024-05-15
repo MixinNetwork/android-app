@@ -87,6 +87,10 @@ fun Web3Token.getChainIdFromName(): String {
     }
 }
 
+fun Web3Token.isSolana(): Boolean {
+    return  chainName.equals("solana", true)
+}
+
 private fun Web3Token.getChainAssetKey(): String {
     return if (chainName.equals("ethereum", true)) "0x0000000000000000000000000000000000000000"
     else if (chainName.equals("base", true)) "0x0000000000000000000000000000000000000000"
