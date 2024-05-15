@@ -33,7 +33,4 @@ interface TipService {
     suspend fun updateTipSecret(
         @Body request: TipSecretRequest,
     ): MixinResponse<Unit>
-
-    @GET("external/dapps")
-    suspend fun dapps():MixinResponse<List<ChainDapp>>
 }

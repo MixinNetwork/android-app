@@ -20,7 +20,7 @@ class RefreshDappJob : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
-        val response = tipService.dapps()
+        val response = web3Service.dapps()
         if (response.isSuccess && response.data != null) {
             val gson = GsonHelper.customGson
             val chainDapp = response.data!!
