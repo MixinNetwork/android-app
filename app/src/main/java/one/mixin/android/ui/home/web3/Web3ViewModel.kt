@@ -11,23 +11,18 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeInscription
-import one.mixin.android.vo.safe.TokenItem
-import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
 
