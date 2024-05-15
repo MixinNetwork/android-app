@@ -40,6 +40,8 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
         const val SEARCH_DEBOUNCE = 300L
     }
 
+    private val dappChainIds = listOf(Chain.Ethereum.chainId, Chain.Solana.chainId)
+
     private var keyword: String? = null
         set(value) {
             if (field != value) {
@@ -108,16 +110,16 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
             if (keyword.isNullOrBlank()) {
                 binding.searchRv.isVisible = true
                 binding.empty.isVisible = false
-                searchAdapter.userList = web3ViewModel.dapps(Chain.Ethereum.chainId)
+                searchAdapter.userList = web3ViewModel.dapps(dappChainIds)
                 searchAdapter.notifyDataSetChanged()
             } else {
                 searchAdapter.clear()
                 val dappList =
-                    web3ViewModel.dapps(Chain.Ethereum.chainId).filter { dapp ->
+                    web3ViewModel.dapps(dappChainIds).filter { dapp ->
                         dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
                     }
                 searchAdapter.userList = dappList
-                if (dappList.isNullOrEmpty()) {
+                if (dappList.isEmpty()) {
                     binding.searchRv.isVisible = false
                     binding.empty.isVisible = true
                 } else {
