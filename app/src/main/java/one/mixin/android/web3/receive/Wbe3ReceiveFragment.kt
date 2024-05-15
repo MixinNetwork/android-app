@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
@@ -47,7 +48,7 @@ class Wbe3ReceiveFragment : BaseFragment() {
         binding.title.setOnClickListener {  }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         lifecycleScope.launch {
-            val address = PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
+            val address = getExploreAddress(requireContext())
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
@@ -56,6 +57,10 @@ class Wbe3ReceiveFragment : BaseFragment() {
             binding.address.text = address
             val qr = this@Wbe3ReceiveFragment.binding.qr
             val qrAvatar = this@Wbe3ReceiveFragment.binding.qrAvatar
+            // TODO logo
+            val isSolana = exploreSolana(requireContext())
+            binding.bottomHintFl.isVisible = !isSolana
+            binding.bottomHintTv.isVisible = !isSolana
             qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
