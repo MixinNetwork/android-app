@@ -254,6 +254,11 @@ object JsSigner {
     ): org.sol4k.VersionedTransaction {
         val holder = Keypair.fromSecretKey(priv)
         val conn = Connection(RpcUrl.MAINNNET)
+        // TODO estimate remain balance
+//        val accountInfo = conn.getAccountInfo(holder.publicKey)
+//        if (accountInfo != null) {
+//            val minimalBalance = conn.getMinimumBalanceForRentExemption(accountInfo.space)
+//        }
         val blockhash = conn.getLatestBlockhash()
         tx.message.recentBlockhash = blockhash
         tx.sign(holder)

@@ -11,9 +11,11 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.isSolana
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -61,7 +63,11 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             setOnClickAction { id ->
                 when (id) {
                     R.id.send -> {
-                        navTo(InputAddressFragment.newInstance(address, token, chainToken), InputAddressFragment.TAG)
+                        if (token.isSolana()) {
+                            toast(R.string.coming_soon)
+                        } else {
+                            navTo(InputAddressFragment.newInstance(address, token, chainToken), InputAddressFragment.TAG)
+                        }
                     }
 
                     R.id.receive -> {

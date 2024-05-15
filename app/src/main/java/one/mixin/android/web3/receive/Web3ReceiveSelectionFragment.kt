@@ -2,6 +2,7 @@
 package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceuceSelectionBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -43,11 +46,16 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         binding.walletTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.walletRl.setOnClickListener {
             lifecycleScope.launch {
-                val address = PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
+                val address = getExploreAddress(requireContext())
                 if (address.isEmpty()) {
                     return@launch
                 }
-                val list = web3ViewModel.web3TokenItems()
+                val chainIds = if (exploreSolana(requireContext())) {
+                    listOf(Constants.ChainId.SOLANA_CHAIN_ID)
+                } else {
+                    Web3ChainIds
+                }
+                val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
                         navTo(InputFragment.newInstance(token, address), InputFragment.TAG)
@@ -75,3 +83,16 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         _binding = null
     }
 }
+
+suspend fun getExploreAddress(context: Context): String {
+    return if (exploreEvm(context)) {
+        PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
+    } else if (exploreSolana(context)) {
+        PropertyHelper.findValueByKey(Constants.Account.ChainAddress.SOLANA_ADDRESS, "")
+    } else {
+        ""
+    }
+}
+
+fun exploreEvm(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 1
+fun exploreSolana(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 2

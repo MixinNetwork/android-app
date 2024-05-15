@@ -23,6 +23,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.receive.exploreSolana
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -105,19 +106,24 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
     @SuppressLint("NotifyDataSetChanged")
     private fun fuzzySearch(keyword: String?) {
         lifecycleScope.launch {
+            val chainId = if (exploreSolana(requireContext())) {
+                Chain.Solana.chainId
+            } else {
+                Chain.Ethereum.chainId
+            }
             if (keyword.isNullOrBlank()) {
                 binding.searchRv.isVisible = true
                 binding.empty.isVisible = false
-                searchAdapter.userList = web3ViewModel.dapps(Chain.Ethereum.chainId)
+                searchAdapter.userList = web3ViewModel.dapps(chainId)
                 searchAdapter.notifyDataSetChanged()
             } else {
                 searchAdapter.clear()
                 val dappList =
-                    web3ViewModel.dapps(Chain.Ethereum.chainId).filter { dapp ->
+                    web3ViewModel.dapps(chainId).filter { dapp ->
                         dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
                     }
                 searchAdapter.userList = dappList
-                if (dappList.isNullOrEmpty()) {
+                if (dappList.isEmpty()) {
                     binding.searchRv.isVisible = false
                     binding.empty.isVisible = true
                 } else {

@@ -39,7 +39,9 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.InputFragment
+import org.sol4k.PublicKey
 import org.web3j.crypto.WalletUtils
+import timber.log.Timber
 
 @AndroidEntryPoint
 class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
@@ -206,7 +208,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     }
 
     private fun updateSaveButton() {
-        if (binding.addrEt.text.isNotEmpty() && isValidEthAddress(binding.addrEt.text.toString())) {
+        if (binding.addrEt.text.isNotEmpty() && isValidAddress(binding.addrEt.text.toString())) {
             binding.continueTv.isEnabled = true
             binding.continueTv.textColor = requireContext().getColor(R.color.white)
         } else {
@@ -215,7 +217,15 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
     }
 
-    private fun isValidEthAddress(address: String): Boolean {
-        return WalletUtils.isValidAddress(address)
+    private fun isValidAddress(address: String): Boolean {
+        return if (token.chainName.equals("solana", true)) {
+            try {
+                PublicKey(address).isOnCurve()
+            } catch (e: Exception) {
+                false
+            }
+        } else {
+            WalletUtils.isValidAddress(address)
+        }
     }
 }

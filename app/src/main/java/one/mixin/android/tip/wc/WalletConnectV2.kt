@@ -168,7 +168,7 @@ object WalletConnectV2 : WalletConnect() {
                         )
                         return
                     }
-                    val requireChain = supportChainList.first {
+                    val requireChain = supportChainList.firstOrNull {
                         (namespace).chains?.contains(it.chainId) == true
                     }
                     val chainType = when {
