@@ -316,9 +316,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
                     }
-                    topRl.setOnClickListener {
-                        AssetKeyBottomSheetDialogFragment.newInstance(asset)
-                            .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
+                    if (asset.collectionHash.isNullOrEmpty()) {
+                        topRl.setOnClickListener {
+                            AssetKeyBottomSheetDialogFragment.newInstance(asset)
+                                .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
+                        }
                     }
                     updateHeader(asset)
                     sendReceiveView.send.setOnClickListener {
