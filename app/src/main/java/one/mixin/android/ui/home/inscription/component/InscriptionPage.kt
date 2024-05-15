@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.inscription.component
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.collection.objectFloatMapOf
@@ -58,6 +59,7 @@ import one.mixin.android.R
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.widget.BlurTransformation
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @SuppressLint("UnrememberedMutableState")
@@ -98,17 +100,7 @@ private fun InscriptionPageImp(inscription: InscriptionState, inscriptionHash: S
                 expend = false
             }) {
 
-        AsyncImage(
-            model = inscription.contentURL ?: "", contentDescription = null,
-            modifier = Modifier
-                .fillMaxHeight()
-                .graphicsLayer {
-                    alpha = 0.5f
-                }
-                .blur(30.dp),
-            placeholder = painterResource(R.drawable.ic_inscription_content),
-            contentScale = ContentScale.Crop
-        )
+        BlurImage(inscription.contentURL)
 
         Column(
             modifier = Modifier.systemGesturesPadding()
@@ -303,5 +295,33 @@ private fun InscriptionPageImp(inscription: InscriptionState, inscriptionHash: S
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BlurImage(url: String?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        AsyncImage(
+            model = url, contentDescription = null,
+            modifier = Modifier
+                .fillMaxHeight()
+                .graphicsLayer {
+                    alpha = 0.5f
+                }
+                .blur(30.dp),
+            placeholder = painterResource(R.drawable.ic_inscription_content),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .transformations(BlurTransformation(LocalContext.current))
+                .build(), contentDescription = null,
+            modifier = Modifier
+                .fillMaxHeight(),
+            placeholder = painterResource(R.drawable.ic_inscription_content),
+            contentScale = ContentScale.Crop
+        )
     }
 }
