@@ -1,16 +1,13 @@
 package one.mixin.android.ui.home.inscription.component
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.collection.objectFloatMapOf
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,8 +32,12 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -50,41 +51,56 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.widget.BlurTransformation
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun InscriptionPage(inscriptionHash: String, onCloseAction: () -> Unit, onSendAction: () -> Unit, onShareAction: () -> Unit) {
-    val scrollState = rememberScrollState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel = hiltViewModel<Web3ViewModel>()
-    val inscription = viewModel.inscriptionStateByHash(inscriptionHash).observeAsState().value ?: return
+    val liveData = viewModel.inscriptionStateByHash(inscriptionHash)
+    val inscription = remember {
+        mutableStateOf<InscriptionState?>(null)
+    }
+    DisposableEffect(inscriptionHash, lifecycleOwner) {
+        val observer = Observer<InscriptionState?> {
+            inscription.value = it
+        }
+        liveData.observe(lifecycleOwner, observer)
+        onDispose { liveData.removeObserver(observer) }
+    }
+    val value = inscription.value
+    if (value == null) {
+        Box {}
+    } else {
+        InscriptionPageImp(value, inscriptionHash, onCloseAction, onSendAction, onShareAction)
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun InscriptionPageImp(inscription: InscriptionState, inscriptionHash: String, onCloseAction: () -> Unit, onSendAction: () -> Unit, onShareAction: () -> Unit) {
+    val scrollState = rememberScrollState()
     var expend by remember {
         mutableStateOf(false)
     }
-
     Box(
         Modifier
             .background(Color(0xFF000000))
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                 expend = false
             }) {
-        AsyncImage(
-            model = inscription.contentURL ?: "", contentDescription = null,
-            modifier = Modifier
-                .fillMaxHeight()
-                .graphicsLayer {
-                    alpha = 0.5f
-                }
-                .blur(30.dp),
-            placeholder = painterResource(R.drawable.ic_inscription_content),
-            contentScale = ContentScale.Crop
-        )
+
+        BlurImage(inscription.contentURL)
 
         Column(
             modifier = Modifier.systemGesturesPadding()
@@ -279,5 +295,33 @@ fun InscriptionPage(inscriptionHash: String, onCloseAction: () -> Unit, onSendAc
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BlurImage(url: String?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        AsyncImage(
+            model = url, contentDescription = null,
+            modifier = Modifier
+                .fillMaxHeight()
+                .graphicsLayer {
+                    alpha = 0.5f
+                }
+                .blur(30.dp),
+            placeholder = painterResource(R.drawable.ic_inscription_content),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .transformations(BlurTransformation(LocalContext.current))
+                .build(), contentDescription = null,
+            modifier = Modifier
+                .fillMaxHeight(),
+            placeholder = painterResource(R.drawable.ic_inscription_content),
+            contentScale = ContentScale.Crop
+        )
     }
 }

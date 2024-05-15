@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -315,9 +316,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
                     }
-                    topRl.setOnClickListener {
-                        AssetKeyBottomSheetDialogFragment.newInstance(asset)
-                            .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
+                    if (asset.collectionHash.isNullOrEmpty()) {
+                        topRl.setOnClickListener {
+                            AssetKeyBottomSheetDialogFragment.newInstance(asset)
+                                .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
+                        }
                     }
                     updateHeader(asset)
                     sendReceiveView.send.setOnClickListener {
@@ -402,6 +405,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                             "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
                         }
                     avatar.loadToken(asset)
+                    contractIv.isInvisible = !asset.collectionHash.isNullOrEmpty()
                     avatar.setOnClickListener(
                         object : DebugClickListener() {
                             override fun onDebugClick() {
