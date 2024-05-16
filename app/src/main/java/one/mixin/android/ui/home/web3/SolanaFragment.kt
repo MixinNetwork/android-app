@@ -72,8 +72,7 @@ class SolanaFragment : BaseFragment() {
             setOnClickAction { id ->
                 when (id) {
                     R.id.send -> {
-//                        sendCallback(tokens)
-                        toast(R.string.coming_soon)
+                        sendCallback(tokens)
                     }
 
                     R.id.receive -> {

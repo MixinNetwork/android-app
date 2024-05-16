@@ -119,23 +119,28 @@ class ExploreFragment : BaseFragment() {
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
 
-            if (defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 0) {
-                exploreVa.displayedChild = 0
-                radioFavorite.isChecked = true
-                radioEth.isChecked = false
-                radioSolana.isChecked = false
-            } else if (defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 2) == 0) {
-                exploreVa.displayedChild = 2
-                radioFavorite.isChecked = false
-                radioEth.isChecked = false
-                radioSolana.isChecked = true
-                navigate(solanaFragment, SolanaFragment.TAG)
-            } else {
-                exploreVa.displayedChild = 1
-                radioFavorite.isChecked = false
-                radioEth.isChecked = true
-                radioSolana.isChecked = false
-                navigate(ethereumFragment, EthereumFragment.TAG)
+            val exploreSelect = defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0)
+            when (exploreSelect) {
+                0 -> {
+                    exploreVa.displayedChild = 0
+                    radioFavorite.isChecked = true
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = false
+                }
+                2 -> {
+                    exploreVa.displayedChild = 1
+                    radioFavorite.isChecked = false
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = true
+                    navigate(solanaFragment, SolanaFragment.TAG)
+                }
+                else -> {
+                    exploreVa.displayedChild = 1
+                    radioFavorite.isChecked = false
+                    radioEth.isChecked = true
+                    radioSolana.isChecked = false
+                    navigate(ethereumFragment, EthereumFragment.TAG)
+                }
             }
 
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->

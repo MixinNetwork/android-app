@@ -12,4 +12,9 @@ object Constants {
 
     @JvmStatic
     val COMPUTE_BUDGET__PROGRAM_ID  = PublicKey("ComputeBudget111111111111111111111111111111")
+
+    object SysPubkey {
+        @JvmStatic
+        val RENT_PUBKEY = PublicKey("SysvarRent111111111111111111111111111111111")
+    }
 }

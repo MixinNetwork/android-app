@@ -2,7 +2,6 @@ package org.sol4k
 
 import one.mixin.android.extension.hexStringToByteArray
 import org.junit.Test
-import java.math.BigDecimal
 import kotlin.test.assertEquals
 
 class ComputeBudgetTest {
