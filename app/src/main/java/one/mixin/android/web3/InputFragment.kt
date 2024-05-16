@@ -42,6 +42,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -262,15 +263,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         } else {
                             v
                         }
-                        val transaction = token.buildTransaction(fromAddress, toAddress, amount)
-                        showBrowserBottomSheetDialogFragment(
-                            requireActivity(),
-                            transaction,
-                            token = token,
-                            amount = amount,
-                            toAddress = toAddress,
-                            chainToken = chainToken,
-                        )
+                        lifecycleScope.launch( CoroutineExceptionHandler { _, error ->
+                            ErrorHandler.handleError(error)
+                            alertDialog.dismiss()
+                        }) {
+                            val transaction = token.buildTransaction(fromAddress, toAddress, amount)
+                            showBrowserBottomSheetDialogFragment(
+                                requireActivity(),
+                                transaction,
+                                token = token,
+                                amount = amount,
+                                toAddress = toAddress,
+                                chainToken = chainToken,
+                            )
+                        }
                     }
                 }
                 switchIv.setOnClickListener {

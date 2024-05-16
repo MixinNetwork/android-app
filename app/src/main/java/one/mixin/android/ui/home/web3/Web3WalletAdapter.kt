@@ -162,7 +162,11 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                 }
             symbolTv.text = token.symbol
             balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
-            val changePercent = BigDecimal(token.changePercent)
+            val changePercent = if (token.changePercent.isBlank()) {
+                BigDecimal.ZERO
+            } else {
+                BigDecimal(token.changePercent)
+            }
             changeTv.text = "${changePercent.numberFormat2()}%"
             changeTv.textColorResource = if (changePercent >= BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
             if (token.price == "0") {

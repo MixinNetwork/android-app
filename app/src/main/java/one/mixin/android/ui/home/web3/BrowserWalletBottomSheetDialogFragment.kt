@@ -57,6 +57,7 @@ import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.send.InputAddressFragment
+import org.sol4k.SignInInput
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -125,6 +126,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var asset: Token? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
     private var solanaTx: org.sol4k.VersionedTransaction? by mutableStateOf(null)
+    private var solanaSignInInput: SignInInput? by mutableStateOf(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -137,7 +139,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setContent {
                 BrowserPage(
                     JsSigner.address, currentChain, amount, token, toAddress, signMessage.type, step, tipGas, solanaTx?.calcFee(), asset,
-                    signMessage.wcEthereumTransaction, signMessage.reviewData, url, title, errorInfo, insufficientGas,
+                    signMessage.wcEthereumTransaction, solanaSignInInput?.toMessage() ?: signMessage.reviewData, url, title, errorInfo, insufficientGas,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     showPin = { showPin() },
                     onDismissRequest = { dismiss() },
@@ -209,8 +211,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (chain == Chain.Solana) {
             lifecycleScope.launch {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
-                if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                    solanaTx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
+                try {
+                    if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
+                        solanaTx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
+                    } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
+                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
+                    }
+                } catch (e: Exception) {
+                    handleException(e)
                 }
             }
             return
@@ -258,9 +266,13 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val sig = JsSigner.sendSolanaTransaction(tx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
-                    val priv =viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val hex = JsSigner.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
+                } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
+                    val output = JsSigner.solanaSignIn(priv, solanaSignInInput!!)
+                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$output\");")
                 } else {
                     throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                 }

@@ -4,7 +4,7 @@ import okio.Buffer
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
-import kotlin.math.pow
+import kotlin.math.max
 
 class VersionedTransaction(
     val message: Message,
@@ -17,7 +17,11 @@ class VersionedTransaction(
         for (i in 0 until message.header.numRequireSignatures) {
             val a = message.accounts[i]
             if (a.verify(signature, data)) {
-                signatures[i] = Base58.encode(signature)
+                if (signatures.isEmpty()) {
+                    signatures.add(Base58.encode(signature))
+                } else {
+                    signatures[i] = Base58.encode(signature)
+                }
                 break
             }
         }
@@ -40,7 +44,7 @@ class VersionedTransaction(
     }
 
     fun calcFee(): BigDecimal {
-        val sigFee = BigDecimal(5000 * signatures.size).divide(BigDecimal(10.0.pow(9)))
+        val sigFee = lamportToSol(BigDecimal(5000 * max(signatures.size, 1)))
         val accounts = message.accounts
         val data = mutableListOf<ByteArray>()
         for (i in message.instructions) {
@@ -59,27 +63,23 @@ class VersionedTransaction(
 
         @JvmStatic
         fun from(encodedTransaction: String): VersionedTransaction {
-            return try {
-                var byteArray = Base64.getDecoder().decode(encodedTransaction)
-                val signaturesCount = Binary.decodeLength(byteArray)
-                byteArray = signaturesCount.second
-                val signatures = mutableListOf<String>()
-                for (i in 0 until signaturesCount.first) {
-                    val signature = byteArray.slice(0 until SIGNATURE_LENGTH)
-                    byteArray = byteArray.drop(SIGNATURE_LENGTH).toByteArray()
-                    val encodedSignature = Base58.encode(signature.toByteArray())
-                    signatures.add(encodedSignature)
-                }
-
-                val message = Message.deserialize(byteArray)
-
-                if(message.header.numRequireSignatures != signaturesCount.first) {
-                    throw Exception("numRequireSignatures is not equal to signatureCount")
-                }
-                VersionedTransaction(message, signatures)
-            } catch (e: Exception) {
-                throw e
+            var byteArray = Base64.getDecoder().decode(encodedTransaction)
+            val signaturesCount = Binary.decodeLength(byteArray)
+            byteArray = signaturesCount.second
+            val signatures = mutableListOf<String>()
+            for (i in 0 until signaturesCount.first) {
+                val signature = byteArray.slice(0 until SIGNATURE_LENGTH)
+                byteArray = byteArray.drop(SIGNATURE_LENGTH).toByteArray()
+                val encodedSignature = Base58.encode(signature.toByteArray())
+                signatures.add(encodedSignature)
             }
+
+            val message = Message.deserialize(byteArray)
+
+            if(signaturesCount.first > 0 && message.header.numRequireSignatures != signaturesCount.first) {
+                throw Exception("numRequireSignatures is not equal to signatureCount")
+            }
+            return VersionedTransaction(message, signatures)
         }
     }
 }

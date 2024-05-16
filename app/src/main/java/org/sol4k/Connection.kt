@@ -149,6 +149,12 @@ class Connection @JvmOverloads constructor(
         }
     }
 
+    fun getMinimumBalanceForRentExemption(space: Int): Long {
+        return rpcCall("getMinimumBalanceForRentExemption", listOf(
+            Json.encodeToJsonElement(space.toString())
+        ))
+    }
+
     fun requestAirdrop(accountAddress: PublicKey, amount: Long): String {
         return rpcCall(
             "requestAirdrop",

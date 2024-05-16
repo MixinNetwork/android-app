@@ -1,6 +1,8 @@
 package one.mixin.android
 
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.junit.Test
@@ -77,6 +79,6 @@ class Bip44Test {
         )
         transaction.sign(sender)
         val signature: String = connection.sendTransaction(transaction.serialize())
-        println("Transaction Signature: $signature")
+        println("Transaction Signature: $signature\ntx: ${transaction.serialize().base64Encode()}")
     }
 }

@@ -161,6 +161,7 @@ import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
 import org.json.JSONObject
+import org.sol4k.SignInInput
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
@@ -1813,6 +1814,12 @@ class WebFragment : BaseFragment() {
                     val o = obj.getJSONObject("object")
                     val raw = o.getString("raw")
                     signRawTransaction(id, raw)
+                }
+
+                DAppMethod.SINGIN -> {
+                    val o = obj.getJSONObject("object")
+                    val data = o.getJSONObject("data")
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
                 }
 
                 else -> {

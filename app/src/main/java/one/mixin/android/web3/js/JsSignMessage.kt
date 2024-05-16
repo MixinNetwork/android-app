@@ -21,6 +21,10 @@ class JsSignMessage(
         const val TYPE_MESSAGE = 2
         const val TYPE_TRANSACTION = 3
         const val TYPE_RAW_TRANSACTION = 4
+        const val TYPE_SIGN_IN = 5
+
+        fun isSignMessage(type: Int): Boolean =
+            type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
     }
 
     val reviewData: String?

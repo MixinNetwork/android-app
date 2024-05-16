@@ -11,11 +11,17 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.evmChainList
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
+import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.RpcUrl
+import org.sol4k.SignInAccount
+import org.sol4k.SignInInput
+import org.sol4k.SignInOutput
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -70,7 +76,9 @@ object JsSigner {
     }
     fun useEvm() {
         address = evmAddress
-        currentChain = Chain.Ethereum
+        if (!evmChainList.contains(currentChain)) {
+            currentChain = Chain.Ethereum
+        }
         currentNetwork = JsSignerNetwork.Ethereum.name
     }
     fun useSolana() {
@@ -246,6 +254,11 @@ object JsSigner {
     ): org.sol4k.VersionedTransaction {
         val holder = Keypair.fromSecretKey(priv)
         val conn = Connection(RpcUrl.MAINNNET)
+        // TODO estimate remain balance
+//        val accountInfo = conn.getAccountInfo(holder.publicKey)
+//        if (accountInfo != null) {
+//            val minimalBalance = conn.getMinimumBalanceForRentExemption(accountInfo.space)
+//        }
         val blockhash = conn.getLatestBlockhash()
         tx.message.recentBlockhash = blockhash
         tx.sign(holder)
@@ -255,6 +268,21 @@ object JsSigner {
     fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
         val conn = Connection(RpcUrl.MAINNNET)
         return conn.sendTransaction(tx.serialize())
+    }
+
+    fun solanaSignIn(
+        priv: ByteArray,
+        signInInput: SignInInput,
+    ) : String {
+        val signInMessage = signInInput.toMessage().toByteArray()
+        val holder = Keypair.fromSecretKey(priv)
+        val sig = holder.sign(signInMessage)
+        val signInOutput = SignInOutput(
+            account = SignInAccount(holder.publicKey.toBase58()),
+            signedMessage = signInMessage.encodeToBase58String(),
+            signature = sig.encodeToBase58String(),
+        )
+        return GsonHelper.customGson.toJson(signInOutput).toHex()
     }
 
     private fun throwError(

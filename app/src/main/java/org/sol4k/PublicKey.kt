@@ -25,6 +25,9 @@ class PublicKey {
     fun verify(signature: ByteArray, message: ByteArray): Boolean =
         Signature(bytes, ByteArray(0)).detached_verify(message, signature)
 
+    fun isOnCurve(): Boolean =
+        TweetNaclFast.isOnCurve(bytes)
+
     override fun toString(): String = toBase58()
 
     override fun equals(other: Any?): Boolean {
