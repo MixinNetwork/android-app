@@ -14,6 +14,7 @@ import org.sol4k.api.EpochInfo
 import org.sol4k.api.Health
 import org.sol4k.api.IsBlockhashValidResult
 import org.sol4k.api.TokenAccountBalance
+import org.sol4k.rpc.TokenAmount
 import org.sol4k.api.TransactionSimulation
 import org.sol4k.api.TransactionSimulationError
 import org.sol4k.api.TransactionSimulationSuccess
@@ -22,6 +23,7 @@ import org.sol4k.rpc.Balance
 import org.sol4k.rpc.BlockhashResponse
 import org.sol4k.rpc.EpochInfoResult
 import org.sol4k.rpc.GetAccountInfoResponse
+import org.sol4k.rpc.GetTokenApplyResponse
 import org.sol4k.rpc.Identity
 import org.sol4k.rpc.RpcErrorResponse
 import org.sol4k.rpc.RpcRequest
@@ -153,6 +155,10 @@ class Connection @JvmOverloads constructor(
         return rpcCall("getMinimumBalanceForRentExemption", listOf(
             Json.encodeToJsonElement(space.toString())
         ))
+    }
+
+    fun getTokenSupply(tokenPubkey: String): TokenAmount? {
+        return rpcCall<GetTokenApplyResponse, JsonElement>("getTokenSupply", listOf(Json.encodeToJsonElement(tokenPubkey))).value
     }
 
     fun requestAirdrop(accountAddress: PublicKey, amount: Long): String {

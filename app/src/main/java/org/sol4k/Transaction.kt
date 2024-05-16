@@ -75,10 +75,15 @@ class Transaction(
     private fun buildAccountKeys(): List<AccountMeta> {
         val programIds = instructions
             .map { it.programId }.toSet()
-        val baseAccountKeys = instructions
-            .flatMap { it.keys }
-            .filter { acc -> acc.publicKey != this.feePayer }
-            .filter { acc -> acc.publicKey !in programIds }
+        val baseAccountKeys =
+            instructions
+                .asSequence()
+                .flatMap { it.keys }
+                .filter { acc -> acc.publicKey != this.feePayer }
+                .filter { acc -> acc.publicKey !in programIds }
+                .distinctBy { it.publicKey }
+                .sortedWith(compareBy({ it.signer }, { it.signer && !it.writable }, { !it.signer && !it.writable }))
+                .toList()
         val programIdKeys = programIds
             .map { AccountMeta(it, writable = false, signer = false) }
         val feePayerList = listOf(AccountMeta(feePayer, writable = true, signer = true))

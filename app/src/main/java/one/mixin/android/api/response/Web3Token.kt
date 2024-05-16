@@ -122,9 +122,9 @@ suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v
         JsSigner.useSolana()
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
-        val amount = solToLamport(v).toLong()
         val instructions = mutableListOf<Instruction>()
         if (assetKey == "11111111111111111111111111111111") {
+            val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
             val tokenMintAddress = PublicKey(assetKey)
@@ -141,12 +141,21 @@ suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v
                     mint = tokenMintAddress,
                 ))
             }
+            val tokenAmount = withContext(Dispatchers.IO) {
+                conn.getTokenSupply(assetKey)
+            }
+            if (tokenAmount == null) {
+                throw IllegalStateException("getTokenSupply for $assetKey result is null")
+            }
             val (sendAssociatedAccount) = PublicKey.findProgramDerivedAddress(sender, tokenMintAddress)
             instructions.add(SplTransferInstruction(
                 from = sendAssociatedAccount,
                 to = receiveAssociatedAccount,
+                mint = tokenMintAddress,
                 owner = sender,
-                amount = amount,
+                signers = emptyList(),
+                amount = BigDecimal(v).multiply(BigDecimal.TEN.pow(tokenAmount.decimals)).toLong(),
+                decimals = tokenAmount.decimals,
             ))
         }
         val transaction = Transaction(
