@@ -27,6 +27,9 @@ class Web3TokenHeader : ConstraintLayout {
         _binding.receive.setOnClickListener {
             onClickAction?.invoke(it.id)
         }
+        _binding.more.setOnClickListener {
+            onClickAction?.invoke(it.id)
+        }
     }
 
     private var onClickAction: ((Int) -> Unit)? = null

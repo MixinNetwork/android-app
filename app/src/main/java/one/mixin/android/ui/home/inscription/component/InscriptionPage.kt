@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.systemGesturesPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -211,7 +212,9 @@ private fun InscriptionPageImp(inscription: InscriptionState, inscriptionHash: S
                                             .height(24.dp)
                                     )
                                     Box(modifier = Modifier.height(4.dp))
-                                    Text(text = inscriptionHash, fontSize = 16.sp, color = Color(0xFF999999))
+                                    SelectionContainer {
+                                        Text(text = inscriptionHash, fontSize = 16.sp, color = Color(0xFF999999))
+                                    }
 
                                     Box(modifier = Modifier.height(20.dp))
                                     Text(text = stringResource(id = R.string.ID), fontSize = 16.sp, color = Color(0xFF999999))
