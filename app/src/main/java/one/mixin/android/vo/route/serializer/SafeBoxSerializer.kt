@@ -12,13 +12,15 @@ object SafeBoxSerializer : Serializer<SafeBox> {
     override val defaultValue: SafeBox = SafeBox(mutableListOf())
 
     override suspend fun readFrom(input: InputStream): SafeBox {
-        try {
-            return Json.decodeFromString(
+        return try {
+            Json.decodeFromString(
                 SafeBox.serializer(),
                 input.readBytes().decodeToString(),
             )
         } catch (serialization: SerializationException) {
             throw CorruptionException("Unable to read UserPrefs", serialization)
+        } catch (e:Exception){
+            defaultValue
         }
     }
 
