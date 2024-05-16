@@ -5,10 +5,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
-import java.math.BigDecimal
 import one.mixin.android.databinding.ViewWeb3HeaderBinding
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 
 class Web3Header : ConstraintLayout {
     private val _binding: ViewWeb3HeaderBinding
@@ -32,6 +32,7 @@ class Web3Header : ConstraintLayout {
     }
 
     private var onClickAction: ((Int) -> Unit)? = null
+
     fun setOnClickAction(onClickAction: ((Int) -> Unit)? = null) {
         this.onClickAction = onClickAction
     }

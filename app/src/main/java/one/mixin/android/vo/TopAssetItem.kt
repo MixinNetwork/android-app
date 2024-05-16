@@ -36,7 +36,7 @@ data class TopAssetItem(
     val changeUsd: String,
     @SerializedName("collection_hash")
     @ColumnInfo(name = "collection_hash")
-    val collectionHash:String?
+    val collectionHash: String?,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK =

@@ -901,7 +901,6 @@ class MainActivity : BlazeBaseActivity() {
                         true
                     }
 
-
                     R.id.nav_explore -> {
                         navigationController.navigate(NavigationController.Explore, exploreFragment)
                         conversationListFragment.hideCircles()

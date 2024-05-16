@@ -17,7 +17,10 @@ class InscriptionSendActivity : BlazeBaseActivity() {
     }
 
     class SendContract : ActivityResultContract<String, Intent?>() {
-        override fun createIntent(context: Context, input: String): Intent {
+        override fun createIntent(
+            context: Context,
+            input: String,
+        ): Intent {
             return Intent(context, InscriptionSendActivity::class.java).apply {
             }
         }

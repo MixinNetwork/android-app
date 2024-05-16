@@ -14,9 +14,11 @@ import kotlinx.serialization.Serializable
 @SuppressLint("ParcelCreator")
 @Parcelize
 @Entity(
-    tableName = "tokens", indices = [
+    tableName = "tokens",
+    indices = [
         Index(value = arrayOf("kernel_asset_id")),
-        Index(value = arrayOf("collection_hash"))]
+        Index(value = arrayOf("collection_hash")),
+    ],
 )
 @Serializable
 data class Token(
@@ -113,5 +115,5 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         assetKey,
         dust,
         null,
-        collectionHash
+        collectionHash,
     )

@@ -19,6 +19,7 @@ class BarcodeView : View {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     private val paint = Paint(ANTI_ALIAS_FLAG)
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -38,6 +39,7 @@ class BarcodeView : View {
     }
 
     private var colors = mutableListOf<Int>()
+
     fun setData(hash: String) {
         val bytes = hash.hexStringToByteArray()
         val data = hash + bytes.sha3Sum256().slice(IntRange(0, 3)).toByteArray().bytesToHex()

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.tip.wc.connections
 
-import one.mixin.android.compose.GlideImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,8 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.tip.wc.WalletConnect
 
 @Composable
 fun ConnectionDetailsPage(

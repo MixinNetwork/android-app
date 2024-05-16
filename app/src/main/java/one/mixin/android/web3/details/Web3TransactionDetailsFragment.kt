@@ -41,7 +41,11 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
 
-        fun newInstance(address: String, web3Token: Web3Token, chainToken: Web3Token?) =
+        fun newInstance(
+            address: String,
+            web3Token: Web3Token,
+            chainToken: Web3Token?,
+        ) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putParcelable(ARGS_TOKEN, web3Token)

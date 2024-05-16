@@ -42,8 +42,8 @@ class Wbe3ReceiveFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentWeb3ReceiveBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
-        binding.root.setOnClickListener {  }
-        binding.title.setOnClickListener {  }
+        binding.root.setOnClickListener { }
+        binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         lifecycleScope.launch {
             val address = getExploreAddress(requireContext())

@@ -97,11 +97,12 @@ class CollectiblesFragment : BaseFragment() {
             collectiblesRv.adapter = collectiblesAdapter
         }
         web3ViewModel.inscriptions().observe(this.viewLifecycleOwner) {
-            binding.collectiblesVa.displayedChild = if (it.isEmpty()) {
-                1
-            } else {
-                0
-            }
+            binding.collectiblesVa.displayedChild =
+                if (it.isEmpty()) {
+                    1
+                } else {
+                    0
+                }
             collectiblesAdapter.list = it
         }
     }

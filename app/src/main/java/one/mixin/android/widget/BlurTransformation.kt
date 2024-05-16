@@ -19,7 +19,10 @@ class BlurTransformation(val context: Context, val radius: Int = 25) : Transform
 
     override val cacheKey: String = javaClass.name
 
-    override suspend fun transform(toTransform: Bitmap, size: Size): Bitmap {
+    override suspend fun transform(
+        toTransform: Bitmap,
+        size: Size,
+    ): Bitmap {
         val width = toTransform.width
         val height = toTransform.height
         val scaledWidth = width / DEFAULT_DOWN_SAMPLING
@@ -35,11 +38,12 @@ class BlurTransformation(val context: Context, val radius: Int = 25) : Transform
         paint.flags = Paint.FILTER_BITMAP_FLAG
         canvas.drawBitmap(toTransform, 0f, 0f, paint)
 
-        bitmap = try {
-            RSBlur.blur(context, bitmap, radius)
-        } catch (e: RSRuntimeException) {
-            FastBlur.blur(bitmap, radius, true)
-        }
+        bitmap =
+            try {
+                RSBlur.blur(context, bitmap, radius)
+            } catch (e: RSRuntimeException) {
+                FastBlur.blur(bitmap, radius, true)
+            }
 
         return bitmap
     }

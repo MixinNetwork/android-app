@@ -37,11 +37,14 @@ open class DotTextLayout : ViewGroup {
         val secondView = getChildAt(1) as TextView
 
         measureChild(
-            firstView, MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getMode(widthMeasureSpec)), heightMeasureSpec,
+            firstView,
+            MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getMode(widthMeasureSpec)),
+            heightMeasureSpec,
         )
         measureChild(
-            secondView, MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec) - paddingWidth - firstView.measuredWidth, MeasureSpec.getMode(widthMeasureSpec)),
-            heightMeasureSpec
+            secondView,
+            MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec) - paddingWidth - firstView.measuredWidth, MeasureSpec.getMode(widthMeasureSpec)),
+            heightMeasureSpec,
         )
         initTextParams(secondView, firstView)
         setMeasuredDimension(

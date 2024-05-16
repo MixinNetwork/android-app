@@ -35,9 +35,22 @@ class SendGiphyJob(
     override fun onAdded() {
         val message =
             createMediaMessage(
-                messageId, conversationId, senderId, category, null, url,
-                MimeType.GIF.toString(), size, width, height, previewUrl, null, null,
-                time, MediaStatus.PENDING, MessageStatus.SENDING.name,
+                messageId,
+                conversationId,
+                senderId,
+                category,
+                null,
+                url,
+                MimeType.GIF.toString(),
+                size,
+                width,
+                height,
+                previewUrl,
+                null,
+                null,
+                time,
+                MediaStatus.PENDING,
+                MessageStatus.SENDING.name,
             )
         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         // Todo check
@@ -53,9 +66,22 @@ class SendGiphyJob(
         val mediaSize = file.length()
         val message =
             createMediaMessage(
-                messageId, conversationId, senderId, category, null, file.name,
-                MimeType.GIF.toString(), mediaSize, width, height, thumbnail, null, null,
-                time, MediaStatus.PENDING, MessageStatus.SENDING.name,
+                messageId,
+                conversationId,
+                senderId,
+                category,
+                null,
+                file.name,
+                MimeType.GIF.toString(),
+                mediaSize,
+                width,
+                height,
+                thumbnail,
+                null,
+                null,
+                time,
+                MediaStatus.PENDING,
+                MessageStatus.SENDING.name,
             )
         messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
         MessageFlow.update(message.conversationId, message.messageId)

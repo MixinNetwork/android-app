@@ -1,8 +1,8 @@
 package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.api.response.Web3Account
+import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.vo.ChainDapp
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -15,8 +15,13 @@ interface Web3Service {
     ): MixinResponse<Web3Account>
 
     @GET("transactions/{address}")
-    suspend fun transactions(@Path("address") address: String, @Query("chain_id") chainId: String, @Query("fungible_id") fungibleId: String, @Query("limit") limit: Int = 100): MixinResponse<List<Web3Transaction>>
+    suspend fun transactions(
+        @Path("address") address: String,
+        @Query("chain_id") chainId: String,
+        @Query("fungible_id") fungibleId: String,
+        @Query("limit") limit: Int = 100,
+    ): MixinResponse<List<Web3Transaction>>
 
     @GET("dapps")
-    suspend fun dapps():MixinResponse<List<ChainDapp>>
+    suspend fun dapps(): MixinResponse<List<ChainDapp>>
 }

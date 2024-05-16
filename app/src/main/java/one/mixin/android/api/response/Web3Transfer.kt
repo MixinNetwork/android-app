@@ -15,5 +15,5 @@ data class Web3Transfer(
     val direction: String,
     val sender: String,
     val amount: String,
-    val price: String
+    val price: String,
 ) : Parcelable

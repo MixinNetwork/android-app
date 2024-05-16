@@ -27,11 +27,9 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MixAddressPrefix
-import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.vo.toUser
-import java.io.Serializable
 import java.io.UnsupportedEncodingException
 import java.math.BigDecimal
 import java.net.URLDecoder
@@ -197,7 +195,14 @@ class NewSchemeParser(
         return Result.success(SUCCESS)
     }
 
-    private suspend fun checkInscriptionTransfer(inscriptionHash: String, asset: String?, userId: String, amount: String?, memo: String?, traceId: String): Result<Int> {
+    private suspend fun checkInscriptionTransfer(
+        inscriptionHash: String,
+        asset: String?,
+        userId: String,
+        amount: String?,
+        memo: String?,
+        traceId: String,
+    ): Result<Int> {
         asset ?: return Result.failure(ParserError(FAILURE))
         val token = checkToken(asset) ?: return Result.failure(ParserError(FAILURE))
         val inscription = checkInscription(inscriptionHash) ?: return Result.failure(ParserError(FAILURE))
@@ -210,17 +215,18 @@ class NewSchemeParser(
         }
         val receiver = linkViewModel.refreshUser(userId) ?: return Result.failure(ParserError(FAILURE))
         val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
-        val nftBiometricItem = NftBiometricItem(
-            asset = token,
-            traceId = traceId,
-            amount = output.amount,
-            memo = memo,
-            state = PaymentStatus.pending.name,
-            receivers = listOf(receiver),
-            reference = null,
-            inscriptionItem = inscription,
-            inscriptionCollection = inscriptionCollection
-        )
+        val nftBiometricItem =
+            NftBiometricItem(
+                asset = token,
+                traceId = traceId,
+                amount = output.amount,
+                memo = memo,
+                state = PaymentStatus.pending.name,
+                receivers = listOf(receiver),
+                reference = null,
+                inscriptionItem = inscription,
+                inscriptionCollection = inscriptionCollection,
+            )
         TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         return Result.success(SUCCESS)
     }
@@ -374,7 +380,7 @@ class NewSchemeParser(
         if (inscription == null) {
             inscription = linkViewModel.refreshInscriptionItem(hash)
             return inscription
-        } else{
+        } else {
             return inscription
         }
     }
@@ -384,7 +390,7 @@ class NewSchemeParser(
         if (inscriptionCollection == null) {
             inscriptionCollection = linkViewModel.refreshInscriptionCollection(hash)
             return inscriptionCollection
-        } else{
+        } else {
             return inscriptionCollection
         }
     }

@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
-import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -712,7 +711,7 @@ class TokenRepository
         suspend fun findOutputs(
             limit: Int,
             asset: String,
-            inscriptionHash: String? = null
+            inscriptionHash: String? = null,
         ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findUnspentOutputsByAsset(limit, asset)
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
@@ -760,16 +759,17 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
-            inscriptionHash: String?
+            inscriptionHash: String?,
         ) {
             val snapshotId = data.getSnapshotId
             if (conversationId != "") {
-                val category = if (inscriptionHash != null) {
-                    MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
-                } else {
-                    MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
-                }
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash?:"", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
+                val category =
+                    if (inscriptionHash != null) {
+                        MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                    } else {
+                        MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                    }
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
                 if (inscriptionHash != null) {
                     jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, snapshotId))
@@ -868,13 +868,16 @@ class TokenRepository
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 
-        suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<SafeInscription> {
+        suspend fun fuzzyInscription(
+            escapedQuery: String,
+            cancellationSignal: CancellationSignal,
+        ): List<SafeInscription> {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }
 
         fun inscriptionStateByHash(hash: String) = outputDao.inscriptionStateByHash(hash)
 
-        suspend fun getInscriptionItem(hash:String): InscriptionItem? {
+        suspend fun getInscriptionItem(hash: String): InscriptionItem? {
             val response = tokenService.getInscriptionItem(hash)
             if (response.isSuccess) {
                 inscriptionDao.insert(response.data!!)
@@ -893,4 +896,4 @@ class TokenRepository
                 return null
             }
         }
-}
+    }

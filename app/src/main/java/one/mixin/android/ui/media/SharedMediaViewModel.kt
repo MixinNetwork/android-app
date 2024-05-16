@@ -165,8 +165,16 @@ class SharedMediaViewModel
                         try {
                             jobManager.addJobInBackground(
                                 SendGiphyJob(
-                                    it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                                    it.mediaSize, category, it.messageId, it.thumbImage ?: "", it.createdAt,
+                                    it.conversationId,
+                                    it.userId,
+                                    it.mediaUrl!!,
+                                    it.mediaWidth!!,
+                                    it.mediaHeight!!,
+                                    it.mediaSize,
+                                    category,
+                                    it.messageId,
+                                    it.thumbImage ?: "",
+                                    it.createdAt,
                                 ),
                             )
                         } catch (e: NullPointerException) {

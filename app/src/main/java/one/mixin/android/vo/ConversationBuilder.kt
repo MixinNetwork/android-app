@@ -88,9 +88,23 @@ class ConversationBuilder(val conversationId: String, val createdAt: String, val
 
     fun build(): Conversation =
         Conversation(
-            conversationId, ownerId, category,
-            name, iconUrl, announcement, codeUrl, payType,
-            createdAt, pinTime, lastMessageId, lastReadMessageId,
-            unseenMessageCount, status, draft, muteUntil, null, expireIn,
+            conversationId,
+            ownerId,
+            category,
+            name,
+            iconUrl,
+            announcement,
+            codeUrl,
+            payType,
+            createdAt,
+            pinTime,
+            lastMessageId,
+            lastReadMessageId,
+            unseenMessageCount,
+            status,
+            draft,
+            muteUntil,
+            null,
+            expireIn,
         )
 }

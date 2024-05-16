@@ -40,8 +40,8 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentWeb3ReceuceSelectionBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
-        binding.root.setOnClickListener {  }
-        binding.title.setOnClickListener {  }
+        binding.root.setOnClickListener { }
+        binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.walletTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.walletRl.setOnClickListener {
@@ -50,11 +50,12 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
                 if (address.isEmpty()) {
                     return@launch
                 }
-                val chainIds = if (exploreSolana(requireContext())) {
-                    listOf(Constants.ChainId.SOLANA_CHAIN_ID)
-                } else {
-                    Web3ChainIds
-                }
+                val chainIds =
+                    if (exploreSolana(requireContext())) {
+                        listOf(Constants.ChainId.SOLANA_CHAIN_ID)
+                    } else {
+                        Web3ChainIds
+                    }
                 val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
@@ -95,4 +96,5 @@ suspend fun getExploreAddress(context: Context): String {
 }
 
 fun exploreEvm(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 1
+
 fun exploreSolana(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 2

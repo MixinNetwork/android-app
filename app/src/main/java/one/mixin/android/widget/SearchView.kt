@@ -113,7 +113,9 @@ class SearchView : FrameLayout {
         binding.searchEt.hint = hintText
     }
 
-    fun setHint(@StringRes resid: Int) {
+    fun setHint(
+        @StringRes resid: Int,
+    ) {
         binding.searchEt.setHint(resid)
     }
 

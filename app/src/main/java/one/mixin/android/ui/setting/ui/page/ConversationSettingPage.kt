@@ -25,11 +25,11 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.session.Session
-import one.mixin.android.ui.setting.SettingConversationViewModel
 import one.mixin.android.compose.SettingPageScaffold
 import one.mixin.android.compose.SettingTile
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.session.Session
+import one.mixin.android.ui.setting.SettingConversationViewModel
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.MessageSource
 

@@ -8,7 +8,9 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_15_22() {
         create15()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
             MixinDatabaseMigrations.MIGRATION_15_16,
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
@@ -23,7 +25,9 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_16_22() {
         create16()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,

@@ -5,7 +5,6 @@
 
 package one.mixin.android.ui.auth.compose
 
-import one.mixin.android.compose.GlideImage
 import android.annotation.SuppressLint
 import androidx.collection.ArrayMap
 import androidx.compose.animation.AnimatedContent
@@ -66,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon

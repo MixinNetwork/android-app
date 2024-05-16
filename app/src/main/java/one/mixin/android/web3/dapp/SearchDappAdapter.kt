@@ -38,7 +38,7 @@ class SearchDappAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter
                     position - 1
                 } else {
                     position
-                }
+                },
             )?.let {
                 (holder as DappHolder).bind(it, onUrlClick)
             }

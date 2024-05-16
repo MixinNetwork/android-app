@@ -27,7 +27,6 @@ class BrowserWalletBottomSheetViewModel
         private val tipService: TipService,
         private val tip: Tip,
     ) : ViewModel() {
-
         suspend fun ethGasLimit(
             chain: Chain,
             transaction: Transaction,
@@ -38,12 +37,15 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        private fun convertToGasLimit(estimate: EthEstimateGas, defaultLimit: BigInteger?): BigInteger? {
+        private fun convertToGasLimit(
+            estimate: EthEstimateGas,
+            defaultLimit: BigInteger?,
+        ): BigInteger? {
             return if (estimate.hasError()) {
-                if (estimate.error.code === -32000) //out of gas
-                {
-                    defaultLimit
-                } else {
+                if (estimate.error.code === -32000) // out of gas
+                    {
+                        defaultLimit
+                    } else {
                     BigInteger.ZERO
                 }
             } else if (estimate.amountUsed.compareTo(BigInteger.ZERO) > 0) {
@@ -55,25 +57,27 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethGasPrice(chain)?.run {
-                try {
-                    this.gasPrice
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethGasPrice(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethGasPrice(chain)?.run {
+                    try {
+                        this.gasPrice
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
-                try {
-                    this.maxPriorityFeePerGas
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
+                    try {
+                        this.maxPriorityFeePerGas
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
         suspend fun getWeb3Priv(
             context: Context,
@@ -86,5 +90,4 @@ class BrowserWalletBottomSheetViewModel
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
-
     }

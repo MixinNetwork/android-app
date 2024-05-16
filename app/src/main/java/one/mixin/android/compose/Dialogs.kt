@@ -14,9 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.compose.theme.MixinAppTheme
 
 @Suppress("DEPRECATION")
 @Composable

@@ -326,7 +326,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         index = multisigs.senders.indexOf(Session.getAccountId()),
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
-                        reference = null
+                        reference = null,
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
@@ -766,8 +766,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)
             handleTipScheme(uri)
-        } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC)
-            || url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
+        } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
+            url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
             val wcUri = convertWcLink(url.toString())
             if (wcUri != null && WalletConnect.isEnabled()) {

@@ -41,23 +41,27 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.InputFragment
 import org.sol4k.PublicKey
 import org.web3j.crypto.WalletUtils
-import timber.log.Timber
 
 @AndroidEntryPoint
 class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
-
     companion object {
         const val TAG = "InputAddressFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
-        fun newInstance(address: String, web3Token: Web3Token, chainToken: Web3Token?) = InputAddressFragment().apply {
-            withArgs {
-                putParcelable(ARGS_TOKEN, web3Token)
-                putParcelable(ARGS_CHAIN_TOKEN, chainToken)
-                putString(ARGS_ADDRESS, address)
+
+        fun newInstance(
+            address: String,
+            web3Token: Web3Token,
+            chainToken: Web3Token?,
+        ) =
+            InputAddressFragment().apply {
+                withArgs {
+                    putParcelable(ARGS_TOKEN, web3Token)
+                    putParcelable(ARGS_CHAIN_TOKEN, chainToken)
+                    putString(ARGS_ADDRESS, address)
+                }
             }
-        }
     }
 
     private val address by lazy {
@@ -129,15 +133,20 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             lifecycleScope.launch {
                 var toAddress = web3ViewModel.findAddres(token)
                 binding.addrEt.hideKeyboard()
-                if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
-                else {
-                    val alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                        show()
-                    }
+                if (toAddress != null) {
+                    navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
+                } else {
+                    val alertDialog =
+                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                            show()
+                        }
                     toAddress = web3ViewModel.findAndSyncDepositEntry(token)
                     alertDialog.dismiss()
-                    if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
-                    else toast(R.string.Not_found)
+                    if (toAddress != null) {
+                        navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
+                    } else {
+                        toast(R.string.Not_found)
+                    }
                 }
             }
         }

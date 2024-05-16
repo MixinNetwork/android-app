@@ -6,5 +6,5 @@ class ChainDapp(
     @SerializedName("chain_id")
     val chainId: String,
     val rpc: String,
-    val dapps: List<Dapp>
+    val dapps: List<Dapp>,
 )

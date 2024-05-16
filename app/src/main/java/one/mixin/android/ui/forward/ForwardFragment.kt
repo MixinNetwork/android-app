@@ -660,9 +660,27 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             outfile.copyFromInputStream(FileInputStream(file))
             val message =
                 Message(
-                    messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
-                    payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
-                    payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
+                    messageId,
+                    conversationId,
+                    sender.userId,
+                    category,
+                    GsonHelper.customGson.toJson(payload).base64Encode(),
+                    outfile.name,
+                    payload.mimeType,
+                    payload.size,
+                    payload.duration?.toString(),
+                    payload.width,
+                    payload.height,
+                    null,
+                    payload.thumbnail,
+                    null,
+                    payload.key,
+                    payload.digest,
+                    MediaStatus.DONE.name,
+                    MessageStatus.SENDING.name,
+                    nowInUtc(),
+                    name = payload.name,
+                    mediaWaveform = payload.waveform,
                     caption = payload.caption,
                 )
             chatViewModel.sendMessage(message)
@@ -683,19 +701,44 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val messageId = UUID.randomUUID().toString()
             val attachmentMessagePayload =
                 AttachmentMessagePayload(
-                    message.mediaKey, message.mediaDigest, attachmentExtra.attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-                    message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform, createdAt = attachmentExtra.createdAt,
+                    message.mediaKey,
+                    message.mediaDigest,
+                    attachmentExtra.attachmentId,
+                    message.mediaMimeType!!,
+                    message.mediaSize ?: 0,
+                    message.name,
+                    message.mediaWidth,
+                    message.mediaHeight,
+                    message.thumbImage,
+                    message.mediaDuration?.toLongOrNull(),
+                    message.mediaWaveform,
+                    createdAt = attachmentExtra.createdAt,
                 )
             val file = Uri.parse(message.absolutePath()).toFile()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
             outfile.copyFromInputStream(FileInputStream(file))
             return Message(
-                messageId, conversationId, sender.userId, category,
-                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.name, message.mediaMimeType,
-                message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
-                message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
-                message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
-                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
+                messageId,
+                conversationId,
+                sender.userId,
+                category,
+                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(),
+                outfile.name,
+                message.mediaMimeType,
+                message.mediaSize ?: 0L,
+                message.mediaDuration,
+                message.mediaWidth,
+                message.mediaHeight,
+                message.mediaHash,
+                message.thumbImage,
+                message.thumbUrl,
+                message.mediaKey,
+                message.mediaDigest,
+                MediaStatus.DONE.name,
+                MessageStatus.SENDING.name,
+                nowInUtc(),
+                name = message.name,
+                mediaWaveform = message.mediaWaveform,
             )
         } catch (e: Exception) {
             return null

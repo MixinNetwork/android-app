@@ -55,12 +55,15 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        private fun convertToGasLimit(estimate: EthEstimateGas, defaultLimit: BigInteger?): BigInteger? {
+        private fun convertToGasLimit(
+            estimate: EthEstimateGas,
+            defaultLimit: BigInteger?,
+        ): BigInteger? {
             return if (estimate.hasError()) {
-                if (estimate.error.code === -32000) //out of gas
-                {
-                    defaultLimit
-                } else {
+                if (estimate.error.code === -32000) // out of gas
+                    {
+                        defaultLimit
+                    } else {
                     BigInteger.ZERO
                 }
             } else if (estimate.amountUsed.compareTo(BigInteger.ZERO) > 0) {
@@ -72,27 +75,32 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethGasPrice(chain)?.run {
-                try {
-                    this.gasPrice
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethGasPrice(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethGasPrice(chain)?.run {
+                    try {
+                        this.gasPrice
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
-                try {
-                    this.maxPriorityFeePerGas
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
+                    try {
+                        this.maxPriorityFeePerGas
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        fun parseV2SignData(address: String, sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
+        fun parseV2SignData(
+            address: String,
+            sessionRequest: Wallet.Model.SessionRequest,
+        ): WalletConnect.WCSignData.V2SignData<*>? {
             return WalletConnectV2.parseSessionRequest(address, sessionRequest)
         }
 

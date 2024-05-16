@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -16,9 +15,9 @@ import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionsJob
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.inscription.component.InscriptionPage
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.home.inscription.component.InscriptionPage
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
@@ -28,7 +27,11 @@ import javax.inject.Inject
 class InscriptionActivity : BaseActivity() {
     companion object {
         private const val ARGS_HASH = "args_hash"
-        fun show(context: Context, inscriptionHash:String) {
+
+        fun show(
+            context: Context,
+            inscriptionHash: String,
+        ) {
             Intent(context, InscriptionActivity::class.java).apply {
                 putExtra(ARGS_HASH, inscriptionHash)
             }.run {
@@ -42,8 +45,9 @@ class InscriptionActivity : BaseActivity() {
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val inscriptionHash by lazy {
-        requireNotNull( intent.getStringExtra(ARGS_HASH))
+        requireNotNull(intent.getStringExtra(ARGS_HASH))
     }
+
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -89,7 +93,7 @@ class InscriptionActivity : BaseActivity() {
         sendIntent.action = Intent.ACTION_SEND
         sendIntent.putExtra(
             Intent.EXTRA_TEXT,
-            "$INSCRIPTION$inscriptionHash"
+            "$INSCRIPTION$inscriptionHash",
         )
         sendIntent.type = "text/plain"
         startActivity(
@@ -100,7 +104,3 @@ class InscriptionActivity : BaseActivity() {
         )
     }
 }
-
-
-
-

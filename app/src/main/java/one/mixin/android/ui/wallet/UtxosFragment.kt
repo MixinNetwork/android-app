@@ -131,7 +131,10 @@ class UtxosFragment : BaseFragment() {
     }
 
     class UtxoHolder(val binding: ItemWalletUtxoBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: UtxoItem, action: (UtxoItem) -> Unit) {
+        fun bind(
+            item: UtxoItem,
+            action: (UtxoItem) -> Unit,
+        ) {
             binding.apply {
                 name.text = item.outputId
                 hash.text = item.transactionHash

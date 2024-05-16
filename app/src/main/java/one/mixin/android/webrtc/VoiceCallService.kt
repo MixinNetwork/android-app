@@ -379,8 +379,15 @@ class VoiceCallService : CallService() {
                         }
                         val duration = System.currentTimeMillis() - connectedTime
                         createCallMessage(
-                            messageId, conversationId, self.userId, category, content,
-                            nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString(),
+                            messageId,
+                            conversationId,
+                            self.userId,
+                            category,
+                            content,
+                            nowInUtc(),
+                            MessageStatus.SENDING.name,
+                            quoteMessageId,
+                            duration.toString(),
                         )
                     } else {
                         createCallMessage(
@@ -410,8 +417,14 @@ class VoiceCallService : CallService() {
                     }
                     val duration = System.currentTimeMillis() - connectedTime
                     createCallMessage(
-                        UUID.randomUUID().toString(), blazeMessageData.conversationId,
-                        self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId,
+                        UUID.randomUUID().toString(),
+                        blazeMessageData.conversationId,
+                        self.userId,
+                        category,
+                        content,
+                        nowInUtc(),
+                        MessageStatus.SENDING.name,
+                        quoteMessageId,
                         duration.toString(),
                     )
                 } else {
@@ -456,8 +469,15 @@ class VoiceCallService : CallService() {
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg =
                     createCallMessage(
-                        m.messageId, m.conversationId, uId, m.category, m.content,
-                        m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration,
+                        m.messageId,
+                        m.conversationId,
+                        uId,
+                        m.category,
+                        m.content,
+                        m.createdAt,
+                        MessageStatus.READ.name,
+                        m.quoteMessageId,
+                        m.mediaDuration,
                     )
                 insertCallMessage(msg)
             }

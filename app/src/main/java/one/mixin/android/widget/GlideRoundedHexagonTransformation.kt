@@ -17,7 +17,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class GlideRoundedHexagonTransformation : BitmapTransformation() {
-
     override fun updateDiskCacheKey(messageDigest: MessageDigest) {
         messageDigest.update("RoundedHexagonTransformation".toByteArray())
     }
@@ -30,19 +29,26 @@ class GlideRoundedHexagonTransformation : BitmapTransformation() {
         return javaClass.hashCode()
     }
 
-    override fun transform(context: Context, pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
+    override fun transform(
+        context: Context,
+        pool: BitmapPool,
+        toTransform: Bitmap,
+        outWidth: Int,
+        outHeight: Int,
+    ): Bitmap {
         val bitmap = TransformationUtils.centerCrop(pool, toTransform, outWidth, outHeight)
 
         val path = Path()
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-        }
+        val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                style = Paint.Style.FILL
+            }
 
         createHexagonPath(bitmap.width.toFloat(), path)
 
         val result = pool.get(bitmap.width, bitmap.height, toTransform.config)
-        paint.pathEffect = CornerPathEffect(result.width /  10f)
+        paint.pathEffect = CornerPathEffect(result.width / 10f)
 
         val canvas = Canvas(result)
         canvas.drawPath(path, paint)
@@ -53,7 +59,10 @@ class GlideRoundedHexagonTransformation : BitmapTransformation() {
         return result
     }
 
-    private fun createHexagonPath(height: Float ,path: Path): Path {
+    private fun createHexagonPath(
+        height: Float,
+        path: Path,
+    ): Path {
         val radius = height / 2f
 
         val angleDeg = 60f
@@ -74,5 +83,4 @@ class GlideRoundedHexagonTransformation : BitmapTransformation() {
 
         return path
     }
-
 }

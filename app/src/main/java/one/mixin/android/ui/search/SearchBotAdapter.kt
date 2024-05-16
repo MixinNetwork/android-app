@@ -42,7 +42,7 @@ class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<
                     position - 1
                 } else {
                     position
-                }
+                },
             )?.let {
                 (holder as BotHolder).bind(it, query, onItemClickListener)
             }
@@ -57,6 +57,7 @@ class SearchBotAdapter(val onUrlClick: (String) -> Unit) : RecyclerView.Adapter<
     }
 
     override fun getItemCount(): Int = (userList?.size ?: 0) + (if (showTip()) 1 else 0)
+
     private fun showTip() = !url.isNullOrBlank()
 
     override fun onCreateViewHolder(

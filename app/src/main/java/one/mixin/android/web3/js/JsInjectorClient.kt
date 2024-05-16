@@ -2,10 +2,10 @@ package one.mixin.android.web3.js
 
 import android.content.Context
 import androidx.annotation.RawRes
-import java.io.IOException
 import one.mixin.android.R
 import one.mixin.android.tip.wc.internal.Chain
 import timber.log.Timber
+import java.io.IOException
 
 class JsInjectorClient {
     fun initJs(context: Context): String {
@@ -19,7 +19,10 @@ class JsInjectorClient {
     }
 
     companion object {
-        fun loadFile(context: Context, @RawRes rawRes: Int): String {
+        fun loadFile(
+            context: Context,
+            @RawRes rawRes: Int,
+        ): String {
             var buffer = ByteArray(0)
             try {
                 val `in` = context.resources.openRawResource(rawRes)

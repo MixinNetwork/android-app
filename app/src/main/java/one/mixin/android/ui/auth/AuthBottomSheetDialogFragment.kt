@@ -161,10 +161,12 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     },
                     onResetClick = {
                         step = AuthStep.INPUT
-                    }, onBiometricClick = {
+                    },
+                    onBiometricClick = {
                         savedScopes = it
                         showBiometricPrompt()
-                    }, onVerifyRequest = { scopes, pin ->
+                    },
+                    onVerifyRequest = { scopes, pin ->
                         authVerify(scopes, pin)
                     },
                 )

@@ -19,7 +19,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
 class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val ARGS_TOKENS = "args_tokens"
         const val TAG = "TokenListBottomSheetDialogFragment"

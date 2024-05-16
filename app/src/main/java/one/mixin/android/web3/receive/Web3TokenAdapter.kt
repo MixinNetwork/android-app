@@ -36,9 +36,11 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
         }
     private var onClickListener: ((Web3Token) -> Unit)? = null
+
     fun setOnClickListener(onClickListener: (Web3Token) -> Unit) {
         this.onClickListener = onClickListener
     }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -54,7 +56,6 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-
         (holder as Web3Holder).bind(tokens[position])
         holder.itemView.setOnClickListener {
             onClickListener?.invoke(tokens[position])
@@ -80,11 +81,12 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                 }
             symbolTv.text = token.symbol
             balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
-            val changePercent = if (token.changePercent.isBlank()) {
-                BigDecimal.ZERO
-            } else {
-                BigDecimal(token.changePercent)
-            }
+            val changePercent =
+                if (token.changePercent.isBlank()) {
+                    BigDecimal.ZERO
+                } else {
+                    BigDecimal(token.changePercent)
+                }
             changeTv.text = "${changePercent.numberFormat2()}%"
             changeTv.textColorResource = if (changePercent >= BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
             if (token.price == "0") {

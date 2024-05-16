@@ -19,7 +19,10 @@ import one.mixin.android.extension.hexStringToByteArray
 import kotlin.math.max
 
 @Composable
-fun Barcode(hash: String, modifier: Modifier) {
+fun Barcode(
+    hash: String,
+    modifier: Modifier,
+) {
     val colors = buildColors(hash)
     Box(modifier = modifier) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -33,7 +36,7 @@ fun Barcode(hash: String, modifier: Modifier) {
                         color = color,
                         topLeft = Offset(x = (width + offset) * index, y = 0f),
                         size = Size(width, size.height),
-                        cornerRadius = CornerRadius(radius, radius)
+                        cornerRadius = CornerRadius(radius, radius),
                     )
                 }
             }

@@ -57,7 +57,7 @@ class Web3Token(
     @SerializedName("asset_key")
     val assetKey: String,
     @SerializedName("decimals")
-    val decimals:Int,
+    val decimals: Int,
 ) : Parcelable
 
 fun Web3Token.getChainFromName(): Chain {
@@ -89,19 +89,29 @@ fun Web3Token.getChainIdFromName(): String {
 }
 
 fun Web3Token.isSolana(): Boolean {
-    return  chainName.equals("solana", true)
+    return chainName.equals("solana", true)
 }
 
 private fun Web3Token.getChainAssetKey(): String {
-    return if (chainName.equals("ethereum", true)) "0x0000000000000000000000000000000000000000"
-    else if (chainName.equals("base", true)) "0x0000000000000000000000000000000000000000"
-    else if (chainName.equals("arbitrum", true)) "0x0000000000000000000000000000000000000000"
-    else if (chainName.equals("optimism", true)) "0x0000000000000000000000000000000000000000"
-    else if (chainName.equals("polygon", true)) "0x0000000000000000000000000000000000001010"
-    else if (chainName.equals("binance-smart-chain", true)) "0x0000000000000000000000000000000000000000"
-    else if (chainName.equals("avalanche", true)) "0x0000000000000000000000000000000000000000"
-    else if (chainName.equals("solana", true)) "11111111111111111111111111111111"
-    else ""
+    return if (chainName.equals("ethereum", true)) {
+        "0x0000000000000000000000000000000000000000"
+    } else if (chainName.equals("base", true)) {
+        "0x0000000000000000000000000000000000000000"
+    } else if (chainName.equals("arbitrum", true)) {
+        "0x0000000000000000000000000000000000000000"
+    } else if (chainName.equals("optimism", true)) {
+        "0x0000000000000000000000000000000000000000"
+    } else if (chainName.equals("polygon", true)) {
+        "0x0000000000000000000000000000000000001010"
+    } else if (chainName.equals("binance-smart-chain", true)) {
+        "0x0000000000000000000000000000000000000000"
+    } else if (chainName.equals("avalanche", true)) {
+        "0x0000000000000000000000000000000000000000"
+    } else if (chainName.equals("solana", true)) {
+        "11111111111111111111111111111111"
+    } else {
+        ""
+    }
 }
 
 fun Web3Token.supportDeposit(): Boolean {
@@ -118,7 +128,11 @@ fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
     }
 }
 
-suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v: String): JsSignMessage {
+suspend fun Web3Token.buildTransaction(
+    fromAddress: String,
+    toAddress: String,
+    v: String,
+): JsSignMessage {
     if (chainName.equals("solana", true)) {
         JsSigner.useSolana()
         val sender = PublicKey(fromAddress)
@@ -130,21 +144,25 @@ suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v
         } else {
             val tokenMintAddress = PublicKey(assetKey)
             val (receiveAssociatedAccount) = PublicKey.findProgramDerivedAddress(receiver, tokenMintAddress)
-            val conn =  Connection(RpcUrl.MAINNNET)
-            val receiveAssociatedAccountInfo = withContext(Dispatchers.IO) {
-                conn.getAccountInfo(receiveAssociatedAccount)
-            }
+            val conn = Connection(RpcUrl.MAINNNET)
+            val receiveAssociatedAccountInfo =
+                withContext(Dispatchers.IO) {
+                    conn.getAccountInfo(receiveAssociatedAccount)
+                }
             if (receiveAssociatedAccountInfo == null) {
-                instructions.add(CreateAssociatedTokenAccountInstruction(
-                    payer = sender,
-                    associatedToken = receiveAssociatedAccount,
-                    owner = receiver,
-                    mint = tokenMintAddress,
-                ))
+                instructions.add(
+                    CreateAssociatedTokenAccountInstruction(
+                        payer = sender,
+                        associatedToken = receiveAssociatedAccount,
+                        owner = receiver,
+                        mint = tokenMintAddress,
+                    ),
+                )
             }
-            val tokenAmount = withContext(Dispatchers.IO) {
-                conn.getTokenSupply(assetKey)
-            }
+            val tokenAmount =
+                withContext(Dispatchers.IO) {
+                    conn.getTokenSupply(assetKey)
+                }
             if (tokenAmount == null) {
                 throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "rpc getTokenSupply Web3Token $assetKey is null")
             }
@@ -152,21 +170,24 @@ suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v
                 throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "Web3Token decimals $decimals not equal rpc decimals ${tokenAmount.decimals}")
             }
             val (sendAssociatedAccount) = PublicKey.findProgramDerivedAddress(sender, tokenMintAddress)
-            instructions.add(SplTransferInstruction(
-                from = sendAssociatedAccount,
-                to = receiveAssociatedAccount,
-                mint = tokenMintAddress,
-                owner = sender,
-                signers = emptyList(),
-                amount = BigDecimal(v).multiply(BigDecimal.TEN.pow(decimals)).toLong(),
-                decimals = tokenAmount.decimals,
-            ))
+            instructions.add(
+                SplTransferInstruction(
+                    from = sendAssociatedAccount,
+                    to = receiveAssociatedAccount,
+                    mint = tokenMintAddress,
+                    owner = sender,
+                    signers = emptyList(),
+                    amount = BigDecimal(v).multiply(BigDecimal.TEN.pow(decimals)).toLong(),
+                    decimals = tokenAmount.decimals,
+                ),
+            )
         }
-        val transaction = Transaction(
-            toAddress, // use address as temp placeholder, will replace when signing
-            instructions,
-            sender,
-        )
+        val transaction =
+            Transaction(
+                toAddress, // use address as temp placeholder, will replace when signing
+                instructions,
+                sender,
+            )
         val tx = transaction.serialize().base64Encode()
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx)
     } else {
@@ -183,15 +204,17 @@ suspend fun Web3Token.buildTransaction(fromAddress: String, toAddress: String, v
                 val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
                 WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)
             } else {
-                val function = Function(
-                    "transfer",
-                    listOf(
-                        Address(toAddress), Uint(
-                            BigDecimal(v).multiply(BigDecimal.TEN.pow(decimals)).toBigInteger()
-                        )
-                    ),
-                    emptyList()
-                )
+                val function =
+                    Function(
+                        "transfer",
+                        listOf(
+                            Address(toAddress),
+                            Uint(
+                                BigDecimal(v).multiply(BigDecimal.TEN.pow(decimals)).toBigInteger(),
+                            ),
+                        ),
+                        emptyList(),
+                    )
                 val data = FunctionEncoder.encode(function)
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }

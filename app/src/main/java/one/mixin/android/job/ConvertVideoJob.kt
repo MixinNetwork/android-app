@@ -88,12 +88,26 @@ class ConvertVideoJob(
         }
         val message =
             createVideoMessage(
-                messageId, conversationId, senderId, category,
+                messageId,
+                conversationId,
+                senderId,
+                category,
                 VideoClip(uri.toString(), start, end).toJson(),
-                video.fileName, uri.toString(), video.duration, video.resultWidth,
-                video.resultHeight, video.thumbnail, "video/mp4",
-                0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
-                replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
+                video.fileName,
+                uri.toString(),
+                video.duration,
+                video.resultWidth,
+                video.resultHeight,
+                video.thumbnail,
+                "video/mp4",
+                0L,
+                createdAt,
+                null,
+                null,
+                MediaStatus.PENDING,
+                MessageStatus.SENDING.name,
+                replyMessage?.messageId,
+                replyMessage?.toQuoteMessageItem(),
             )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
@@ -218,10 +232,22 @@ class ConvertVideoJob(
             val duration = (video.duration * (end - start)).toLong()
             val message =
                 createVideoMessage(
-                    messageId, conversationId, senderId, category, null,
-                    video.fileName, videoFile.name, duration, video.resultWidth,
-                    video.resultHeight, video.thumbnail, "video/mp4",
-                    videoFile.length(), createdAt, null, null,
+                    messageId,
+                    conversationId,
+                    senderId,
+                    category,
+                    null,
+                    video.fileName,
+                    videoFile.name,
+                    duration,
+                    video.resultWidth,
+                    video.resultHeight,
+                    video.thumbnail,
+                    "video/mp4",
+                    videoFile.length(),
+                    createdAt,
+                    null,
+                    null,
                     if (error != null) MediaStatus.CANCELED else MediaStatus.PENDING,
                     if (error != null) MessageStatus.FAILED.name else MessageStatus.SENDING.name,
                 )

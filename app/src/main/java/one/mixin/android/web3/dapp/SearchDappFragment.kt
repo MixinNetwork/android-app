@@ -106,11 +106,12 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
     @SuppressLint("NotifyDataSetChanged")
     private fun fuzzySearch(keyword: String?) {
         lifecycleScope.launch {
-            val chainId = if (exploreSolana(requireContext())) {
-                Chain.Solana.chainId
-            } else {
-                Chain.Ethereum.chainId
-            }
+            val chainId =
+                if (exploreSolana(requireContext())) {
+                    Chain.Solana.chainId
+                } else {
+                    Chain.Ethereum.chainId
+                }
             if (keyword.isNullOrBlank()) {
                 binding.searchRv.isVisible = true
                 binding.empty.isVisible = false

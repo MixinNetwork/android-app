@@ -11,7 +11,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressChangedBottomBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity

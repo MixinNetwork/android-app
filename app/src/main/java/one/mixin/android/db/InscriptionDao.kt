@@ -9,7 +9,6 @@ import one.mixin.android.vo.safe.SafeInscription
 
 @Dao
 interface InscriptionDao : BaseDao<InscriptionItem> {
-
     @Query("SELECT inscription_hash FROM inscription_items WHERE inscription_hash IN (:hash)")
     suspend fun getExitsHash(hash: List<String>): List<String>
 

@@ -161,7 +161,6 @@ class ExploreFragment : BaseFragment() {
                         exploreVa.displayedChild = 1
                         navigate(solanaFragment, SolanaFragment.TAG)
                     }
-
                 }
             }
 
@@ -422,7 +421,10 @@ class ExploreFragment : BaseFragment() {
             }
         }
 
-        private fun getItem(type: Int, position: Int): BotInterface? {
+        private fun getItem(
+            type: Int,
+            position: Int,
+        ): BotInterface? {
             return if (type == TYPE_INTERNAL) {
                 InternalBots[position]
             } else if (type == TYPE_FAVORITE) {
@@ -467,7 +469,7 @@ class ExploreFragment : BaseFragment() {
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
     class FavoriteTitleHolder(val itemBinding: ItemFavoriteTitleBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun setText(res:Int) {
+        fun setText(res: Int) {
             itemBinding.title.setText(res)
         }
     }

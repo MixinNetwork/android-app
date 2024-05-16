@@ -180,6 +180,7 @@ object Constants {
     }
 
     val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
+
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
         const val BITCOIN_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
@@ -329,7 +330,7 @@ object Constants {
     const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
     const val MIXIN_DATA_USER_NAME = "Mixin Data"
 
-    const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" //NFTs typically require more gas
+    const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
     const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
 

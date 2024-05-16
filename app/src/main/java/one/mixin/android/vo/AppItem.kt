@@ -23,6 +23,17 @@ class AppItem(
 
 fun AppItem.toApp() =
     App(
-        appId, appNumber, homeUri, redirectUri, name, iconUrl, category, description,
-        appSecret, capabilities, creatorId, resourcePatterns, updatedAt,
+        appId,
+        appNumber,
+        homeUri,
+        redirectUri,
+        name,
+        iconUrl,
+        category,
+        description,
+        appSecret,
+        capabilities,
+        creatorId,
+        resourcePatterns,
+        updatedAt,
     )

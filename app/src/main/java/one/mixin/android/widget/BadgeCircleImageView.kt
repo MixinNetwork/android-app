@@ -64,11 +64,15 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         binding.bg.borderColor = color
     }
 
-    fun loadToken(tokenItem: TokenItem){
+    fun loadToken(tokenItem: TokenItem) {
         loadToken(tokenItem.iconUrl, tokenItem.chainIconUrl, tokenItem.collectionHash)
     }
 
-    fun loadToken(assetUrl: String, chainUrl: String?, collectionHash: String?) {
+    fun loadToken(
+        assetUrl: String,
+        chainUrl: String?,
+        collectionHash: String?,
+    ) {
         if (collectionHash.isNullOrEmpty()) {
             binding.badge.isVisible = true
             binding.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)

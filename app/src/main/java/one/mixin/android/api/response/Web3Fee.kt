@@ -13,5 +13,5 @@ data class Web3Fee(
     @SerializedName("icon_url")
     val iconUrl: String,
     val amount: String,
-    val price: String
+    val price: String,
 ) : Parcelable

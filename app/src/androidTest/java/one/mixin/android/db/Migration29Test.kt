@@ -8,7 +8,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_15_29() {
         create15()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_15_16,
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
@@ -30,7 +32,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_16_29() {
         create16()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_16_17,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
@@ -51,7 +55,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_17_29() {
         create17()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
@@ -71,7 +77,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_18_29() {
         create18()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
@@ -90,7 +98,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_19_29() {
         create19()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
@@ -108,7 +118,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_20_29() {
         create20()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
@@ -125,7 +137,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_21_29() {
         create21()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_21_22,
             MixinDatabaseMigrations.MIGRATION_22_23,
             MixinDatabaseMigrations.MIGRATION_23_24,
@@ -141,7 +155,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_22_29() {
         create22()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_22_23,
             MixinDatabaseMigrations.MIGRATION_23_24,
             MixinDatabaseMigrations.MIGRATION_24_25,
@@ -156,7 +172,9 @@ class Migration29Test : BaseMigrationTest() {
     fun migrate_23_29() {
         create23()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 29, true,
+            Constants.DataBase.DB_NAME,
+            29,
+            true,
             MixinDatabaseMigrations.MIGRATION_23_24,
             MixinDatabaseMigrations.MIGRATION_24_25,
             MixinDatabaseMigrations.MIGRATION_25_26,
