@@ -1488,6 +1488,7 @@
     <string name="web3_sending_success">Sending Success</string>
     <string name="Browser">Browser</string>
     <string name="copy_address">Copy Address</string>
+    <string name="copy_contract_address">Copy Contract Address</string>
     <string name="coming_soon">Coming soon</string>
     <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
     <string name="web3_sol_deposit_description">Use this address for receiving tokens on Solana.</string>

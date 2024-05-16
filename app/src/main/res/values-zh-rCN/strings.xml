@@ -1454,6 +1454,7 @@
     <string name="web3_sending_success">发送成功</string>
     <string name="Browser">浏览器</string>
     <string name="copy_address">复制地址</string>
+    <string name="copy_contract_address">复制合约地址</string>
     <string name="coming_soon">即将推出</string>
     <string name="web3_deposit_description">使用此地址在 Ethereum、Polygon、BSC 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
