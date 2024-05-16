@@ -91,3 +91,7 @@
 -keep public class com.walletconnect.web3.** { *; }
 
 -dontwarn groovy.lang.GroovyShell
+
+-dontwarn com.yalantis.ucrop**
+-keep class com.yalantis.ucrop** { *; }
+-keep interface com.yalantis.ucrop** { *; }
