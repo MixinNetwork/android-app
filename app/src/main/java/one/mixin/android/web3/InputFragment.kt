@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
+import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
@@ -28,6 +29,8 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
@@ -42,6 +45,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -192,14 +196,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 name.text = tokenName
                 balance.text = "$tokenBalance $tokenSymbol"
                 max.setOnClickListener {
-                    v =
-                        if (isReverse) {
-                            // Todo No price token and chain token gas
-                            BigDecimal(tokenBalance).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                        } else {
-                            tokenBalance
-                        }
-                    updateUI()
+                    maxClick()
                 }
                 keyboard.initPinKeys(
                     requireContext(),
@@ -303,10 +300,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         if (isReverse) {
                             BigDecimal(v).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).stripTrailingZeros().toString()
                         } else {
-                            if (tokenPrice <= BigDecimal.ZERO)
-                                {
-                                    tokenBalance
-                                } else {
+                            if (tokenPrice <= BigDecimal.ZERO) {
+                                tokenBalance
+                            } else {
                                 BigDecimal(v).divide(tokenPrice, 8, RoundingMode.DOWN).stripTrailingZeros().toString()
                             }
                         }
@@ -314,6 +310,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
                 updateUI()
             }
+            refreshGas()
         }
     }
 
@@ -402,10 +399,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 "$it.00"
             } else if (v.endsWith(".0")) {
                 "$it.0"
-            } else if (Regex(".*\\.\\d0$").matches(v))
-                {
-                    "${it}0"
-                } else {
+            } else if (Regex(".*\\.\\d0$").matches(v)) {
+                "${it}0"
+            } else {
                 it
             }
         }
@@ -422,6 +418,69 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     max(40f - 1 * (length - 8), 16f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+        }
+    }
+
+    private var fee: BigDecimal? = null
+
+    private fun maxClick() {
+        if (token != null && token?.fungibleId == chainToken?.fungibleId) {
+            if (fee == null) {
+                if (!dialog.isShowing) {
+                    lifecycleScope.launch {
+                        dialog.show()
+                        refreshGas()
+                    }
+                }
+            } else {
+                v =
+                    if (isReverse) {
+                        BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                    } else {
+                        BigDecimal(tokenBalance).subtract(fee).toPlainString()
+                    }
+            }
+        } else {
+            v =
+                if (isReverse) {
+                    BigDecimal(tokenBalance).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                } else {
+                    tokenBalance
+                }
+        }
+        updateUI()
+    }
+
+    private suspend fun refreshGas() {
+        val t = token ?: return
+        if (t.fungibleId == chainToken?.fungibleId) {
+            val fromAddress = fromAddress ?: return
+            val transaction = try {
+                t.buildTransaction(fromAddress, toAddress, tokenBalance)
+            } catch (e: Exception) {
+                Timber.w(e)
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                }
+                return
+            }
+            fee = web3ViewModel.calcFee(t, transaction, fromAddress)
+            if (dialog.isShowing) {
+                dialog.dismiss()
+                v = if (isReverse) {
+                    BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                } else {
+                    BigDecimal(tokenBalance).subtract(fee).toPlainString()
+                }
+                updateUI()
+            }
+        }
+    }
+
+    private val dialog by lazy {
+        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+            dismiss()
         }
     }
 }
