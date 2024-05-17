@@ -15,7 +15,6 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
-import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
@@ -26,7 +25,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.receive.Wbe3ReceiveFragment
 import one.mixin.android.web3.send.InputAddressFragment
