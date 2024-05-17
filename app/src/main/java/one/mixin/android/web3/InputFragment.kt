@@ -464,15 +464,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
                 return
             }
-            fee = web3ViewModel.calcFee(t, transaction, fromAddress)
-            if (dialog.isShowing) {
-                dialog.dismiss()
-                v = if (isReverse) {
-                    BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                } else {
-                    BigDecimal(tokenBalance).subtract(fee).toPlainString()
+            if (isAdded) {
+                fee = web3ViewModel.calcFee(t, transaction, fromAddress)
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                    v = if (isReverse) {
+                        BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                    } else {
+                        BigDecimal(tokenBalance).subtract(fee).toPlainString()
+                    }
+                    updateUI()
                 }
-                updateUI()
             }
         }
     }
