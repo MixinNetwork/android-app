@@ -9,7 +9,9 @@ import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.getChainIdFromName
+import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.repository.TokenRepository
@@ -17,6 +19,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
@@ -25,6 +28,12 @@ import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.web3.js.JsSignMessage
+import org.sol4k.Connection
+import org.sol4k.PublicKey
+import org.sol4k.RpcUrl
+import org.sol4k.VersionedTransaction
+import org.sol4k.lamportToSol
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -213,12 +222,36 @@ class Web3ViewModel
                 }
             }
 
-        suspend fun calcFee(
-            chain: Chain,
-            transaction: Transaction
-        ): BigDecimal? {
+        private suspend fun getSolMinimumBalanceForRentExemption(address: PublicKey): BigDecimal =
+            withContext(Dispatchers.IO) {
+                try {
+                    val conn = Connection(RpcUrl.MAINNNET)
+                    val accountInfo = conn.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
+                    val mb = conn.getMinimumBalanceForRentExemption(accountInfo.space)
+                    return@withContext lamportToSol(BigDecimal(mb))
+                } catch (e: Exception) {
+                    return@withContext BigDecimal.ZERO
+                }
+            }
+
+    suspend fun calcFee(
+        token: Web3Token,
+        transaction: JsSignMessage,
+        fromAddress: String,
+    ): BigDecimal? {
+        val chain = token.getChainFromName()
+        if (chain == Chain.Solana){
+            if (token.isSolToken()) {
+                val tx = VersionedTransaction.from(transaction.data ?: "")
+                val fee = tx.calcFee()
+                val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
+                return fee.add(mb)
+            } else {
+                return BigDecimal.ZERO
+            }
+        }else{
             val gasPrice = ethGasPrice(chain) ?: return null
-            val gasLimit = ethGasLimit(chain, transaction)?.run {
+            val gasLimit = ethGasLimit(chain, transaction.wcEthereumTransaction!!.toTransaction())?.run {
                 if (this == BigInteger.ZERO) {
                     this
                 } else {
@@ -227,4 +260,5 @@ class Web3ViewModel
             } ?: return null
             return Convert.fromWei(gasPrice.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
         }
+    }
 }

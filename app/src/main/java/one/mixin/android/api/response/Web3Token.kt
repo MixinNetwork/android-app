@@ -92,6 +92,10 @@ fun Web3Token.isSolana(): Boolean {
     return chainName.equals("solana", true)
 }
 
+fun Web3Token.isSolToken(): Boolean {
+    return isSolana() && assetKey == "11111111111111111111111111111111"
+}
+
 private fun Web3Token.getChainAssetKey(): String {
     return if (chainName.equals("ethereum", true)) {
         "0x0000000000000000000000000000000000000000"
@@ -138,7 +142,7 @@ suspend fun Web3Token.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        if (assetKey == "11111111111111111111111111111111") {
+        if (isSolToken()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {

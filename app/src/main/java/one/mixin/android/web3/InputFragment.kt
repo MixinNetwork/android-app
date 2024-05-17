@@ -45,6 +45,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -454,10 +455,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         val t = token ?: return
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
-            val chain = t.getChainFromName()
-            if (chain == Chain.Solana) return
-            val transaction = t.buildTransaction(fromAddress, toAddress, tokenBalance)
-            fee = web3ViewModel.calcFee(chain, transaction.wcEthereumTransaction!!.toTransaction())
+            val transaction = try {
+                t.buildTransaction(fromAddress, toAddress, tokenBalance)
+            } catch (e: Exception) {
+                Timber.w(e)
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                }
+                return
+            }
+            fee = web3ViewModel.calcFee(t, transaction, fromAddress)
             if (dialog.isShowing) {
                 dialog.dismiss()
                 v = if (isReverse) {
