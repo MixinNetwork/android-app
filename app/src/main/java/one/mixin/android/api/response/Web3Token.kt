@@ -118,9 +118,9 @@ private fun Web3Token.getChainAssetKey(): String {
     }
 }
 
-fun Web3Token.supportDeposit(): Boolean {
+fun Web3Token.supportDepositFromMixin(): Boolean {
     return when (chainName.lowercase(Locale.US)) {
-        "ethereum", "base", "arbitrum", "optimism", "polygon", "binance-smart-chain", "avalanche", "solana" -> true
+        "ethereum", "polygon", "binance-smart-chain", "solana" -> true
         else -> false
     }
 }

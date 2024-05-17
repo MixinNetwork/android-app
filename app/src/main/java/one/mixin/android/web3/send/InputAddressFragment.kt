@@ -18,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.supportDeposit
+import one.mixin.android.api.response.supportDepositFromMixin
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -213,7 +213,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
 
     private val supportDeposit by lazy {
-        token.supportDeposit()
+        token.supportDepositFromMixin()
     }
 
     private fun updateSaveButton() {
