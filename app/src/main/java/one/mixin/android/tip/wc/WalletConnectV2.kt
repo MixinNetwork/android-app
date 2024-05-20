@@ -432,9 +432,12 @@ object WalletConnectV2 : WalletConnect() {
             }
         } else if (signMessage is VersionedTransaction) {
             val holder = Keypair.fromSecretKey(priv)
-            val conn = Connection(RpcUrl.MAINNNET)
-            val blockhash = conn.getLatestBlockhash()
-            signMessage.message.recentBlockhash = blockhash
+            // use latest blockhash should not break other signatures
+            if (signMessage.signatures.size <= 1) {
+                val conn = Connection(RpcUrl.MAINNNET)
+                val blockhash = conn.getLatestBlockhash()
+                signMessage.message.recentBlockhash = blockhash
+            }
             signMessage.sign(holder)
             return signMessage
         } else if (signMessage is WcSolanaMessage) {
