@@ -51,7 +51,6 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
-import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
 import one.mixin.android.tip.wc.internal.toTransaction
@@ -277,23 +276,25 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 else -> {}
             }
 
-            account = if (chain != Chain.Solana) {
-                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            } else {
-                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-            }
+            account =
+                if (chain != Chain.Solana) {
+                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                } else {
+                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                }
 
             if (requestType != RequestType.SessionRequest) return@launch
             val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@launch
 
             var signData = this@WalletConnectBottomSheetDialogFragment.signData
             if (signData == null) {
-                signData = try {
-                    viewModel.parseV2SignData(account, sessionRequest)
-                } catch (e: Exception) {
-                    toast(e.message ?: "Unknown error")
-                    null
-                }
+                signData =
+                    try {
+                        viewModel.parseV2SignData(account, sessionRequest)
+                    } catch (e: Exception) {
+                        toast(e.message ?: "Unknown error")
+                        null
+                    }
             }
 
             // not supported sessionRequest, like eth_call
@@ -364,7 +365,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
                                         if (signedTransactionData is VersionedTransaction) {
                                             viewModel.sendTransaction(signedTransactionData, sessionRequest)
-                                        }  else {
+                                        } else {
                                             viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
                                         }
                                     }
@@ -457,6 +458,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
+
     private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransaction
 
     private val bottomSheetBehaviorCallback =

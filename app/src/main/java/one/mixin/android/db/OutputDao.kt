@@ -21,7 +21,7 @@ interface OutputDao : BaseDao<Output> {
     suspend fun findUnspentOutputsByAsset(
         limit: Int,
         asset: String,
-        inscriptionHash: String
+        inscriptionHash: String,
     ): List<Output>
 
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash IS NULL ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
@@ -65,12 +65,13 @@ interface OutputDao : BaseDao<Output> {
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         LEFT JOIN tokens t on t.collection_hash = i.collection_hash
         WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
-        """
+        """,
     )
     fun inscriptions(): LiveData<List<SafeInscription>>
 
     // Get the latest inscription, inscription UTXO cannot be separated
-    @Query("""
+    @Query(
+        """
         SELECT ic.name, i.sequence, o.amount, t.symbol, t.price_usd, t.icon_url, o.state, i.content_url
         FROM outputs o 
         LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
@@ -78,22 +79,29 @@ interface OutputDao : BaseDao<Output> {
         LEFT JOIN tokens t on t.collection_hash = i.collection_hash
         WHERE o.inscription_hash = :hash
         ORDER BY o.sequence DESC LIMIT 1
-    """)
+    """,
+    )
     fun inscriptionStateByHash(hash: String): LiveData<InscriptionState?>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash AND state = 'unspent'
-    """)
+    """,
+    )
     suspend fun findUnspentOutputByHash(inscriptionHash: String): Output?
 
     // Get the latest inscription, inscription UTXO cannot be separated
-    @Query("""
+    @Query(
+        """
         SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash ORDER BY sequence DESC LIMIT 1
-    """)
+    """,
+    )
     suspend fun findOutputByHash(inscriptionHash: String): Output?
 
-    @Query("""
+    @Query(
+        """
         SELECT DISTINCT inscription_hash FROM outputs WHERE inscription_hash IS NOT NULL AND state = 'unspent' 
-    """)
+    """,
+    )
     suspend fun findUnspentInscriptionHash(): List<String>
 }

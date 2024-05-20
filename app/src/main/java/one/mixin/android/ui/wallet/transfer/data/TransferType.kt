@@ -8,5 +8,5 @@ enum class TransferType {
     unMulSign,
     addAddress,
     deleteAddress,
-    nft
+    nft,
 }

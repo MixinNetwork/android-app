@@ -3,9 +3,23 @@ package one.mixin.android.ui.wallet.fiatmoney
 object AmountUtil {
     private val full_currency =
         listOf(
-            "JPY", "KRW", "VND",
+            "JPY",
+            "KRW",
+            "VND",
             // The following are not supported for now
-            "BIF", "CLF", "DJF", "GNF", "ISK", "KMF", "PYG", "RWF", "UGX", "VUV", "XAF", "XOF", "XPF",
+            "BIF",
+            "CLF",
+            "DJF",
+            "GNF",
+            "ISK",
+            "KMF",
+            "PYG",
+            "RWF",
+            "UGX",
+            "VUV",
+            "XAF",
+            "XOF",
+            "XPF",
         )
 
     fun fullCurrency(currency: String): Boolean {

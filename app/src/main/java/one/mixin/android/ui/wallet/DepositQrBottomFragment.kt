@@ -19,7 +19,6 @@ import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment

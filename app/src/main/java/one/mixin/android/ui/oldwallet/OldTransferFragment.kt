@@ -625,8 +625,18 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                     TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, null)
                 } else {
                     WithdrawBiometricItem(
-                        address!!.destination, address!!.tag, address!!.addressId, address!!.label, address!!.fee,
-                        currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace,
+                        address!!.destination,
+                        address!!.tag,
+                        address!!.addressId,
+                        address!!.label,
+                        address!!.fee,
+                        currentAsset!!,
+                        amount,
+                        null,
+                        traceId,
+                        memo,
+                        PaymentStatus.pending.name,
+                        trace,
                     )
                 }
             updateContinue(POST_TEXT)

@@ -27,7 +27,7 @@ data class TipGas(
                 this.plus(this.divide(BigInteger.valueOf(2)))
             }
         },
-        ethMaxPriorityFeePerGas.max(tx.maxPriorityFeePerGas?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO)
+        ethMaxPriorityFeePerGas.max(tx.maxPriorityFeePerGas?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO),
     )
 
     fun maxFeePerGas(maxFeePerGas: BigInteger): BigInteger {

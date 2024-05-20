@@ -461,8 +461,16 @@ class ConversationViewModel
                         try {
                             jobManager.addJobInBackground(
                                 SendGiphyJob(
-                                    message.conversationId, message.userId, message.mediaUrl, message.mediaWidth!!, message.mediaHeight!!,
-                                    message.mediaSize ?: 0L, category, message.messageId, message.thumbImage ?: "", message.createdAt,
+                                    message.conversationId,
+                                    message.userId,
+                                    message.mediaUrl,
+                                    message.mediaWidth!!,
+                                    message.mediaHeight!!,
+                                    message.mediaSize ?: 0L,
+                                    category,
+                                    message.messageId,
+                                    message.thumbImage ?: "",
+                                    message.createdAt,
                                 ),
                             )
                         } catch (e: NullPointerException) {
@@ -944,4 +952,4 @@ class ConversationViewModel
             withContext(Dispatchers.IO) {
                 conversationRepository.refreshCountByConversationId(conversationId)
             }
-}
+    }

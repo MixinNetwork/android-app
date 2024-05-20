@@ -10,16 +10,17 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
-import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.wallet.WalletFragment
+import timber.log.Timber
 
 class NavigationController(mainActivity: MainActivity) {
     private val fragmentManager: FragmentManager = mainActivity.supportFragmentManager
@@ -41,20 +42,24 @@ class NavigationController(mainActivity: MainActivity) {
         destination: Destination,
         destinationFragment: Fragment,
     ) {
-        val tx = fragmentManager.beginTransaction()
-        val tag = destination.tag
-        val f = fragmentManager.findFragmentByTag(tag)
-        if (f == null) {
-            tx.add(R.id.root_view, destinationFragment, tag)
-        } else {
-            tx.show(f)
-        }
-        destinations.forEach { d ->
-            if (d != destination) {
-                fragmentManager.findFragmentByTag(d.tag)?.let { tx.hide(it) }
+        try {
+            val tx = fragmentManager.beginTransaction()
+            val tag = destination.tag
+            val f = fragmentManager.findFragmentByTag(tag)
+            if (f == null) {
+                tx.add(R.id.root_view, destinationFragment, tag)
+            } else {
+                tx.show(f)
             }
+            destinations.forEach { d ->
+                if (d != destination) {
+                    fragmentManager.findFragmentByTag(d.tag)?.let { tx.hide(it) }
+                }
+            }
+            tx.commitAllowingStateLoss()
+        } catch (e: Exception) {
+            Timber.w(e)
         }
-        tx.commitAllowingStateLoss()
     }
 
     fun pushContacts() {

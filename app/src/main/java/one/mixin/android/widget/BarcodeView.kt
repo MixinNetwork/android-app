@@ -9,6 +9,7 @@ import android.view.View
 import com.walletconnect.util.bytesToHex
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.hexStringToByteArray
+import kotlin.math.max
 
 class BarcodeView : View {
     constructor(context: Context) : super(context)
@@ -18,6 +19,7 @@ class BarcodeView : View {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     private val paint = Paint(ANTI_ALIAS_FLAG)
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -26,16 +28,18 @@ class BarcodeView : View {
         val itemWith = width / 93f
         val rectWidth = (itemWith * 5).toInt()
         val offset = (itemWith * 3).toInt()
+        val radius = max(rectWidth / 4f, 2f)
 
         var left = 0
         for (color in colors) {
             paint.color = color
-            canvas.drawRect(left.toFloat(), 0f, (left + rectWidth).toFloat(), height.toFloat(), paint)
+            canvas.drawRoundRect(left.toFloat(), 0f, (left + rectWidth).toFloat(), height.toFloat(), radius, radius, paint)
             left += rectWidth + offset
         }
     }
 
     private var colors = mutableListOf<Int>()
+
     fun setData(hash: String) {
         val bytes = hash.hexStringToByteArray()
         val data = hash + bytes.sha3Sum256().slice(IntRange(0, 3)).toByteArray().bytesToHex()

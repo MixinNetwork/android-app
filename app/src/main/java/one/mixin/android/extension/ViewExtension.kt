@@ -6,7 +6,6 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.Outline
-import android.graphics.Path
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
@@ -47,9 +46,7 @@ import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
 import java.lang.reflect.Field
-import kotlin.math.cos
 import kotlin.math.hypot
-import kotlin.math.sin
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L

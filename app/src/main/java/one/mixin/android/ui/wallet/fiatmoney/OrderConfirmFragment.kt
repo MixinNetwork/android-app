@@ -23,7 +23,6 @@ import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl

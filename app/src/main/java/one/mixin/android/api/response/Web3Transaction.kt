@@ -4,8 +4,6 @@ import android.content.Context
 import android.os.Parcelable
 import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
-import java.math.BigDecimal
-import java.util.Locale
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -17,6 +15,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
 import one.mixin.android.web3.details.Web3TransactionType
+import java.math.BigDecimal
+import java.util.Locale
 
 @Parcelize
 data class Web3Transaction(
@@ -34,7 +34,7 @@ data class Web3Transaction(
     @SerializedName("app_metadata")
     val appMetadata: AppMetadata?,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 ) : Parcelable {
     val icon: String?
         get() {

@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import android.content.pm.PackageInstaller.InstallConstraints
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentResponse

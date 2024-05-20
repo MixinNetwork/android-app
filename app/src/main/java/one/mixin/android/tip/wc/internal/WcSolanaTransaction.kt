@@ -10,23 +10,22 @@ class WcSolanaTransaction(
 
 class WcSolanaMessage(
     val pubkey: String,
-    val message:String
+    val message: String,
 )
 
 class WcSignature(
     val publicKey: String? = null,
-    val signature: String?
+    val signature: String?,
 )
 
 class WcInstruction(
     val keys: List<WcAccountMeta>,
     val programId: String,
-    val data: List<Int>
+    val data: List<Int>,
 )
 
 class WcAccountMeta(
     val pubkey: String,
     val isSigner: Boolean,
-    val isWritable: Boolean
+    val isWritable: Boolean,
 )
-

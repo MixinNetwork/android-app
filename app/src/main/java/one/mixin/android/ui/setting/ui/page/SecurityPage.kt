@@ -9,13 +9,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.compose.SettingPageScaffold
-import one.mixin.android.compose.SettingTile
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 

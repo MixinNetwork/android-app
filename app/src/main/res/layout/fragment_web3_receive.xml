@@ -70,6 +70,7 @@
             android:layout_weight="1"/>
 
         <TextView
+            android:id="@+id/bottom_hint_tv"
             android:text="@string/web3_deposit_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,6 +82,7 @@
             android:textColor="?attr/text_assist"/>
 
         <FrameLayout
+            android:id="@+id/bottom_hint_fl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="30dp">

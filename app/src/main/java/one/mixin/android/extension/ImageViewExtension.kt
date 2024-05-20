@@ -56,7 +56,6 @@ fun ImageView.loadHexagonImage(
     }
 }
 
-
 fun ImageView.clear() {
     Glide.with(this).clear(this)
 }

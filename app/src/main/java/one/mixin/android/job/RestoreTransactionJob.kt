@@ -119,17 +119,18 @@ class RestoreTransactionJob : BaseJob(
     private fun insertSnapshotMessage(
         data: TransactionResponse,
         opponentId: String,
-        inscriptionHash:String?
+        inscriptionHash: String?,
     ) {
         val user = userDao.findUser(opponentId)
         if (user != null && !user.notMessengerUser()) {
             val conversationId = generateConversationId(data.userId, opponentId)
             initConversation(conversationId, data.userId, opponentId)
-            val category = if (inscriptionHash != null) {
-                MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
-            } else {
-                MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
-            }
+            val category =
+                if (inscriptionHash != null) {
+                    MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                } else {
+                    MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                }
             val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
             appDatabase.insertMessage(message)
             if (inscriptionHash != null) {

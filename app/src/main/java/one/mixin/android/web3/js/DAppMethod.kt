@@ -12,7 +12,8 @@ enum class DAppMethod {
     SWITCHETHEREUMCHAIN,
     SIGNRAWTRANSACTION, // solana sign tx
     SINGIN, // solana sign-in
-    UNKNOWN;
+    UNKNOWN,
+    ;
 
     companion object {
         fun fromValue(value: String): DAppMethod {

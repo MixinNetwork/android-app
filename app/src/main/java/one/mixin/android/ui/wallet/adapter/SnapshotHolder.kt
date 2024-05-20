@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -23,7 +24,6 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
-import one.mixin.android.extension.dp
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
@@ -97,19 +97,20 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
         }
 
-        binding.value.text = if (snapshot.inscriptionHash.isNullOrEmpty()) {
-            if (isPositive) {
-                "+${snapshot.amount.numberFormat()}"
+        binding.value.text =
+            if (snapshot.inscriptionHash.isNullOrEmpty()) {
+                if (isPositive) {
+                    "+${snapshot.amount.numberFormat()}"
+                } else {
+                    snapshot.amount.numberFormat()
+                }
             } else {
-                snapshot.amount.numberFormat()
+                if (isPositive) {
+                    "+1"
+                } else {
+                    "-1"
+                }
             }
-        } else {
-            if (isPositive) {
-                "+1"
-            } else {
-                "-1"
-            }
-        }
         binding.value.textColorResource =
             when {
                 snapshot.type == SafeSnapshotType.pending.name -> R.color.wallet_pending_text_color

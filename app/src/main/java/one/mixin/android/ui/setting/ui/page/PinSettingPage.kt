@@ -28,6 +28,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.compose.HighlightStarLinkText
+import one.mixin.android.compose.MixinBottomSheetDialog
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.booleanValueAsState
+import one.mixin.android.compose.longValueAsState
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putLong
@@ -36,13 +43,6 @@ import one.mixin.android.ui.setting.BiometricTimeFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.compose.HighlightStarLinkText
-import one.mixin.android.compose.MixinBottomSheetDialog
-import one.mixin.android.compose.SettingPageScaffold
-import one.mixin.android.compose.SettingTile
-import one.mixin.android.compose.booleanValueAsState
-import one.mixin.android.compose.longValueAsState
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment

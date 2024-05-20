@@ -16,16 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.supportsOreo
-import one.mixin.android.ui.setting.LocalSettingNav
-import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.compose.SettingPageScaffold
 import one.mixin.android.compose.SettingTile
 import one.mixin.android.compose.booleanValueAsState
 import one.mixin.android.compose.intValueAsState
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.supportsOreo
+import one.mixin.android.ui.setting.LocalSettingNav
+import one.mixin.android.ui.setting.SettingDestination
+import one.mixin.android.ui.setting.SettingViewModel
 
 @Composable
 fun AccountPrivacyPage() {

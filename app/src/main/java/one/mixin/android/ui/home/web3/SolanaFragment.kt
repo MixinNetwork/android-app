@@ -89,6 +89,7 @@ class SolanaFragment : BaseFragment() {
                         builder.setCustomView(bottomBinding.root)
                         val bottomSheet = builder.create()
                         bottomBinding.apply {
+                            title.setText(R.string.Solana_Account)
                             addressTv.text = this@SolanaFragment.address?.formatPublicKey()
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
@@ -145,6 +146,7 @@ class SolanaFragment : BaseFragment() {
     }
 
     private var address: String? = null
+
     fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
@@ -216,37 +218,39 @@ class SolanaFragment : BaseFragment() {
             binding.progress.isVisible = false
             return
         }
-        val account = try {
-            val response = web3ViewModel.web3Account(address)
-            if (!isAdded) return
-            if (response.errorCode == ErrorHandler.OLD_VERSION) {
-                dialog?.dismiss()
-                dialog = alertDialogBuilder()
-                    .setTitle(R.string.Update_Mixin)
-                    .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                    .setNegativeButton(R.string.Later) { dialog, _ ->
-                        dialog.dismiss()
-                    }.setPositiveButton(R.string.Update) { dialog, _ ->
-                        requireContext().openMarket(parentFragmentManager, lifecycleScope)
-                        dialog.dismiss()
-                    }.create()
-                dialog?.show()
-                throw MixinResponseException(
-                    response.errorCode,
-                    getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName),
-                )
-            } else if (response.error != null) {
-                handleError(address, response.errorDescription)
+        val account =
+            try {
+                val response = web3ViewModel.web3Account(address)
+                if (!isAdded) return
+                if (response.errorCode == ErrorHandler.OLD_VERSION) {
+                    dialog?.dismiss()
+                    dialog =
+                        alertDialogBuilder()
+                            .setTitle(R.string.Update_Mixin)
+                            .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                            .setNegativeButton(R.string.Later) { dialog, _ ->
+                                dialog.dismiss()
+                            }.setPositiveButton(R.string.Update) { dialog, _ ->
+                                requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                                dialog.dismiss()
+                            }.create()
+                    dialog?.show()
+                    throw MixinResponseException(
+                        response.errorCode,
+                        getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName),
+                    )
+                } else if (response.error != null) {
+                    handleError(address, response.errorDescription)
+                    binding.progress.isVisible = false
+                    return
+                }
+                response
+            } catch (e: Exception) {
+                if (!isAdded) return
+                handleError(address, e.message ?: getString(R.string.Unknown))
                 binding.progress.isVisible = false
                 return
             }
-            response
-        } catch (e: Exception) {
-            if (!isAdded) return
-            handleError(address, e.message ?: getString(R.string.Unknown))
-            binding.progress.isVisible = false
-            return
-        }
         account.data?.let { data ->
             adapter.account = data
             tokens = data.tokens
@@ -257,7 +261,10 @@ class SolanaFragment : BaseFragment() {
 
     private var tokens = emptyList<Web3Token>()
 
-    private fun handleError(address: String, err: String) {
+    private fun handleError(
+        address: String,
+        err: String,
+    ) {
         binding.apply {
             if (adapter.account != null) return
             empty.isVisible = true

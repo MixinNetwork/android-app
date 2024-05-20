@@ -32,6 +32,11 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.compose.MixinAlertDialog
+import one.mixin.android.compose.MixinBottomSheetDialog
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
@@ -41,11 +46,6 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
-import one.mixin.android.compose.MixinAlertDialog
-import one.mixin.android.compose.MixinBottomSheetDialog
-import one.mixin.android.compose.SettingPageScaffold
-import one.mixin.android.compose.SettingTile
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.vo.Account

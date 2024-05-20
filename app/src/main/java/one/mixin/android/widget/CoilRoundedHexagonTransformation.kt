@@ -16,19 +16,22 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class CoilRoundedHexagonTransformation : Transformation {
-
     override val cacheKey: String = javaClass.name
 
-    override suspend fun transform(bitmap: Bitmap, size: Size): Bitmap {
+    override suspend fun transform(
+        bitmap: Bitmap,
+        size: Size,
+    ): Bitmap {
         val path = Path()
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-        }
+        val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                style = Paint.Style.FILL
+            }
 
         createHexagonPath(bitmap.width.toFloat(), path)
         val result = createBitmap(bitmap.width, bitmap.height, bitmap.config)
-        paint.pathEffect = CornerPathEffect(result.width /  10f)
+        paint.pathEffect = CornerPathEffect(result.width / 10f)
 
         val canvas = Canvas(result)
         canvas.drawPath(path, paint)
@@ -39,7 +42,10 @@ class CoilRoundedHexagonTransformation : Transformation {
         return result
     }
 
-    private fun createHexagonPath(height: Float ,path: Path): Path {
+    private fun createHexagonPath(
+        height: Float,
+        path: Path,
+    ): Path {
         val radius = height / 2f
 
         val angleDeg = 60f
@@ -60,7 +66,6 @@ class CoilRoundedHexagonTransformation : Transformation {
 
         return path
     }
-
 
     override fun equals(other: Any?) = other is CoilRoundedHexagonTransformation
 

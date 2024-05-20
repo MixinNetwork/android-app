@@ -30,6 +30,7 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
         }
 
     fun isEmpty() = tokens.isEmpty()
+
     private var onClickAction: ((Int) -> Unit)? = null
     private var onWeb3ClickListener: ((Web3Token) -> Unit)? = null
 
@@ -40,7 +41,6 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
     fun setOnWeb3Click(onWeb3ClickListener: (Web3Token) -> Unit) {
         this.onWeb3ClickListener = onWeb3ClickListener
     }
-
 
     val tokens: List<Web3Token>
         get() {
@@ -126,7 +126,10 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
 }
 
 class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(balance: String, onClickListener: ((Int) -> Unit)?) {
+    fun bind(
+        balance: String,
+        onClickListener: ((Int) -> Unit)?,
+    ) {
         binding.header.setText(balance)
         binding.header.setOnClickAction(onClickListener)
     }
@@ -145,9 +148,12 @@ class Web3CardHolder(val binding: ItemChainCardBinding) : RecyclerView.ViewHolde
 
 class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(token: Web3Token, onWeb3ClickListener: ((Web3Token) -> Unit)?) {
+    fun bind(
+        token: Web3Token,
+        onWeb3ClickListener: ((Web3Token) -> Unit)?,
+    ) {
         binding.apply {
-            root.setOnClickListener{ onWeb3ClickListener?.invoke(token) }
+            root.setOnClickListener { onWeb3ClickListener?.invoke(token) }
             avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
             balance.text =
@@ -162,7 +168,12 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                 }
             symbolTv.text = token.symbol
             balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
-            val changePercent = BigDecimal(token.changePercent)
+            val changePercent =
+                if (token.changePercent.isBlank()) {
+                    BigDecimal.ZERO
+                } else {
+                    BigDecimal(token.changePercent)
+                }
             changeTv.text = "${changePercent.numberFormat2()}%"
             changeTv.textColorResource = if (changePercent >= BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
             if (token.price == "0") {

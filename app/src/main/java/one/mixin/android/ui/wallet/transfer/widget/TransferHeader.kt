@@ -16,7 +16,6 @@ import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
 
-
 class TransferHeader : LinearLayout {
     private val _binding: ViewTransferHeaderBinding
 
@@ -173,11 +172,12 @@ class TransferHeader : LinearLayout {
         asset: TokenItem,
     ) {
         _binding.apply {
-            icon.displayedChild = if (type == TransferType.nft) {
-                1
-            } else {
-                0
-            }
+            icon.displayedChild =
+                if (type == TransferType.nft) {
+                    1
+                } else {
+                    0
+                }
             when (type) {
                 TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Transfer_confirmation)

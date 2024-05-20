@@ -1,6 +1,9 @@
 package one.mixin.android.web3.js
 
 import android.util.LruCache
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
@@ -38,12 +41,13 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.util.concurrent.TimeUnit
 
 object JsSigner {
-
     sealed class JsSignerNetwork(val name: String) {
-        data object Ethereum: JsSignerNetwork("ethereum")
-        data object Solana: JsSignerNetwork("solana")
+        data object Ethereum : JsSignerNetwork("ethereum")
+
+        data object Solana : JsSignerNetwork("solana")
     }
 
     private val transactionDao by lazy {
@@ -57,12 +61,25 @@ object JsSigner {
     private fun getWeb3j(chain: Chain): Web3j {
         val exists = web3jPool[chain]
         return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcUrl))
+            val web3j = Web3j.build(HttpService(chain.rpcUrl, buildOkHttpClient()))
             web3jPool.put(chain, web3j)
             web3j
         } else {
             exists
         }
+    }
+
+    private fun buildOkHttpClient(): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        if (BuildConfig.DEBUG) {
+            builder.addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+        }
+        return builder.build()
     }
 
     lateinit var evmAddress: String
@@ -73,7 +90,10 @@ object JsSigner {
     lateinit var address: String
         private set
 
-    fun updateAddress(network: String, address: String) {
+    fun updateAddress(
+        network: String,
+        address: String,
+    ) {
         if (network == JsSignerNetwork.Solana.name) {
             solanaAddress = address
         } else {
@@ -81,6 +101,7 @@ object JsSigner {
         }
         JsSigner.address = address
     }
+
     fun useEvm() {
         address = evmAddress
         if (!evmChainList.contains(currentChain)) {
@@ -88,11 +109,13 @@ object JsSigner {
         }
         currentNetwork = JsSignerNetwork.Ethereum.name
     }
+
     fun useSolana() {
         address = solanaAddress
         currentChain = Chain.Solana
-        currentNetwork =JsSignerNetwork.Solana.name
+        currentNetwork = JsSignerNetwork.Solana.name
     }
+
     var currentChain: Chain = Chain.Ethereum
         private set
 
@@ -108,19 +131,19 @@ object JsSigner {
     fun switchChain(switchChain: SwitchChain): Result<String> {
         currentNetwork = JsSignerNetwork.Ethereum.name
         return when (switchChain.chainId) {
-            Chain.Ethereum.hexReference-> {
+            Chain.Ethereum.hexReference -> {
                 currentChain = Chain.Ethereum
                 Result.success(Chain.Ethereum.name)
             }
-            Chain.Base.hexReference-> {
+            Chain.Base.hexReference -> {
                 currentChain = Chain.Base
                 Result.success(Chain.Base.name)
             }
-            Chain.Arbitrum.hexReference-> {
+            Chain.Arbitrum.hexReference -> {
                 currentChain = Chain.Arbitrum
                 Result.success(Chain.Arbitrum.name)
             }
-            Chain.Optimism.hexReference-> {
+            Chain.Optimism.hexReference -> {
                 currentChain = Chain.Optimism
                 Result.success(Chain.Optimism.name)
             }
@@ -149,7 +172,7 @@ object JsSigner {
 
     fun sendTransaction(
         signedTransactionData: String,
-        chain: Chain?
+        chain: Chain?,
     ): String? {
         val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
         if (tx.hasError()) {
@@ -166,7 +189,7 @@ object JsSigner {
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
-        chain: Chain?
+        chain: Chain?,
     ): String {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
@@ -186,22 +209,23 @@ object JsSigner {
             "$TAG dapp gas: ${transaction.gas?.let { Numeric.toBigInt(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.toBigInt(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }} maxPriorityFeePerGas: ${
                 transaction.maxPriorityFeePerGas?.let {
                     Numeric.toBigInt(
-                        it
+                        it,
                     )
                 }
-            } "
+            } ",
         )
         Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
-        val rawTransaction = RawTransaction.createTransaction(
-            (chain ?: currentChain).chainReference.toLong(),
-            nonce,
-            gasLimit,
-            transaction.to,
-            v,
-            transaction.data ?: "",
-            maxPriorityFeePerGas,
-            maxFeePerGas,
-        )
+        val rawTransaction =
+            RawTransaction.createTransaction(
+                (chain ?: currentChain).chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data ?: "",
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
@@ -247,11 +271,12 @@ object JsSigner {
         message: String,
     ): String {
         val holder = Keypair.fromSecretKey(priv)
-        val m = try {
-            message.decodeBase58()
-        } catch (e: Exception) {
-            message.removePrefix("0x").hexStringToByteArray()
-        }
+        val m =
+            try {
+                message.decodeBase58()
+            } catch (e: Exception) {
+                message.removePrefix("0x").hexStringToByteArray()
+            }
         val sig = holder.sign(m)
         return sig.toHex()
     }
@@ -262,6 +287,11 @@ object JsSigner {
     ): org.sol4k.VersionedTransaction {
         val holder = Keypair.fromSecretKey(priv)
         val conn = Connection(RpcUrl.MAINNNET)
+        // TODO estimate remain balance
+//        val accountInfo = conn.getAccountInfo(holder.publicKey)
+//        if (accountInfo != null) {
+//            val minimalBalance = conn.getMinimumBalanceForRentExemption(accountInfo.space)
+//        }
         val blockhash = conn.getLatestBlockhash()
         tx.message.recentBlockhash = blockhash
         tx.sign(holder)
@@ -276,15 +306,16 @@ object JsSigner {
     fun solanaSignIn(
         priv: ByteArray,
         signInInput: SignInInput,
-    ) : String {
+    ): String {
         val signInMessage = signInInput.toMessage().toByteArray()
         val holder = Keypair.fromSecretKey(priv)
         val sig = holder.sign(signInMessage)
-        val signInOutput = SignInOutput(
-            account = SignInAccount(holder.publicKey.toBase58()),
-            signedMessage = signInMessage.encodeToBase58String(),
-            signature = sig.encodeToBase58String(),
-        )
+        val signInOutput =
+            SignInOutput(
+                account = SignInAccount(holder.publicKey.toBase58()),
+                signedMessage = signInMessage.encodeToBase58String(),
+                signature = sig.encodeToBase58String(),
+            )
         return GsonHelper.customGson.toJson(signInOutput).toHex()
     }
 

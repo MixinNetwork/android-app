@@ -319,7 +319,7 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(length:Int = 50): String {
+fun String.formatPublicKey(length: Int = 50): String {
     if (this.length <= length) return this
     return substring(0, 8) + "..." + substring(length - 6, length)
 }
@@ -739,7 +739,7 @@ fun String.isValidHex(): Boolean {
     return matches("[0-9a-fA-F]+".toRegex())
 }
 
-fun BigDecimal.currencyFormat():String {
+fun BigDecimal.currencyFormat(): String {
     return if (this < BigDecimal("0.01")) {
         "< $0.01"
     } else {

@@ -33,9 +33,11 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
 
     private var onClickListener: ((Web3Transaction) -> Unit)? = null
     private var onClickAction: ((Int) -> Unit)? = null
+
     fun setOnClickAction(onClickListener: (Int) -> Unit) {
         this.onClickAction = onClickListener
     }
+
     fun setOnClickListener(onClickListener: (Web3Transaction) -> Unit) {
         this.onClickListener = onClickListener
     }
@@ -224,14 +226,15 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     inTv.text = ""
                 }
             }
-
         }
     }
 }
 
 class Web3HeaderHolder(val binding: ItemWeb3TokenHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
-
-    fun bind(token: Web3Token, onClickListener: ((Int) -> Unit)?) {
+    fun bind(
+        token: Web3Token,
+        onClickListener: ((Int) -> Unit)?,
+    ) {
         binding.header.setToken(token)
         binding.header.setOnClickAction(onClickListener)
     }

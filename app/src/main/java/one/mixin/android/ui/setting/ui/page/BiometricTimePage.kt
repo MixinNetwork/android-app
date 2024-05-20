@@ -19,14 +19,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.forEachWithIndex
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.compose.MixinBottomSheetDialog
 import one.mixin.android.compose.SettingPageScaffold
 import one.mixin.android.compose.SettingTile
 import one.mixin.android.compose.longValueAsState
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.forEachWithIndex
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import timber.log.Timber
 

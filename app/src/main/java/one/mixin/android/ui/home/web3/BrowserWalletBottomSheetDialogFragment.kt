@@ -79,17 +79,20 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
-            url:String?,
-            title:String?,
+            url: String?,
+            title: String?,
             amount: String? = null,
             token: Web3Token? = null,
             chainToken: Web3Token? = null,
-            toAddress: String? = null
+            toAddress: String? = null,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
-            putString(ARGS_URL, url?.run {
-                Uri.parse(this).host
-            })
+            putString(
+                ARGS_URL,
+                url?.run {
+                    Uri.parse(this).host
+                },
+            )
             putString(ARGS_TITLE, title)
             putString(ARGS_AMOUNT, amount)
             putParcelable(ARGS_TOKEN, token)
@@ -138,15 +141,29 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             setContent {
                 BrowserPage(
-                    JsSigner.address, currentChain, amount, token, toAddress, signMessage.type, step, tipGas, solanaTx?.calcFee(), asset,
-                    signMessage.wcEthereumTransaction, solanaSignInInput?.toMessage() ?: signMessage.reviewData, url, title, errorInfo, insufficientGas,
+                    JsSigner.address,
+                    currentChain,
+                    amount,
+                    token,
+                    toAddress,
+                    signMessage.type,
+                    step,
+                    tipGas,
+                    solanaTx?.calcFee(),
+                    asset,
+                    signMessage.wcEthereumTransaction,
+                    solanaSignInInput?.toMessage() ?: signMessage.reviewData,
+                    url,
+                    title,
+                    errorInfo,
+                    insufficientGas,
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     showPin = { showPin() },
                     onDismissRequest = { dismiss() },
                     onRejectAction = {
                         onRejectAction?.invoke()
                         dismiss()
-                    }
+                    },
                 )
             }
 
@@ -296,18 +313,24 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
     }
 
-    private fun checkGas(web3Token: Web3Token?, chainToken: Web3Token?, tipGas: TipGas?, value: String?): Boolean {
+    private fun checkGas(
+        web3Token: Web3Token?,
+        chainToken: Web3Token?,
+        tipGas: TipGas?,
+        value: String?,
+    ): Boolean {
         return if (web3Token != null) {
             if (chainToken == null) {
                 true
-            } else if (tipGas!=null){
-                val maxGas = tipGas.displayValue() ?: BigDecimal.ZERO
-                if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
-                    Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
+            } else if (tipGas != null)
+                {
+                    val maxGas = tipGas.displayValue() ?: BigDecimal.ZERO
+                    if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
+                        Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
+                    } else {
+                        maxGas > BigDecimal(chainToken.balance)
+                    }
                 } else {
-                    maxGas > BigDecimal(chainToken.balance)
-                }
-            }else{
                 false
             }
         } else {

@@ -55,11 +55,11 @@ fun TransactionPreview(
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(MixinAppTheme.colors.background)
+                .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
@@ -71,8 +71,8 @@ fun TransactionPreview(
         Box(modifier = Modifier.height(8.dp))
         Row(
             modifier =
-            Modifier
-                .fillMaxWidth(),
+                Modifier
+                    .fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
@@ -93,9 +93,9 @@ fun TransactionPreview(
             GlideImage(
                 data = asset?.iconUrl ?: "",
                 modifier =
-                Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
@@ -115,11 +115,11 @@ fun TokenTransactionPreview(
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(MixinAppTheme.colors.background)
+                .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
@@ -131,8 +131,8 @@ fun TokenTransactionPreview(
         Box(modifier = Modifier.height(8.dp))
         Row(
             modifier =
-            Modifier
-                .fillMaxWidth(),
+                Modifier
+                    .fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
@@ -153,9 +153,9 @@ fun TokenTransactionPreview(
             GlideImage(
                 data = token.iconUrl,
                 modifier =
-                Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                 placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
@@ -183,12 +183,12 @@ fun MessagePreview(
         Box(modifier = Modifier.height(4.dp))
         Box(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(0.dp, 128.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .clickable { onPreviewMessage(content) },
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 128.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MixinAppTheme.colors.backgroundWindow)
+                    .clickable { onPreviewMessage(content) },
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -199,10 +199,10 @@ fun MessagePreview(
             Image(
                 painter = painterResource(R.drawable.ic_post),
                 modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .padding(horizontal = 8.dp)
-                    .align(Alignment.TopEnd),
+                    Modifier
+                        .size(40.dp, 40.dp)
+                        .padding(horizontal = 8.dp)
+                        .align(Alignment.TopEnd),
                 contentDescription = null,
             )
         }
@@ -217,19 +217,19 @@ fun Warning(
     if (isVisible) {
         Row(
             modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .background(MixinAppTheme.colors.tipWarning)
-                .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
-                .padding(20.dp),
+                modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .background(MixinAppTheme.colors.tipWarning)
+                    .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
+                    .padding(20.dp),
         ) {
             Image(
                 painter = painterResource(R.drawable.ic_warning),
                 modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .padding(horizontal = 7.dp),
+                    Modifier
+                        .size(40.dp, 40.dp)
+                        .padding(horizontal = 7.dp),
                 contentDescription = null,
             )
             Box(modifier = Modifier.width(20.dp))
@@ -243,9 +243,9 @@ fun Warning(
                 Row(modifier = Modifier.align(Alignment.End)) {
                     Text(
                         modifier =
-                        Modifier.clickable {
-                            isVisible = false
-                        },
+                            Modifier.clickable {
+                                isVisible = false
+                            },
                         text = stringResource(id = R.string.Got_it),
                         color = MixinAppTheme.colors.textBlue,
                         fontSize = 14.sp,
@@ -285,9 +285,9 @@ private fun TransactionPreview() {
 private fun WarningPreview() {
     Box(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .height(300.dp),
+            Modifier
+                .fillMaxWidth()
+                .height(300.dp),
     ) {
         ActionBottom(
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -311,26 +311,27 @@ fun ActionBottom(
 ) {
     Row(
         modifier =
-        modifier
-            .background(MixinAppTheme.colors.background)
-            .padding(20.dp)
-            .fillMaxWidth(),
+            modifier
+                .background(MixinAppTheme.colors.background)
+                .padding(20.dp)
+                .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
         Button(
             onClick = cancelAction,
             colors =
-            ButtonDefaults.outlinedButtonColors(
-                backgroundColor = MixinAppTheme.colors.backgroundGray,
-            ),
+                ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = MixinAppTheme.colors.backgroundGray,
+                ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            elevation = ButtonDefaults.elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp
-            )
+            elevation =
+                ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
         ) {
             Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
         }
@@ -338,17 +339,18 @@ fun ActionBottom(
         Button(
             onClick = confirmAction,
             colors =
-            ButtonDefaults.outlinedButtonColors(
-                backgroundColor = MixinAppTheme.colors.accent,
-            ),
+                ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = MixinAppTheme.colors.accent,
+                ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            elevation = ButtonDefaults.elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp
-            )
+            elevation =
+                ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
         ) {
             Text(text = confirmTitle, color = Color.White)
         }

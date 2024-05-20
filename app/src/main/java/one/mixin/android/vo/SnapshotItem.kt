@@ -13,7 +13,6 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.extension.isValidHex
 import one.mixin.android.vo.safe.SafeDeposit
-import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
 

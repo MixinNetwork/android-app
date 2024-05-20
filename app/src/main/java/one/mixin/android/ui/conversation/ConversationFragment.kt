@@ -694,7 +694,13 @@ class ConversationFragment() :
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             }
 
-            override fun onInscriptionClick(conversationId: String, messageId: String, assetId: String?, inscriptionHash: String?, snapshotId: String?) {
+            override fun onInscriptionClick(
+                conversationId: String,
+                messageId: String,
+                assetId: String?,
+                inscriptionHash: String?,
+                snapshotId: String?,
+            ) {
                 if (inscriptionHash == null) {
                     jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, messageId, null, snapshotId))
                 }

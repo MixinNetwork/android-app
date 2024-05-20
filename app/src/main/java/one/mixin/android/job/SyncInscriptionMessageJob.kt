@@ -7,7 +7,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.safe.SafeInscription
 import timber.log.Timber
 
-class SyncInscriptionMessageJob(val conversationId:String, val messageId: String, val hash: String?, val snapshotId: String?) : BaseJob(
+class SyncInscriptionMessageJob(val conversationId: String, val messageId: String, val hash: String?, val snapshotId: String?) : BaseJob(
     Params(PRIORITY_UI_HIGH).addTags(TAG).persist().groupBy(TAG).requireNetwork(),
 ) {
     companion object {
@@ -53,9 +53,10 @@ class SyncInscriptionMessageJob(val conversationId:String, val messageId: String
                     inscriptionCollection.name,
                     inscription.contentType,
                     inscription.contentURL,
-                    inscriptionCollection.iconURL
-                )
-            ), messageId
+                    inscriptionCollection.iconURL,
+                ),
+            ),
+            messageId,
         )
         MessageFlow.update(conversationId, messageId)
     }

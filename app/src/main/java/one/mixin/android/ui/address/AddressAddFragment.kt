@@ -26,7 +26,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard

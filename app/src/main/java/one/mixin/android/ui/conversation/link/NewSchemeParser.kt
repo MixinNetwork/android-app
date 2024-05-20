@@ -14,6 +14,7 @@ import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
@@ -23,6 +24,8 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
@@ -108,6 +111,12 @@ class NewSchemeParser(
             }
 
         val traceId = trace ?: UUID.randomUUID().toString()
+
+        val inscription = uri.getQueryParameter("inscription")
+
+        if (inscription != null) {
+            return checkInscriptionTransfer(inscription, asset, lastPath, amount, memo, traceId)
+        }
         if (asset != null && amount != null) {
             val status = getPaymentStatus(traceId) ?: return Result.failure(ParserError(FAILURE))
             if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
@@ -183,6 +192,42 @@ class NewSchemeParser(
             if (transferFragment == null) return Result.failure(ParserError(FAILURE))
             transferFragment.show(bottomSheet.parentFragmentManager, TransferFragment.TAG)
         }
+        return Result.success(SUCCESS)
+    }
+
+    private suspend fun checkInscriptionTransfer(
+        inscriptionHash: String,
+        asset: String?,
+        userId: String,
+        amount: String?,
+        memo: String?,
+        traceId: String,
+    ): Result<Int> {
+        asset ?: return Result.failure(ParserError(FAILURE))
+        val token = checkToken(asset) ?: return Result.failure(ParserError(FAILURE))
+        val inscription = checkInscription(inscriptionHash) ?: return Result.failure(ParserError(FAILURE))
+        if (token.collectionHash != inscription.collectionHash) {
+            return Result.failure(ParserError(FAILURE))
+        }
+        val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: return Result.failure(ParserError(FAILURE))
+        if (amount != null && amount != inscriptionCollection.unit) {
+            return Result.failure(ParserError(FAILURE))
+        }
+        val receiver = linkViewModel.refreshUser(userId) ?: return Result.failure(ParserError(FAILURE))
+        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+        val nftBiometricItem =
+            NftBiometricItem(
+                asset = token,
+                traceId = traceId,
+                amount = output.amount,
+                memo = memo,
+                state = PaymentStatus.pending.name,
+                receivers = listOf(receiver),
+                reference = null,
+                inscriptionItem = inscription,
+                inscriptionCollection = inscriptionCollection,
+            )
+        TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         return Result.success(SUCCESS)
     }
 
@@ -328,6 +373,26 @@ class NewSchemeParser(
             linkViewModel.refreshAsset(asset.chainId)
         }
         return linkViewModel.findAssetItemById(assetId)
+    }
+
+    private suspend fun checkInscription(hash: String): InscriptionItem? {
+        var inscription = linkViewModel.findInscriptionByHash(hash)
+        if (inscription == null) {
+            inscription = linkViewModel.refreshInscriptionItem(hash)
+            return inscription
+        } else {
+            return inscription
+        }
+    }
+
+    private suspend fun checkInscriptionCollection(hash: String): InscriptionCollection? {
+        var inscriptionCollection = linkViewModel.findInscriptionCollectionByHash(hash)
+        if (inscriptionCollection == null) {
+            inscriptionCollection = linkViewModel.refreshInscriptionCollection(hash)
+            return inscriptionCollection
+        } else {
+            return inscriptionCollection
+        }
     }
 
     private suspend fun getPaymentStatus(traceId: String): String? {

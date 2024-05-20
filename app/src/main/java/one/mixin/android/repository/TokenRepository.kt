@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
-import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -43,6 +42,7 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
@@ -69,6 +69,8 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
@@ -122,6 +124,7 @@ class TokenRepository
         private val outputDao: OutputDao,
         private val userDao: UserDao,
         private val inscriptionDao: InscriptionDao,
+        private val inscriptionCollectionDao: InscriptionCollectionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -372,7 +375,7 @@ class TokenRepository
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
 
-        suspend fun web3TokenItems(): List<TokenItem> = tokenDao.web3TokenItems(Web3ChainIds)
+        suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
         suspend fun fuzzySearchToken(
             query: String,
@@ -708,7 +711,7 @@ class TokenRepository
         suspend fun findOutputs(
             limit: Int,
             asset: String,
-            inscriptionHash: String? = null
+            inscriptionHash: String? = null,
         ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findUnspentOutputsByAsset(limit, asset)
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
@@ -756,16 +759,17 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
-            inscriptionHash: String?
+            inscriptionHash: String?,
         ) {
             val snapshotId = data.getSnapshotId
             if (conversationId != "") {
-                val category = if (inscriptionHash != null) {
-                    MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
-                } else {
-                    MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
-                }
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash?:"", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
+                val category =
+                    if (inscriptionHash != null) {
+                        MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                    } else {
+                        MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                    }
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
                 if (inscriptionHash != null) {
                     jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, snapshotId))
@@ -864,9 +868,32 @@ class TokenRepository
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 
-        suspend fun fuzzyInscription(escapedQuery: String, cancellationSignal: CancellationSignal): List<SafeInscription> {
+        suspend fun fuzzyInscription(
+            escapedQuery: String,
+            cancellationSignal: CancellationSignal,
+        ): List<SafeInscription> {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }
 
         fun inscriptionStateByHash(hash: String) = outputDao.inscriptionStateByHash(hash)
-}
+
+        suspend fun getInscriptionItem(hash: String): InscriptionItem? {
+            val response = tokenService.getInscriptionItem(hash)
+            if (response.isSuccess) {
+                inscriptionDao.insert(response.data!!)
+                return response.data!!
+            } else {
+                return null
+            }
+        }
+
+        suspend fun getInscriptionCollection(hash: String): InscriptionCollection? {
+            val response = tokenService.getInscriptionCollection(hash)
+            if (response.isSuccess) {
+                inscriptionCollectionDao.insert(response.data!!)
+                return response.data!!
+            } else {
+                return null
+            }
+        }
+    }

@@ -8,12 +8,10 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemInscriptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.safe.SafeInscription
 
 class CollectiblesAdapter(val callback: (SafeInscription) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
-
     var list: List<SafeInscription> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
@@ -42,8 +40,12 @@ class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.View
     init {
         binding.inscriptionIv.roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
     }
+
     @SuppressLint("SetTextI18n")
-    fun bind(inscriptionItem: SafeInscription, callback: (SafeInscription) -> Unit) {
+    fun bind(
+        inscriptionItem: SafeInscription,
+        callback: (SafeInscription) -> Unit,
+    ) {
         binding.apply {
             root.setOnClickListener { callback.invoke(inscriptionItem) }
             inscriptionIv.loadImage(uri = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)

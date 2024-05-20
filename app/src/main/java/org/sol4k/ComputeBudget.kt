@@ -4,8 +4,6 @@ package org.sol4k
 
 import okio.Buffer
 import java.math.BigDecimal
-import java.math.RoundingMode
-import kotlin.math.pow
 
 private const val InstructionRequestUnits = 0
 private const val InstructionRequestHeapFrame = 1
@@ -37,8 +35,8 @@ internal fun computeBudget(data: List<ByteArray>): BigDecimal {
     if (unitLimit == 0 || unitPrice == 0L) {
         return BigDecimal.ZERO
     }
-    val feeInLamports = BigDecimal(unitLimit).multiply(BigDecimal(unitPrice).divide(BigDecimal(10.0.pow(6))))
-    return feeInLamports.divide(BigDecimal(10.0.pow(9))).setScale(9, RoundingMode.CEILING)
+    val feeInLamports = microToLamport(BigDecimal(unitLimit).multiply(BigDecimal(unitPrice)))
+    return lamportToSol(feeInLamports)
 }
 
 internal fun decodeComputeUnitLimit(data: ByteArray): Int {

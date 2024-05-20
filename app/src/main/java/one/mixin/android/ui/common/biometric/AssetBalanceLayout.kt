@@ -11,7 +11,6 @@ import androidx.core.text.bold
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats

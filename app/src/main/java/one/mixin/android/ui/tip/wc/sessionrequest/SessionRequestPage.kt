@@ -1,6 +1,5 @@
 package one.mixin.android.ui.tip.wc.sessionrequest
 
-import one.mixin.android.compose.GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +39,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
+import one.mixin.android.compose.GlideImage
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
@@ -47,13 +48,11 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
@@ -197,21 +196,23 @@ fun SessionRequestPage(
                 Box(modifier = Modifier.height(8.dp))
                 Text(
                     modifier = Modifier.padding(horizontal = 24.dp),
-                    text = errorInfo ?: stringResource(
-                        id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
-                            if (sessionRequestUI.data is WCEthereumSignMessage) {
-                                if (signType == 0) {
-                                    R.string.web3_signing_transaction_success
+                    text =
+                        errorInfo ?: stringResource(
+                            id =
+                                if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                                    if (sessionRequestUI.data is WCEthereumSignMessage) {
+                                        if (signType == 0) {
+                                            R.string.web3_signing_transaction_success
+                                        } else {
+                                            R.string.web3_signing_transaction_success
+                                        }
+                                    } else {
+                                        R.string.web3_signing_transaction_success
+                                    }
                                 } else {
-                                    R.string.web3_signing_transaction_success
-                                }
-                            } else {
-                                R.string.web3_signing_transaction_success
-                            }
-                        } else {
-                            R.string.web3_ensure_trust
-                        }
-                    ),
+                                    R.string.web3_ensure_trust
+                                },
+                        ),
                     textAlign = TextAlign.Center,
                     style =
                         TextStyle(
@@ -239,12 +240,12 @@ fun SessionRequestPage(
                         } else {
                             TransactionPreview(
                                 balance =
-                                Convert.fromWei(
-                                    Numeric.toBigInt(
-                                        sessionRequestUI.data.value ?: "0",
-                                    ).toBigDecimal(),
-                                    Convert.Unit.ETHER,
-                                ),
+                                    Convert.fromWei(
+                                        Numeric.toBigInt(
+                                            sessionRequestUI.data.value ?: "0",
+                                        ).toBigDecimal(),
+                                        Convert.Unit.ETHER,
+                                    ),
                                 sessionRequestUI.chain,
                                 asset,
                             )
@@ -316,9 +317,10 @@ fun SessionRequestPage(
                         Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                             Box(modifier = Modifier.height(20.dp))
                             CircularProgressIndicator(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .align(Alignment.CenterHorizontally),
+                                modifier =
+                                    Modifier
+                                        .size(40.dp)
+                                        .align(Alignment.CenterHorizontally),
                                 color = MixinAppTheme.colors.accent,
                             )
                         }
@@ -419,9 +421,9 @@ fun FeeInfo(
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
     ) {
         Text(
             text = stringResource(id = R.string.network_fee).uppercase(),
@@ -431,7 +433,7 @@ fun FeeInfo(
         Box(modifier = Modifier.height(4.dp))
         Row(
             modifier =
-            Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {

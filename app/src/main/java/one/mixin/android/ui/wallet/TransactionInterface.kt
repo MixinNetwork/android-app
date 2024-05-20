@@ -39,7 +39,6 @@ import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
-import timber.log.Timber
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -113,7 +112,7 @@ interface TransactionInterface {
     private fun clickAvatar(
         fragment: Fragment,
         asset: TokenItem,
-        inscriptionHash: String?
+        inscriptionHash: String?,
     ) {
         val curActivity = fragment.requireActivity()
         if (inscriptionHash != null) {

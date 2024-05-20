@@ -749,7 +749,7 @@ fun callableTokenItem(
                         tmpAssetKey,
                         tmpDust,
                         tmpDepositWithdrawalMemoPossibility,
-                        tmpCollectionHash
+                        tmpCollectionHash,
                     )
                 result.add(item)
             }

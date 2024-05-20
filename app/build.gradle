@@ -13,8 +13,8 @@ plugins {
 
 def versionMajor = 1
 def versionMinor = 8
-def versionPatch = 1
-def versionBuild = 1
+def versionPatch = 3
+def versionBuild = 0
 
 android {
     compileSdk 34
@@ -163,7 +163,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.11'
+        kotlinCompilerExtensionVersion '1.5.14'
     }
     lint {
         abortOnError false

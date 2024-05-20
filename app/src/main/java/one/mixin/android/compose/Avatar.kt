@@ -17,9 +17,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView

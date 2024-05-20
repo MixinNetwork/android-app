@@ -11,7 +11,6 @@ import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 

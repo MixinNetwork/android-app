@@ -75,6 +75,8 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
@@ -88,7 +90,6 @@ import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.RawTransactionType
-import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -267,7 +268,15 @@ class BottomSheetViewModel
                         val transactionHash = signWithdrawal.hash
                         Timber.e("Kernel Withdrawal($traceId): db insert snapshot")
                         tokenRepository.insertSafeSnapshot(
-                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
+                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(),
+                            senderId,
+                            "",
+                            transactionHash,
+                            traceId,
+                            assetId,
+                            amount,
+                            memo,
+                            SafeSnapshotType.withdrawal,
                             withdrawal =
                                 SafeWithdrawal(
                                     "",
@@ -297,7 +306,15 @@ class BottomSheetViewModel
                         val transactionHash = signWithdrawal.hash
                         Timber.e("Kernel Withdrawal($traceId): db update insert snapshot")
                         tokenRepository.insertSafeSnapshot(
-                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
+                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(),
+                            senderId,
+                            "",
+                            transactionHash,
+                            traceId,
+                            assetId,
+                            amount,
+                            memo,
+                            SafeSnapshotType.withdrawal,
                             withdrawal =
                                 SafeWithdrawal(
                                     "",
@@ -340,7 +357,7 @@ class BottomSheetViewModel
             pin: String,
             trace: String,
             memo: String?,
-            reference: String?
+            reference: String?,
         ): MixinResponse<*> {
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
@@ -510,7 +527,7 @@ class BottomSheetViewModel
             traceId: String,
             receiverIds: List<String>,
             inscriptionHash: String?,
-            isConsolidation: Boolean = false
+            isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
             Timber.e("Kernel Transaction($traceId): innerTransaction")
             val transactionRsp =
@@ -573,7 +590,7 @@ class BottomSheetViewModel
         private suspend fun packUtxo(
             asset: String,
             amount: String,
-            inscriptionHash: String? = null
+            inscriptionHash: String? = null,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
             val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash)
@@ -892,9 +909,36 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun findInscriptionCollectionByHash(hash: String): InscriptionCollection? =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findInscriptionCollectionByHash(hash)
+            }
+
+        suspend fun findInscriptionByHash(hash: String): InscriptionItem? =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findInscriptionByHash(hash)
+            }
+
+        suspend fun findUnspentOutputByHash(hash: String): Output? =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findUnspentOutputByHash(hash)
+            }
+
         suspend fun refreshAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
                 tokenRepository.findOrSyncAsset(assetId)
+            }
+        }
+
+        suspend fun refreshInscriptionItem(assetId: String): InscriptionItem? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.getInscriptionItem(assetId)
+            }
+        }
+
+        suspend fun refreshInscriptionCollection(hash: String): InscriptionCollection? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.getInscriptionCollection(hash)
             }
         }
 

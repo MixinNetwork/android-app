@@ -10,7 +10,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
@@ -117,7 +116,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         priceUsd: String,
         changeUsd: String,
         priceFiat: BigDecimal,
-        collectionHash: String?
+        collectionHash: String?,
     ) {
         binding.badgeCircleIv.loadToken(iconUrl, chainIconUrl, collectionHash)
         binding.nameTv.text = name
@@ -161,7 +160,7 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
             asset.priceUsd,
             asset.changeUsd,
             asset.priceFiat(),
-            asset.collectionHash
+            asset.collectionHash,
         )
         binding.apply {
             priceTv.isVisible = currentAssetId == null
@@ -191,7 +190,7 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
             asset.priceUsd,
             asset.changeUsd,
             asset.priceFiat(),
-            null
+            null,
         )
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId)

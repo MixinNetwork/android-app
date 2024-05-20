@@ -725,13 +725,30 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, bitrate,
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                resultWidth,
+                resultHeight,
+                thumbnail,
+                fileName,
+                bitrate,
             )
         } else {
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
-                fileName, 0, false,
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                mediaWith,
+                mediaHeight,
+                thumbnail,
+                fileName,
+                0,
+                false,
             )
         }
     } catch (e: Exception) {

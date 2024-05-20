@@ -11,7 +11,6 @@ import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadHexagonImage
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
 import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -131,7 +130,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         setItemBackgroundResource(
             binding.chatContentLayout,
             R.drawable.chat_bubble_post_me,
-            R.drawable.chat_bubble_post_me_night
+            R.drawable.chat_bubble_post_me_night,
         )
     }
 }

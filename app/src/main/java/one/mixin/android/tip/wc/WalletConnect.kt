@@ -1,7 +1,11 @@
 package one.mixin.android.tip.wc
 
+import android.os.Build
 import android.util.LruCache
 import com.walletconnect.web3.wallet.client.Wallet
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -20,6 +24,7 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.util.concurrent.TimeUnit
 
 abstract class WalletConnect {
     companion object {
@@ -90,12 +95,25 @@ abstract class WalletConnect {
     protected fun getWeb3j(chain: Chain): Web3j {
         val exists = web3jPool[chain]
         return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcUrl))
+            val web3j = Web3j.build(HttpService(chain.rpcUrl, buildOkHttpClient()))
             web3jPool.put(chain, web3j)
             web3j
         } else {
             exists
         }
+    }
+
+    private fun buildOkHttpClient(): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        if (BuildConfig.DEBUG) {
+            builder.addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+        }
+        return builder.build()
     }
 
     fun signMessage(
