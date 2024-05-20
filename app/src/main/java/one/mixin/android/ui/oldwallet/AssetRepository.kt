@@ -10,8 +10,11 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -33,6 +36,10 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Query
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -367,4 +374,16 @@ class AssetRepository
         suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
+
+        suspend fun web3Tokens(): MixinResponse<List<String>> = routeService.web3Tokens()
+
+        suspend fun web3Quote(
+            inputMint: String,
+            outputMint: String,
+            amount: String,
+        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount)
+
+        suspend fun web3Swap(
+            swapRequest: SwapRequest,
+        ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
     }

@@ -1511,4 +1511,5 @@
     <string name="NFT_TOKEN">NFT TOKEN</string>
     <string name="Collectible">Collectible</string>
     <string name="inscription_Hash">Inscription Hash</string>
+    <string name="Swap">Swap</string>
 </resources>

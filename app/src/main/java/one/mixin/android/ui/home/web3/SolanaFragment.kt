@@ -22,6 +22,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
+import one.mixin.android.api.response.isSolToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -35,6 +36,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
@@ -80,7 +82,9 @@ class SolanaFragment : BaseFragment() {
                     }
 
                     R.id.browser -> {
-                        navTo(SearchDappFragment(), SearchDappFragment.TAG)
+//                        navTo(SearchDappFragment(), SearchDappFragment.TAG)
+                        val sol = requireNotNull(tokens.find { it.isSolToken() })
+                        navTo(SwapFragment.newInstance(sol), SwapFragment.TAG)
                     }
 
                     R.id.more -> {
