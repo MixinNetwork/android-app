@@ -95,8 +95,8 @@ interface RouteService {
 
     @GET("web3/quote")
     suspend fun web3Quote(
-        @Query("input_mint") inputMint: String,
-        @Query("output_mint") outputMint: String,
+        @Query("inputMint") inputMint: String,
+        @Query("outputMint") outputMint: String,
         @Query("amount") amount: String,
     ): MixinResponse<QuoteResponse>
 
