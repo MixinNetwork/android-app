@@ -89,8 +89,8 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         builder.setCustomView(bottomBinding.root)
                         val bottomSheet = builder.create()
                         bottomBinding.apply {
-                            title.setText(if (token.chainId == Solana) R.string.Solana_Account else R.string.Ethereum_Account)
-                            addressTv.text = address.formatPublicKey()
+                            title.text = token.name
+                            addressTv.text = token.assetKey
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
                                 toast(R.string.copied_to_clipboard)

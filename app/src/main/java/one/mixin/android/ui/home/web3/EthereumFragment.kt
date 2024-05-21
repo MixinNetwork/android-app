@@ -295,9 +295,4 @@ class EthereumFragment : BaseFragment() {
             updateUI()
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-        updateUI()
-    }
 }

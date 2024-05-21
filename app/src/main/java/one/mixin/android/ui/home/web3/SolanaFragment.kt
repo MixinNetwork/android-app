@@ -299,9 +299,4 @@ class SolanaFragment : BaseFragment() {
             updateUI()
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-        updateUI()
-    }
 }
