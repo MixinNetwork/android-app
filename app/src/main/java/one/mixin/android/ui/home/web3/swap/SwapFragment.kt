@@ -8,13 +8,11 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableCompat
@@ -23,7 +21,6 @@ import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
-import timber.log.Timber
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -93,14 +90,6 @@ class SwapFragment : BaseFragment() {
                     }
                 }
             }
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launch {
-            val tokens = swapViewModel.web3Tokens()
-            Timber.d("@@@ tokens: ${tokens.data}")
         }
     }
 
