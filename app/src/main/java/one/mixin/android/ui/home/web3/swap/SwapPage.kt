@@ -50,6 +50,7 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @Composable
 fun SwapPage(
@@ -65,6 +66,7 @@ fun SwapPage(
         val inputToken = rememberSaveable {
             mutableStateOf<Web3Token?>(token)
         }
+
         val outputToken = rememberSaveable {
             mutableStateOf<Web3Token?>(token)
         }
@@ -143,13 +145,21 @@ fun InputArea(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = token?.chainName ?: "", color = MixinAppTheme.colors.textMinor)
             }
-            Text(
-                text = token?.balance ?: "0", modifier = Modifier.fillMaxWidth(),
-                style = TextStyle(
-                    color = MixinAppTheme.colors.textMinor,
-                    textAlign = TextAlign.End
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Text(
+                    text = token?.balance ?: "0",
+                    style = TextStyle(
+                        color = MixinAppTheme.colors.textMinor,
+                        textAlign = TextAlign.End
+                    )
                 )
-            )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_web3_wallet),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
         }
         InputContent(
             token, text
@@ -185,7 +195,7 @@ private fun InputContent(
         )
         Box(modifier = Modifier.width(4.dp))
         Icon(
-            painter = painterResource(id = R.drawable.ic_arrow_down_info),
+            painter = painterResource(id = R.drawable.ic_web3_drop_down),
             contentDescription = null,
             tint = MixinAppTheme.colors.icon,
         )

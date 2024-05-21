@@ -8,11 +8,14 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableCompat
@@ -20,7 +23,9 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -48,6 +53,18 @@ class SwapFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        lifecycleScope.launch {
+            val tokens =
+                handleMixinResponse(
+                    invokeNetwork = {
+                        swapViewModel.web3Tokens()
+                    },
+                    successBlock = { resp ->
+                       resp.data
+                    },
+                )
+            Timber.e("size${tokens?.size}")
+        }
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
