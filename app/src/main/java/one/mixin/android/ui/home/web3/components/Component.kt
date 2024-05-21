@@ -322,6 +322,7 @@ fun ActionBottom(
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     backgroundColor = MixinAppTheme.colors.backgroundGray,
+                    contentColor = MixinAppTheme.colors.shadow,
                 ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
@@ -341,6 +342,7 @@ fun ActionBottom(
             colors =
                 ButtonDefaults.outlinedButtonColors(
                     backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = MixinAppTheme.colors.shadow,
                 ),
             shape = RoundedCornerShape(20.dp),
             contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
