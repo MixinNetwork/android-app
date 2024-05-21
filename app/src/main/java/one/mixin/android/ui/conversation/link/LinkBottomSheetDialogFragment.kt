@@ -871,6 +871,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (raw.isNullOrBlank()) {
             return false
         }
+        val action = uri.getQueryParameter("action")
+        if (action.isNullOrBlank() || !action.equals("signRawTransaction", true)) {
+            return false
+        }
         val data = try {
             raw.base64RawURLDecode().base64Encode()
         } catch (e: IllegalArgumentException) {
