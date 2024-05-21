@@ -311,6 +311,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
         super.onDismiss(dialog)
+        onDismissAction?.invoke()
     }
 
     private fun checkGas(
@@ -374,8 +375,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
+    fun setOnDismiss(callback: () -> Unit): BrowserWalletBottomSheetDialogFragment {
+        onDismissAction = callback
+        return this
+    }
+
     private var onDone: ((String?) -> Unit)? = null
     private var onRejectAction: (() -> Unit)? = null
+    private var onDismissAction: (() -> Unit)? = null
 
     fun getBiometricInfo() =
         BiometricInfo(

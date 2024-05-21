@@ -111,6 +111,7 @@ object Constants {
         const val MIXIN_PAY = "mixin://mixin.one/pay/"
         const val MIXIN_MULTISIGS = "mixin://mixin.one/multisigs"
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
+        const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
 
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
@@ -118,6 +119,7 @@ object Constants {
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
+        const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
 
         // web3
         const val HTTPS_MIXIN_WC = "https://mixin.one/wc"
