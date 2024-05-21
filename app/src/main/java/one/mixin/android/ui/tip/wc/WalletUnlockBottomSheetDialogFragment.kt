@@ -2,6 +2,7 @@ package one.mixin.android.ui.tip.wc
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -26,6 +27,7 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.JsSigner
@@ -159,6 +161,11 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissAction?.invoke()
+    }
+
     private fun handleError(throwable: Throwable) {
         keyViewModel.errorMessage =
             when (throwable) {
@@ -231,4 +238,11 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
+
+    fun setOnDismiss(callback: () -> Unit): WalletUnlockBottomSheetDialogFragment {
+        onDismissAction = callback
+        return this
+    }
+
+    private var onDismissAction: (() -> Unit)? = null
 }

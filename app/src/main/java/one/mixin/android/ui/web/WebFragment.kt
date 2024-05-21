@@ -857,6 +857,8 @@ class WebFragment : BaseFragment() {
                     },
                     onBrowserSign = { message ->
                         lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+
                             showBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 message,
@@ -877,6 +879,8 @@ class WebFragment : BaseFragment() {
                     },
                     onEmptyAddress = { network ->
                         lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+
                             WalletUnlockBottomSheetDialogFragment.getInstance(network).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                         }
                     },
