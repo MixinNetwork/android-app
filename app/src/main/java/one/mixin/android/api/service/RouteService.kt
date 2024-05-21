@@ -12,6 +12,7 @@ import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -90,7 +91,7 @@ interface RouteService {
     ): MixinResponse<ProfileResponse>
 
     @GET("web3/tokens")
-    suspend fun web3Tokens(): MixinResponse<List<String>>
+    suspend fun web3Tokens(): MixinResponse<List<SwapToken>>
 
     @GET("web3/quote")
     suspend fun web3Quote(

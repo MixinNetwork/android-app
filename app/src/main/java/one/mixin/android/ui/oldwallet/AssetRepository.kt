@@ -15,6 +15,7 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -375,7 +376,7 @@ class AssetRepository
 
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-        suspend fun web3Tokens(): MixinResponse<List<String>> = routeService.web3Tokens()
+        suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = routeService.web3Tokens()
 
         suspend fun web3Quote(
             inputMint: String,
