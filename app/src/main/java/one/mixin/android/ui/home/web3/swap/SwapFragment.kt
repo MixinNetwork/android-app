@@ -22,7 +22,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
 import timber.log.Timber
 

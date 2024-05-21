@@ -41,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -102,9 +103,9 @@ fun SwapPage(
                 }
             },
             content = {
-                InputArea(token = inputToken.value, text = inputText)
+                InputArea(token = inputToken.value, text = inputText, title = stringResource(id = if (isReverse) R.string.To else R.string.From))
                 Spacer(modifier = Modifier.height(6.dp))
-                InputArea(token = outputToken.value, text = outputText)
+                InputArea(token = outputToken.value, text = outputText, title = stringResource(id = if (isReverse) R.string.From else R.string.To))
             },
             reverse = isReverse
         )
@@ -115,6 +116,7 @@ fun SwapPage(
 fun InputArea(
     token: Web3Token?,
     text: MutableState<String>,
+    title: String,
 ) {
     Column(
         modifier = Modifier
@@ -125,9 +127,29 @@ fun InputArea(
             .padding(20.dp)
     ) {
         Row(
-            modifier = Modifier.align(Alignment.End)
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(text = token?.balance ?: "0", color = MixinAppTheme.colors.textMinor)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = title, color = MixinAppTheme.colors.textMinor)
+                Spacer(modifier = Modifier.width(4.dp))
+                GlideImage(
+                    data = token?.iconUrl ?: "",
+                    modifier =
+                    Modifier
+                        .size(14.dp)
+                        .clip(CircleShape),
+                    placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = token?.chainName ?: "", color = MixinAppTheme.colors.textMinor)
+            }
+            Text(
+                text = token?.balance ?: "0", modifier = Modifier.fillMaxWidth(),
+                style = TextStyle(
+                    color = MixinAppTheme.colors.textMinor,
+                    textAlign = TextAlign.End
+                )
+            )
         }
         InputContent(
             token, text
