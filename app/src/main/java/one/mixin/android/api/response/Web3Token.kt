@@ -16,10 +16,12 @@ import org.sol4k.Connection
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
 import org.sol4k.Transaction
+import org.sol4k.VersionedTransaction
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
 import org.sol4k.instruction.Instruction
 import org.sol4k.instruction.SplTransferInstruction
 import org.sol4k.instruction.TransferInstruction
+import org.sol4k.lamportToSol
 import org.sol4k.solToLamport
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
@@ -28,6 +30,7 @@ import org.web3j.abi.datatypes.Uint
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Locale
 
 @Parcelize
@@ -129,6 +132,14 @@ fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
     val chainAssetKey = getChainAssetKey()
     return tokens.firstOrNull { token ->
         token.chainId == chainId && token.assetKey == chainAssetKey
+    }
+}
+
+fun Web3Token.calcSolBalanceChange(balanceChange: VersionedTransaction.TokenBalanceChange): String {
+    return if (isSolToken()) {
+        lamportToSol(BigDecimal(balanceChange.change)).toPlainString()
+    } else {
+        BigDecimal(balanceChange.change).divide(BigDecimal.TEN.pow(decimals)).setScale(decimals, RoundingMode.CEILING).toPlainString()
     }
 }
 
