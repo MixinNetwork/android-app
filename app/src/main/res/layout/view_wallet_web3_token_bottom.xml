@@ -47,6 +47,18 @@
         android:textColor="?attr/text_primary" />
 
     <TextView
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="View on Explorer"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
         android:id="@+id/cancel"
         android:layout_width="match_parent"
         android:layout_height="56dp"

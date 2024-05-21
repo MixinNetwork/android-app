@@ -14,12 +14,15 @@ import one.mixin.android.Constants.ChainId.Solana
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.isSolToken
+import one.mixin.android.api.response.isSolana
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
@@ -91,6 +94,15 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         bottomBinding.apply {
                             title.text = token.name
                             addressTv.text = token.assetKey
+                            view.setOnClickListener {
+                                if (token.isSolana()) {
+                                    context?.openUrl("https://solscan.io/token/" + token.assetKey)
+                                } else {
+                                    // TODO more evm
+                                    context?.openUrl("https://etherscan.io/token/" + token.assetKey)
+                                }
+                               bottomSheet.dismiss()
+                            }
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
                                 toast(R.string.copied_to_clipboard)
