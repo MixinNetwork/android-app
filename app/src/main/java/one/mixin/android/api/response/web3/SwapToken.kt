@@ -1,9 +1,12 @@
 package one.mixin.android.api.response.web3
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import java.math.BigDecimal
 import java.math.RoundingMode
 
+@Parcelize
 data class SwapToken(
     @SerializedName("address") val address: String,
     @SerializedName("chainId") val chainId: Int,
@@ -12,7 +15,8 @@ data class SwapToken(
     @SerializedName("symbol") val symbol: String,
     @SerializedName("logoURI") val logoURI: String,
     @SerializedName("tags") val tags: List<String>,
-) {
+    @SerializedName("chainLogoURI") val chainLogoURI: String,
+) : Parcelable {
     fun toIntAmount(amount: String): Int {
         val a = try {
             BigDecimal(amount)

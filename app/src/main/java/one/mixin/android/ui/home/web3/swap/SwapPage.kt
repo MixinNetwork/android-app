@@ -46,15 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import one.mixin.android.ui.tip.wc.compose.Loading
 
 @Composable
 fun SwapPage(
-    token: Web3Token,
+    fromToken: SwapToken?,
+    toToken: SwapToken?,
+    tokens: List<SwapToken>,
+    switch: () -> Unit,
+    selectCallback: (Int) -> Unit,
     pop: () -> Unit,
 ) {
     SwapPageScaffold(
@@ -63,38 +67,30 @@ fun SwapPage(
         pop = pop,
     ) {
         val viewModel = hiltViewModel<SwapViewModel>()
-        val inputToken = rememberSaveable {
-            mutableStateOf<Web3Token?>(token)
+        val inputText = rememberSaveable {
+            mutableStateOf("0")
         }
-
-        val outputToken = rememberSaveable {
-            mutableStateOf<Web3Token?>(token)
+        val outputText = rememberSaveable {
+            mutableStateOf("0")
         }
-        val inputText =
-            rememberSaveable {
-                mutableStateOf("0")
-            }
-        val outputText =
-            rememberSaveable {
-                mutableStateOf("0")
-            }
         var isReverse by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
-        SwapLayout(
-            center = {
-                Box(
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(40.dp)
-                        .clip(CircleShape)
-                        .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                        .background(MixinAppTheme.colors.backgroundGray)
-                        .clickable {
-                            isReverse = !isReverse
-                        }
-                        .rotate(rotation),
-                    contentAlignment = Alignment.Center
+        if (tokens.isEmpty()) {
+            Loading()
+        } else {
+            SwapLayout(center = {
+                Box(modifier = Modifier
+                    .width(40.dp)
+                    .height(40.dp)
+                    .clip(CircleShape)
+                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                    .background(MixinAppTheme.colors.backgroundGray)
+                    .clickable {
+                        isReverse = !isReverse
+                        switch.invoke()
+                    }
+                    .rotate(rotation), contentAlignment = Alignment.Center
 
                 ) {
                     Icon(
@@ -103,22 +99,22 @@ fun SwapPage(
                         tint = MixinAppTheme.colors.textPrimary,
                     )
                 }
-            },
-            content = {
-                InputArea(token = inputToken.value, text = inputText, title = stringResource(id = if (isReverse) R.string.To else R.string.From))
+            }, content = {
+                InputArea(token = fromToken, text = inputText, title = stringResource(id = R.string.From)) { selectCallback(0) }
                 Spacer(modifier = Modifier.height(6.dp))
-                InputArea(token = outputToken.value, text = outputText, title = stringResource(id = if (isReverse) R.string.From else R.string.To))
-            },
-            reverse = isReverse
-        )
+                InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To)) { selectCallback(1) }
+            }
+            )
+        }
     }
 }
 
 @Composable
 fun InputArea(
-    token: Web3Token?,
+    token: SwapToken?,
     text: MutableState<String>,
     title: String,
+    selectClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -135,22 +131,20 @@ fun InputArea(
                 Text(text = title, color = MixinAppTheme.colors.textMinor)
                 Spacer(modifier = Modifier.width(4.dp))
                 GlideImage(
-                    data = token?.iconUrl ?: "",
-                    modifier =
-                    Modifier
+                    data = token?.logoURI ?: "",
+                    modifier = Modifier
                         .size(14.dp)
                         .clip(CircleShape),
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = token?.chainName ?: "", color = MixinAppTheme.colors.textMinor)
+                Text(text = token?.name ?: "", color = MixinAppTheme.colors.textMinor)
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
-                    text = token?.balance ?: "0",
+                    text = "0", // Todo
                     style = TextStyle(
-                        color = MixinAppTheme.colors.textMinor,
-                        textAlign = TextAlign.End
+                        color = MixinAppTheme.colors.textMinor, textAlign = TextAlign.End
                     )
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -162,44 +156,45 @@ fun InputArea(
             }
         }
         InputContent(
-            token, text
+            token, text, selectClick
         )
     }
 }
 
 @Composable
 private fun InputContent(
-    token: Web3Token?,
+    token: SwapToken?,
     text: MutableState<String>,
+    selectClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        GlideImage(
-            data = token?.iconUrl ?: "",
-            modifier =
-            Modifier
-                .size(32.dp)
-                .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
-        )
-        Box(modifier = Modifier.width(10.dp))
-        Text(
-            text = token?.symbol ?: "",
-            style = TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
-                color = MixinAppTheme.colors.textPrimary,
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectClick.invoke() }) {
+            GlideImage(
+                data = token?.logoURI ?: "",
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
-        )
-        Box(modifier = Modifier.width(4.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_web3_drop_down),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.icon,
-        )
-        Box(modifier = Modifier.width(10.dp))
+            Box(modifier = Modifier.width(10.dp))
+            Text(
+                text = token?.symbol ?: "", style = TextStyle(
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+            )
+            Box(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_web3_drop_down),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.icon,
+            )
+            Box(modifier = Modifier.width(10.dp))
+        }
         InputTextField(token = token, text = text)
     }
 }
@@ -246,21 +241,17 @@ fun SwapPageScaffold(
 
 @Composable
 fun SwapLayout(
-    content: @Composable ColumnScope.() -> Unit,
-    center: @Composable BoxScope.() -> Unit,
-    reverse: Boolean
+    content: @Composable ColumnScope.() -> Unit, center: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = Modifier
             .wrapContentHeight()
-            .wrapContentWidth(),
-        contentAlignment = Alignment.Center
+            .wrapContentWidth(), contentAlignment = Alignment.Center
     ) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = if (reverse) Arrangement.Bottom else Arrangement.Top
+                .padding(20.dp), verticalArrangement = Arrangement.Top
         ) {
             content()
         }

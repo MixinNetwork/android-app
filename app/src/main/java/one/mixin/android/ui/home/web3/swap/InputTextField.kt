@@ -25,12 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
 
 @Composable
 fun InputTextField(
-    token: Web3Token?,
+    token: SwapToken?,
     text: MutableState<String>,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -47,7 +48,8 @@ fun InputTextField(
             } catch (e: Exception) {
                 return@BasicTextField
             }
-            valueText.value = v.multiply(BigDecimal(token?.price ?: "0"))
+            // todo
+            valueText.value = v.multiply(BigDecimal( "0"))
         },
         modifier =
         Modifier
