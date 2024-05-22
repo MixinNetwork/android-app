@@ -8,7 +8,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
@@ -21,19 +20,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.safeNavigateUp
-import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
@@ -183,7 +176,7 @@ class SwapFragment : BaseFragment() {
     private suspend fun quote(input: String) {
         val inputMint = fromToken?.address ?: return
         val outputMint = toToken?.address ?: return
-        val amount = fromToken?.toIntAmount(input) ?: return
+        val amount = fromToken?.toLongAmount(input) ?: return
         quoteResp = handleMixinResponse(
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString()) },
             successBlock = {

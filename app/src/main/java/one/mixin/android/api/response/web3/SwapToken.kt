@@ -18,13 +18,13 @@ data class SwapToken(
     @SerializedName("chainLogoURI") val chainLogoURI: String,
     var price: String? = null,
 ) : Parcelable {
-    fun toIntAmount(amount: String): Int {
+    fun toLongAmount(amount: String): Long {
         val a = try {
             BigDecimal(amount)
         } catch (e: Exception) {
             return 0
         }
-        return a.multiply(BigDecimal.TEN.pow(decimals)).toInt()
+        return a.multiply(BigDecimal.TEN.pow(decimals)).toLong()
     }
 
     fun toStringAmount(amount: Int): String {
