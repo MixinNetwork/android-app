@@ -31,7 +31,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +48,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.GlideImage
@@ -62,8 +60,11 @@ fun SwapPage(
     fromToken: SwapToken?,
     toToken: SwapToken?,
     tokens: List<SwapToken>,
+    outputText: String,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
+    onInputChanged: (String) -> Unit,
+    onSwap:() -> Unit,
     pop: () -> Unit,
 ) {
     SwapPageScaffold(
@@ -71,11 +72,7 @@ fun SwapPage(
         verticalScrollable = true,
         pop = pop,
     ) {
-        val viewModel = hiltViewModel<SwapViewModel>()
         val inputText = rememberSaveable {
-            mutableStateOf("0")
-        }
-        val outputText = rememberSaveable {
             mutableStateOf("0")
         }
         var isReverse by remember { mutableStateOf(false) }
@@ -107,16 +104,19 @@ fun SwapPage(
                         )
                     }
                 }, content = {
-                    InputArea(token = fromToken, text = inputText, title = stringResource(id = R.string.From)) { selectCallback(0) }
+                    InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), { selectCallback(0) }) {
+                        inputText.value = it
+                        onInputChanged.invoke(it)
+                    }
                     Spacer(modifier = Modifier.height(6.dp))
-                    InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To)) { selectCallback(1) }
+                    InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), { selectCallback(1) })
                 }
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            // todo swap
+                            onSwap.invoke()
                         },
                         colors =
                         ButtonDefaults.outlinedButtonColors(
@@ -153,9 +153,10 @@ fun SwapPage(
 @Composable
 fun InputArea(
     token: SwapToken?,
-    text: MutableState<String>,
+    text: String,
     title: String,
     selectClick: () -> Unit,
+    onInputChanged: ((String) -> Unit) ?= null,
 ) {
     Column(
         modifier = Modifier
@@ -197,7 +198,7 @@ fun InputArea(
             }
         }
         InputContent(
-            token, text, selectClick
+            token, text, selectClick, onInputChanged
         )
     }
 }
@@ -205,8 +206,9 @@ fun InputArea(
 @Composable
 private fun InputContent(
     token: SwapToken?,
-    text: MutableState<String>,
+    text: String,
     selectClick: () -> Unit,
+    onInputChanged: ((String) -> Unit) ?= null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -236,7 +238,7 @@ private fun InputContent(
             )
             Box(modifier = Modifier.width(10.dp))
         }
-        InputTextField(token = token, text = text)
+        InputTextField(token = token, text = text, onInputChanged = onInputChanged)
     }
 }
 

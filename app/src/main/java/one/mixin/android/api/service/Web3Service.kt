@@ -2,6 +2,7 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.Web3Account
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.vo.ChainDapp
 import retrofit2.http.GET
@@ -24,4 +25,9 @@ interface Web3Service {
 
     @GET("dapps")
     suspend fun dapps(): MixinResponse<List<ChainDapp>>
+
+    @GET("tokens")
+    suspend fun web3Tokens(
+        @Query("addresses") addresses: String,
+    ): MixinResponse<List<Web3Token>>
 }

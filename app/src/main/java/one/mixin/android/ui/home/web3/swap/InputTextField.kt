@@ -4,12 +4,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,11 +27,13 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun InputTextField(
     token: SwapToken?,
-    text: MutableState<String>,
+    text: String,
+    onInputChanged: ((String) -> Unit) ?= null,
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
@@ -39,16 +41,17 @@ fun InputTextField(
     val valueText = remember { mutableStateOf(BigDecimal.ZERO) }
 
     BasicTextField(
-        value = text.value,
+        value = text,
         onValueChange = {
-            text.value = it
             val v = try {
                 if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
             } catch (e: Exception) {
                 return@BasicTextField
             }
             // todo
-            valueText.value = v.multiply(BigDecimal( "0"))
+            valueText.value = v.multiply(BigDecimal( token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
+            // TODO debounce
+            onInputChanged?.invoke(it)
         },
         modifier =
         Modifier
@@ -75,11 +78,17 @@ fun InputTextField(
                 innerTextField()
             }
             Box(modifier = Modifier.width(8.dp))
-            Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "$${valueText.value.toPlainString()}",  style = TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
-                ))
+            if (valueText.value != BigDecimal.ZERO) {
+                Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "$${valueText.value.toPlainString()}", style = TextStyle(
+                            fontSize = 16.sp,
+                            color = MixinAppTheme.colors.textSubtitle,
+                        )
+                    )
+                }
+            } else {
+                Box(modifier = Modifier.height(12.dp))  // placeholder
             }
         }
     }

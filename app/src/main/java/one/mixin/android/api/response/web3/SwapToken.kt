@@ -16,6 +16,7 @@ data class SwapToken(
     @SerializedName("logoURI") val logoURI: String,
     @SerializedName("tags") val tags: List<String>,
     @SerializedName("chainLogoURI") val chainLogoURI: String,
+    var price: String? = null,
 ) : Parcelable {
     fun toIntAmount(amount: String): Int {
         val a = try {

@@ -22,7 +22,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
-import one.mixin.android.api.response.isSolToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -82,8 +81,7 @@ class SolanaFragment : BaseFragment() {
 
                     R.id.browser -> {
 //                        navTo(SearchDappFragment(), SearchDappFragment.TAG)
-                        val sol = requireNotNull(tokens.find { it.isSolToken() })
-                        navTo(SwapFragment.newInstance(sol), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance(), SwapFragment.TAG)
                     }
 
                     R.id.more -> {
