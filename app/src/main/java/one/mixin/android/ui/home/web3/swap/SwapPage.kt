@@ -239,7 +239,7 @@ private fun InputContent(
             )
             Box(modifier = Modifier.width(10.dp))
         }
-        InputTextField(token = token, text = text, onInputChanged = onInputChanged)
+        InputTextField(modifier = Modifier.align(Alignment.CenterVertically), token = token, text = text, onInputChanged = onInputChanged)
     }
 }
 

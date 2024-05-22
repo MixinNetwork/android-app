@@ -50,8 +50,8 @@ fun SwapOrderPage(
     var isLoading by remember { mutableStateOf(false) }
     MixinAppTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            TokenArea(fromToken, quoteResp.outAmount.toLongOrNull() ?: 0L, title = stringResource(id = R.string.Pay))
-            TokenArea(toToken, quoteResp.inAmount.toLongOrNull() ?: 0L, title = stringResource(id = R.string.Received))
+            TokenArea(fromToken, quoteResp.inAmount.toLongOrNull() ?: 0L, title = stringResource(id = R.string.Pay))
+            TokenArea(toToken, quoteResp.outAmount.toLongOrNull() ?: 0L, title = stringResource(id = R.string.Received))
             Box {
                 if (isLoading) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {

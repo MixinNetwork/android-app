@@ -31,6 +31,7 @@ import java.math.RoundingMode
 
 @Composable
 fun InputTextField(
+    modifier: Modifier,
     token: SwapToken?,
     text: String,
     onInputChanged: ((String) -> Unit) ?= null,
@@ -38,7 +39,7 @@ fun InputTextField(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val interactionSource = remember { MutableInteractionSource() }
-    val valueText = remember { mutableStateOf(BigDecimal.ZERO) }
+    val valueText = remember { mutableStateOf(BigDecimal.ONE) }
 
     BasicTextField(
         value = text,
@@ -54,7 +55,7 @@ fun InputTextField(
             onInputChanged?.invoke(it)
         },
         modifier =
-        Modifier
+        modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .onFocusChanged {
