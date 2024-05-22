@@ -17,6 +17,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
@@ -54,7 +60,20 @@ class SwapFragment : BaseFragment() {
     private var quoteResp: QuoteResponse? = null
 
     private val swapViewModel by viewModels<SwapViewModel>()
+    private val textInputFlow = MutableStateFlow("")
 
+    @OptIn(FlowPreview::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            textInputFlow
+                .debounce(500L)
+                .distinctUntilChanged()
+                .collectLatest { text ->
+                    onTextChanged(text)
+                }
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -126,9 +145,8 @@ class SwapFragment : BaseFragment() {
                                 if (BigDecimal(input) == BigDecimal.ZERO) {
                                     return@SwapPage
                                 }
-                                lifecycleScope.launch {
-                                    quote(input)
-                                }
+                                Timber.e("input $input")
+                                textInputFlow.value = input
                             }, {
                                 lifecycleScope.launch { swap() }
                             }) {
@@ -171,6 +189,19 @@ class SwapFragment : BaseFragment() {
             }
         }
         return tokens
+    }
+
+    private var quoteJob: Job? = null
+    private fun onTextChanged(text: String) {
+        quoteJob?.cancel()
+        if (text.isEmpty() || text == "0") {
+            quoteJob?.cancel()
+            outputText = "0"
+        } else {
+            quoteJob = lifecycleScope.launch {
+                quote(text)
+            }
+        }
     }
 
     private suspend fun quote(input: String) {

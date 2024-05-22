@@ -1512,4 +1512,7 @@
     <string name="Collectible">Collectible</string>
     <string name="inscription_Hash">Inscription Hash</string>
     <string name="Swap">Swap</string>
+    <string name="Pay">Pay</string>
+    <string name="Received">received</string>
+    <string name="Review_Order">Review Order</string>
 </resources>

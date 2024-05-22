@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -140,7 +141,7 @@ fun SwapPage(
                             )
                         } else {
                             // todo check token balance change text color
-                            Text(text = stringResource(id = R.string.Continue), color = Color.White)
+                            Text(text = stringResource(id = R.string.Review_Order), color = Color.White)
                         }
 
                     }
@@ -214,7 +215,7 @@ private fun InputContent(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectClick.invoke() }) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }) {
             GlideImage(
                 data = token?.logoURI ?: "",
                 modifier = Modifier
