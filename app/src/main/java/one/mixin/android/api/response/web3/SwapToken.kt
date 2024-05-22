@@ -27,7 +27,7 @@ data class SwapToken(
         return a.multiply(BigDecimal.TEN.pow(decimals)).toLong()
     }
 
-    fun toStringAmount(amount: Int): String {
+    fun toStringAmount(amount: Long): String {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING).toPlainString()
     }
 }

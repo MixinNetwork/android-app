@@ -214,7 +214,7 @@ class SwapFragment : BaseFragment() {
                 return@handleMixinResponse it.data
             }
         ) ?: return
-        outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toIntOrNull() ?: 0) ?: "0"
+        outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
 
     private suspend fun swap() {
