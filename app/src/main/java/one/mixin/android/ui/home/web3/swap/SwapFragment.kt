@@ -23,22 +23,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Tx
+import one.mixin.android.api.response.web3.TxState
+import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openAsUrl
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
+import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -49,15 +56,17 @@ class SwapFragment : BaseFragment() {
     }
 
     enum class SwapDestination {
-        Swap,
+        Swap, SwapState,
     }
 
     private var list: List<SwapToken> by mutableStateOf(emptyList())
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
     private var outputText: String by mutableStateOf("0")
+    private var tx: Tx? by mutableStateOf(null)
 
     private var quoteResp: QuoteResponse? = null
+    private var txhash: String? = null
 
     private val swapViewModel by viewModels<SwapViewModel>()
     private val textInputFlow = MutableStateFlow("")
@@ -80,20 +89,7 @@ class SwapFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = {
-                    swapViewModel.web3Tokens()
-                },
-                successBlock = { resp ->
-                    resp.data
-                },
-            )?.let {
-                list = it
-                fromToken = list[0]
-                toToken = list[1]
-
-                refreshTokensPrice(listOf(fromToken!!, toToken!!))
-            }
+            refreshTokens()
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -151,10 +147,30 @@ class SwapFragment : BaseFragment() {
                                 val from  = fromToken?:return@SwapPage
                                 val to = toToken ?: return@SwapPage
                                 quoteResp?.let {
-                                    SwapOrderBottomSheetDialogFragment.newInstance(from, to, it).showNow(parentFragmentManager, SwapOrderBottomSheetDialogFragment.TAG)
+                                    SwapOrderBottomSheetDialogFragment.newInstance(from, to, it).apply {
+                                        setOnTxhash { hash ->
+                                            Timber.d("@@@ hash $hash")
+                                            this@SwapFragment.txhash = hash
+                                            navController.navigate("${SwapDestination.SwapState.name}/$hash") {
+                                                popUpTo(SwapDestination.Swap.name)
+                                            }
+                                            refreshTx(hash)
+                                        }
+                                    }.showNow(parentFragmentManager, SwapOrderBottomSheetDialogFragment.TAG)
                                 }
                             }) {
                                 navigateUp(navController)
+                            }
+                        }
+                        composable("${SwapDestination.SwapState.name}/{txhash}") { navBackStackEntry ->
+                            navBackStackEntry.arguments?.getString("txhash")?.let { txhash ->
+                                SwapStatePage(
+                                    tx = tx,
+                                    viewTx = {
+                                        WebActivity.show(context, "https://solscan.io/tx/${txhash}", null)
+                                    }) {
+                                        navigateUp(navController)
+                                    }
                             }
                         }
                     }
@@ -178,6 +194,31 @@ class SwapFragment : BaseFragment() {
                 dismissNow()
             }
         }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private suspend fun refreshTokens() {
+        handleMixinResponse(
+            invokeNetwork = {
+                swapViewModel.web3Tokens()
+            },
+            successBlock = { resp ->
+                resp.data
+            },
+            failureBlock = {
+                Timber.d("@@@ ${it.errorCode}")
+                if (it.errorCode == 401) {
+                    swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
+                    refreshTokens()
+                }
+                return@handleMixinResponse true
+            }
+        )?.let {
+            list = it
+            fromToken = list[0]
+            toToken = list[1]
+
+            refreshTokensPrice(listOf(fromToken!!, toToken!!))
+        }
     }
 
     private suspend fun refreshTokensPrice(tokens: List<SwapToken>): List<SwapToken> {
@@ -206,6 +247,23 @@ class SwapFragment : BaseFragment() {
                 quote(text)
             }
         }
+    }
+
+    private var refreshTxJob: Job? = null
+    private fun refreshTx(txhash: String) {
+        refreshTxJob?.cancel()
+        refreshTxJob = tickerFlow(2.seconds)
+            .onEach {
+                handleMixinResponse(
+                    invokeNetwork = { swapViewModel.getWeb3Tx(txhash) },
+                    successBlock = {
+                        tx = it.data
+                    }
+                )
+                if (tx?.state?.isFinalTxState() == true) {
+                    refreshTxJob?.cancel()
+                }
+            }.launchIn(lifecycleScope)
     }
 
     private suspend fun quote(input: String) {

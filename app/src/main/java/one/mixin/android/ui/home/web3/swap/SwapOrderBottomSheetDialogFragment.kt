@@ -31,6 +31,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -110,6 +111,7 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
             requireActivity(),
             signMessage,
             amount = qr.inAmount,
+            onTxhash = { onTxhash?.invoke(it) }
         )
         dismiss()
     }
@@ -177,5 +179,12 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun dismiss() {
         dismissAllowingStateLoss()
+    }
+
+    private var onTxhash: ((String) -> Unit)? = null
+
+    fun setOnTxhash(callback: (String) -> Unit): SwapOrderBottomSheetDialogFragment {
+        onTxhash = callback
+        return this
     }
 }

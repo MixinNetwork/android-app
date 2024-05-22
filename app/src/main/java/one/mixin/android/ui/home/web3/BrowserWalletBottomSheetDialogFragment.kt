@@ -281,6 +281,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
                     val sig = JsSigner.sendSolanaTransaction(tx)
+                    onTxhash?.invoke(tx.signatures.first())
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -380,9 +381,15 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
+    fun setOnTxhash(callback: (String) -> Unit): BrowserWalletBottomSheetDialogFragment {
+        onTxhash = callback
+        return this
+    }
+
     private var onDone: ((String?) -> Unit)? = null
     private var onRejectAction: (() -> Unit)? = null
     private var onDismissAction: (() -> Unit)? = null
+    private var onTxhash: ((String) -> Unit)? = null
 
     fun getBiometricInfo() =
         BiometricInfo(
@@ -419,6 +426,7 @@ fun showBrowserBottomSheetDialogFragment(
     currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
+    onTxhash: ((String) -> Unit)? = null,
 ) {
     val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
     onDone?.let {
@@ -426,6 +434,9 @@ fun showBrowserBottomSheetDialogFragment(
     }
     onReject?.let {
         wcBottomSheet.setOnReject(onReject)
+    }
+    onTxhash?.let {
+        wcBottomSheet.setOnTxhash(onTxhash)
     }
     wcBottomSheet.showNow(
         fragmentActivity.supportFragmentManager,

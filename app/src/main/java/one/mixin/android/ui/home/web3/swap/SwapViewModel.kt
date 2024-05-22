@@ -10,6 +10,7 @@ import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.Web3Service
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
 import javax.inject.Inject
 
@@ -18,8 +19,11 @@ class SwapViewModel
 @Inject
 internal constructor(
     private val assetRepository: AssetRepository,
+    private val userRepository: UserRepository,
     private val web3Service: Web3Service,
 ) : ViewModel() {
+
+    suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
 
     suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens()
 
@@ -32,6 +36,8 @@ internal constructor(
     suspend fun web3Swap(
         swapRequest: SwapRequest,
     ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
+
+    suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
 
     suspend fun web3Tokens(address: List<String>): List<Web3Token> {
         return handleMixinResponse(

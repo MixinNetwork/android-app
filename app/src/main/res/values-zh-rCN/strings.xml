@@ -1475,7 +1475,9 @@
     <string name="inscription_Hash">藏品哈希</string>
     <string name="NFT_TOKEN">NFT 代币</string>
     <string name="Swap">闪兑</string>
+    <string name="Swapping">兑换中</string>
     <string name="Pay">支付</string>
     <string name="Received">收到</string>
     <string name="Review_Order">预览订单</string>
+    <string name="View_Transaction">查看区块链浏览器</string>
 </resources>
