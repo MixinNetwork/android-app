@@ -12,36 +12,62 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
 
 @AndroidEntryPoint
 class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "SwapOrderBottomSheetDialogFragment"
 
-        fun newInstance() = SwapOrderBottomSheetDialogFragment().withArgs {
-
+        fun newInstance(fromToken: SwapToken, toToken: SwapToken, qr: QuoteResponse) = SwapOrderBottomSheetDialogFragment().withArgs {
+            putParcelable("QUOTE", qr)
+            putParcelable("FROM", fromToken)
+            putParcelable("TO", toToken)
         }
     }
+
+    private val quoteResp: QuoteResponse by lazy {
+        requireArguments().getParcelableCompat("QUOTE", QuoteResponse::class.java)!!
+    }
+
+    private val fromToken: SwapToken by lazy {
+        requireArguments().getParcelableCompat("FROM", SwapToken::class.java)!!
+    }
+
+    private val toToken: SwapToken by lazy {
+        requireArguments().getParcelableCompat("TO", SwapToken::class.java)!!
+    }
+
 
     private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    private val viewModel by viewModels<SwapViewModel>()
+    private val swapViewModel by viewModels<SwapViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,8 +78,11 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                SwapOrderPage(
-                )
+                SwapOrderPage(quoteResp, fromToken, toToken, {dismiss()}, {
+                    lifecycleScope.launch {
+                        swap()
+                    }
+                })
             }
 
             doOnPreDraw {
@@ -66,6 +95,25 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
 
         }
+
+    private suspend fun swap() {
+        val qr = quoteResp
+        val swapResult = handleMixinResponse(
+            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
+            successBlock = {
+                return@handleMixinResponse it.data
+            }
+        ) ?: return
+        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction)
+        JsSigner.useSolana()
+        showBrowserBottomSheetDialogFragment(
+            requireActivity(),
+            signMessage,
+            amount = qr.inAmount,
+        )
+        dismiss()
+    }
+
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

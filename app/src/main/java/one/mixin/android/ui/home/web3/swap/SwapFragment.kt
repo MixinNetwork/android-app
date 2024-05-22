@@ -148,7 +148,11 @@ class SwapFragment : BaseFragment() {
                                 Timber.e("input $input")
                                 textInputFlow.value = input
                             }, {
-                                lifecycleScope.launch { swap() }
+                                val from  = fromToken?:return@SwapPage
+                                val to = toToken ?: return@SwapPage
+                                quoteResp?.let {
+                                    SwapOrderBottomSheetDialogFragment.newInstance(from, to, it).showNow(parentFragmentManager, SwapOrderBottomSheetDialogFragment.TAG)
+                                }
                             }) {
                                 navigateUp(navController)
                             }
@@ -215,23 +219,6 @@ class SwapFragment : BaseFragment() {
             }
         ) ?: return
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
-    }
-
-    private suspend fun swap() {
-        val qr = quoteResp ?: return
-        val swapResult = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
-            successBlock = {
-                return@handleMixinResponse it.data
-            }
-        ) ?: return
-        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction)
-        JsSigner.useSolana()
-        showBrowserBottomSheetDialogFragment(
-            requireActivity(),
-            signMessage,
-            amount = qr.inAmount,
-        )
     }
 
     private fun navigateUp(navController: NavHostController) {

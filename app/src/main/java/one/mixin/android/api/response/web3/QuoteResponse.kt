@@ -1,7 +1,10 @@
 package one.mixin.android.api.response.web3
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class QuoteResponse(
     @SerializedName("inputMint") val inputMint: String,
     @SerializedName("inAmount") val inAmount: String,
@@ -15,18 +18,21 @@ data class QuoteResponse(
     @SerializedName("platformFee") val platformFee: PlatformFee? = null,
     @SerializedName("contextSlot") val contextSlot: Float? = null,
     @SerializedName("timeTaken") val timeTaken: Float? = null
-)
+) : Parcelable
 
+@Parcelize
 data class PlatformFee(
     @SerializedName("amount") val amount: String? = null,
     @SerializedName("feeBps") val feeBps: Int? = null
-)
+) : Parcelable
 
+@Parcelize
 data class RoutePlan(
     @SerializedName("swapInfo") val swapInfo: SwapInfo,
     @SerializedName("percent") val percent: Int
-)
+) : Parcelable
 
+@Parcelize
 data class SwapInfo(
     @SerializedName("ammKey") val ammKey: String,
     @SerializedName("label") val label: String? = null,
@@ -36,4 +42,4 @@ data class SwapInfo(
     @SerializedName("outAmount") val outAmount: String,
     @SerializedName("feeAmount") val feeAmount: String,
     @SerializedName("feeMint") val feeMint: String
-)
+) : Parcelable
