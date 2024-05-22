@@ -24,7 +24,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
@@ -64,7 +63,7 @@ fun InputTextField(
         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         textStyle =
         TextStyle(
-            fontSize = 24.sp,
+            fontSize = 18.sp,
             color = MixinAppTheme.colors.textPrimary,
             fontWeight = FontWeight.Black,
             textAlign = TextAlign.End
@@ -78,7 +77,7 @@ fun InputTextField(
             Box(modifier = Modifier.width(8.dp))
             Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                 Text(text = "$${valueText.value.toPlainString()}",  style = TextStyle(
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textSubtitle,
                 ))
             }

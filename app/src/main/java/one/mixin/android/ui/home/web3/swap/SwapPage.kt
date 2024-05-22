@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -37,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -75,36 +80,72 @@ fun SwapPage(
         }
         var isReverse by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
+        var isLoading by remember { mutableStateOf(false) }
 
         if (tokens.isEmpty()) {
             Loading()
         } else {
-            SwapLayout(center = {
-                Box(modifier = Modifier
-                    .width(40.dp)
-                    .height(40.dp)
-                    .clip(CircleShape)
-                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                    .background(MixinAppTheme.colors.backgroundGray)
-                    .clickable {
-                        isReverse = !isReverse
-                        switch.invoke()
-                    }
-                    .rotate(rotation), contentAlignment = Alignment.Center
+            Column {
+                SwapLayout(center = {
+                    Box(modifier = Modifier
+                        .width(40.dp)
+                        .height(40.dp)
+                        .clip(CircleShape)
+                        .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                        .background(MixinAppTheme.colors.backgroundGray)
+                        .clickable {
+                            isReverse = !isReverse
+                            switch.invoke()
+                        }
+                        .rotate(rotation), contentAlignment = Alignment.Center
 
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_switch),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.textPrimary,
-                    )
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_switch),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.textPrimary,
+                        )
+                    }
+                }, content = {
+                    InputArea(token = fromToken, text = inputText, title = stringResource(id = R.string.From)) { selectCallback(0) }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To)) { selectCallback(1) }
                 }
-            }, content = {
-                InputArea(token = fromToken, text = inputText, title = stringResource(id = R.string.From)) { selectCallback(0) }
-                Spacer(modifier = Modifier.height(6.dp))
-                InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To)) { selectCallback(1) }
+                )
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            // todo swap
+                        },
+                        colors =
+                        ButtonDefaults.outlinedButtonColors(
+                            // todo check token balance change background color
+                            backgroundColor = MixinAppTheme.colors.accent,
+                        ),
+                        shape = RoundedCornerShape(32.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
+                        elevation =
+                        ButtonDefaults.elevation(
+                            pressedElevation = 0.dp,
+                            defaultElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color.White,
+                            )
+                        } else {
+                            // todo check token balance change text color
+                            Text(text = stringResource(id = R.string.Continue), color = Color.White)
+                        }
+
+                    }
+                }
             }
-            )
         }
     }
 }
@@ -128,7 +169,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, color = MixinAppTheme.colors.textMinor)
+                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
                 Spacer(modifier = Modifier.width(4.dp))
                 GlideImage(
                     data = token?.logoURI ?: "",
@@ -138,7 +179,7 @@ fun InputArea(
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = token?.name ?: "", color = MixinAppTheme.colors.textMinor)
+                Text(text = token?.name ?: "", fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
@@ -182,7 +223,7 @@ private fun InputContent(
             Box(modifier = Modifier.width(10.dp))
             Text(
                 text = token?.symbol ?: "", style = TextStyle(
-                    fontSize = 24.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
                     color = MixinAppTheme.colors.textPrimary,
                 )
