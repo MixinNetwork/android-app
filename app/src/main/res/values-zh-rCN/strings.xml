@@ -1480,4 +1480,7 @@
     <string name="Received">收到</string>
     <string name="Review_Order">预览订单</string>
     <string name="View_Transaction">查看区块链浏览器</string>
+    <string name="Confirming_Transaction">正在确认交易</string>
+    <string name="Transaction_Success">交易成功</string>
+    <string name="Transaction_Failed">交易失败</string>
 </resources>

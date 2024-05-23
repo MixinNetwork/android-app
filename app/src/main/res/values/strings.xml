@@ -1517,4 +1517,7 @@
     <string name="Received">received</string>
     <string name="Review_Order">Review Order</string>
     <string name="View_Transaction">View Transaction</string>
+    <string name="Confirming_Transaction">Confirming Transaction</string>
+    <string name="Transaction_Success">Transaction Success</string>
+    <string name="Transaction_Failed">Transaction Failed</string>
 </resources>

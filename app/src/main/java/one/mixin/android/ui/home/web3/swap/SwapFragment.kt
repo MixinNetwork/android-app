@@ -149,7 +149,7 @@ class SwapFragment : BaseFragment() {
                                 quoteResp?.let {
                                     SwapOrderBottomSheetDialogFragment.newInstance(from, to, it).apply {
                                         setOnTxhash { hash ->
-                                            Timber.d("@@@ hash $hash")
+                                            Timber.d("hash $hash")
                                             this@SwapFragment.txhash = hash
                                             navController.navigate("${SwapDestination.SwapState.name}/$hash") {
                                                 popUpTo(SwapDestination.Swap.name)
@@ -165,7 +165,10 @@ class SwapFragment : BaseFragment() {
                         composable("${SwapDestination.SwapState.name}/{txhash}") { navBackStackEntry ->
                             navBackStackEntry.arguments?.getString("txhash")?.let { txhash ->
                                 SwapStatePage(
-                                    tx = tx,
+                                    tx = tx ?: Tx(TxState.NotFound.name),
+                                    fromToken = fromToken!!,
+                                    toToken = toToken!!,
+                                    quoteResp!!,
                                     viewTx = {
                                         WebActivity.show(context, "https://solscan.io/tx/${txhash}", null)
                                     }) {

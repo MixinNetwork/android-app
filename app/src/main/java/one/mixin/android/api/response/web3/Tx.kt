@@ -8,5 +8,6 @@ enum class TxState {
     NotFound, Failed, Success
 }
 
-fun String.isFinalTxState(): Boolean =
-    this.equals(TxState.Failed.name, true) || this.equals(TxState.Success.name, true)
+fun String.isFinalTxState(): Boolean = isTxSuccess() || isTxFailed()
+fun String.isTxSuccess(): Boolean =  this.equals(TxState.Success.name, true)
+fun String.isTxFailed(): Boolean = this.equals(TxState.Failed.name, true)
