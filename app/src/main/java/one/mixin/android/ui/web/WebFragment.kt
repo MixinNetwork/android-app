@@ -173,6 +173,7 @@ class WebFragment : BaseFragment() {
         private const val FILE_CHOOSER = 0x01
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
+        private const val CONTEXT_MENU_ID_COPY_LINK = 0x13
         const val URL = "url"
         const val CONVERSATION_ID = "conversation_id"
         const val ARGS_APP = "args_app"
@@ -249,6 +250,18 @@ class WebFragment : BaseFragment() {
                     menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
                     menu.getItem(1).setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+                WebView.HitTestResult.SRC_ANCHOR_TYPE, WebView.HitTestResult.ANCHOR_TYPE -> {
+                    menu.add(0, CONTEXT_MENU_ID_COPY_LINK, 0, R.string.Copy_link)
+                    menu.getItem(0).setOnMenuItemClickListener { _ ->
+                        requireContext().getClipboardManager().setPrimaryClip(
+                            ClipData.newPlainText(
+                                null,
+                                it.extra,
+                            ))
+                        toast(R.string.copied_to_clipboard)
                         return@setOnMenuItemClickListener true
                     }
                 }
