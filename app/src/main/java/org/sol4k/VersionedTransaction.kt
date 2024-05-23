@@ -2,6 +2,7 @@ package org.sol4k
 
 import android.media.session.MediaSession.Token
 import okio.Buffer
+import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
@@ -64,7 +65,7 @@ class VersionedTransaction(
         for (i in message.instructions) {
             if (accounts[i.programIdIndex] == Constants.SYSTEM_PROGRAM) {
                 val lamports = parseSystemProgramData(i.data) ?: continue
-                return TokenBalanceChange(lamports, "")
+                return TokenBalanceChange(lamports, solanaNativeTokenAssetKey)
             } else if (accounts[i.programIdIndex] == Constants.TOKEN_PROGRAM_ID) {
                 val lamports = parseTokenProgramData(i.data) ?: continue
                 val mintAddress = accounts[i.accounts[1]].toBase58()

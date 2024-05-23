@@ -63,6 +63,8 @@ class Web3Token(
     val decimals: Int,
 ) : Parcelable
 
+const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
+
 fun Web3Token.getChainFromName(): Chain {
     return when {
         chainName.equals("ethereum", true) -> Chain.Ethereum
@@ -96,7 +98,7 @@ fun Web3Token.isSolana(): Boolean {
 }
 
 fun Web3Token.isSolToken(): Boolean {
-    return isSolana() && assetKey == "11111111111111111111111111111111"
+    return isSolana() && assetKey == solanaNativeTokenAssetKey
 }
 
 private fun Web3Token.getChainAssetKey(): String {
@@ -115,7 +117,7 @@ private fun Web3Token.getChainAssetKey(): String {
     } else if (chainName.equals("avalanche", true)) {
         "0x0000000000000000000000000000000000000000"
     } else if (chainName.equals("solana", true)) {
-        "11111111111111111111111111111111"
+        solanaNativeTokenAssetKey
     } else {
         ""
     }
@@ -137,10 +139,10 @@ fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
 
 fun Web3Token.calcSolBalanceChange(balanceChange: VersionedTransaction.TokenBalanceChange): String {
     return if (isSolToken()) {
-        lamportToSol(BigDecimal(balanceChange.change)).toPlainString()
+        lamportToSol(BigDecimal(balanceChange.change))
     } else {
-        BigDecimal(balanceChange.change).divide(BigDecimal.TEN.pow(decimals)).setScale(decimals, RoundingMode.CEILING).toPlainString()
-    }
+        BigDecimal(balanceChange.change).divide(BigDecimal.TEN.pow(decimals)).setScale(decimals, RoundingMode.CEILING)
+    }.stripTrailingZeros().toPlainString()
 }
 
 suspend fun Web3Token.buildTransaction(

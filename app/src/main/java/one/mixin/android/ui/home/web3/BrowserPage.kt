@@ -217,7 +217,7 @@ fun BrowserPage(
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
-                val fee = tipGas?.displayValue() ?: solanaFee ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue() ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",

@@ -230,15 +230,17 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                        solanaTx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "").also { tx ->
-                            if (token == null) {
-                                val tokenBalanceChange = tx.calcBalanceChange()
-                                val mintAddress = if (tokenBalanceChange.mint == "") "So11111111111111111111111111111111111111112" else tokenBalanceChange.mint
-                                token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
-                                amount = token?.calcSolBalanceChange(tokenBalanceChange)
+                        val tx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
+                        solanaTx = tx
+                        if (token == null) {
+                            val tokenBalanceChange = tx.calcBalanceChange()
+                            val mintAddress = tokenBalanceChange.mint
+                            if (mintAddress.isBlank()) {
+                                return@launch
                             }
+                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
+                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
                         }
-
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
                     }
