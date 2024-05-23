@@ -1,6 +1,8 @@
 package one.mixin.android.compose.theme
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
@@ -117,11 +119,16 @@ fun MixinAppTheme(
         } else {
             LightDrawablePalette
         }
+    val textSelectionColors = TextSelectionColors(
+        handleColor = Color(0xFF3D75E3),
+        backgroundColor = Color(0x663D75E3)
+    )
     MaterialTheme(if (darkTheme) darkColors() else lightColors()) {
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalDrawables provides drawables,
-            content = content,
+            LocalTextSelectionColors provides textSelectionColors,
+            content = content
         )
     }
 }
