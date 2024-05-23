@@ -180,6 +180,7 @@ class SwapFragment : BaseFragment() {
                                         WebActivity.show(context, "https://solscan.io/tx/${txhash}", null)
                                     }) {
                                         navigateUp(navController)
+                                        parentFragmentManager.popBackStackImmediate()
                                     }
                             }
                         }

@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,6 +41,7 @@ import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.api.response.web3.isTxFailed
 import one.mixin.android.api.response.web3.isTxSuccess
 import one.mixin.android.compose.GlideImage
+import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
@@ -47,67 +51,91 @@ fun SwapStatePage(
     toToken: SwapToken,
     quoteResp: QuoteResponse,
     viewTx: () -> Unit,
-    pop: () -> Unit,
+    close: () -> Unit,
 ) {
-    SwapPageScaffold(
-        title = stringResource(id = R.string.Swapping),
-        verticalScrollable = true,
-        pop = pop,
+    Scaffold(
+        backgroundColor = MixinAppTheme.colors.background,
+        topBar = {
+            MixinTopAppBar(
+                title = {
+                    Text(stringResource(id = R.string.Swapping))
+                },
+            )
+        },
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            Modifier
+                .padding(it)
+                .apply {
+                    verticalScroll(rememberScrollState())
+                },
         ) {
-            Spacer(modifier = Modifier.height(50.dp))
-            TokenInfo(fromToken, quoteResp.inAmount.toLongOrNull() ?: 0L)
-            Spacer(modifier = Modifier.height(10.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_switch),
-                contentDescription = null,
-                tint = MixinAppTheme.colors.icon,
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            TokenInfo(toToken, quoteResp.outAmount.toLongOrNull() ?: 0L)
-            Spacer(modifier = Modifier.height(100.dp))
-            StateInfo(tx = tx)
-            Spacer(modifier = Modifier.height(20.dp))
-            Box(modifier = Modifier
-                .clickable {
-                    viewTx.invoke()
-                }) {
-                Text(
-                    text = stringResource(id = R.string.View_Transaction),
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Black,
-                        color = MixinAppTheme.colors.accent,
-                    )
-                )
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            if (tx.state.isFinalTxState()) {
-                Button(
-                    modifier = Modifier.fillMaxWidth().padding(20.dp),
-                    onClick = {
-                        pop.invoke()
-                    },
-                    colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent,
-                    ),
-                    shape = RoundedCornerShape(32.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
-                ) {
-                    Text(text = stringResource(id = R.string.Done), color = Color.White)
-                }
-            }
+            Content(tx, fromToken, toToken, quoteResp, viewTx, close)
+        }
+    }
+}
 
+@Composable
+private fun Content(
+    tx: Tx,
+    fromToken: SwapToken,
+    toToken: SwapToken,
+    quoteResp: QuoteResponse,
+    viewTx: () -> Unit,
+    close: () -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(50.dp))
+        TokenInfo(fromToken, quoteResp.inAmount.toLongOrNull() ?: 0L)
+        Spacer(modifier = Modifier.height(10.dp))
+        Icon(
+            painter = painterResource(id = R.drawable.ic_switch),
+            contentDescription = null,
+            tint = MixinAppTheme.colors.icon,
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        TokenInfo(toToken, quoteResp.outAmount.toLongOrNull() ?: 0L)
+        Spacer(modifier = Modifier.height(100.dp))
+        StateInfo(tx = tx)
+        Spacer(modifier = Modifier.height(20.dp))
+        Box(modifier = Modifier
+            .clickable {
+                viewTx.invoke()
+            }) {
+            Text(
+                text = stringResource(id = R.string.View_Transaction),
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MixinAppTheme.colors.accent,
+                )
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            onClick = {
+                close.invoke()
+            },
+            colors =
+            ButtonDefaults.outlinedButtonColors(
+                backgroundColor = MixinAppTheme.colors.accent,
+            ),
+            shape = RoundedCornerShape(32.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            elevation =
+            ButtonDefaults.elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp,
+            ),
+        ) {
+            Text(text = stringResource(id = R.string.Close), color = Color.White)
         }
     }
 }

@@ -291,7 +291,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
                     val sig = JsSigner.sendSolanaTransaction(tx)
-                    onTxhash?.invoke(tx.signatures.first())
+                    onTxhash?.invoke(sig)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)

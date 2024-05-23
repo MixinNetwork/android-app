@@ -37,10 +37,6 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Query
 import javax.inject.Inject
 import javax.inject.Singleton
 

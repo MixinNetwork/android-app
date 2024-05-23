@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import com.google.protobuf.Mixin
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
@@ -15,7 +14,6 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
-import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -101,6 +99,9 @@ interface RouteService {
         @Query("inputMint") inputMint: String,
         @Query("outputMint") outputMint: String,
         @Query("amount") amount: String,
+        @Query("swapMode") swapMode: String = "ExactIn",
+        @Query("autoSlippage") autoSlippage: Boolean = false,
+        @Query("asLegacyTransaction") asLegacyTransaction: Boolean = true,
     ): MixinResponse<QuoteResponse>
 
     @POST("web3/swap")
