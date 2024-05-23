@@ -47,7 +47,7 @@ fun InputTextField(
             Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = text, style = TextStyle(
-                        fontSize = 18.sp,
+                        fontSize = 20.sp,
                         color = MixinAppTheme.colors.textPrimary,
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.End
@@ -59,7 +59,8 @@ fun InputTextField(
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "$${v.toPlainString()}", style = TextStyle(
-                            fontSize = 16.sp,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Light,
                             color = MixinAppTheme.colors.textSubtitle,
                         )
                     )
@@ -109,9 +110,9 @@ fun InputTextField(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             textStyle =
             TextStyle(
-                fontSize = 18.sp,
+                fontSize = 20.sp,
                 color = MixinAppTheme.colors.textPrimary,
-                fontWeight = FontWeight.Black,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.End
             ),
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
@@ -125,7 +126,8 @@ fun InputTextField(
                     Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = "$${valueText.value.toPlainString()}", style = TextStyle(
-                                fontSize = 16.sp,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Light,
                                 color = MixinAppTheme.colors.textSubtitle,
                             )
                         )

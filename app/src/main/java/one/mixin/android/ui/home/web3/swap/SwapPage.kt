@@ -112,7 +112,7 @@ fun SwapPage(
                         inputText.value = it
                         onInputChanged.invoke(it)
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { selectCallback(1) })
                 }
                 )
@@ -203,7 +203,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
+                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
                 Spacer(modifier = Modifier.width(4.dp))
                 GlideImage(
                     data = token?.chain?.chainLogoURI ?: "",
@@ -213,7 +213,7 @@ fun InputArea(
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = token?.chain?.name ?: "", fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
+                Text(text = token?.chain?.name ?: "", fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
@@ -230,6 +230,7 @@ fun InputArea(
                 )
             }
         }
+        Box(modifier = Modifier.height(16.dp))
         InputContent(
             token, text, selectClick, onInputChanged, readOnly
         )
@@ -259,8 +260,8 @@ private fun InputContent(
             Box(modifier = Modifier.width(10.dp))
             Text(
                 text = token?.symbol ?: "", style = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Black,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
                     color = MixinAppTheme.colors.textPrimary,
                 )
             )
