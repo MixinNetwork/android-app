@@ -39,12 +39,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -63,6 +65,7 @@ fun SwapPage(
     toToken: SwapToken?,
     tokens: List<SwapToken>,
     outputText: String,
+    exchangeRate: Float,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
@@ -114,6 +117,33 @@ fun SwapPage(
                 }
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .alpha(
+                                if (exchangeRate == 0f) 0f else 1f
+                            )
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MixinAppTheme.colors.backgroundGray)
+                            .padding(20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.Best_price), maxLines = 1, style = TextStyle(
+                                fontWeight = FontWeight.W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+                        )
+                        Text(
+                            text = "1 ${fromToken?.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
+                                fontWeight = FontWeight.W500,
+                                color = MixinAppTheme.colors.textSubtitle,
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,

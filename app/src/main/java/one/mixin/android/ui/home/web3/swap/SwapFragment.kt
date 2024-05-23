@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +45,7 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -62,6 +64,7 @@ class SwapFragment : BaseFragment() {
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
     private var outputText: String by mutableStateOf("")
+    private var exchangeRate: Float by mutableFloatStateOf(0f)
     private var isLoading by mutableStateOf(false)
 
     private var tx: Tx? by mutableStateOf(null)
@@ -127,10 +130,11 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, list, outputText, {
+                            SwapPage(isLoading, fromToken, toToken, list, outputText, exchangeRate, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
+                                onTextChanged(currentText)
                             }, { index ->
                                 if (list.isNotEmpty()) {
                                     selectCallback(list, index)
@@ -285,6 +289,14 @@ class SwapFragment : BaseFragment() {
                 isLoading = false
             }
         ) ?: return
+
+        val inValue = fromToken?.realAmount(quoteResp?.inAmount?.toLongOrNull() ?: 0L)
+        val outValue = toToken?.realAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L)
+        exchangeRate = if (inValue == null || outValue == null || inValue== BigDecimal.ZERO || outValue==BigDecimal.ZERO) {
+            0f
+        } else {
+            outValue.divide(inValue, RoundingMode.CEILING).toFloat()
+        }
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
 
