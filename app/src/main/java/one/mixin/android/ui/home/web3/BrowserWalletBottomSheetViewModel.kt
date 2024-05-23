@@ -6,7 +6,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.service.TipService
+import one.mixin.android.api.service.Web3Service
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
@@ -24,7 +26,7 @@ class BrowserWalletBottomSheetViewModel
     @Inject
     internal constructor(
         private val assetRepo: TokenRepository,
-        private val tipService: TipService,
+        private val web3Service: Web3Service,
         private val tip: Tip,
     ) : ViewModel() {
         suspend fun ethGasLimit(
@@ -90,4 +92,13 @@ class BrowserWalletBottomSheetViewModel
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+
+        suspend fun web3Tokens(address: List<String>): List<Web3Token> {
+            val resp = web3Service.web3Tokens(address.joinToString(","))
+            return if (resp.isSuccess) {
+                resp.data ?: emptyList()
+            } else {
+                emptyList()
+            }
+        }
     }

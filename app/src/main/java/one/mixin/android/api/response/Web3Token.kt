@@ -16,10 +16,12 @@ import org.sol4k.Connection
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
 import org.sol4k.Transaction
+import org.sol4k.VersionedTransaction
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
 import org.sol4k.instruction.Instruction
 import org.sol4k.instruction.SplTransferInstruction
 import org.sol4k.instruction.TransferInstruction
+import org.sol4k.lamportToSol
 import org.sol4k.solToLamport
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
@@ -28,6 +30,7 @@ import org.web3j.abi.datatypes.Uint
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Locale
 
 @Parcelize
@@ -59,6 +62,8 @@ class Web3Token(
     @SerializedName("decimals")
     val decimals: Int,
 ) : Parcelable
+
+const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
 
 fun Web3Token.getChainFromName(): Chain {
     return when {
@@ -93,7 +98,7 @@ fun Web3Token.isSolana(): Boolean {
 }
 
 fun Web3Token.isSolToken(): Boolean {
-    return isSolana() && assetKey == "11111111111111111111111111111111"
+    return isSolana() && assetKey == solanaNativeTokenAssetKey
 }
 
 private fun Web3Token.getChainAssetKey(): String {
@@ -112,7 +117,7 @@ private fun Web3Token.getChainAssetKey(): String {
     } else if (chainName.equals("avalanche", true)) {
         "0x0000000000000000000000000000000000000000"
     } else if (chainName.equals("solana", true)) {
-        "11111111111111111111111111111111"
+        solanaNativeTokenAssetKey
     } else {
         ""
     }
@@ -130,6 +135,14 @@ fun Web3Token.findChainToken(tokens: List<Web3Token>): Web3Token? {
     return tokens.firstOrNull { token ->
         token.chainId == chainId && token.assetKey == chainAssetKey
     }
+}
+
+fun Web3Token.calcSolBalanceChange(balanceChange: VersionedTransaction.TokenBalanceChange): String {
+    return if (isSolToken()) {
+        lamportToSol(BigDecimal(balanceChange.change))
+    } else {
+        BigDecimal(balanceChange.change).divide(BigDecimal.TEN.pow(decimals)).setScale(decimals, RoundingMode.CEILING)
+    }.stripTrailingZeros().toPlainString()
 }
 
 suspend fun Web3Token.buildTransaction(
