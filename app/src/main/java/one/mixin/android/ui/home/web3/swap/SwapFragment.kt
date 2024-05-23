@@ -31,6 +31,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
+import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
