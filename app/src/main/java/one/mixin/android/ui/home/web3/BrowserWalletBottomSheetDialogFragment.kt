@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.calcSolBalanceChange
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
@@ -110,11 +111,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val signMessage: JsSignMessage by lazy { requireArguments().getParcelableCompat(ARGS_MESSAGE, JsSignMessage::class.java)!! }
     private val url: String? by lazy { requireArguments().getString(ARGS_URL) }
     private val title: String? by lazy { requireArguments().getString(ARGS_TITLE) }
-    private val amount: String? by lazy { requireArguments().getString(ARGS_AMOUNT) }
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
-    private val token by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
-    }
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
@@ -124,6 +121,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     var step by mutableStateOf(Step.Input)
         private set
+    private var amount: String? by mutableStateOf(null)
+    private var token: Web3Token? by mutableStateOf(null)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
@@ -138,7 +137,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-
+            token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
+            amount = requireArguments().getString(ARGS_AMOUNT)
             setContent {
                 BrowserPage(
                     JsSigner.address,
@@ -230,7 +230,17 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                        solanaTx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
+                        val tx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
+                        solanaTx = tx
+                        if (token == null) {
+                            val tokenBalanceChange = tx.calcBalanceChange()
+                            val mintAddress = tokenBalanceChange.mint
+                            if (mintAddress.isBlank()) {
+                                return@launch
+                            }
+                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
+                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
+                        }
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
                     }
