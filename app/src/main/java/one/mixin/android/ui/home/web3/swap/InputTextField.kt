@@ -34,55 +34,31 @@ fun InputTextField(
     modifier: Modifier,
     token: SwapToken?,
     text: String,
-    onInputChanged: ((String) -> Unit) ?= null,
+    onInputChanged: ((String) -> Unit)? = null,
+    readOnly: Boolean = false
 ) {
-    val focusRequester = remember { FocusRequester() }
-    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val valueText = remember { mutableStateOf(BigDecimal.ONE) }
-
-    BasicTextField(
-        value = text,
-        onValueChange = {
-            val v = try {
-                if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
-            } catch (e: Exception) {
-                return@BasicTextField
-            }
-            // todo
-            valueText.value = v.multiply(BigDecimal( token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
-            // TODO debounce
-            onInputChanged?.invoke(it)
-        },
-        modifier =
-        modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester)
-            .onFocusChanged {
-                if (it.isFocused) {
-                    keyboardController?.show()
-                }
-            },
-        interactionSource = interactionSource,
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-        textStyle =
-        TextStyle(
-            fontSize = 18.sp,
-            color = MixinAppTheme.colors.textPrimary,
-            fontWeight = FontWeight.Black,
-            textAlign = TextAlign.End
-        ),
-        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-    ) { innerTextField ->
-        Column(modifier = Modifier.fillMaxWidth()){
+    if (readOnly) {
+        val v = try {
+            if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING)
+        } catch (e: Exception) {
+            BigDecimal.ZERO
+        }
+        Column(modifier = Modifier.fillMaxWidth()) {
             Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                innerTextField()
+                Text(
+                    text = text, style = TextStyle(
+                        fontSize = 18.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.End
+                    )
+                )
             }
             Box(modifier = Modifier.width(8.dp))
-            if (valueText.value != BigDecimal.ZERO) {
+            if (v != BigDecimal.ZERO) {
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "$${valueText.value.toPlainString()}", style = TextStyle(
+                        text = "$${v.toPlainString()}", style = TextStyle(
                             fontSize = 16.sp,
                             color = MixinAppTheme.colors.textSubtitle,
                         )
@@ -90,6 +66,73 @@ fun InputTextField(
                 }
             } else {
                 Box(modifier = Modifier.height(12.dp))  // placeholder
+            }
+        }
+    } else {
+        val focusRequester = remember { FocusRequester() }
+        val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+        val interactionSource = remember { MutableInteractionSource() }
+
+        val valueText = remember {
+            if (token != null) {
+                val v = try {
+                    if (text.isBlank()) BigDecimal.ZERO else BigDecimal(text)
+                } catch (e: Exception) {
+                    BigDecimal.ZERO
+                }
+                mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING))
+            } else {
+                mutableStateOf(BigDecimal.ZERO)
+            }
+        }
+        BasicTextField(
+            value = text,
+            onValueChange = {
+                val v = try {
+                    if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
+                } catch (e: Exception) {
+                    return@BasicTextField
+                }
+                valueText.value = v.multiply(BigDecimal(token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
+                onInputChanged?.invoke(it)
+            },
+            modifier =
+            modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onFocusChanged {
+                    if (it.isFocused) {
+                        keyboardController?.show()
+                    }
+                },
+            interactionSource = interactionSource,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            textStyle =
+            TextStyle(
+                fontSize = 18.sp,
+                color = MixinAppTheme.colors.textPrimary,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.End
+            ),
+            cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+        ) { innerTextField ->
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
+                    innerTextField()
+                }
+                Box(modifier = Modifier.width(8.dp))
+                if (valueText.value != BigDecimal.ZERO) {
+                    Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "$${valueText.value.toPlainString()}", style = TextStyle(
+                                fontSize = 16.sp,
+                                color = MixinAppTheme.colors.textSubtitle,
+                            )
+                        )
+                    }
+                } else {
+                    Box(modifier = Modifier.height(12.dp))  // placeholder
+                }
             }
         }
     }

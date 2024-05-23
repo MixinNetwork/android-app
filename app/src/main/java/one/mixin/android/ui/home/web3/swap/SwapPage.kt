@@ -65,7 +65,7 @@ fun SwapPage(
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
-    onSwap:() -> Unit,
+    onSwap: () -> Unit,
     pop: () -> Unit,
 ) {
     SwapPageScaffold(
@@ -105,12 +105,12 @@ fun SwapPage(
                         )
                     }
                 }, content = {
-                    InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), { selectCallback(0) }) {
+                    InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }) {
                         inputText.value = it
                         onInputChanged.invoke(it)
                     }
                     Spacer(modifier = Modifier.height(6.dp))
-                    InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), { selectCallback(1) })
+                    InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { selectCallback(1) })
                 }
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -156,8 +156,9 @@ fun InputArea(
     token: SwapToken?,
     text: String,
     title: String,
+    readOnly: Boolean = false,
     selectClick: () -> Unit,
-    onInputChanged: ((String) -> Unit) ?= null,
+    onInputChanged: ((String) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -199,7 +200,7 @@ fun InputArea(
             }
         }
         InputContent(
-            token, text, selectClick, onInputChanged
+            token, text, selectClick, onInputChanged, readOnly
         )
     }
 }
@@ -209,7 +210,8 @@ private fun InputContent(
     token: SwapToken?,
     text: String,
     selectClick: () -> Unit,
-    onInputChanged: ((String) -> Unit) ?= null,
+    onInputChanged: ((String) -> Unit)? = null,
+    readOnly: Boolean = false
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -239,7 +241,7 @@ private fun InputContent(
             )
             Box(modifier = Modifier.width(10.dp))
         }
-        InputTextField(modifier = Modifier.align(Alignment.CenterVertically), token = token, text = text, onInputChanged = onInputChanged)
+        InputTextField(modifier = Modifier.align(Alignment.CenterVertically), token = token, text = text, onInputChanged = onInputChanged, readOnly)
     }
 }
 

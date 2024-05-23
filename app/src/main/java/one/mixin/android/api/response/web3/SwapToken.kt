@@ -28,6 +28,6 @@ data class SwapToken(
     }
 
     fun toStringAmount(amount: Long): String {
-        return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING).toPlainString()
+        return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
     }
 }
