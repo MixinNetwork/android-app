@@ -31,12 +31,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
-import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.openAsUrl
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
@@ -62,7 +59,7 @@ class SwapFragment : BaseFragment() {
     private var list: List<SwapToken> by mutableStateOf(emptyList())
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
-    private var outputText: String by mutableStateOf("0")
+    private var outputText: String by mutableStateOf("")
     private var tx: Tx? by mutableStateOf(null)
 
     private var quoteResp: QuoteResponse? = null
@@ -240,9 +237,11 @@ class SwapFragment : BaseFragment() {
     }
 
     private var quoteJob: Job? = null
+    private var currentText: String = "0"
     private fun onTextChanged(text: String) {
         quoteJob?.cancel()
-        if (text.isEmpty() || text == "0") {
+        currentText = text
+        if (text.isEmpty() || text == "0" || text.isBlank()) {
             quoteJob?.cancel()
             outputText = "0"
         } else {

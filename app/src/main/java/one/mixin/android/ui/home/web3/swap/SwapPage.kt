@@ -74,7 +74,7 @@ fun SwapPage(
         pop = pop,
     ) {
         val inputText = rememberSaveable {
-            mutableStateOf("0")
+            mutableStateOf("")
         }
         var isReverse by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
@@ -175,14 +175,14 @@ fun InputArea(
                 Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
                 Spacer(modifier = Modifier.width(4.dp))
                 GlideImage(
-                    data = token?.logoURI ?: "",
+                    data = token?.chain?.chainLogoURI ?: "",
                     modifier = Modifier
                         .size(14.dp)
                         .clip(CircleShape),
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = token?.name ?: "", fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
+                Text(text = token?.chain?.name ?: "", fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(

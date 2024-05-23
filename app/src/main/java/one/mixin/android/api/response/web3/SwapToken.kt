@@ -15,7 +15,7 @@ data class SwapToken(
     @SerializedName("symbol") val symbol: String,
     @SerializedName("logoURI") val logoURI: String,
     @SerializedName("tags") val tags: List<String>,
-    @SerializedName("chainLogoURI") val chainLogoURI: String,
+    @SerializedName("chain") val chain: SwapChain,
     var price: String? = null,
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {

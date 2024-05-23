@@ -1,7 +1,5 @@
 package one.mixin.android.ui.home.web3.swap
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,9 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,7 +51,7 @@ fun SwapOrderPage(
             Box {
                 if (isLoading) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-                        Box(modifier = Modifier.height(20.dp))
+                        Box(modifier = Modifier.height(24.dp))
                         CircularProgressIndicator(
                             modifier =
                             Modifier
@@ -63,6 +59,7 @@ fun SwapOrderPage(
                                 .align(Alignment.CenterHorizontally),
                             color = MixinAppTheme.colors.accent,
                         )
+                        Box(modifier = Modifier.height(22.dp))
                     }
                 } else {
                     ActionBottom(
