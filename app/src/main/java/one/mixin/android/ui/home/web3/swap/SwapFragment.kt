@@ -154,12 +154,14 @@ class SwapFragment : BaseFragment() {
                                 quoteResp?.let {
                                     SwapOrderBottomSheetDialogFragment.newInstance(from, to, it).apply {
                                         setOnTxhash { hash ->
-                                            Timber.d("hash $hash")
-                                            this@SwapFragment.txhash = hash
-                                            navController.navigate("${SwapDestination.SwapState.name}/$hash") {
-                                                popUpTo(SwapDestination.Swap.name)
+                                            lifecycleScope.launch {
+                                                Timber.d("hash $hash")
+                                                this@SwapFragment.txhash = hash
+                                                navController.navigate("${SwapDestination.SwapState.name}/$hash") {
+                                                    popUpTo(SwapDestination.Swap.name)
+                                                }
+                                                refreshTx(hash)
                                             }
-                                            refreshTx(hash)
                                         }
                                     }.showNow(parentFragmentManager, SwapOrderBottomSheetDialogFragment.TAG)
                                 }
