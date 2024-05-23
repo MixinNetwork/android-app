@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
@@ -61,6 +62,8 @@ class SwapFragment : BaseFragment() {
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
     private var outputText: String by mutableStateOf("")
+    private var isLoading by mutableStateOf(false)
+
     private var tx: Tx? by mutableStateOf(null)
 
     private var quoteResp: QuoteResponse? = null
@@ -124,7 +127,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(fromToken, toToken, list, outputText, {
+                            SwapPage(isLoading, fromToken, toToken, list, outputText, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -273,10 +276,13 @@ class SwapFragment : BaseFragment() {
         val inputMint = fromToken?.address ?: return
         val outputMint = toToken?.address ?: return
         val amount = fromToken?.toLongAmount(input) ?: return
+        isLoading = true
         quoteResp = handleMixinResponse(
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString()) },
             successBlock = {
                 return@handleMixinResponse it.data
+            }, endBlock = {
+                isLoading = false
             }
         ) ?: return
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"

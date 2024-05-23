@@ -59,7 +59,7 @@ fun SwapOrderPage(
                                 .align(Alignment.CenterHorizontally),
                             color = MixinAppTheme.colors.accent,
                         )
-                        Box(modifier = Modifier.height(22.dp))
+                        Box(modifier = Modifier.height(24.dp))
                     }
                 } else {
                     ActionBottom(

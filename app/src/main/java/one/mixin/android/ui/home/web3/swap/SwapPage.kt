@@ -58,6 +58,7 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 
 @Composable
 fun SwapPage(
+    isLoading: Boolean,
     fromToken: SwapToken?,
     toToken: SwapToken?,
     tokens: List<SwapToken>,
@@ -78,7 +79,6 @@ fun SwapPage(
         }
         var isReverse by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
-        var isLoading by remember { mutableStateOf(false) }
 
         if (tokens.isEmpty()) {
             Loading()
@@ -116,6 +116,7 @@ fun SwapPage(
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
                         onClick = {
                             onSwap.invoke()
                         },
@@ -136,7 +137,7 @@ fun SwapPage(
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(18.dp),
                                 color = Color.White,
                             )
                         } else {
