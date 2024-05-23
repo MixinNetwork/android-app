@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -70,7 +68,7 @@ fun SwapStatePage(
             Spacer(modifier = Modifier.height(10.dp))
             TokenInfo(toToken, quoteResp.outAmount.toLongOrNull() ?: 0L)
             Spacer(modifier = Modifier.height(100.dp))
-            TxState(tx = tx)
+            StateInfo(tx = tx)
             Spacer(modifier = Modifier.height(20.dp))
             Box(modifier = Modifier
                 .clickable {
@@ -115,7 +113,7 @@ fun SwapStatePage(
 }
 
 @Composable
-private fun TxState(tx: Tx) {
+private fun StateInfo(tx: Tx) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

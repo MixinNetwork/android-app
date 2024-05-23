@@ -108,7 +108,7 @@ interface RouteService {
         @Body swapRequest: SwapRequest,
     ): MixinResponse<SwapResponse>
 
-    @GET("web3/tx/{txhash}")
+    @GET("web3/transactions/{txhash}")
     suspend fun getWeb3Tx(
         @Path("txhash") txhash: String,
     ): MixinResponse<Tx>
