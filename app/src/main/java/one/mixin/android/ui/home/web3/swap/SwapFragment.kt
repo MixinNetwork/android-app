@@ -190,7 +190,7 @@ class SwapFragment : BaseFragment() {
                 }
                 lifecycleScope.launch {
                     refreshTokensPrice(listOf(token))
-                    fromToken?.let { quote(it.address) }
+                    onTextChanged(currentText)
                 }
                 dismissNow()
             }
