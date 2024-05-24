@@ -9,12 +9,10 @@ import java.math.RoundingMode
 @Parcelize
 data class SwapToken(
     @SerializedName("address") val address: String,
-    @SerializedName("chainId") val chainId: Int,
     @SerializedName("decimals") val decimals: Int,
     @SerializedName("name") val name: String,
     @SerializedName("symbol") val symbol: String,
     @SerializedName("logoURI") val logoURI: String,
-    @SerializedName("tags") val tags: List<String>,
     @SerializedName("chain") val chain: SwapChain,
     var price: String? = null,
     var balance: String? = null,
@@ -36,3 +34,4 @@ data class SwapToken(
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
     }
 }
+

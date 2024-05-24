@@ -32,7 +32,9 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.jupiterSolanaTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
+import one.mixin.android.api.response.toSwapToken
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
@@ -112,6 +114,12 @@ class SwapFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         lifecycleScope.launch {
+            if (web3tokens.size > 0) {
+                fromToken = web3tokens[0].toSwapToken()
+            }
+            if (web3tokens.size > 1) {
+                toToken = web3tokens[1].toSwapToken()
+            }
             refreshTokens()
         }
         return ComposeView(inflater.context).apply {
@@ -291,7 +299,7 @@ class SwapFragment : BaseFragment() {
         )?.let {
             swapTokens = it.map { token->
                 val t = web3tokens.firstOrNull { web3Token ->
-                    web3Token.assetKey == token.address|| (token.address == "So11111111111111111111111111111111111111112" && web3Token.assetKey == solanaNativeTokenAssetKey)
+                    web3Token.assetKey == token.address|| (token.address == jupiterSolanaTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                 }?:return@map token
                 token.balance = t.balance
                 token

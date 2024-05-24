@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.loadImage
 
 class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -58,6 +59,9 @@ class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 }
 
 class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
+    init {
+        binding.changeTv.setTextColor(binding.root.context.colorAttr(R.attr.text_primary))
+    }
     @SuppressLint("SetTextI18n")
     fun bind(token: SwapToken) {
         binding.apply {
@@ -65,6 +69,7 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
             avatar.badge.loadImage(token.chain.chainLogoURI, R.drawable.ic_avatar_place_holder)
             symbolTv.text = token.symbol
             balanceAs.text = token.name
+            changeTv.text = token.balance
         }
     }
 }

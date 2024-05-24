@@ -88,7 +88,7 @@ fun SwapPage(
         var isReverse by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
-        if (tokens.isEmpty()) {
+        if (fromToken == null) {
             Loading()
         } else {
             Column {
@@ -226,7 +226,11 @@ fun InputArea(
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = token?.chain?.name ?: "", fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
+                if (token == null) {
+                    Text(text = stringResource(id = R.string.select_token), fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
+                } else {
+                    Text(text = token.chain.name, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
+                }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
