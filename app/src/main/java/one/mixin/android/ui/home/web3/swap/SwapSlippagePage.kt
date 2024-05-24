@@ -86,16 +86,18 @@ fun SwapSlippagePage(
             }
             Auto(auto, autoSlippage, slippageBps)
             Custom(auto, customText)
+            val enabled = auto.value || customText.value.isSlippageValid()
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp, 10.dp),
+                enabled = enabled,
                 onClick = {
                     onConfirm.invoke(auto.value, customText.value.toIntSlippage())
                 },
                 colors =
                 ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
+                    backgroundColor = if (enabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
                 ),
                 shape = RoundedCornerShape(32.dp),
                 contentPadding = PaddingValues(vertical = 16.dp),
@@ -225,7 +227,7 @@ private fun Custom(
                         innerTextField()
                         if (bps.value.isEmpty()) {
                             Text(
-                                text = "0% - 50%",
+                                text = "0.1 - 50",
                                 fontSize = 16.sp,
                                 color = MixinAppTheme.colors.textSubtitle,
                             )
@@ -239,6 +241,16 @@ private fun Custom(
                     )
                 }
             }
+            if (!bps.value.isSlippageValid()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = context.getString(R.string.slippage_invalid),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.tipError
+                    )
+                )
+            }
         }
     }
 }
@@ -250,6 +262,10 @@ private fun String.toIntSlippage(): Int {
     } else {
         BigDecimal(this).multiply(BigDecimal(100)).toInt()
     }
+}
+private fun String.isSlippageValid(): Boolean {
+    val v = toIntSlippage()
+    return v >= SwapFragment.MinSlippage && v <= SwapFragment.MaxSlippage
 }
 
 @Preview

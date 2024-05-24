@@ -1527,4 +1527,5 @@
     <string name="slippage_custom">Custom</string>
     <string name="slippage_custom_desc">Trades will be executed according to the slippage you set</string>
     <string name="slippage_high_warning">Your transaction may be frontrun and result in an unfavourable trade</string>
+    <string name="slippage_invalid">Slippage cannot be greater than 50% and cannot be less than 0.1%</string>
 </resources>

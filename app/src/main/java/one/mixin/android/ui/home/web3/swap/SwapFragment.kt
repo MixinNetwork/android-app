@@ -61,6 +61,10 @@ class SwapFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
 
+        const val MaxSlippage = 5000
+        const val DangerousSlippage = 500
+        const val MinSlippage = 10
+
         fun newInstance(tokens: List<Web3Token>): SwapFragment = SwapFragment().withArgs {
             putParcelableArrayList("TOKENS", arrayListOf<Web3Token>().apply { addAll(tokens) })
         }

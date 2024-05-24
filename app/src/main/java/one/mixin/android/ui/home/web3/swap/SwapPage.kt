@@ -342,7 +342,7 @@ private fun SlippageInfo(
     } else {
         "${slippageBps.slippageBpsDisplay()}%"
     }
-    val highSlippage = slippageBps > 500
+    val highSlippage = slippageBps > SwapFragment.DangerousSlippage
     Spacer(modifier = Modifier.height(16.dp))
     Row(
         modifier = Modifier

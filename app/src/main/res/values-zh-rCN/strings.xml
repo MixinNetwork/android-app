@@ -1490,4 +1490,5 @@
     <string name="slippage_custom">自定义</string>
     <string name="slippage_custom_desc">将按照您设置的滑点执行交易</string>
     <string name="slippage_high_warning">您的交易可能会抢先交易并导致不利的交易</string>
+    <string name="slippage_invalid">滑点不可大于 50% 且不可小于 0.1%</string>
 </resources>
