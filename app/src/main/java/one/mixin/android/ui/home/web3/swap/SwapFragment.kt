@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -41,8 +42,11 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.tickerFlow
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -156,11 +160,32 @@ class SwapFragment : BaseFragment() {
                                 Timber.e("input $input")
                                 textInputFlow.value = input
                             }, {
-                                val from  = fromToken?:return@SwapPage
-                                val to = toToken ?: return@SwapPage
-                                quoteResp?.let {
-                                    SwapOrderBottomSheetDialogFragment.newInstance(from, to, it).apply {
-                                        setOnTxhash { hash ->
+                                lifecycleScope.launch {
+                                    val qr = quoteResp ?: return@launch
+                                    isLoading = true
+                                    val swapResult = handleMixinResponse(
+                                        invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
+                                        successBlock = {
+                                            return@handleMixinResponse it.data
+                                        },
+                                        exceptionBlock = { t->
+                                            isLoading = false
+                                            return@handleMixinResponse false
+                                        },
+                                        failureBlock={
+                                            isLoading = false
+                                            return@handleMixinResponse false
+                                        }
+
+                                    ) ?: return@launch
+                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction)
+                                    JsSigner.useSolana()
+                                    isLoading = false
+                                    showBrowserBottomSheetDialogFragment(
+                                        requireActivity(),
+                                        signMessage,
+                                        amount = qr.inAmount,
+                                        onTxhash = { hash ->
                                             lifecycleScope.launch {
                                                 Timber.d("hash $hash")
                                                 this@SwapFragment.txhash = hash
@@ -170,7 +195,7 @@ class SwapFragment : BaseFragment() {
                                                 refreshTx(hash)
                                             }
                                         }
-                                    }.showNow(parentFragmentManager, SwapOrderBottomSheetDialogFragment.TAG)
+                                    )
                                 }
                             }) {
                                 navigateUp(navController)
@@ -198,7 +223,13 @@ class SwapFragment : BaseFragment() {
     }
 
     private val selectCallback = fun(list: List<SwapToken>, index: Int) {
-        SwapTokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
+        SwapTokenListBottomSheetDialogFragment.newInstance(ArrayList(list.run {
+            if (index == 0) {
+                this.filter { !it.balance.isNullOrEmpty() }
+            } else {
+                this
+            }
+        })).apply {
             setOnClickListener { token ->
                 if (index == 0) {
                     this@SwapFragment.fromToken = token
