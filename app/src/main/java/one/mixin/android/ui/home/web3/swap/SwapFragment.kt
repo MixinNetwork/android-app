@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.walletconnect.android.internal.utils.thirtySeconds
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -232,8 +233,14 @@ class SwapFragment : BaseFragment() {
         })).apply {
             setOnClickListener { token ->
                 if (index == 0) {
+                    if (token == this@SwapFragment.toToken) {
+                        this@SwapFragment.toToken = fromToken
+                    }
                     this@SwapFragment.fromToken = token
                 } else {
+                    if (token == this@SwapFragment.fromToken) {
+                        this@SwapFragment.fromToken = toToken
+                    }
                     this@SwapFragment.toToken = token
                 }
                 lifecycleScope.launch {
