@@ -2,7 +2,10 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -17,6 +20,7 @@ import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.BottomQrScanBinding
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.isAppUrl
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
@@ -26,6 +30,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -81,6 +86,22 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     .throttleFirst(1, TimeUnit.SECONDS)
                     .autoDispose(stopScope).subscribe {
                         WebActivity.show(requireActivity(), text, conversationId)
+                        dismiss()
+                    }
+            } else if(text.isAppUrl()){
+                openFl.visibility = VISIBLE
+                open.clicks()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .throttleFirst(1, TimeUnit.SECONDS)
+                    .autoDispose(stopScope).subscribe {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(text))
+                            startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            // do nothing
+                        } catch (e: Exception) {
+                            Timber.e(e, "OpenUrl")
+                        }
                         dismiss()
                     }
             } else {
