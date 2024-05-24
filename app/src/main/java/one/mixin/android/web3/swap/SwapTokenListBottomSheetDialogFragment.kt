@@ -106,7 +106,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    fun setOnClickListener(onClickListener: (SwapToken) -> Unit) {
+    fun setOnClickListener(onClickListener: (SwapToken,Boolean) -> Unit) {
         this.adapter.setOnClickListener(onClickListener)
     }
 }

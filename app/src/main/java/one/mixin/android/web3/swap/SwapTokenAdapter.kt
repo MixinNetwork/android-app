@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
-import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.loadImage
 
 class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -30,9 +29,9 @@ class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 notifyDataSetChanged()
             }
         }
-    private var onClickListener: ((SwapToken) -> Unit)? = null
+    private var onClickListener: ((SwapToken, Boolean) -> Unit)? = null
 
-    fun setOnClickListener(onClickListener: (SwapToken) -> Unit) {
+    fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
         this.onClickListener = onClickListener
     }
 
@@ -51,24 +50,25 @@ class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        (holder as Web3Holder).bind(tokens[position])
-        holder.itemView.setOnClickListener {
-            onClickListener?.invoke(tokens[position])
-        }
+        (holder as Web3Holder).bind(tokens[position], onClickListener)
+
     }
 }
 
 class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolder(binding.root) {
-    init {
-        binding.changeTv.setTextColor(binding.root.context.colorAttr(R.attr.text_primary))
-    }
     @SuppressLint("SetTextI18n")
-    fun bind(token: SwapToken) {
+    fun bind(token: SwapToken, onClickListener: ((SwapToken, Boolean) -> Unit)?) {
         binding.apply {
+            root.setOnClickListener {
+                onClickListener?.invoke(token, false)
+            }
             avatar.bg.loadImage(token.logoURI, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chain.chainLogoURI, R.drawable.ic_avatar_place_holder)
             nameTv.text = token.name
             balanceTv.text = "${token.balance?:"0"} ${token.symbol}"
+            alert.setOnClickListener {
+                onClickListener?.invoke(token, true)
+            }
         }
     }
 }

@@ -12,16 +12,11 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.web3.SwapRequest
-import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
@@ -30,37 +25,22 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
 
 @AndroidEntryPoint
-class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "SwapOrderBottomSheetDialogFragment"
 
-        fun newInstance(fromToken: SwapToken, toToken: SwapToken, qr: QuoteResponse) = SwapOrderBottomSheetDialogFragment().withArgs {
-            putParcelable("QUOTE", qr)
-            putParcelable("FROM", fromToken)
-            putParcelable("TO", toToken)
+        fun newInstance(token: SwapToken) = SwapTokenBottomSheetDialogFragment().withArgs {
+            putParcelable("TOKEN", token)
         }
     }
-
-    private val quoteResp: QuoteResponse by lazy {
-        requireArguments().getParcelableCompat("QUOTE", QuoteResponse::class.java)!!
+    private val token: SwapToken by lazy {
+        requireArguments().getParcelableCompat("TOKEN", SwapToken::class.java)!!
     }
-
-    private val fromToken: SwapToken by lazy {
-        requireArguments().getParcelableCompat("FROM", SwapToken::class.java)!!
-    }
-
-    private val toToken: SwapToken by lazy {
-        requireArguments().getParcelableCompat("TO", SwapToken::class.java)!!
-    }
-
 
     private var behavior: BottomSheetBehavior<*>? = null
 
@@ -77,11 +57,7 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                SwapOrderPage(quoteResp, fromToken, toToken, {dismiss()}, {
-                    lifecycleScope.launch {
-                        swap()
-                    }
-                })
+                SwapTokenPage(token) { dismiss() }
             }
 
             doOnPreDraw {
@@ -94,25 +70,6 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
 
         }
-
-    private suspend fun swap() {
-        val qr = quoteResp
-        val swapResult = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
-            successBlock = {
-                return@handleMixinResponse it.data
-            }
-        ) ?: return
-        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction)
-        JsSigner.useSolana()
-        showBrowserBottomSheetDialogFragment(
-            requireActivity(),
-            signMessage,
-            amount = qr.inAmount,
-            onTxhash = { onTxhash?.invoke(it) }
-        )
-        dismiss()
-    }
 
 
     private val bottomSheetBehaviorCallback =
@@ -179,10 +136,4 @@ class SwapOrderBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dismissAllowingStateLoss()
     }
 
-    private var onTxhash: ((String) -> Unit)? = null
-
-    fun setOnTxhash(callback: (String) -> Unit): SwapOrderBottomSheetDialogFragment {
-        onTxhash = callback
-        return this
-    }
 }

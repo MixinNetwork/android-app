@@ -68,27 +68,14 @@
         android:textSize="12sp"
         android:textColor="?attr/text_assist"/>
 
-    <TextView
-        android:id="@+id/change_tv"
+    <ImageView
+        android:id="@+id/alert"
+        android:src="@drawable/ic_web3_alert"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/name_tv"
-        android:layout_alignBaseline="@id/balance"
-        android:layout_alignParentEnd="true"
-        android:gravity="end"
-        android:maxLines="1"
-        android:textColor="@color/wallet_green"/>
+        android:padding="4dp"
+        android:background="@drawable/mixin_ripple"/>
 
-    <TextView
-        android:id="@+id/price_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_toEndOf="@id/balance_tv"
-        android:layout_alignBaseline="@+id/balance_tv"
-        android:layout_alignParentEnd="true"
-        android:gravity="end"
-        android:maxLines="1"
-        android:textSize="12sp"
-        android:textColor="?attr/text_assist"/>
 </RelativeLayout>

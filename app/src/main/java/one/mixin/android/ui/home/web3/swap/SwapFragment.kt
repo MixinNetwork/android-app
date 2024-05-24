@@ -218,7 +218,7 @@ class SwapFragment : BaseFragment() {
                                         onTxhash = { hash ->
                                             lifecycleScope.launch {
                                                 Timber.d("hash $hash")
-                                                this@SwapFragment.txhash = hash
+                                                txhash = hash
                                                 navController.navigate("${SwapDestination.SwapState.name}/$hash") {
                                                     popUpTo(SwapDestination.Swap.name)
                                                 }
@@ -260,7 +260,11 @@ class SwapFragment : BaseFragment() {
                 this
             }
         })).apply {
-            setOnClickListener { token ->
+            setOnClickListener { token, alert ->
+                if (alert) {
+                    SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
+                    return@setOnClickListener
+                }
                 if (index == 0) {
                     if (token == this@SwapFragment.toToken) {
                         this@SwapFragment.toToken = fromToken
