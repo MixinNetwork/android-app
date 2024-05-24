@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
@@ -17,7 +18,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.walletconnect.android.internal.utils.thirtySeconds
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -32,6 +32,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
@@ -74,6 +75,8 @@ class SwapFragment : BaseFragment() {
     private var toToken: SwapToken? by mutableStateOf(null)
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
+    private var autoSlippage: Boolean by mutableStateOf(true)
+    private var slippageBps: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private val web3tokens by lazy {
         requireArguments().getParcelableArrayListCompat("TOKENS", Web3Token::class.java)!!
@@ -142,7 +145,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, swapTokens, outputText, exchangeRate, {
+                            SwapPage(isLoading, fromToken, toToken, swapTokens, outputText, exchangeRate, autoSlippage, slippageBps, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -160,6 +163,20 @@ class SwapFragment : BaseFragment() {
                                 }
                                 Timber.e("input $input")
                                 textInputFlow.value = input
+                            }, {
+                                val qr = quoteResp ?: return@SwapPage
+                                SwapSlippageBottomSheetDialogFragment.newInstance(autoSlippage, qr.slippageBps)
+                                    .setOnSlippage { auto, bps ->
+                                        val needQuote = autoSlippage != auto || bps != slippageBps
+                                        autoSlippage = auto
+                                        slippageBps = bps
+                                        if (needQuote) {
+                                            lifecycleScope.launch {
+                                                quote(currentText)
+                                            }
+                                        }
+                                    }
+                                    .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
@@ -270,7 +287,7 @@ class SwapFragment : BaseFragment() {
         )?.let {
             swapTokens = it.map { token->
                 val t = web3tokens.firstOrNull { web3Token ->
-                    web3Token.assetKey == token.address|| (token.address == "So11111111111111111111111111111111111111112" && web3Token.assetKey == "11111111111111111111111111111111")
+                    web3Token.assetKey == token.address|| (token.address == "So11111111111111111111111111111111111111112" && web3Token.assetKey == solanaNativeTokenAssetKey)
                 }?:return@map token
                 token.balance = t.balance
                 token
@@ -346,7 +363,7 @@ class SwapFragment : BaseFragment() {
         val amount = fromToken?.toLongAmount(input) ?: return
         isLoading = true
         quoteResp = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString()) },
+            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), autoSlippage, slippageBps) },
             successBlock = {
                 return@handleMixinResponse it.data
             }, endBlock = {
@@ -361,6 +378,7 @@ class SwapFragment : BaseFragment() {
         } else {
             outValue.divide(inValue, RoundingMode.CEILING).toFloat()
         }
+        slippageBps = quoteResp?.slippageBps ?: 0
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
 

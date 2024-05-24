@@ -1484,4 +1484,10 @@
     <string name="Transaction_Success">交易成功</string>
     <string name="Transaction_Failed">交易失败</string>
     <string name="Best_price">最优价格</string>
+    <string name="Slippage">滑点</string>
+    <string name="slippage_auto">自动</string>
+    <string name="slippage_auto_desc">根据不同币种推荐合适的滑点，帮助你交易成功</string>
+    <string name="slippage_custom">自定义</string>
+    <string name="slippage_custom_desc">将按照您设置的滑点执行交易</string>
+    <string name="slippage_high_warning">您的交易可能会抢先交易并导致不利的交易</string>
 </resources>

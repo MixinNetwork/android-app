@@ -43,11 +43,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -56,7 +58,6 @@ import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.compose.Loading
-import timber.log.Timber
 import java.math.BigDecimal
 
 @Composable
@@ -67,9 +68,12 @@ fun SwapPage(
     tokens: List<SwapToken>,
     outputText: String,
     exchangeRate: Float,
+    autoSlippage: Boolean,
+    slippageBps: Int,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
+    onShowSlippage: () -> Unit,
     onSwap: () -> Unit,
     pop: () -> Unit,
 ) {
@@ -118,7 +122,7 @@ fun SwapPage(
                 }
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
@@ -128,24 +132,30 @@ fun SwapPage(
                             .clip(RoundedCornerShape(12.dp))
                             .background(MixinAppTheme.colors.backgroundGray)
                             .padding(20.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.Best_price), maxLines = 1, style = TextStyle(
-                                fontWeight = FontWeight.W500,
-                                color = MixinAppTheme.colors.textPrimary,
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.Best_price), maxLines = 1, style = TextStyle(
+                                    fontWeight = FontWeight.W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
                             )
-                        )
-                        Text(
-                            text = "1 ${fromToken?.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
-                                fontWeight = FontWeight.W500,
-                                color = MixinAppTheme.colors.textSubtitle,
+                            Text(
+                                text = "1 ${fromToken?.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
+                                    fontWeight = FontWeight.W500,
+                                    color = MixinAppTheme.colors.textSubtitle,
+                                )
                             )
-                        )
+                        }
+                        SlippageInfo(autoSlippage, slippageBps, onShowSlippage)
                     }
                     Spacer(modifier = Modifier.height(20.dp))
-
                     val checkBalance = checkBalance(inputText.value, fromToken?.balance)
                     Button(
                         modifier = Modifier.fillMaxWidth(),
@@ -321,6 +331,80 @@ fun SwapPageScaffold(
 }
 
 @Composable
+private fun SlippageInfo(
+    autoSlippage: Boolean,
+    slippageBps: Int,
+    onShowSlippage: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val descText = if (autoSlippage) {
+        "${LocalContext.current.getString(R.string.slippage_auto)} (${slippageBps.slippageBpsDisplay()}%)"
+    } else {
+        "${slippageBps.slippageBpsDisplay()}%"
+    }
+    val highSlippage = slippageBps > 500
+    Spacer(modifier = Modifier.height(16.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .clickable(
+                interactionSource,
+                null
+            ) {
+                onShowSlippage.invoke()
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(id = R.string.Slippage), maxLines = 1, style = TextStyle(
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary,
+            )
+        )
+        Row {
+            Text(
+                text = descText, maxLines = 1,
+                style = TextStyle(
+                    fontWeight = FontWeight.W500,
+                    color = if (highSlippage) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                )
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.textSubtitle,
+            )
+        }
+    }
+    if (highSlippage) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(8.dp, 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = R.drawable.ic_warning),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.tipError,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(id = R.string.slippage_high_warning),
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.tipError,
+                )
+            )
+        }
+    }
+}
+
+@Composable
 fun SwapLayout(
     content: @Composable ColumnScope.() -> Unit, center: @Composable BoxScope.() -> Unit
 ) {
@@ -339,6 +423,19 @@ fun SwapLayout(
         center()
     }
 }
+
+@Preview
+@Composable
+fun PreviewSlippageInfo() {
+    SlippageInfo(autoSlippage = true, slippageBps = 50) {}
+}
+
+@Preview
+@Composable
+fun PreviewSlippageInfoWarning() {
+    SlippageInfo(autoSlippage = true, slippageBps = 600) {}
+}
+
 /*
  * @return True if the input was successful, false if the balance is insufficient, or null if the input is invalid.
  */

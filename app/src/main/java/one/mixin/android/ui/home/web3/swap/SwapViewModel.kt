@@ -31,7 +31,9 @@ internal constructor(
         inputMint: String,
         outputMint: String,
         amount: String,
-    ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount)
+        autoSlippage: Boolean,
+        slippageBps: Int = 50,
+    ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, autoSlippage, slippageBps)
 
     suspend fun web3Swap(
         swapRequest: SwapRequest,

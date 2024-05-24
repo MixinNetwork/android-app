@@ -1521,4 +1521,10 @@
     <string name="Transaction_Success">Transaction Success</string>
     <string name="Transaction_Failed">Transaction Failed</string>
     <string name="Best_price">Best price</string>
+    <string name="Slippage">Slippage</string>
+    <string name="slippage_auto">Auto</string>
+    <string name="slippage_auto_desc">Recommends the right slippage for different currencies to help you trade successfully</string>
+    <string name="slippage_custom">Custom</string>
+    <string name="slippage_custom_desc">Trades will be executed according to the slippage you set</string>
+    <string name="slippage_high_warning">Your transaction may be frontrun and result in an unfavourable trade</string>
 </resources>
