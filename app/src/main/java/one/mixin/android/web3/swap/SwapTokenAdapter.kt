@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.loadImage
 
@@ -40,7 +40,7 @@ class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         parent: ViewGroup,
         viewType: Int,
     ): RecyclerView.ViewHolder {
-        return Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        return Web3Holder(ItemWeb3SwapTokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun getItemCount(): Int {
@@ -58,7 +58,7 @@ class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 }
 
-class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
+class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolder(binding.root) {
     init {
         binding.changeTv.setTextColor(binding.root.context.colorAttr(R.attr.text_primary))
     }
@@ -67,9 +67,8 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
         binding.apply {
             avatar.bg.loadImage(token.logoURI, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chain.chainLogoURI, R.drawable.ic_avatar_place_holder)
-            symbolTv.text = token.symbol
-            balanceAs.text = token.name
-            changeTv.text = token.balance
+            nameTv.text = token.name
+            balanceTv.text = "${token.balance?:"0"} ${token.symbol}"
         }
     }
 }

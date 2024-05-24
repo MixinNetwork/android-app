@@ -157,7 +157,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, swapTokens, outputText, exchangeRate, autoSlippage, slippageBps, {
+                            SwapPage(isLoading, fromToken, toToken, outputText, exchangeRate, autoSlippage, slippageBps, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -198,7 +198,7 @@ class SwapFragment : BaseFragment() {
                                         successBlock = {
                                             return@handleMixinResponse it.data
                                         },
-                                        exceptionBlock = { t->
+                                        exceptionBlock = { _->
                                             isLoading = false
                                             return@handleMixinResponse false
                                         },

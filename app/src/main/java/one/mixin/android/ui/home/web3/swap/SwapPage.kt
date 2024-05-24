@@ -65,7 +65,6 @@ fun SwapPage(
     isLoading: Boolean,
     fromToken: SwapToken?,
     toToken: SwapToken?,
-    tokens: List<SwapToken>,
     outputText: String,
     exchangeRate: Float,
     autoSlippage: Boolean,
@@ -147,7 +146,7 @@ fun SwapPage(
                                 )
                             )
                             Text(
-                                text = "1 ${fromToken?.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
+                                text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
                                     fontWeight = FontWeight.W500,
                                     color = MixinAppTheme.colors.textSubtitle,
                                 )
@@ -156,37 +155,39 @@ fun SwapPage(
                         SlippageInfo(autoSlippage, slippageBps, onShowSlippage)
                     }
                     Spacer(modifier = Modifier.height(20.dp))
-                    val checkBalance = checkBalance(inputText.value, fromToken?.balance)
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isLoading && checkBalance == true,
-                        onClick = {
-                            onSwap.invoke()
-                        },
-                        colors =
-                        ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
-                        ),
-                        shape = RoundedCornerShape(32.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        elevation =
-                        ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
-                    ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = Color.White,
-                            )
-                        } else {
-                            Text(
-                                text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (checkBalance != true) MixinAppTheme.colors.textSubtitle else Color.White,
-                            )
+                    val checkBalance = checkBalance(inputText.value, fromToken.balance)
+                    if (inputText.value.isNotEmpty()) {
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading && checkBalance == true,
+                            onClick = {
+                                onSwap.invoke()
+                            },
+                            colors =
+                            ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
+                            ),
+                            shape = RoundedCornerShape(32.dp),
+                            contentPadding = PaddingValues(vertical = 16.dp),
+                            elevation =
+                            ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp,
+                            ),
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = Color.White,
+                                )
+                            } else {
+                                Text(
+                                    text = if (checkBalance == false) "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                    color = if (checkBalance != true) MixinAppTheme.colors.textSubtitle else Color.White,
+                                )
+                            }
                         }
                     }
                 }
@@ -248,49 +249,7 @@ fun InputArea(
             }
         }
         Box(modifier = Modifier.height(16.dp))
-        InputContent(
-            token, text, selectClick, onInputChanged, readOnly
-        )
-    }
-}
-
-@Composable
-private fun InputContent(
-    token: SwapToken?,
-    text: String,
-    selectClick: () -> Unit,
-    onInputChanged: ((String) -> Unit)? = null,
-    readOnly: Boolean = false
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }) {
-            GlideImage(
-                data = token?.logoURI ?: "",
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
-                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
-            )
-            Box(modifier = Modifier.width(10.dp))
-            Text(
-                text = token?.symbol ?: "", style = TextStyle(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-            )
-            Box(modifier = Modifier.width(4.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_web3_drop_down),
-                contentDescription = null,
-                tint = MixinAppTheme.colors.icon,
-            )
-            Box(modifier = Modifier.width(10.dp))
-        }
-        InputTextField(modifier = Modifier.align(Alignment.CenterVertically), token = token, text = text, onInputChanged = onInputChanged, readOnly)
+        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
     }
 }
 
