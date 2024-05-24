@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,6 +56,8 @@ import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.compose.Loading
+import timber.log.Timber
+import java.math.BigDecimal
 
 @Composable
 fun SwapPage(
@@ -144,16 +145,17 @@ fun SwapPage(
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
+
+                    val checkBalance = checkBalance(inputText.value, fromToken?.balance)
                     Button(
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !isLoading,
+                        enabled = !isLoading && checkBalance == true,
                         onClick = {
                             onSwap.invoke()
                         },
                         colors =
                         ButtonDefaults.outlinedButtonColors(
-                            // todo check token balance change background color
-                            backgroundColor = MixinAppTheme.colors.accent,
+                            backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
                         ),
                         shape = RoundedCornerShape(32.dp),
                         contentPadding = PaddingValues(vertical = 16.dp),
@@ -171,10 +173,11 @@ fun SwapPage(
                                 color = Color.White,
                             )
                         } else {
-                            // todo check token balance change text color
-                            Text(text = stringResource(id = R.string.Review_Order), color = Color.White)
+                            Text(
+                                text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                color = if (checkBalance != true) MixinAppTheme.colors.textSubtitle else Color.White,
+                            )
                         }
-
                     }
                 }
             }
@@ -217,7 +220,7 @@ fun InputArea(
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
-                    text = "0", // Todo
+                    text = token?.balance ?: "0",
                     style = TextStyle(
                         color = MixinAppTheme.colors.textMinor, textAlign = TextAlign.End
                     )
@@ -335,4 +338,22 @@ fun SwapLayout(
         }
         center()
     }
+}
+/*
+ * @return True if the input was successful, false if the balance is insufficient, or null if the input is invalid.
+ */
+private fun checkBalance(inputText: String, balance: String?): Boolean? {
+    if (balance.isNullOrEmpty()) return false
+    val inputValue = try {
+        BigDecimal(inputText)
+    } catch (e: Exception) {
+        null
+    } ?: return null
+    if (inputValue <= BigDecimal.ZERO) return null
+    val balanceValue = try {
+        BigDecimal(balance)
+    } catch (e: Exception) {
+        null
+    } ?: return null
+    return inputValue <= balanceValue
 }

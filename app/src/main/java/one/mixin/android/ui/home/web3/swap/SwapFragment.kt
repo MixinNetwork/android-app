@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
@@ -30,14 +29,17 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.tickerFlow
@@ -53,19 +55,24 @@ class SwapFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
 
-        fun newInstance(): SwapFragment = SwapFragment()
+        fun newInstance(tokens: List<Web3Token>): SwapFragment = SwapFragment().withArgs {
+            putParcelableArrayList("TOKENS", arrayListOf<Web3Token>().apply { addAll(tokens) })
+        }
     }
 
     enum class SwapDestination {
         Swap, SwapState,
     }
 
-    private var list: List<SwapToken> by mutableStateOf(emptyList())
+    private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
     private var isLoading by mutableStateOf(false)
+    private val web3tokens by lazy {
+        requireArguments().getParcelableArrayListCompat("TOKENS", Web3Token::class.java)!!
+    }
 
     private var tx: Tx? by mutableStateOf(null)
 
@@ -130,14 +137,14 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, list, outputText, exchangeRate, {
+                            SwapPage(isLoading, fromToken, toToken, swapTokens, outputText, exchangeRate, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
                                 onTextChanged(currentText)
                             }, { index ->
-                                if (list.isNotEmpty()) {
-                                    selectCallback(list, index)
+                                if (swapTokens.isNotEmpty()) {
+                                    selectCallback(swapTokens, index)
                                 }
                             }, { input ->
                                 if (input.isBlank()) {
@@ -216,7 +223,6 @@ class SwapFragment : BaseFragment() {
                 resp.data
             },
             failureBlock = {
-                Timber.d("@@@ ${it.errorCode}")
                 if (it.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
                     refreshTokens()
@@ -224,9 +230,15 @@ class SwapFragment : BaseFragment() {
                 return@handleMixinResponse true
             }
         )?.let {
-            list = it
-            fromToken = list[0]
-            toToken = list[1]
+            swapTokens = it.map { token->
+                val t = web3tokens.firstOrNull { web3Token ->
+                    web3Token.assetKey == token.address|| (token.address == "So11111111111111111111111111111111111111112" && web3Token.assetKey == "11111111111111111111111111111111")
+                }?:return@map token
+                token.balance = t.balance
+                token
+            }
+            fromToken = swapTokens[0]
+            toToken = swapTokens[1]
 
             refreshTokensPrice(listOf(fromToken!!, toToken!!))
         }
@@ -252,12 +264,23 @@ class SwapFragment : BaseFragment() {
     private fun onTextChanged(text: String) {
         quoteJob?.cancel()
         currentText = text
-        if (text.isEmpty() || text == "0" || text.isBlank()) {
+
+        if (text.isBlank()) {
             quoteJob?.cancel()
             outputText = "0"
         } else {
-            quoteJob = lifecycleScope.launch {
-                quote(text)
+            val inputValue = try {
+                BigDecimal(text)
+            } catch (e: Exception) {
+                BigDecimal.ZERO
+            }
+            if (inputValue <= BigDecimal.ZERO) {
+                quoteJob?.cancel()
+                outputText = "0"
+            } else {
+                quoteJob = lifecycleScope.launch {
+                    quote(text)
+                }
             }
         }
     }

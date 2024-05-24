@@ -81,7 +81,7 @@ class SolanaFragment : BaseFragment() {
                     }
 
                     R.id.swap -> {
-                        navTo(SwapFragment.newInstance(), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance(tokens), SwapFragment.TAG)
                     }
 
                     R.id.browser -> {
