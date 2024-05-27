@@ -1,10 +1,12 @@
 package one.mixin.android.ui.home.web3.swap
 
+import android.renderscript.ScriptGroup.Input
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -31,6 +33,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +76,8 @@ fun SwapPage(
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
     onShowSlippage: () -> Unit,
+    onHalf: () -> Unit,
+    onMax: () -> Unit,
     onSwap: () -> Unit,
     pop: () -> Unit,
 ) {
@@ -112,7 +117,7 @@ fun SwapPage(
                         )
                     }
                 }, content = {
-                    InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }) {
+                    InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onHalf, onMax) {
                         inputText.value = it
                         onInputChanged.invoke(it)
                     }
@@ -203,6 +208,8 @@ fun InputArea(
     title: String,
     readOnly: Boolean = false,
     selectClick: () -> Unit,
+    onHalf: (() -> Unit)? = null,
+    onMax: (() -> Unit)? = null,
     onInputChanged: ((String) -> Unit)? = null
 ) {
     Column(
@@ -246,6 +253,16 @@ fun InputArea(
                     contentDescription = null,
                     tint = MixinAppTheme.colors.icon,
                 )
+                if (!readOnly) {
+                    Spacer(modifier = Modifier.width(10.dp))
+                    InputAction(text = "HALF") {
+                        onHalf?.invoke()
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    InputAction(text = "MAX") {
+                        onMax?.invoke()
+                    }
+                }
             }
         }
         Box(modifier = Modifier.height(16.dp))
@@ -368,6 +385,37 @@ private fun SlippageInfo(
 }
 
 @Composable
+private fun InputAction(
+    text: String,
+    onAction: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    Box(modifier =
+    Modifier
+        .wrapContentWidth()
+        .wrapContentHeight()
+        .border(1.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor, RoundedCornerShape(12.dp))
+        .clickable(
+            interactionSource = interactionSource,
+            indication = null,
+        ) {
+            onAction.invoke()
+        }
+        .padding(6.dp, 3.dp)
+    ) {
+        Text(
+            text = text,
+            style = TextStyle(
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor,
+            )
+        )
+    }
+}
+
+@Composable
 fun SwapLayout(
     content: @Composable ColumnScope.() -> Unit, center: @Composable BoxScope.() -> Unit
 ) {
@@ -397,6 +445,18 @@ fun PreviewSlippageInfo() {
 @Composable
 fun PreviewSlippageInfoWarning() {
     SlippageInfo(autoSlippage = true, slippageBps = 600) {}
+}
+
+@Preview
+@Composable
+fun PreviewInputActionMax() {
+    InputAction("MAX") {}
+}
+
+@Preview
+@Composable
+fun PreviewInputActionHalf() {
+    InputAction("HALF") {}
 }
 
 /*

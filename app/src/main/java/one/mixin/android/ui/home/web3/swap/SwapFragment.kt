@@ -44,6 +44,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
@@ -189,6 +190,10 @@ class SwapFragment : BaseFragment() {
                                         }
                                     }
                                     .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
+                            }, {
+                                toast("click HALF")
+                            }, {
+                                toast("click MAX")
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
