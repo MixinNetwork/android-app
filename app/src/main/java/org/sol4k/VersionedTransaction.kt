@@ -49,7 +49,7 @@ class VersionedTransaction(
         val accounts = message.accounts
         val data = mutableListOf<ByteArray>()
         for (i in message.instructions) {
-            if (accounts[i.programIdIndex] != Constants.COMPUTE_BUDGET__PROGRAM_ID) {
+            if (accounts[i.programIdIndex] != Constants.COMPUTE_BUDGET_PROGRAM_ID) {
                 continue
             }
             data.add(i.data)

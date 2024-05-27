@@ -35,6 +35,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +71,7 @@ fun SwapPage(
     isLoading: Boolean,
     fromToken: SwapToken?,
     toToken: SwapToken?,
+    inputText: MutableState<String>,
     outputText: String,
     exchangeRate: Float,
     autoSlippage: Boolean,
@@ -89,9 +91,6 @@ fun SwapPage(
         pop = pop,
     ) {
         val context = LocalContext.current
-        val inputText = rememberSaveable {
-            mutableStateOf("")
-        }
         var isReverse by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 

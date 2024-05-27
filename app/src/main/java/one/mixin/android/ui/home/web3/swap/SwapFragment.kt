@@ -42,7 +42,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
@@ -66,6 +65,8 @@ class SwapFragment : BaseFragment() {
         const val DangerousSlippage = 500
         const val MinSlippage = 10
 
+        const val maxLeftAmount = 0.01
+
         fun newInstance(tokens: List<Web3Token>): SwapFragment = SwapFragment().withArgs {
             putParcelableArrayList("TOKENS", arrayListOf<Web3Token>().apply { addAll(tokens) })
         }
@@ -78,6 +79,7 @@ class SwapFragment : BaseFragment() {
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
+    private var inputText = mutableStateOf("")
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
     private var autoSlippage: Boolean by mutableStateOf(true)
@@ -156,7 +158,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, outputText, exchangeRate, autoSlippage, slippageBps, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, autoSlippage, slippageBps, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -189,9 +191,13 @@ class SwapFragment : BaseFragment() {
                                     }
                                     .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
                             }, {
-                                toast("click HALF")
+                                val a = calcInput(true)
+                                inputText.value = a
+                                lifecycleScope.launch { quote(a) }
                             }, {
-                                toast("click MAX")
+                                val a = calcInput(false)
+                                inputText.value = a
+                                lifecycleScope.launch { quote(a) }
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
@@ -380,6 +386,8 @@ class SwapFragment : BaseFragment() {
         val inputMint = fromToken?.address ?: return
         val outputMint = toToken?.address ?: return
         val amount = fromToken?.toLongAmount(input) ?: return
+        if (amount <= 0L) return
+
         isLoading = true
         quoteResp = handleMixinResponse(
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), autoSlippage, slippageBps) },
@@ -400,6 +408,25 @@ class SwapFragment : BaseFragment() {
         slippageBps = quoteResp?.slippageBps ?: 0
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
+
+    private fun calcInput(half: Boolean): String {
+        val from = this.fromToken ?: return ""
+        val balance = from.balance ?: "0"
+        val calc = fun(balance: BigDecimal): String {
+            return if (half) {
+                balance.divide(BigDecimal(2)).setScale(9, RoundingMode.CEILING)
+            } else {
+                balance
+            }.stripTrailingZeros().toPlainString()
+        }
+        var b = BigDecimal(balance)
+        if (!from.isSolToken() || b <= BigDecimal(maxLeftAmount)) {
+            return calc(b)
+        }
+        b = b.subtract(BigDecimal(maxLeftAmount))
+        return calc(b)
+    }
+
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {
