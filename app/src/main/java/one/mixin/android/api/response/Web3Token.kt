@@ -118,7 +118,7 @@ fun Web3Token.isSolana(): Boolean {
 }
 
 fun Web3Token.isSolToken(): Boolean {
-    return isSolana() && assetKey == solanaNativeTokenAssetKey
+    return isSolana() && (assetKey == solanaNativeTokenAssetKey || assetKey == jupiterSolanaTokenAssetKey)
 }
 
 private fun Web3Token.getChainAssetKey(): String {

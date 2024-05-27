@@ -423,10 +423,10 @@ class SwapFragment : BaseFragment() {
         val balance = from.balance ?: "0"
         val calc = fun(balance: BigDecimal): String {
             return if (half) {
-                balance.divide(BigDecimal(2)).setScale(9, RoundingMode.CEILING)
+                balance.divide(BigDecimal(2))
             } else {
                 balance
-            }.stripTrailingZeros().toPlainString()
+            }.setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
         }
         var b = BigDecimal(balance)
         if (!from.isSolToken() || b <= BigDecimal(maxLeftAmount)) {
