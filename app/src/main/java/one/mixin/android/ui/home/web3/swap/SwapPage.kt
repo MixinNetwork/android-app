@@ -149,14 +149,14 @@ fun SwapPage(
                         ) {
                             Text(
                                 text = stringResource(id = R.string.Best_price), maxLines = 1, style = TextStyle(
-                                    fontWeight = FontWeight.W500,
-                                    color = MixinAppTheme.colors.textPrimary,
+                                    fontWeight = FontWeight.W400,
+                                    color = MixinAppTheme.colors.textSubtitle,
                                 )
                             )
                             Text(
                                 text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
-                                    fontWeight = FontWeight.W500,
-                                    color = MixinAppTheme.colors.textSubtitle,
+                                    fontWeight = FontWeight.W400,
+                                    color = MixinAppTheme.colors.textPrimary,
                                 )
                             )
                         }
@@ -343,16 +343,16 @@ private fun SlippageInfo(
     ) {
         Text(
             text = stringResource(id = R.string.Slippage), maxLines = 1, style = TextStyle(
-                fontWeight = FontWeight.W500,
-                color = MixinAppTheme.colors.textPrimary,
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textSubtitle,
             )
         )
         Row {
             Text(
                 text = descText, maxLines = 1,
                 style = TextStyle(
-                    fontWeight = FontWeight.W500,
-                    color = if (highSlippage) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textSubtitle,
+                    fontWeight = FontWeight.W400,
+                    color = if (highSlippage) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
                 )
             )
             Icon(
