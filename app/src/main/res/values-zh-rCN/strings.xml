@@ -1493,4 +1493,5 @@
     <string name="slippage_invalid">滑点不可大于 50% 且不可小于 0.1%</string>
     <string name="select_token">选择代币</string>
     <string name="Contract">合约</string>
+    <string name="swap_desc">%1$s 将会在交易完成后存入您的钱包</string>
 </resources>

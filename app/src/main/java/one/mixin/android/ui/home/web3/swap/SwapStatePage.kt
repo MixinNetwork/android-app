@@ -25,6 +25,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -55,13 +56,7 @@ fun SwapStatePage(
 ) {
     Scaffold(
         backgroundColor = MixinAppTheme.colors.background,
-        topBar = {
-            MixinTopAppBar(
-                title = {
-                    Text(stringResource(id = R.string.Swapping))
-                },
-            )
-        },
+        topBar = {},
     ) {
         Column(
             Modifier
@@ -87,18 +82,9 @@ private fun Content(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(50.dp))
-        TokenInfo(fromToken, quoteResp.inAmount.toLongOrNull() ?: 0L)
-        Spacer(modifier = Modifier.height(10.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_switch),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.icon,
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        TokenInfo(toToken, quoteResp.outAmount.toLongOrNull() ?: 0L)
+        Spacer(modifier = Modifier.height(64.dp))
         Spacer(modifier = Modifier.height(100.dp))
-        StateInfo(tx = tx)
+        StateInfo(tx = tx, toToken)
         Spacer(modifier = Modifier.height(20.dp))
         Box(modifier = Modifier
             .clickable {
@@ -113,7 +99,7 @@ private fun Content(
                 )
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.weight(1f))
         Button(
             modifier = Modifier
                 .fillMaxWidth()
@@ -137,11 +123,13 @@ private fun Content(
         ) {
             Text(text = stringResource(id = R.string.Close), color = Color.White)
         }
+
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
 @Composable
-private fun StateInfo(tx: Tx) {
+private fun StateInfo(tx: Tx, toToken: SwapToken) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -154,6 +142,7 @@ private fun StateInfo(tx: Tx) {
                 contentDescription = null,
                 tint =  if (tx.state.isTxSuccess()) Color(0xFF5DBC7A) else Color(0xFFF4AB2D)
             )
+            Spacer(modifier = Modifier.height(16.dp))
         } else {
             CircularProgressIndicator(
                 modifier =
@@ -162,6 +151,7 @@ private fun StateInfo(tx: Tx) {
                     .align(Alignment.CenterHorizontally),
                 color = MixinAppTheme.colors.accent,
             )
+            Spacer(modifier = Modifier.height(16.dp))
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -173,43 +163,19 @@ private fun StateInfo(tx: Tx) {
                 R.string.Confirming_Transaction
             }),
             style = TextStyle(
-                fontSize = 16.sp,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
             )
         )
-    }
-}
-
-@Composable
-private fun TokenInfo(
-    token: SwapToken,
-    amount: Long,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            GlideImage(
-                data = token.logoURI,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
-                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            modifier = Modifier.alpha(if (tx.state.isTxFailed()) 0f else 1f),
+            text = stringResource(id = R.string.swap_desc, toToken.symbol),
+            style = TextStyle(
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textSubtitle,
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "${token.toStringAmount(amount)} ",
-                style = TextStyle(
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-            )
-            Text(text = token.symbol, fontSize = 22.sp, color = MixinAppTheme.colors.textMinor)
-        }
+        )
     }
 }

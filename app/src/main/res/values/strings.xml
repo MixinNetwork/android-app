@@ -1530,4 +1530,5 @@
     <string name="slippage_invalid">Slippage cannot be greater than 50% and cannot be less than 0.1%</string>
     <string name="select_token">Select Token</string>
     <string name="Contract">Contract</string>
+    <string name="swap_desc">%1$s will be deposited into your wallet once the transaction is complete</string>
 </resources>
