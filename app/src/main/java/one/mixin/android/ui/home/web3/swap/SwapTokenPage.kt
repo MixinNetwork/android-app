@@ -84,7 +84,7 @@ fun SwapTokenPage(
                 Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                     clipboardManager.setText(AnnotatedString(token.address))
                     toast(R.string.copied_to_clipboard)
-                }) {
+                }, verticalAlignment = Alignment.CenterVertically) {
                     MiddleEllipsisText(text = token.address, style = TextStyle(fontSize = 14.sp, color = MixinAppTheme.colors.textMinor))
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
