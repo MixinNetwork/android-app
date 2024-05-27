@@ -60,6 +60,8 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
 import java.math.BigDecimal
 
@@ -86,6 +88,7 @@ fun SwapPage(
         verticalScrollable = true,
         pop = pop,
     ) {
+        val context = LocalContext.current
         val inputText = rememberSaveable {
             mutableStateOf("")
         }
@@ -106,6 +109,7 @@ fun SwapPage(
                         .clickable {
                             isReverse = !isReverse
                             switch.invoke()
+                            context.clickVibrate()
                         }
                         .rotate(rotation), contentAlignment = Alignment.Center
 

@@ -31,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +38,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.GlideImage
+import one.mixin.android.compose.MiddleEllipsisText
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
 
@@ -120,31 +120,6 @@ fun SwapTokenPage(
             }
         }
     }
-}
-
-@Composable
-fun MiddleEllipsisText(
-    text: String,
-    modifier: Modifier = Modifier,
-    maxLength: Int = 12,
-    style: TextStyle = TextStyle.Default
-) {
-    val displayText = remember(text) {
-        if (text.length <= maxLength) {
-            text
-        } else {
-            val keep = (maxLength - 3) / 2
-            text.take(keep) + "..." + text.takeLast(keep)
-        }
-    }
-
-    Text(
-        text = displayText,
-        modifier = modifier,
-        style = style,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
 }
 
 @Preview(widthDp = 300)

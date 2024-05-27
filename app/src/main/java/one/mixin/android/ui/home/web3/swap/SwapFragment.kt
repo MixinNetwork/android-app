@@ -394,7 +394,7 @@ class SwapFragment : BaseFragment() {
 
         val inValue = fromToken?.realAmount(quoteResp?.inAmount?.toLongOrNull() ?: 0L)
         val outValue = toToken?.realAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L)
-        exchangeRate = if (inValue == null || outValue == null || inValue== BigDecimal.ZERO || outValue==BigDecimal.ZERO) {
+        exchangeRate = if (inValue == null || outValue == null || inValue == BigDecimal.ZERO || outValue == BigDecimal.ZERO) {
             0f
         } else {
             outValue.divide(inValue, RoundingMode.CEILING).toFloat()
