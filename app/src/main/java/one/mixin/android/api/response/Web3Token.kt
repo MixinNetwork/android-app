@@ -70,7 +70,7 @@ const val jupiterSolanaTokenAssetKey = "So11111111111111111111111111111111111111
 
 fun Web3Token.toSwapToken(): SwapToken {
     return SwapToken(
-        address = if (assetKey == solanaNativeTokenAssetKey) jupiterSolanaTokenAssetKey else assetKey,
+        address = assetKey,
         decimals = decimals,
         name = name,
         symbol = symbol,
