@@ -18,7 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWeb3ReceiveBinding
+import one.mixin.android.databinding.FragmentWeb3AddressBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
@@ -26,12 +26,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
-class Wbe3ReceiveFragment : BaseFragment() {
+class Wbe3AddressFragment : BaseFragment() {
     companion object {
         const val TAG = "Wbe3ReceiveFragment"
     }
 
-    private var _binding: FragmentWeb3ReceiveBinding? = null
+    private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
@@ -41,7 +41,7 @@ class Wbe3ReceiveFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentWeb3ReceiveBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
+        _binding = FragmentWeb3AddressBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         binding.root.setOnClickListener { }
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -53,8 +53,8 @@ class Wbe3ReceiveFragment : BaseFragment() {
                 toast(R.string.copied_to_clipboard)
             }
             binding.address.text = address
-            val qr = this@Wbe3ReceiveFragment.binding.qr
-            val qrAvatar = this@Wbe3ReceiveFragment.binding.qrAvatar
+            val qr = this@Wbe3AddressFragment.binding.qr
+            val qrAvatar = this@Wbe3AddressFragment.binding.qrAvatar
             val isSolana = exploreSolana(requireContext())
             if (isSolana) {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)

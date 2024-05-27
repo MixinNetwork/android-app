@@ -10,15 +10,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.ChainId.Solana
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.isSolana
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -29,7 +26,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.receive.Wbe3ReceiveFragment
+import one.mixin.android.web3.receive.Wbe3AddressFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
@@ -83,7 +80,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.receive -> {
-                        navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                        navTo(Wbe3AddressFragment(), Wbe3AddressFragment.TAG)
                     }
 
                     R.id.more ->{

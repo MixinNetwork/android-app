@@ -44,7 +44,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
-import one.mixin.android.web3.receive.Wbe3ReceiveFragment
+import one.mixin.android.web3.receive.Wbe3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.send.InputAddressFragment
@@ -290,7 +290,7 @@ class SolanaFragment : BaseFragment() {
             titleTv.setText(R.string.No_asset)
             receiveTv.setText(R.string.Receive)
             receiveTv.setOnClickListener {
-                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                navTo(Wbe3AddressFragment(), Wbe3AddressFragment.TAG)
             }
         }
     }

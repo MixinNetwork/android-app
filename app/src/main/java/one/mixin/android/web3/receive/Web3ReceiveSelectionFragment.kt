@@ -66,7 +66,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
             }
         }
         binding.addressRl.setOnClickListener {
-            navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+            navTo(Wbe3AddressFragment(), Wbe3AddressFragment.TAG)
         }
         return binding.root
     }
