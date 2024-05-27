@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -72,7 +73,6 @@ class SwapSlippageBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
-
         }
 
     private val bottomSheetBehaviorCallback =
@@ -102,6 +102,8 @@ class SwapSlippageBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.setupDialog(dialog, R.style.MixinBottomSheet)
         dialog.window?.let { window ->
             SystemUIManager.lightUI(window, requireContext().isNightMode())
+            @Suppress("DEPRECATION")
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
         dialog.window?.setGravity(Gravity.BOTTOM)
         dialog.window?.setLayout(
