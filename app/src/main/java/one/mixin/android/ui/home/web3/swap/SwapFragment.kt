@@ -344,7 +344,14 @@ class SwapFragment : BaseFragment() {
     private fun onTextChanged(text: String) {
         quoteJob?.cancel()
         currentText = text
+        refreshQuote(text)
+        quoteJob = tickerFlow(10.seconds)
+            .onEach {
+                refreshQuote(currentText)
+            }.launchIn(lifecycleScope)
+    }
 
+    private fun refreshQuote(text: String) {
         if (text.isBlank()) {
             quoteJob?.cancel()
             outputText = "0"
