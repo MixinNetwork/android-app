@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -32,7 +33,6 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.findChainToken
 import one.mixin.android.api.response.jupiterSolanaTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.toSwapToken
@@ -44,7 +44,6 @@ import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -54,7 +53,6 @@ import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
@@ -198,14 +196,15 @@ class SwapFragment : BaseFragment() {
                             }, {
                                 val a = calcInput(true)
                                 inputText.value = a
-                                lifecycleScope.launch { quote(a) }
+                                refreshQuote(a)
                             }, {
                                 val a = calcInput(false)
                                 inputText.value = a
-                                lifecycleScope.launch { quote(a) }
+                                refreshQuote(a)
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
+                                    quoteJob?.cancel()
                                     isLoading = true
                                     val swapResult = handleMixinResponse(
                                         invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
@@ -356,18 +355,13 @@ class SwapFragment : BaseFragment() {
     private var quoteJob: Job? = null
     private var currentText: String = "0"
     private fun onTextChanged(text: String) {
-        quoteJob?.cancel()
         currentText = text
         refreshQuote(text)
-        quoteJob = tickerFlow(10.seconds)
-            .onEach {
-                refreshQuote(currentText)
-            }.launchIn(lifecycleScope)
     }
 
     private fun refreshQuote(text: String) {
+        quoteJob?.cancel()
         if (text.isBlank()) {
-            quoteJob?.cancel()
             outputText = "0"
         } else {
             val inputValue = try {
@@ -376,11 +370,12 @@ class SwapFragment : BaseFragment() {
                 BigDecimal.ZERO
             }
             if (inputValue <= BigDecimal.ZERO) {
-                quoteJob?.cancel()
                 outputText = "0"
             } else {
                 quoteJob = lifecycleScope.launch {
                     quote(text)
+                    delay(10.seconds)
+                    refreshQuote(text)
                 }
             }
         }
