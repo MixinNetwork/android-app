@@ -249,9 +249,7 @@ class SwapFragment : BaseFragment() {
                             navBackStackEntry.arguments?.getString("txhash")?.let { txhash ->
                                 SwapStatePage(
                                     tx = tx ?: Tx(TxState.NotFound.name),
-                                    fromToken = fromToken!!,
                                     toToken = toToken!!,
-                                    quoteResp!!,
                                     viewTx = {
                                         WebActivity.show(context, "https://solscan.io/tx/${txhash}", null)
                                     }) {
@@ -267,7 +265,6 @@ class SwapFragment : BaseFragment() {
     }
 
     private val selectCallback = fun(list: List<SwapToken>, index: Int) {
-
         if (index == 0){
             val supportAssetKeys = swapTokens.map { it.address }
             Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(web3tokens.filter {

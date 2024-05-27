@@ -48,9 +48,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun SwapStatePage(
     tx: Tx,
-    fromToken: SwapToken,
     toToken: SwapToken,
-    quoteResp: QuoteResponse,
     viewTx: () -> Unit,
     close: () -> Unit,
 ) {
@@ -65,7 +63,7 @@ fun SwapStatePage(
                     verticalScroll(rememberScrollState())
                 },
         ) {
-            Content(tx, fromToken, toToken, quoteResp, viewTx, close)
+            Content(tx, toToken, viewTx, close)
         }
     }
 }
@@ -73,9 +71,7 @@ fun SwapStatePage(
 @Composable
 private fun Content(
     tx: Tx,
-    fromToken: SwapToken,
     toToken: SwapToken,
-    quoteResp: QuoteResponse,
     viewTx: () -> Unit,
     close: () -> Unit,
 ) {
