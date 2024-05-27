@@ -224,6 +224,7 @@ fun InputArea(
             .padding(20.dp)
     ) {
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
