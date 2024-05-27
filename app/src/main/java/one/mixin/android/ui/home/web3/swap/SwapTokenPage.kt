@@ -126,6 +126,5 @@ fun SwapTokenPage(
 @Composable
 fun SwapTokenPagePreView() {
     SwapTokenPage(token = SwapToken("1111111111111111111111111", 9, "Solana", "SOL", "", SwapChain(9, "Solana", "SOL", "", ""))) {
-
     }
 }
