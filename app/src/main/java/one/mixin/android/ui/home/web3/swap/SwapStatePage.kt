@@ -152,6 +152,7 @@ private fun StateInfo(tx: Tx) {
                     .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = if (tx.state.isTxSuccess()) R.drawable.ic_order_success else R.drawable.ic_order_failed),
                 contentDescription = null,
+                tint =  if (tx.state.isTxSuccess()) Color(0xFF5DBC7A) else Color(0xFFF4AB2D)
             )
         } else {
             CircularProgressIndicator(
