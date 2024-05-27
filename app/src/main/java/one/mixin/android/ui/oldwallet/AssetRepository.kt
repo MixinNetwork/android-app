@@ -387,4 +387,6 @@ class AssetRepository
         ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
 
         suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
+
+        suspend fun searchToken(query: String) = routeService.searchToken(query)
     }

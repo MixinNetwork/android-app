@@ -114,4 +114,9 @@ interface RouteService {
     suspend fun getWeb3Tx(
         @Path("txhash") txhash: String,
     ): MixinResponse<Tx>
+
+    @GET("web3/tokens/search/{query}")
+    suspend fun searchToken(
+        @Path("query") query: String,
+    ): MixinResponse<SwapToken?>
 }
