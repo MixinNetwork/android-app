@@ -32,6 +32,8 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.jupiterSolanaTokenAssetKey
+import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.toSwapToken
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -312,7 +314,7 @@ class SwapFragment : BaseFragment() {
         )?.let {
             swapTokens = it.map { token->
                 val t = web3tokens.firstOrNull { web3Token ->
-                    web3Token.assetKey == token.address
+                    web3Token.assetKey == token.address|| (token.address == jupiterSolanaTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                 }?:return@map token
                 token.balance = t.balance
                 token
