@@ -26,7 +26,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.receive.Wbe3AddressFragment
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
@@ -80,7 +80,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.receive -> {
-                        navTo(Wbe3AddressFragment(), Wbe3AddressFragment.TAG)
+                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                     }
 
                     R.id.more ->{

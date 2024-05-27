@@ -17,7 +17,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.receive.Wbe3AddressFragment
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
@@ -70,7 +70,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Wbe3AddressFragment(), Wbe3AddressFragment.TAG)
+                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                 dismiss()
             }
             searchEt.listener =

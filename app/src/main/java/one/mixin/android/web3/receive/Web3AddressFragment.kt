@@ -26,7 +26,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
-class Wbe3AddressFragment : BaseFragment() {
+class Web3AddressFragment : BaseFragment() {
     companion object {
         const val TAG = "Wbe3ReceiveFragment"
     }
@@ -53,8 +53,8 @@ class Wbe3AddressFragment : BaseFragment() {
                 toast(R.string.copied_to_clipboard)
             }
             binding.address.text = address
-            val qr = this@Wbe3AddressFragment.binding.qr
-            val qrAvatar = this@Wbe3AddressFragment.binding.qrAvatar
+            val qr = this@Web3AddressFragment.binding.qr
+            val qrAvatar = this@Web3AddressFragment.binding.qrAvatar
             val isSolana = exploreSolana(requireContext())
             if (isSolana) {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)
