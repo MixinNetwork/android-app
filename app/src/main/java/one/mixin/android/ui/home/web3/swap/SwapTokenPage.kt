@@ -114,7 +114,7 @@ fun SwapTokenPage(
                 ),
             ) {
                 Text(
-                    text = stringResource(id = R.string.Confirm),
+                    text = stringResource(id = R.string.view_on_explorer),
                     color = Color.White,
                 )
             }

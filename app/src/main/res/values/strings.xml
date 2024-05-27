@@ -1531,4 +1531,5 @@
     <string name="select_token">Select Token</string>
     <string name="Contract">Contract</string>
     <string name="swap_desc">%1$s will be deposited into your wallet once the transaction is complete</string>
+    <string name="view_on_explorer">View on Explorer</string>
 </resources>
