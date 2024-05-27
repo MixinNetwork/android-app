@@ -32,6 +32,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.findChainToken
 import one.mixin.android.api.response.jupiterSolanaTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.toSwapToken
@@ -43,6 +44,7 @@ import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -52,6 +54,7 @@ import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
@@ -264,36 +267,48 @@ class SwapFragment : BaseFragment() {
     }
 
     private val selectCallback = fun(list: List<SwapToken>, index: Int) {
-        SwapTokenListBottomSheetDialogFragment.newInstance(ArrayList(list.run {
-            if (index == 0) {
-                this.filter { !it.balance.isNullOrEmpty() }
-            } else {
-                this
-            }
-        })).apply {
-            setOnClickListener { token, alert ->
-                if (alert) {
-                    SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
-                    return@setOnClickListener
-                }
-                if (index == 0) {
-                    if (token == this@SwapFragment.toToken) {
-                        this@SwapFragment.toToken = fromToken
+
+        if (index == 0){
+            val supportAssetKeys = swapTokens.map { it.address }
+            Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(web3tokens.filter {
+                it.assetKey == solanaNativeTokenAssetKey || (it.assetKey != jupiterSolanaTokenAssetKey && supportAssetKeys.contains(it.assetKey))
+            })).apply {
+                setOnClickListener { t ->
+                    val token = swapTokens.firstOrNull { (it.address == jupiterSolanaTokenAssetKey && t.assetKey == solanaNativeTokenAssetKey) || it.address == t.assetKey }
+                    if (token != null) {
+                        if (token == this@SwapFragment.toToken) {
+                            this@SwapFragment.toToken = fromToken
+                        }
+                        this@SwapFragment.fromToken = token
+                        lifecycleScope.launch {
+                            refreshTokensPrice(listOf(token))
+                            onTextChanged(currentText)
+                        }
                     }
-                    this@SwapFragment.fromToken = token
-                } else {
+                    dismissNow()
+                }
+            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+        } else {
+            SwapTokenListBottomSheetDialogFragment.newInstance(ArrayList(list.run {
+                this
+            })).apply {
+                setOnClickListener { token, alert ->
+                    if (alert) {
+                        SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
+                        return@setOnClickListener
+                    }
                     if (token == this@SwapFragment.fromToken) {
                         this@SwapFragment.fromToken = toToken
                     }
                     this@SwapFragment.toToken = token
+                    lifecycleScope.launch {
+                        refreshTokensPrice(listOf(token))
+                        onTextChanged(currentText)
+                    }
+                    dismissNow()
                 }
-                lifecycleScope.launch {
-                    refreshTokensPrice(listOf(token))
-                    onTextChanged(currentText)
-                }
-                dismissNow()
-            }
-        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+        }
     }
 
     private suspend fun refreshTokens() {

@@ -27,6 +27,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
@@ -57,7 +58,10 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                SwapTokenPage(token) { dismiss() }
+                SwapTokenPage(token) {
+                    WebActivity.show(context, "https://solscan.io/token/${token.address}", null)
+                    dismiss()
+                }
             }
 
             doOnPreDraw {
