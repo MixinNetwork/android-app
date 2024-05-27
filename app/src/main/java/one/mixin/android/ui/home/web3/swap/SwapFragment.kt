@@ -319,8 +319,8 @@ class SwapFragment : BaseFragment() {
                 token.balance = t.balance
                 token
             }
-            fromToken = swapTokens[0]
-            toToken = swapTokens[1]
+            fromToken = swapTokens.firstOrNull { t -> fromToken?.address == t.address } ?: swapTokens[0]
+            toToken = swapTokens.firstOrNull { t -> toToken?.address == t.address } ?: swapTokens[1]
 
             refreshTokensPrice(listOf(fromToken!!, toToken!!))
         }
