@@ -110,7 +110,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
         adapter.tokens = if (assetList.isNullOrEmpty()) {
             handleMixinResponse(
-                invokeNetwork = { swapViewModel.searchToken(s) },
+                invokeNetwork = { swapViewModel.getSwapToken(s) },
                 successBlock = { resp ->
                     return@handleMixinResponse resp.data
                 }

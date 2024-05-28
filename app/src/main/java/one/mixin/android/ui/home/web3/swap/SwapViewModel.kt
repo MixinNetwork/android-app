@@ -41,7 +41,7 @@ internal constructor(
 
     suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
 
-    suspend fun searchToken(query: String) = assetRepository.searchToken(query)
+    suspend fun getSwapToken(address: String) = assetRepository.getSwapToken(address)
 
     suspend fun web3Tokens(address: List<String>): List<Web3Token> {
         return handleMixinResponse(
