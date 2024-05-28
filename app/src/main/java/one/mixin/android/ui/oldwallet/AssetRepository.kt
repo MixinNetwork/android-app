@@ -389,4 +389,6 @@ class AssetRepository
         suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
 
         suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
+
+        suspend fun searchTokens(query: String) = routeService.searchTokens(query)
     }
