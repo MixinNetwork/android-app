@@ -46,6 +46,7 @@ import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.home.web3.swap.parseJupiterError
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
@@ -59,6 +60,7 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
+import org.sol4k.exception.RpcException
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -351,7 +353,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun handleException(e: Throwable) {
         Timber.e(e)
-        errorInfo = e.message
+         val msg = if (e is RpcException) {
+            parseJupiterError(e.rawResponse)?.toString(requireContext())
+        } else null
+        errorInfo = msg ?: e.message
         reportException("$TAG handleException", e)
         step = Step.Error
     }
