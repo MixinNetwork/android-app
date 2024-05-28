@@ -50,21 +50,24 @@ fun SwapTokenPage(
     MixinAppTheme {
         val clipboardManager: ClipboardManager = LocalClipboardManager.current
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
             horizontalAlignment = Alignment.Start,
         ) {
             Spacer(modifier = Modifier.height(20.dp))
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
             ) {
                 GlideImage(
                     data = token.logoURI,
-                    modifier = Modifier
-                        .size(45.dp)
-                        .clip(CircleShape),
+                    modifier =
+                        Modifier
+                            .size(45.dp)
+                            .clip(CircleShape),
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -81,10 +84,14 @@ fun SwapTokenPage(
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = stringResource(id = R.string.Contract), fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
-                Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                    clipboardManager.setText(AnnotatedString(token.address))
-                    toast(R.string.copied_to_clipboard)
-                }, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier =
+                        Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                            clipboardManager.setText(AnnotatedString(token.address))
+                            toast(R.string.copied_to_clipboard)
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     MiddleEllipsisText(text = token.address, style = TextStyle(fontSize = 14.sp, color = MixinAppTheme.colors.textMinor))
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
@@ -100,18 +107,18 @@ fun SwapTokenPage(
                 onClick =
                 confirmAction,
                 colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
-                ),
+                    ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                    ),
                 shape = RoundedCornerShape(32.dp),
                 contentPadding = PaddingValues(vertical = 16.dp),
                 elevation =
-                ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
+                    ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
             ) {
                 Text(
                     text = stringResource(id = R.string.view_on_explorer),

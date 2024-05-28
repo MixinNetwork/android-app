@@ -202,10 +202,9 @@ fun BrowserPage(
                     MessagePreview(content = data ?: "") {
                         onPreviewMessage.invoke(it)
                     }
-                } else if (token != null && amount != null)
-                    {
-                        TokenTransactionPreview(amount = amount, token = token)
-                    } else {
+                } else if (token != null && amount != null) {
+                    TokenTransactionPreview(amount = amount, token = token)
+                } else {
                     TransactionPreview(
                         balance =
                             Convert.fromWei(

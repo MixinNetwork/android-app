@@ -3,8 +3,6 @@ package one.mixin.android.api.response.web3
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Parcelize
 data class SwapChain(

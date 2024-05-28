@@ -35,10 +35,14 @@ class SwapSlippageBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_AUTO_SLIPPAGE = "args_auto_slippage"
         const val ARGS_SLIPPAGE_BPS = "args_slippage_bps"
 
-        fun newInstance(autoSlippage: Boolean, slippageBps: Int) = SwapSlippageBottomSheetDialogFragment().withArgs {
-            putBoolean(ARGS_AUTO_SLIPPAGE, autoSlippage)
-            putInt(ARGS_SLIPPAGE_BPS, slippageBps)
-        }
+        fun newInstance(
+            autoSlippage: Boolean,
+            slippageBps: Int,
+        ) =
+            SwapSlippageBottomSheetDialogFragment().withArgs {
+                putBoolean(ARGS_AUTO_SLIPPAGE, autoSlippage)
+                putInt(ARGS_SLIPPAGE_BPS, slippageBps)
+            }
     }
 
     private val autoSlippage by lazy { requireArguments().getBoolean(ARGS_AUTO_SLIPPAGE) }

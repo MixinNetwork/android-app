@@ -69,46 +69,51 @@ private fun Content(
     close: () -> Unit,
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(64.dp))
         Spacer(modifier = Modifier.height(100.dp))
         StateInfo(tx = tx, toToken)
         Spacer(modifier = Modifier.height(20.dp))
-        Box(modifier = Modifier
-            .clickable {
-                viewTx.invoke()
-            }) {
+        Box(
+            modifier =
+                Modifier
+                    .clickable {
+                        viewTx.invoke()
+                    },
+        ) {
             Text(
                 text = stringResource(id = R.string.View_Transaction),
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Black,
-                    color = MixinAppTheme.colors.accent,
-                )
+                style =
+                    TextStyle(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MixinAppTheme.colors.accent,
+                    ),
             )
         }
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
             onClick = {
                 close.invoke()
             },
             colors =
-            ButtonDefaults.outlinedButtonColors(
-                backgroundColor = MixinAppTheme.colors.accent,
-            ),
+                ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = MixinAppTheme.colors.accent,
+                ),
             shape = RoundedCornerShape(32.dp),
             contentPadding = PaddingValues(vertical = 16.dp),
             elevation =
-            ButtonDefaults.elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp,
-            ),
+                ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
         ) {
             Text(text = stringResource(id = R.string.Close), color = Color.White)
         }
@@ -118,55 +123,65 @@ private fun Content(
 }
 
 @Composable
-private fun StateInfo(tx: Tx, toToken: SwapToken) {
+private fun StateInfo(
+    tx: Tx,
+    toToken: SwapToken,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(28.dp)
+        modifier = Modifier.padding(28.dp),
     ) {
         if (tx.state.isFinalTxState()) {
             Icon(
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterHorizontally),
+                modifier =
+                    Modifier
+                        .size(80.dp)
+                        .align(Alignment.CenterHorizontally),
                 painter = painterResource(id = if (tx.state.isTxSuccess()) R.drawable.ic_order_success else R.drawable.ic_order_failed),
                 contentDescription = null,
-                tint =  if (tx.state.isTxSuccess()) Color(0xFF5DBC7A) else Color(0xFFF4AB2D)
+                tint = if (tx.state.isTxSuccess()) Color(0xFF5DBC7A) else Color(0xFFF4AB2D),
             )
             Spacer(modifier = Modifier.height(16.dp))
         } else {
             CircularProgressIndicator(
                 modifier =
-                Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterHorizontally),
+                    Modifier
+                        .size(80.dp)
+                        .align(Alignment.CenterHorizontally),
                 color = MixinAppTheme.colors.accent,
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = stringResource(id = if (tx.state.isTxSuccess()) {
-              R.string.Transaction_Success
-            } else if (tx.state.isTxFailed()) {
-                R.string.Transaction_Failed
-            } else {
-                R.string.Confirming_Transaction
-            }),
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W600,
-                color = MixinAppTheme.colors.textPrimary,
-            )
+            text =
+                stringResource(
+                    id =
+                        if (tx.state.isTxSuccess()) {
+                            R.string.Transaction_Success
+                        } else if (tx.state.isTxFailed()) {
+                            R.string.Transaction_Failed
+                        } else {
+                            R.string.Confirming_Transaction
+                        },
+                ),
+            style =
+                TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600,
+                    color = MixinAppTheme.colors.textPrimary,
+                ),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             modifier = Modifier.alpha(if (tx.state.isTxFailed()) 0f else 1f),
             text = stringResource(id = R.string.swap_desc, toToken.symbol),
             textAlign = TextAlign.Center,
-            style = TextStyle(
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textSubtitle,
-            )
+            style =
+                TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textSubtitle,
+                ),
         )
     }
 }

@@ -16,39 +16,38 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SwapViewModel
-@Inject
-internal constructor(
-    private val assetRepository: AssetRepository,
-    private val userRepository: UserRepository,
-    private val web3Service: Web3Service,
-) : ViewModel() {
+    @Inject
+    internal constructor(
+        private val assetRepository: AssetRepository,
+        private val userRepository: UserRepository,
+        private val web3Service: Web3Service,
+    ) : ViewModel() {
+        suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
 
-    suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
+        suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens()
 
-    suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens()
+        suspend fun web3Quote(
+            inputMint: String,
+            outputMint: String,
+            amount: String,
+            autoSlippage: Boolean,
+            slippageBps: Int = 50,
+        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, autoSlippage, slippageBps)
 
-    suspend fun web3Quote(
-        inputMint: String,
-        outputMint: String,
-        amount: String,
-        autoSlippage: Boolean,
-        slippageBps: Int = 50,
-    ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, autoSlippage, slippageBps)
+        suspend fun web3Swap(
+            swapRequest: SwapRequest,
+        ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
 
-    suspend fun web3Swap(
-        swapRequest: SwapRequest,
-    ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
+        suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
 
-    suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
+        suspend fun getSwapToken(address: String) = assetRepository.getSwapToken(address)
 
-    suspend fun getSwapToken(address: String) = assetRepository.getSwapToken(address)
-
-    suspend fun web3Tokens(address: List<String>): List<Web3Token> {
-        return handleMixinResponse(
-            invokeNetwork = { web3Service.web3Tokens(address.joinToString(",")) },
-            successBlock = {
-                return@handleMixinResponse it.data
-            }
-        ) ?: emptyList()
+        suspend fun web3Tokens(address: List<String>): List<Web3Token> {
+            return handleMixinResponse(
+                invokeNetwork = { web3Service.web3Tokens(address.joinToString(",")) },
+                successBlock = {
+                    return@handleMixinResponse it.data
+                },
+            ) ?: emptyList()
+        }
     }
-}

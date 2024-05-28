@@ -43,14 +43,15 @@ fun InputContent(
     text: String,
     selectClick: () -> Unit,
     onInputChanged: ((String) -> Unit)? = null,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
 ) {
     if (readOnly) {
-        val v = try {
-            if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING)
-        } catch (e: Exception) {
-            BigDecimal.ZERO
-        }
+        val v =
+            try {
+                if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING)
+            } catch (e: Exception) {
+                BigDecimal.ZERO
+            }
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -61,12 +62,14 @@ fun InputContent(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = text, style = TextStyle(
-                                fontSize = 20.sp,
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.End
-                            )
+                            text = text,
+                            style =
+                                TextStyle(
+                                    fontSize = 20.sp,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                    fontWeight = FontWeight.Black,
+                                    textAlign = TextAlign.End,
+                                ),
                         )
                     }
                 }
@@ -74,11 +77,13 @@ fun InputContent(
             if (v != BigDecimal.ZERO) {
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "$${v.toPlainString()}", style = TextStyle(
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Light,
-                            color = MixinAppTheme.colors.textSubtitle,
-                        )
+                        text = "$${v.toPlainString()}",
+                        style =
+                            TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Light,
+                                color = MixinAppTheme.colors.textSubtitle,
+                            ),
                     )
                 }
             } else {
@@ -90,18 +95,20 @@ fun InputContent(
         val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
 
-        val valueText = remember {
-            if (token != null) {
-                val v = try {
-                    if (text.isBlank()) BigDecimal.ZERO else BigDecimal(text)
-                } catch (e: Exception) {
-                    BigDecimal.ZERO
+        val valueText =
+            remember {
+                if (token != null) {
+                    val v =
+                        try {
+                            if (text.isBlank()) BigDecimal.ZERO else BigDecimal(text)
+                        } catch (e: Exception) {
+                            BigDecimal.ZERO
+                        }
+                    mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING))
+                } else {
+                    mutableStateOf(BigDecimal.ZERO)
                 }
-                mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING))
-            } else {
-                mutableStateOf(BigDecimal.ZERO)
             }
-        }
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -111,31 +118,33 @@ fun InputContent(
                 BasicTextField(
                     value = text,
                     onValueChange = {
-                        val v = try {
-                            if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
-                        } catch (e: Exception) {
-                            return@BasicTextField
-                        }
+                        val v =
+                            try {
+                                if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
+                            } catch (e: Exception) {
+                                return@BasicTextField
+                            }
                         valueText.value = v.multiply(BigDecimal(token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
                         onInputChanged?.invoke(it)
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onFocusChanged {
-                            if (it.isFocused) {
-                                keyboardController?.show()
-                            }
-                        },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    keyboardController?.show()
+                                }
+                            },
                     interactionSource = interactionSource,
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     textStyle =
-                    TextStyle(
-                        fontSize = 20.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.End
-                    ),
+                        TextStyle(
+                            fontSize = 20.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End,
+                        ),
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                 ) { innerTextField ->
                     Column(modifier = Modifier.fillMaxWidth()) {
@@ -149,11 +158,13 @@ fun InputContent(
             if (valueText.value != BigDecimal.ZERO) {
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "$${valueText.value.toPlainString()}", style = TextStyle(
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Light,
-                            color = MixinAppTheme.colors.textSubtitle,
-                        )
+                        text = "$${valueText.value.toPlainString()}",
+                        style =
+                            TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Light,
+                                color = MixinAppTheme.colors.textSubtitle,
+                            ),
                     )
                 }
             } else {
@@ -164,22 +175,28 @@ fun InputContent(
 }
 
 @Composable
-private fun Left(token: SwapToken?, selectClick: () -> Unit) {
+private fun Left(
+    token: SwapToken?,
+    selectClick: () -> Unit,
+) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
         GlideImage(
             data = token?.logoURI ?: "",
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape),
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
             placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
         Box(modifier = Modifier.width(10.dp))
         Text(
-            text = token?.symbol ?: "", style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.textPrimary,
-            )
+            text = token?.symbol ?: "",
+            style =
+                TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                ),
         )
         Box(modifier = Modifier.width(4.dp))
         Icon(

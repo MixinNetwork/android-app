@@ -35,10 +35,12 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "SwapOrderBottomSheetDialogFragment"
 
-        fun newInstance(token: SwapToken) = SwapTokenBottomSheetDialogFragment().withArgs {
-            putParcelable("TOKEN", token)
-        }
+        fun newInstance(token: SwapToken) =
+            SwapTokenBottomSheetDialogFragment().withArgs {
+                putParcelable("TOKEN", token)
+            }
     }
+
     private val token: SwapToken by lazy {
         requireArguments().getParcelableCompat("TOKEN", SwapToken::class.java)!!
     }
@@ -72,9 +74,7 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
-
         }
-
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
@@ -139,5 +139,4 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun dismiss() {
         dismissAllowingStateLoss()
     }
-
 }

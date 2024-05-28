@@ -119,16 +119,17 @@ fun MixinAppTheme(
         } else {
             LightDrawablePalette
         }
-    val textSelectionColors = TextSelectionColors(
-        handleColor = Color(0xFF3D75E3),
-        backgroundColor = Color(0x663D75E3)
-    )
+    val textSelectionColors =
+        TextSelectionColors(
+            handleColor = Color(0xFF3D75E3),
+            backgroundColor = Color(0x663D75E3),
+        )
     MaterialTheme(if (darkTheme) darkColors() else lightColors()) {
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalDrawables provides drawables,
             LocalTextSelectionColors provides textSelectionColors,
-            content = content
+            content = content,
         )
     }
 }

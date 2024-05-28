@@ -75,13 +75,14 @@ fun Web3Token.toSwapToken(): SwapToken {
         name = name,
         symbol = symbol,
         logoURI = iconUrl,
-        chain = SwapChain(
-            decimals = 0,
-            name = chainName,
-            symbol = symbol,
-            chainLogoURI = chainIconUrl,
-            price = null
-        )
+        chain =
+            SwapChain(
+                decimals = 0,
+                name = chainName,
+                symbol = symbol,
+                chainLogoURI = chainIconUrl,
+                price = null,
+            ),
     )
 }
 

@@ -1,6 +1,5 @@
 package one.mixin.android.tip.wc
 
-import android.os.Build
 import android.util.LruCache
 import com.walletconnect.web3.wallet.client.Wallet
 import okhttp3.OkHttpClient
@@ -109,9 +108,11 @@ abstract class WalletConnect {
         builder.writeTimeout(15, TimeUnit.SECONDS)
         builder.readTimeout(15, TimeUnit.SECONDS)
         if (BuildConfig.DEBUG) {
-            builder.addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
+            builder.addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                },
+            )
         }
         return builder.build()
     }

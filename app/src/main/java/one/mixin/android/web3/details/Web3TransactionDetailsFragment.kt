@@ -83,7 +83,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                     }
 
-                    R.id.more ->{
+                    R.id.more -> {
                         val builder = BottomSheet.Builder(requireActivity())
                         _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_token_bottom, null))
                         builder.setCustomView(bottomBinding.root)
@@ -98,7 +98,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                                     // TODO more evm
                                     context?.openUrl("https://etherscan.io/token/" + token.assetKey)
                                 }
-                               bottomSheet.dismiss()
+                                bottomSheet.dismiss()
                             }
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))

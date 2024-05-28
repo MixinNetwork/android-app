@@ -109,16 +109,17 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             tokens?.filter {
                 it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
             }
-        adapter.tokens = if (assetList.isNullOrEmpty()) {
-            handleMixinResponse(
-                invokeNetwork = { swapViewModel.getSwapToken(s) },
-                successBlock = { resp ->
-                    return@handleMixinResponse resp.data
-                }
-            )?.let { arrayListOf(it) } ?: arrayListOf()
-        } else {
-            ArrayList(assetList)
-        }
+        adapter.tokens =
+            if (assetList.isNullOrEmpty()) {
+                handleMixinResponse(
+                    invokeNetwork = { swapViewModel.getSwapToken(s) },
+                    successBlock = { resp ->
+                        return@handleMixinResponse resp.data
+                    },
+                )?.let { arrayListOf(it) } ?: arrayListOf()
+            } else {
+                ArrayList(assetList)
+            }
         if (adapter.itemCount == 0) {
             binding.rvVa.displayedChild = 1
         } else {
@@ -126,7 +127,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    fun setOnClickListener(onClickListener: (SwapToken,Boolean) -> Unit) {
+    fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
         this.adapter.setOnClickListener(onClickListener)
     }
 }

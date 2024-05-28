@@ -20,11 +20,12 @@ data class SwapToken(
     var balance: String? = null,
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
-        val a = try {
-            BigDecimal(amount)
-        } catch (e: Exception) {
-            return 0
-        }
+        val a =
+            try {
+                BigDecimal(amount)
+            } catch (e: Exception) {
+                return 0
+            }
         return a.multiply(BigDecimal.TEN.pow(decimals)).toLong()
     }
 
@@ -38,4 +39,3 @@ data class SwapToken(
 
     fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(jupiterSolanaTokenAssetKey, true)
 }
-

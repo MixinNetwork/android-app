@@ -40,7 +40,6 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 

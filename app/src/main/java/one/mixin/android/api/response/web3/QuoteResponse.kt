@@ -17,19 +17,19 @@ data class QuoteResponse(
     @SerializedName("routePlan") val routePlan: List<RoutePlan>,
     @SerializedName("platformFee") val platformFee: PlatformFee? = null,
     @SerializedName("contextSlot") val contextSlot: Float? = null,
-    @SerializedName("timeTaken") val timeTaken: Float? = null
+    @SerializedName("timeTaken") val timeTaken: Float? = null,
 ) : Parcelable
 
 @Parcelize
 data class PlatformFee(
     @SerializedName("amount") val amount: String? = null,
-    @SerializedName("feeBps") val feeBps: Int? = null
+    @SerializedName("feeBps") val feeBps: Int? = null,
 ) : Parcelable
 
 @Parcelize
 data class RoutePlan(
     @SerializedName("swapInfo") val swapInfo: SwapInfo,
-    @SerializedName("percent") val percent: Int
+    @SerializedName("percent") val percent: Int,
 ) : Parcelable
 
 @Parcelize
@@ -41,5 +41,5 @@ data class SwapInfo(
     @SerializedName("inAmount") val inAmount: String,
     @SerializedName("outAmount") val outAmount: String,
     @SerializedName("feeAmount") val feeAmount: String,
-    @SerializedName("feeMint") val feeMint: String
+    @SerializedName("feeMint") val feeMint: String,
 ) : Parcelable

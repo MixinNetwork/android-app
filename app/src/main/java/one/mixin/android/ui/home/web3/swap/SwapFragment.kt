@@ -70,13 +70,15 @@ class SwapFragment : BaseFragment() {
 
         const val maxLeftAmount = 0.01
 
-        fun newInstance(tokens: List<Web3Token>): SwapFragment = SwapFragment().withArgs {
-            putParcelableArrayList("TOKENS", arrayListOf<Web3Token>().apply { addAll(tokens) })
-        }
+        fun newInstance(tokens: List<Web3Token>): SwapFragment =
+            SwapFragment().withArgs {
+                putParcelableArrayList("TOKENS", arrayListOf<Web3Token>().apply { addAll(tokens) })
+            }
     }
 
     enum class SwapDestination {
-        Swap, SwapState,
+        Swap,
+        SwapState,
     }
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
@@ -112,6 +114,7 @@ class SwapFragment : BaseFragment() {
                 }
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -206,21 +209,21 @@ class SwapFragment : BaseFragment() {
                                     val qr = quoteResp ?: return@launch
                                     quoteJob?.cancel()
                                     isLoading = true
-                                    val swapResult = handleMixinResponse(
-                                        invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
-                                        successBlock = {
-                                            return@handleMixinResponse it.data
-                                        },
-                                        exceptionBlock = { _->
-                                            isLoading = false
-                                            return@handleMixinResponse false
-                                        },
-                                        failureBlock={
-                                            isLoading = false
-                                            return@handleMixinResponse false
-                                        }
-
-                                    ) ?: return@launch
+                                    val swapResult =
+                                        handleMixinResponse(
+                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
+                                            successBlock = {
+                                                return@handleMixinResponse it.data
+                                            },
+                                            exceptionBlock = { _ ->
+                                                isLoading = false
+                                                return@handleMixinResponse false
+                                            },
+                                            failureBlock = {
+                                                isLoading = false
+                                                return@handleMixinResponse false
+                                            },
+                                        ) ?: return@launch
                                     val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction)
                                     JsSigner.useSolana()
                                     isLoading = false
@@ -237,7 +240,7 @@ class SwapFragment : BaseFragment() {
                                                 }
                                                 refreshTx(hash)
                                             }
-                                        }
+                                        },
                                     )
                                 }
                             }) {
@@ -250,11 +253,12 @@ class SwapFragment : BaseFragment() {
                                     tx = tx ?: Tx(TxState.NotFound.name),
                                     toToken = toToken!!,
                                     viewTx = {
-                                        WebActivity.show(context, "https://solscan.io/tx/${txhash}", null)
-                                    }) {
-                                        navigateUp(navController)
-                                        parentFragmentManager.popBackStackImmediate()
-                                    }
+                                        WebActivity.show(context, "https://solscan.io/tx/$txhash", null)
+                                    },
+                                ) {
+                                    navigateUp(navController)
+                                    parentFragmentManager.popBackStackImmediate()
+                                }
                             }
                         }
                     }
@@ -263,31 +267,43 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private val selectCallback = fun(list: List<SwapToken>, index: Int) {
-        if (index == 0){
-            val supportAssetKeys = swapTokens.map { it.address }
-            Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(web3tokens.filter {
-                it.assetKey == solanaNativeTokenAssetKey || (it.assetKey != jupiterSolanaTokenAssetKey && supportAssetKeys.contains(it.assetKey))
-            })).apply {
-                setOnClickListener { t ->
-                    val token = swapTokens.firstOrNull { (it.address == jupiterSolanaTokenAssetKey && t.assetKey == solanaNativeTokenAssetKey) || it.address == t.assetKey }
-                    if (token != null) {
-                        if (token == this@SwapFragment.toToken) {
-                            this@SwapFragment.toToken = fromToken
+    private val selectCallback = fun(
+        list: List<SwapToken>,
+        index: Int,
+    ) {
+        if (index == 0)
+            {
+                val supportAssetKeys = swapTokens.map { it.address }
+                Web3TokenListBottomSheetDialogFragment.newInstance(
+                    ArrayList(
+                        web3tokens.filter {
+                            it.assetKey == solanaNativeTokenAssetKey || (it.assetKey != jupiterSolanaTokenAssetKey && supportAssetKeys.contains(it.assetKey))
+                        },
+                    ),
+                ).apply {
+                    setOnClickListener { t ->
+                        val token = swapTokens.firstOrNull { (it.address == jupiterSolanaTokenAssetKey && t.assetKey == solanaNativeTokenAssetKey) || it.address == t.assetKey }
+                        if (token != null) {
+                            if (token == this@SwapFragment.toToken) {
+                                this@SwapFragment.toToken = fromToken
+                            }
+                            this@SwapFragment.fromToken = token
+                            lifecycleScope.launch {
+                                refreshTokensPrice(listOf(token))
+                                onTextChanged(currentText)
+                            }
                         }
-                        this@SwapFragment.fromToken = token
-                        lifecycleScope.launch {
-                            refreshTokensPrice(listOf(token))
-                            onTextChanged(currentText)
-                        }
+                        dismissNow()
                     }
-                    dismissNow()
-                }
-            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
-        } else {
-            SwapTokenListBottomSheetDialogFragment.newInstance(ArrayList(list.run {
-                this
-            })).apply {
+                }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+            } else {
+            SwapTokenListBottomSheetDialogFragment.newInstance(
+                ArrayList(
+                    list.run {
+                        this
+                    },
+                ),
+            ).apply {
                 setOnClickListener { token, alert ->
                     if (alert) {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
@@ -321,15 +337,17 @@ class SwapFragment : BaseFragment() {
                     refreshTokens()
                 }
                 return@handleMixinResponse true
-            }
+            },
         )?.let {
-            swapTokens = it.map { token->
-                val t = web3tokens.firstOrNull { web3Token ->
-                    web3Token.assetKey == token.address|| (token.address == jupiterSolanaTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
-                }?:return@map token
-                token.balance = t.balance
-                token
-            }
+            swapTokens =
+                it.map { token ->
+                    val t =
+                        web3tokens.firstOrNull { web3Token ->
+                            web3Token.assetKey == token.address || (token.address == jupiterSolanaTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
+                        } ?: return@map token
+                    token.balance = t.balance
+                    token
+                }
             fromToken = swapTokens.firstOrNull { t -> fromToken?.address == t.address } ?: swapTokens[0]
             toToken = swapTokens.firstOrNull { t -> toToken?.address == t.address } ?: swapTokens[1]
 
@@ -354,6 +372,7 @@ class SwapFragment : BaseFragment() {
 
     private var quoteJob: Job? = null
     private var currentText: String = "0"
+
     private fun onTextChanged(text: String) {
         currentText = text
         refreshQuote(text)
@@ -364,38 +383,42 @@ class SwapFragment : BaseFragment() {
         if (text.isBlank()) {
             outputText = "0"
         } else {
-            val inputValue = try {
-                BigDecimal(text)
-            } catch (e: Exception) {
-                BigDecimal.ZERO
-            }
+            val inputValue =
+                try {
+                    BigDecimal(text)
+                } catch (e: Exception) {
+                    BigDecimal.ZERO
+                }
             if (inputValue <= BigDecimal.ZERO) {
                 outputText = "0"
             } else {
-                quoteJob = lifecycleScope.launch {
-                    quote(text)
-                    delay(10.seconds)
-                    refreshQuote(text)
-                }
+                quoteJob =
+                    lifecycleScope.launch {
+                        quote(text)
+                        delay(10.seconds)
+                        refreshQuote(text)
+                    }
             }
         }
     }
 
     private var refreshTxJob: Job? = null
+
     private fun refreshTx(txhash: String) {
         refreshTxJob?.cancel()
-        refreshTxJob = tickerFlow(2.seconds)
-            .onEach {
-                handleMixinResponse(
-                    invokeNetwork = { swapViewModel.getWeb3Tx(txhash) },
-                    successBlock = {
-                        tx = it.data
+        refreshTxJob =
+            tickerFlow(2.seconds)
+                .onEach {
+                    handleMixinResponse(
+                        invokeNetwork = { swapViewModel.getWeb3Tx(txhash) },
+                        successBlock = {
+                            tx = it.data
+                        },
+                    )
+                    if (tx?.state?.isFinalTxState() == true) {
+                        refreshTxJob?.cancel()
                     }
-                )
-                if (tx?.state?.isFinalTxState() == true) {
-                    refreshTxJob?.cancel()
-                }
-            }.launchIn(lifecycleScope)
+                }.launchIn(lifecycleScope)
     }
 
     private suspend fun quote(input: String) {
@@ -409,18 +432,20 @@ class SwapFragment : BaseFragment() {
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), autoSlippage, slippageBps) },
             successBlock = {
                 return@handleMixinResponse it.data
-            }, endBlock = {
+            },
+            endBlock = {
                 isLoading = false
-            }
+            },
         ) ?: return
 
         val inValue = fromToken?.realAmount(quoteResp?.inAmount?.toLongOrNull() ?: 0L)
         val outValue = toToken?.realAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L)
-        exchangeRate = if (inValue == null || outValue == null || inValue == BigDecimal.ZERO || outValue == BigDecimal.ZERO) {
-            0f
-        } else {
-            outValue.divide(inValue, RoundingMode.CEILING).toFloat()
-        }
+        exchangeRate =
+            if (inValue == null || outValue == null || inValue == BigDecimal.ZERO || outValue == BigDecimal.ZERO) {
+                0f
+            } else {
+                outValue.divide(inValue, RoundingMode.CEILING).toFloat()
+            }
         slippageBps = quoteResp?.slippageBps ?: 0
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
@@ -442,7 +467,6 @@ class SwapFragment : BaseFragment() {
         b = b.subtract(BigDecimal(maxLeftAmount))
         return calc(b)
     }
-
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

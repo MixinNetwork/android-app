@@ -51,13 +51,15 @@ class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         position: Int,
     ) {
         (holder as Web3Holder).bind(tokens[position], onClickListener)
-
     }
 }
 
 class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(token: SwapToken, onClickListener: ((SwapToken, Boolean) -> Unit)?) {
+    fun bind(
+        token: SwapToken,
+        onClickListener: ((SwapToken, Boolean) -> Unit)?,
+    ) {
         binding.apply {
             root.setOnClickListener {
                 onClickListener?.invoke(token, false)
@@ -65,7 +67,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             avatar.bg.loadImage(token.logoURI, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chain.chainLogoURI, R.drawable.ic_avatar_place_holder)
             nameTv.text = token.name
-            balanceTv.text = "${token.balance?:"0"} ${token.symbol}"
+            balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"
             alert.setOnClickListener {
                 onClickListener?.invoke(token, true)
             }

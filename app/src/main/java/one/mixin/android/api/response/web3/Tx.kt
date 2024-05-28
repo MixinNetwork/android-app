@@ -5,9 +5,13 @@ data class Tx(
 )
 
 enum class TxState {
-    NotFound, Failed, Success
+    NotFound,
+    Failed,
+    Success,
 }
 
 fun String.isFinalTxState(): Boolean = isTxSuccess() || isTxFailed()
-fun String.isTxSuccess(): Boolean =  this.equals(TxState.Success.name, true)
+
+fun String.isTxSuccess(): Boolean = this.equals(TxState.Success.name, true)
+
 fun String.isTxFailed(): Boolean = this.equals(TxState.Failed.name, true)

@@ -54,27 +54,31 @@ fun SwapSlippagePage(
     onCancel: () -> Unit,
     onConfirm: (Boolean, Int) -> Unit,
 ) {
-    val customText = rememberSaveable {
-        mutableStateOf(slippageBps.slippageBpsDisplay())
-    }
-    val auto = remember {
-        mutableStateOf(autoSlippage)
-    }
+    val customText =
+        rememberSaveable {
+            mutableStateOf(slippageBps.slippageBpsDisplay())
+        }
+    val auto =
+        remember {
+            mutableStateOf(autoSlippage)
+        }
     MixinAppTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp, 10.dp, 10.dp, 10.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp, 10.dp, 10.dp, 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     text = stringResource(id = R.string.Slippage),
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = 18.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                        ),
                 )
                 IconButton(onClick = { onCancel.invoke() }) {
                     Icon(
@@ -88,26 +92,27 @@ fun SwapSlippagePage(
             Custom(auto, customText)
             val enabled = auto.value || customText.value.isSlippageValid()
             Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp, 10.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp, 10.dp),
                 enabled = enabled,
                 onClick = {
                     onConfirm.invoke(auto.value, customText.value.toIntSlippage())
                 },
                 colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = if (enabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
-                ),
+                    ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = if (enabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
+                    ),
                 shape = RoundedCornerShape(32.dp),
                 contentPadding = PaddingValues(vertical = 16.dp),
                 elevation =
-                ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
+                    ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
             ) {
                 Text(text = stringResource(id = R.string.Confirm), color = Color.White)
             }
@@ -123,32 +128,35 @@ private fun Auto(
 ) {
     val context = LocalContext.current
     val text = context.getString(R.string.slippage_auto) + if (originAuto) " (${originBps.slippageBpsDisplay()}%)" else ""
-    Column(modifier =
-    Modifier
-        .fillMaxWidth()
-        .wrapContentHeight()
-        .padding(20.dp, 10.dp)
-        .border(1.dp, color = if (auto.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, shape = RoundedCornerShape(12.dp))
-        .clickable {
-            auto.value = true
-        }
-        .padding(20.dp),
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(20.dp, 10.dp)
+                .border(1.dp, color = if (auto.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, shape = RoundedCornerShape(12.dp))
+                .clickable {
+                    auto.value = true
+                }
+                .padding(20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = text,
-            style = TextStyle(
-                fontSize = 18.sp,
-                color = MixinAppTheme.colors.textPrimary
-            )
+            style =
+                TextStyle(
+                    fontSize = 18.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                ),
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = context.getString(R.string.slippage_auto_desc),
-            style = TextStyle(
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textMinor
-            )
+            style =
+                TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textMinor,
+                ),
         )
     }
 }
@@ -159,32 +167,35 @@ private fun Custom(
     bps: MutableState<String>,
 ) {
     val context = LocalContext.current
-    Column(modifier =
-    Modifier
-        .fillMaxWidth()
-        .wrapContentHeight()
-        .padding(20.dp, 10.dp)
-        .border(1.dp, color = if (!auto.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, shape = RoundedCornerShape(12.dp))
-        .clickable {
-            auto.value = false
-        }
-        .padding(20.dp),
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(20.dp, 10.dp)
+                .border(1.dp, color = if (!auto.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, shape = RoundedCornerShape(12.dp))
+                .clickable {
+                    auto.value = false
+                }
+                .padding(20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = context.getString(R.string.slippage_custom),
-            style = TextStyle(
-                fontSize = 18.sp,
-                color = MixinAppTheme.colors.textPrimary
-            )
+            style =
+                TextStyle(
+                    fontSize = 18.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                ),
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = context.getString(R.string.slippage_custom_desc),
-            style = TextStyle(
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textMinor
-            )
+            style =
+                TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textMinor,
+                ),
         )
         if (!auto.value) {
             val focusRequester = remember { FocusRequester() }
@@ -198,29 +209,31 @@ private fun Custom(
                     bps.value = it
                 },
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester)
-                    .onFocusChanged {
-                        if (it.isFocused) {
-                            keyboardController?.show()
-                        }
-                        focused.value = it.isFocused
-                    },
+                    Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                keyboardController?.show()
+                            }
+                            focused.value = it.isFocused
+                        },
                 interactionSource = interactionSource,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 textStyle =
-                TextStyle(
-                    fontSize = 20.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Start
-                ),
+                    TextStyle(
+                        fontSize = 20.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                        textAlign = TextAlign.Start,
+                    ),
                 cursorBrush = SolidColor(MixinAppTheme.colors.accent),
             ) { innerTextField ->
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, color = if (focused.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, RoundedCornerShape(8.dp))
-                    .padding(10.dp),
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, color = if (focused.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Box(contentAlignment = Alignment.CenterStart) {
@@ -234,10 +247,12 @@ private fun Custom(
                         }
                     }
                     Text(
-                        text = "%", style = TextStyle(
-                            fontSize = 20.sp,
-                            color = MixinAppTheme.colors.textPrimary,
-                        )
+                        text = "%",
+                        style =
+                            TextStyle(
+                                fontSize = 20.sp,
+                                color = MixinAppTheme.colors.textPrimary,
+                            ),
                     )
                 }
             }
@@ -245,10 +260,11 @@ private fun Custom(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = context.getString(R.string.slippage_invalid),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.tipError
-                    )
+                    style =
+                        TextStyle(
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.tipError,
+                        ),
                 )
             }
         }
@@ -256,6 +272,7 @@ private fun Custom(
 }
 
 fun Int.slippageBpsDisplay(): String = BigDecimal(this).divide(BigDecimal(100)).setScale(2, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
+
 private fun String.toIntSlippage(): Int {
     return if (this.isBlank()) {
         0
@@ -263,6 +280,7 @@ private fun String.toIntSlippage(): Int {
         BigDecimal(this).multiply(BigDecimal(100)).toInt()
     }
 }
+
 private fun String.isSlippageValid(): Boolean {
     val v = toIntSlippage()
     return v >= SwapFragment.MinSlippage && v <= SwapFragment.MaxSlippage
@@ -272,9 +290,10 @@ private fun String.isSlippageValid(): Boolean {
 @Composable
 fun PreviewAuto() {
     Auto(
-        auto = remember {
-            mutableStateOf(true)
-        },
+        auto =
+            remember {
+                mutableStateOf(true)
+            },
         originAuto = true,
         originBps = 80,
     )
@@ -284,11 +303,13 @@ fun PreviewAuto() {
 @Composable
 fun PreviewCustom() {
     Custom(
-        auto = remember {
-            mutableStateOf(false)
-        },
-        bps = remember {
-            mutableStateOf("50")
-        }
+        auto =
+            remember {
+                mutableStateOf(false)
+            },
+        bps =
+            remember {
+                mutableStateOf("50")
+            },
     )
 }

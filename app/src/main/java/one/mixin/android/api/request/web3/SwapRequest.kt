@@ -16,5 +16,5 @@ data class SwapRequest(
     @SerializedName("useTokenLedger") val useTokenLedger: Boolean? = null,
     @SerializedName("destinationTokenAccount") val destinationTokenAccount: String? = null,
     @SerializedName("dynamicComputeUnitLimit") val dynamicComputeUnitLimit: Boolean? = null,
-    @SerializedName("skipUserAccountsRpcCalls") val skipUserAccountsRpcCalls: Boolean? = null
+    @SerializedName("skipUserAccountsRpcCalls") val skipUserAccountsRpcCalls: Boolean? = null,
 )

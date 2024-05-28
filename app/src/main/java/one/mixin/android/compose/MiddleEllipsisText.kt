@@ -12,22 +12,23 @@ fun MiddleEllipsisText(
     text: String,
     modifier: Modifier = Modifier,
     maxLength: Int = 12,
-    style: TextStyle = TextStyle.Default
+    style: TextStyle = TextStyle.Default,
 ) {
-    val displayText = remember(text) {
-        if (text.length <= maxLength) {
-            text
-        } else {
-            val keep = (maxLength - 3) / 2
-            text.take(keep) + "..." + text.takeLast(keep)
+    val displayText =
+        remember(text) {
+            if (text.length <= maxLength) {
+                text
+            } else {
+                val keep = (maxLength - 3) / 2
+                text.take(keep) + "..." + text.takeLast(keep)
+            }
         }
-    }
 
     Text(
         text = displayText,
         modifier = modifier,
         style = style,
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
     )
 }

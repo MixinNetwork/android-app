@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.swap
 
-import android.renderscript.ScriptGroup.Input
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,13 +32,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +59,6 @@ import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
 import java.math.BigDecimal
 
@@ -98,66 +94,78 @@ fun SwapPage(
             Loading()
         } else {
             Column {
-                SwapLayout(center = {
-                    Box(modifier = Modifier
-                        .width(40.dp)
-                        .height(40.dp)
-                        .clip(CircleShape)
-                        .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                        .background(MixinAppTheme.colors.backgroundGray)
-                        .clickable {
-                            isReverse = !isReverse
-                            switch.invoke()
-                            context.clickVibrate()
+                SwapLayout(
+                    center = {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .width(40.dp)
+                                    .height(40.dp)
+                                    .clip(CircleShape)
+                                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .clickable {
+                                        isReverse = !isReverse
+                                        switch.invoke()
+                                        context.clickVibrate()
+                                    }
+                                    .rotate(rotation),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_switch),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
                         }
-                        .rotate(rotation), contentAlignment = Alignment.Center
-
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_switch),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.textPrimary,
-                        )
-                    }
-                }, content = {
-                    InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onHalf, onMax) {
-                        inputText.value = it
-                        onInputChanged.invoke(it)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { selectCallback(1) })
-                }
+                    },
+                    content = {
+                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onHalf, onMax) {
+                            inputText.value = it
+                            onInputChanged.invoke(it)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { selectCallback(1) })
+                    },
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .alpha(
-                                if (exchangeRate == 0f) 0f else 1f
-                            )
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MixinAppTheme.colors.backgroundGray)
-                            .padding(20.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .alpha(
+                                    if (exchangeRate == 0f) 0f else 1f,
+                                )
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MixinAppTheme.colors.backgroundGray)
+                                .padding(20.dp),
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight(),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = stringResource(id = R.string.Best_price), maxLines = 1, style = TextStyle(
-                                    fontWeight = FontWeight.W400,
-                                    color = MixinAppTheme.colors.textSubtitle,
-                                )
+                                text = stringResource(id = R.string.Best_price),
+                                maxLines = 1,
+                                style =
+                                    TextStyle(
+                                        fontWeight = FontWeight.W400,
+                                        color = MixinAppTheme.colors.textSubtitle,
+                                    ),
                             )
                             Text(
-                                text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}", maxLines = 1, style = TextStyle(
-                                    fontWeight = FontWeight.W400,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                )
+                                text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
+                                maxLines = 1,
+                                style =
+                                    TextStyle(
+                                        fontWeight = FontWeight.W400,
+                                        color = MixinAppTheme.colors.textPrimary,
+                                    ),
                             )
                         }
                         SlippageInfo(autoSlippage, slippageBps, onShowSlippage)
@@ -172,18 +180,18 @@ fun SwapPage(
                                 onSwap.invoke()
                             },
                             colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
-                            ),
+                                ButtonDefaults.outlinedButtonColors(
+                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
+                                ),
                             shape = RoundedCornerShape(32.dp),
                             contentPadding = PaddingValues(vertical = 16.dp),
                             elevation =
-                            ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
+                                ButtonDefaults.elevation(
+                                    pressedElevation = 0.dp,
+                                    defaultElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
+                                ),
                         ) {
                             if (isLoading) {
                                 CircularProgressIndicator(
@@ -213,15 +221,16 @@ fun InputArea(
     selectClick: () -> Unit,
     onHalf: (() -> Unit)? = null,
     onMax: (() -> Unit)? = null,
-    onInputChanged: ((String) -> Unit)? = null
+    onInputChanged: ((String) -> Unit)? = null,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MixinAppTheme.colors.backgroundGray)
-            .padding(20.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MixinAppTheme.colors.backgroundGray)
+                .padding(20.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -232,9 +241,10 @@ fun InputArea(
                 Spacer(modifier = Modifier.width(4.dp))
                 GlideImage(
                     data = token?.chain?.chainLogoURI ?: "",
-                    modifier = Modifier
-                        .size(14.dp)
-                        .clip(CircleShape),
+                    modifier =
+                        Modifier
+                            .size(14.dp)
+                            .clip(CircleShape),
                     placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -247,9 +257,11 @@ fun InputArea(
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
                     text = token?.balance ?: "0",
-                    style = TextStyle(
-                        color = MixinAppTheme.colors.textMinor, textAlign = TextAlign.End
-                    )
+                    style =
+                        TextStyle(
+                            color = MixinAppTheme.colors.textMinor,
+                            textAlign = TextAlign.End,
+                        ),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
@@ -321,39 +333,46 @@ private fun SlippageInfo(
     onShowSlippage: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val descText = if (autoSlippage) {
-        "${LocalContext.current.getString(R.string.slippage_auto)} (${slippageBps.slippageBpsDisplay()}%)"
-    } else {
-        "${slippageBps.slippageBpsDisplay()}%"
-    }
+    val descText =
+        if (autoSlippage) {
+            "${LocalContext.current.getString(R.string.slippage_auto)} (${slippageBps.slippageBpsDisplay()}%)"
+        } else {
+            "${slippageBps.slippageBpsDisplay()}%"
+        }
     val highSlippage = slippageBps > SwapFragment.DangerousSlippage
     Spacer(modifier = Modifier.height(16.dp))
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clickable(
-                interactionSource,
-                null
-            ) {
-                onShowSlippage.invoke()
-            },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clickable(
+                    interactionSource,
+                    null,
+                ) {
+                    onShowSlippage.invoke()
+                },
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(id = R.string.Slippage), maxLines = 1, style = TextStyle(
-                fontWeight = FontWeight.W400,
-                color = MixinAppTheme.colors.textSubtitle,
-            )
+            text = stringResource(id = R.string.Slippage),
+            maxLines = 1,
+            style =
+                TextStyle(
+                    fontWeight = FontWeight.W400,
+                    color = MixinAppTheme.colors.textSubtitle,
+                ),
         )
         Row {
             Text(
-                text = descText, maxLines = 1,
-                style = TextStyle(
-                    fontWeight = FontWeight.W400,
-                    color = if (highSlippage) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
-                )
+                text = descText,
+                maxLines = 1,
+                style =
+                    TextStyle(
+                        fontWeight = FontWeight.W400,
+                        color = if (highSlippage) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                    ),
             )
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
@@ -364,10 +383,11 @@ private fun SlippageInfo(
     }
     if (highSlippage) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(8.dp, 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(8.dp, 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -379,10 +399,11 @@ private fun SlippageInfo(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(id = R.string.slippage_high_warning),
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.tipError,
-                )
+                style =
+                    TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.tipError,
+                    ),
             )
         }
     }
@@ -395,43 +416,49 @@ private fun InputAction(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    Box(modifier =
-    Modifier
-        .wrapContentWidth()
-        .wrapContentHeight()
-        .border(1.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor, RoundedCornerShape(12.dp))
-        .clickable(
-            interactionSource = interactionSource,
-            indication = null,
-        ) {
-            onAction.invoke()
-        }
-        .padding(6.dp, 3.dp)
+    Box(
+        modifier =
+            Modifier
+                .wrapContentWidth()
+                .wrapContentHeight()
+                .border(1.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor, RoundedCornerShape(12.dp))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                ) {
+                    onAction.invoke()
+                }
+                .padding(6.dp, 3.dp),
     ) {
         Text(
             text = text,
-            style = TextStyle(
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor,
-            )
+            style =
+                TextStyle(
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor,
+                ),
         )
     }
 }
 
 @Composable
 fun SwapLayout(
-    content: @Composable ColumnScope.() -> Unit, center: @Composable BoxScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
+    center: @Composable BoxScope.() -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .wrapContentHeight()
-            .wrapContentWidth(), contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .wrapContentHeight()
+                .wrapContentWidth(),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(20.dp), verticalArrangement = Arrangement.Top
+                .padding(20.dp),
+            verticalArrangement = Arrangement.Top,
         ) {
             content()
         }
@@ -466,18 +493,23 @@ fun PreviewInputActionHalf() {
 /*
  * @return True if the input was successful, false if the balance is insufficient, or null if the input is invalid.
  */
-private fun checkBalance(inputText: String, balance: String?): Boolean? {
+private fun checkBalance(
+    inputText: String,
+    balance: String?,
+): Boolean? {
     if (balance.isNullOrEmpty()) return false
-    val inputValue = try {
-        BigDecimal(inputText)
-    } catch (e: Exception) {
-        null
-    } ?: return null
+    val inputValue =
+        try {
+            BigDecimal(inputText)
+        } catch (e: Exception) {
+            null
+        } ?: return null
     if (inputValue <= BigDecimal.ZERO) return null
-    val balanceValue = try {
-        BigDecimal(balance)
-    } catch (e: Exception) {
-        null
-    } ?: return null
+    val balanceValue =
+        try {
+            BigDecimal(balance)
+        } catch (e: Exception) {
+            null
+        } ?: return null
     return inputValue <= balanceValue
 }
