@@ -19,7 +19,7 @@ object SafeBoxSerializer : Serializer<SafeBox> {
             )
         } catch (serialization: SerializationException) {
             throw CorruptionException("Unable to read UserPrefs", serialization)
-        } catch (e:Exception){
+        } catch (e: Exception) {
             defaultValue
         }
     }

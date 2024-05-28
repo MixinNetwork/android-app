@@ -10,15 +10,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.ChainId.Solana
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.isSolana
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -29,7 +26,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.receive.Wbe3ReceiveFragment
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
@@ -83,10 +80,10 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.receive -> {
-                        navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                     }
 
-                    R.id.more ->{
+                    R.id.more -> {
                         val builder = BottomSheet.Builder(requireActivity())
                         _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_token_bottom, null))
                         builder.setCustomView(bottomBinding.root)
@@ -101,7 +98,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                                     // TODO more evm
                                     context?.openUrl("https://etherscan.io/token/" + token.assetKey)
                                 }
-                               bottomSheet.dismiss()
+                                bottomSheet.dismiss()
                             }
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
@@ -136,7 +133,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         lifecycleScope.launch {
             binding.progress.isVisible = true
             handleMixinResponse(invokeNetwork = {
-                web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId)
+                web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId, token.assetKey)
             }, successBlock = { result ->
                 if (isAdded) adapter.transactions = result.data ?: emptyList()
             }, endBlock = {

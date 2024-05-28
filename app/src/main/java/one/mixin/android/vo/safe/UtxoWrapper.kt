@@ -20,10 +20,9 @@ data class UtxoWrapper(val outputs: List<Output>) {
     }
 
     val inscriptionHash by lazy {
-        if (outputs.size == 1)
-            {
-                outputs.first().inscriptionHash
-            } else {
+        if (outputs.size == 1) {
+            outputs.first().inscriptionHash
+        } else {
             null
         }
     }

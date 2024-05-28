@@ -55,7 +55,7 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="View on Explorer"
+        android:text="@string/view_on_explorer"
         android:textColor="?attr/text_primary" />
 
     <TextView

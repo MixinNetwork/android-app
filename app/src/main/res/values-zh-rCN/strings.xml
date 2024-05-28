@@ -1474,4 +1474,26 @@
     <string name="HASH">哈希</string>
     <string name="inscription_Hash">藏品哈希</string>
     <string name="NFT_TOKEN">NFT 代币</string>
+    <string name="Swap">闪兑</string>
+    <string name="Swapping">兑换中</string>
+    <string name="Pay">支付</string>
+    <string name="Received">收到</string>
+    <string name="Review_Order">预览订单</string>
+    <string name="View_Transaction">查看区块链浏览器</string>
+    <string name="Confirming_Transaction">正在确认交易</string>
+    <string name="Transaction_Success">交易成功</string>
+    <string name="Transaction_Failed">交易失败</string>
+    <string name="Best_price">最优价格</string>
+    <string name="Slippage">滑点</string>
+    <string name="slippage_auto">自动</string>
+    <string name="slippage_auto_desc">根据不同币种推荐合适的滑点，帮助你交易成功</string>
+    <string name="slippage_custom">自定义</string>
+    <string name="slippage_custom_desc">将按照您设置的滑点执行交易</string>
+    <string name="slippage_high_warning">您的交易可能会抢先交易并导致不利的交易</string>
+    <string name="slippage_invalid">滑点不可大于 50% 且不可小于 0.1%</string>
+    <string name="select_token">选择代币</string>
+    <string name="Contract">合约</string>
+    <string name="swap_desc">%1$s 将会在交易完成后存入您的钱包</string>
+    <string name="view_on_explorer">在浏览器查看</string>
+    <string name="search_swap_token">按代币或合约地址搜索</string>
 </resources>

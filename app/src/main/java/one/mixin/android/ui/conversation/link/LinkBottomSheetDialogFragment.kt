@@ -61,7 +61,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignAction
 import one.mixin.android.tip.matchTipSignAction
 import one.mixin.android.tip.wc.WalletConnect
-import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
@@ -875,11 +874,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (action.isNullOrBlank() || !action.equals("signRawTransaction", true)) {
             return false
         }
-        val data = try {
-            raw.base64RawURLDecode().base64Encode()
-        } catch (e: IllegalArgumentException) {
-            return false
-        }
+        val data =
+            try {
+                raw.base64RawURLDecode().base64Encode()
+            } catch (e: IllegalArgumentException) {
+                return false
+            }
         JsSigner.useSolana()
         if (JsSigner.address.isBlank()) {
             WalletUnlockBottomSheetDialogFragment.getInstance(JsSigner.JsSignerNetwork.Solana.name)

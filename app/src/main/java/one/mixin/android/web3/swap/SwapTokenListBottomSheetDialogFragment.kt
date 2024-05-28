@@ -1,12 +1,17 @@
-package one.mixin.android.web3.receive
+package one.mixin.android.web3.swap
 
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -16,29 +21,33 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
-class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+@AndroidEntryPoint
+class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val ARGS_TOKENS = "args_tokens"
-        const val TAG = "Web3TokenListBottomSheetDialogFragment"
+        const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
-        fun newInstance(tokens: ArrayList<Web3Token>) =
-            Web3TokenListBottomSheetDialogFragment().withArgs {
+        fun newInstance(tokens: ArrayList<SwapToken>) =
+            SwapTokenListBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_TOKENS, tokens)
             }
     }
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
+    private val swapViewModel by viewModels<SwapViewModel>()
 
     private val tokens by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3Token::class.java)
+        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)
     }
 
     private val adapter by lazy {
-        Web3TokenAdapter()
+        SwapTokenAdapter()
     }
 
     @SuppressLint("RestrictedApi")
@@ -58,6 +67,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             assetRv.adapter = adapter
             adapter.tokens = tokens!!
+            searchEt.et.setHint(R.string.search_swap_token)
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
@@ -75,7 +85,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             searchEt.listener =
                 object : SearchView.OnSearchViewListener {
                     override fun afterTextChanged(s: Editable?) {
-                        filter(s.toString())
+                        lifecycleScope.launch {
+                            filter(s.toString())
+                        }
                     }
 
                     override fun onSearch() {}
@@ -83,7 +95,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    private fun filter(s: String) {
+    private suspend fun filter(s: String) {
         if (s.isBlank()) {
             adapter.tokens = tokens!!
             if (tokens.isNullOrEmpty()) {
@@ -97,7 +109,17 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             tokens?.filter {
                 it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
             }
-        adapter.tokens = assetList?.let { ArrayList(it) } ?: arrayListOf()
+        adapter.tokens =
+            if (assetList.isNullOrEmpty()) {
+                handleMixinResponse(
+                    invokeNetwork = { swapViewModel.getSwapToken(s) },
+                    successBlock = { resp ->
+                        return@handleMixinResponse resp.data
+                    },
+                )?.let { arrayListOf(it) } ?: arrayListOf()
+            } else {
+                ArrayList(assetList)
+            }
         if (adapter.itemCount == 0) {
             binding.rvVa.displayedChild = 1
         } else {
@@ -105,7 +127,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    fun setOnClickListener(onClickListener: (Web3Token) -> Unit) {
+    fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
         this.adapter.setOnClickListener(onClickListener)
     }
 }

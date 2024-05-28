@@ -35,6 +35,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
@@ -43,7 +44,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
-import one.mixin.android.web3.receive.Wbe3ReceiveFragment
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.send.InputAddressFragment
@@ -77,6 +78,10 @@ class SolanaFragment : BaseFragment() {
 
                     R.id.receive -> {
                         navTo(Web3ReceiveSelectionFragment(), Web3ReceiveSelectionFragment.TAG)
+                    }
+
+                    R.id.swap -> {
+                        navTo(SwapFragment.newInstance(tokens), SwapFragment.TAG)
                     }
 
                     R.id.browser -> {
@@ -285,7 +290,7 @@ class SolanaFragment : BaseFragment() {
             titleTv.setText(R.string.No_asset)
             receiveTv.setText(R.string.Receive)
             receiveTv.setOnClickListener {
-                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
             }
         }
     }

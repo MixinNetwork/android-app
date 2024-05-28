@@ -103,7 +103,8 @@ class Web3ViewModel
             address: String,
             chainId: String,
             fungibleId: String,
-        ) = web3Service.transactions(address, chainId, fungibleId)
+            assetKey: String,
+        ) = web3Service.transactions(address, chainId, fungibleId, assetKey)
 
         suspend fun saveSession(participantSession: ParticipantSession) {
             userRepository.saveSession(participantSession)
@@ -197,9 +198,9 @@ class Web3ViewModel
         ): BigInteger? {
             return if (estimate.hasError()) {
                 if (estimate.error.code === -32000) // out of gas
-                {
-                    defaultLimit
-                } else {
+                    {
+                        defaultLimit
+                    } else {
                     BigInteger.ZERO
                 }
             } else if (estimate.amountUsed.compareTo(BigInteger.ZERO) > 0) {
@@ -234,31 +235,33 @@ class Web3ViewModel
                 }
             }
 
-    suspend fun calcFee(
-        token: Web3Token,
-        transaction: JsSignMessage,
-        fromAddress: String,
-    ): BigDecimal? {
-        val chain = token.getChainFromName()
-        if (chain == Chain.Solana){
-            if (token.isSolToken()) {
-                val tx = VersionedTransaction.from(transaction.data ?: "")
-                val fee = tx.calcFee()
-                val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
-                return fee.add(mb)
-            } else {
-                return BigDecimal.ZERO
-            }
-        }else{
-            val gasPrice = ethGasPrice(chain) ?: return null
-            val gasLimit = ethGasLimit(chain, transaction.wcEthereumTransaction!!.toTransaction())?.run {
-                if (this == BigInteger.ZERO) {
-                    this
+        suspend fun calcFee(
+            token: Web3Token,
+            transaction: JsSignMessage,
+            fromAddress: String,
+        ): BigDecimal? {
+            val chain = token.getChainFromName()
+            if (chain == Chain.Solana)
+                {
+                    if (token.isSolToken()) {
+                        val tx = VersionedTransaction.from(transaction.data ?: "")
+                        val fee = tx.calcFee()
+                        val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
+                        return fee.add(mb)
+                    } else {
+                        return BigDecimal.ZERO
+                    }
                 } else {
-                    this.multiply(BigInteger.valueOf(16L)).divide(BigInteger.valueOf(10L)) // 1.6 times the data
-                }
-            } ?: return null
-            return Convert.fromWei(gasPrice.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
+                val gasPrice = ethGasPrice(chain) ?: return null
+                val gasLimit =
+                    ethGasLimit(chain, transaction.wcEthereumTransaction!!.toTransaction())?.run {
+                        if (this == BigInteger.ZERO) {
+                            this
+                        } else {
+                            this.multiply(BigInteger.valueOf(16L)).divide(BigInteger.valueOf(10L)) // 1.6 times the data
+                        }
+                    } ?: return null
+                return Convert.fromWei(gasPrice.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
+            }
         }
     }
-}
