@@ -14,7 +14,6 @@ import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
-import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
@@ -29,8 +28,6 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
@@ -455,24 +452,26 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         val t = token ?: return
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
-            val transaction = try {
-                t.buildTransaction(fromAddress, toAddress, tokenBalance)
-            } catch (e: Exception) {
-                Timber.w(e)
-                if (dialog.isShowing) {
-                    dialog.dismiss()
+            val transaction =
+                try {
+                    t.buildTransaction(fromAddress, toAddress, tokenBalance)
+                } catch (e: Exception) {
+                    Timber.w(e)
+                    if (dialog.isShowing) {
+                        dialog.dismiss()
+                    }
+                    return
                 }
-                return
-            }
             if (isAdded) {
                 fee = web3ViewModel.calcFee(t, transaction, fromAddress)
                 if (dialog.isShowing) {
                     dialog.dismiss()
-                    v = if (isReverse) {
-                        BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                    } else {
-                        BigDecimal(tokenBalance).subtract(fee).toPlainString()
-                    }
+                    v =
+                        if (isReverse) {
+                            BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                        } else {
+                            BigDecimal(tokenBalance).subtract(fee).toPlainString()
+                        }
                     updateUI()
                 }
             }

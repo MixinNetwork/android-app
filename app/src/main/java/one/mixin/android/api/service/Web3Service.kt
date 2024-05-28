@@ -20,6 +20,7 @@ interface Web3Service {
         @Path("address") address: String,
         @Query("chain_id") chainId: String,
         @Query("fungible_id") fungibleId: String,
+        @Query("asset_key") assetKey: String,
         @Query("limit") limit: Int = 100,
     ): MixinResponse<List<Web3Transaction>>
 

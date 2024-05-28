@@ -27,7 +27,6 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.JsSigner

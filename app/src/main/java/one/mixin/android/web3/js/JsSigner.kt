@@ -68,9 +68,11 @@ object JsSigner {
         builder.writeTimeout(15, TimeUnit.SECONDS)
         builder.readTimeout(15, TimeUnit.SECONDS)
         if (BuildConfig.DEBUG) {
-            builder.addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
+            builder.addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                },
+            )
         }
         return builder.build()
     }

@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
+import one.mixin.android.api.response.web3.SwapChain
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -64,6 +66,25 @@ class Web3Token(
 ) : Parcelable
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
+const val jupiterSolanaTokenAssetKey = "So11111111111111111111111111111111111111112"
+
+fun Web3Token.toSwapToken(): SwapToken {
+    return SwapToken(
+        address = if (assetKey == solanaNativeTokenAssetKey) jupiterSolanaTokenAssetKey else assetKey,
+        decimals = decimals,
+        name = name,
+        symbol = symbol,
+        logoURI = iconUrl,
+        chain =
+            SwapChain(
+                decimals = 0,
+                name = chainName,
+                symbol = symbol,
+                chainLogoURI = chainIconUrl,
+                price = null,
+            ),
+    )
+}
 
 fun Web3Token.getChainFromName(): Chain {
     return when {
@@ -98,7 +119,7 @@ fun Web3Token.isSolana(): Boolean {
 }
 
 fun Web3Token.isSolToken(): Boolean {
-    return isSolana() && assetKey == solanaNativeTokenAssetKey
+    return isSolana() && (assetKey == solanaNativeTokenAssetKey || assetKey == jupiterSolanaTokenAssetKey)
 }
 
 private fun Web3Token.getChainAssetKey(): String {

@@ -1511,4 +1511,26 @@
     <string name="NFT_TOKEN">NFT TOKEN</string>
     <string name="Collectible">Collectible</string>
     <string name="inscription_Hash">Inscription Hash</string>
+    <string name="Swap">Swap</string>
+    <string name="Swapping">Swapping</string>
+    <string name="Pay">Pay</string>
+    <string name="Received">received</string>
+    <string name="Review_Order">Review Order</string>
+    <string name="View_Transaction">View Transaction</string>
+    <string name="Confirming_Transaction">Confirming Transaction</string>
+    <string name="Transaction_Success">Transaction Success</string>
+    <string name="Transaction_Failed">Transaction Failed</string>
+    <string name="Best_price">Best price</string>
+    <string name="Slippage">Slippage</string>
+    <string name="slippage_auto">Auto</string>
+    <string name="slippage_auto_desc">Recommends the right slippage for different currencies to help you trade successfully</string>
+    <string name="slippage_custom">Custom</string>
+    <string name="slippage_custom_desc">Trades will be executed according to the slippage you set</string>
+    <string name="slippage_high_warning">Your transaction may be frontrun and result in an unfavourable trade</string>
+    <string name="slippage_invalid">Slippage cannot be greater than 50% and cannot be less than 0.1%</string>
+    <string name="select_token">Select Token</string>
+    <string name="Contract">Contract</string>
+    <string name="swap_desc">%1$s will be deposited into your wallet once the transaction is complete</string>
+    <string name="view_on_explorer">View on Explorer</string>
+    <string name="search_swap_token">Search by token or address</string>
 </resources>
