@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -161,6 +162,7 @@ private fun StateInfo(tx: Tx, toToken: SwapToken) {
         Text(
             modifier = Modifier.alpha(if (tx.state.isTxFailed()) 0f else 1f),
             text = stringResource(id = R.string.swap_desc, toToken.symbol),
+            textAlign = TextAlign.Center,
             style = TextStyle(
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textSubtitle,
