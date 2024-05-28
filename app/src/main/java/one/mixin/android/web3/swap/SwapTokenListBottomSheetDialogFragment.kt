@@ -67,6 +67,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             assetRv.adapter = adapter
             adapter.tokens = tokens!!
+            searchEt.et.setHint(R.string.search_swap_token)
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
