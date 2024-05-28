@@ -133,7 +133,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         lifecycleScope.launch {
             binding.progress.isVisible = true
             handleMixinResponse(invokeNetwork = {
-                web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId)
+                web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId, token.assetKey)
             }, successBlock = { result ->
                 if (isAdded) adapter.transactions = result.data ?: emptyList()
             }, endBlock = {

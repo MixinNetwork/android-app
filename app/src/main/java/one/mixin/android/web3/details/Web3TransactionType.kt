@@ -17,4 +17,8 @@ enum class Web3TransactionType(val value: String) {
     Trade("trade"),
     Unstake("unstake"),
     Withdraw("withdraw"),
+    NftMint("nft_mint"),
+    NftTransfer("nft_transfer"),
+    NftBurn("nft_burn"),
+    Unknown("unknown"),
 }

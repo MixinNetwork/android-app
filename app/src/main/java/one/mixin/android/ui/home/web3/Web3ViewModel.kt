@@ -103,7 +103,8 @@ class Web3ViewModel
             address: String,
             chainId: String,
             fungibleId: String,
-        ) = web3Service.transactions(address, chainId, fungibleId)
+            assetKey: String,
+        ) = web3Service.transactions(address, chainId, fungibleId, assetKey)
 
         suspend fun saveSession(participantSession: ParticipantSession) {
             userRepository.saveSession(participantSession)
