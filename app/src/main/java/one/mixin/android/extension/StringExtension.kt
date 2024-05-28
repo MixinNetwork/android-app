@@ -247,6 +247,11 @@ inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
 }
 
+inline fun String.isAppUrl(): Boolean {
+    val pattern = Regex("^.+:/.+$|^.+://.+$")
+    return pattern.matches(this)
+}
+
 inline fun <reified T> Gson.fromJson(json: JsonElement) =
     try {
         this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
