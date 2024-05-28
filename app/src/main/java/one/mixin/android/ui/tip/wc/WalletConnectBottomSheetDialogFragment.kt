@@ -57,6 +57,7 @@ import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.home.web3.swap.parseJupiterError
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
@@ -67,6 +68,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import org.sol4k.VersionedTransaction
+import org.sol4k.exception.RpcException
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -441,6 +443,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 is WalletConnectException -> {
                     "code: ${e.code}, message: ${e.message}"
+                }
+                is RpcException -> {
+                    parseJupiterError(e.rawResponse)?.toString(requireContext()) ?: e.message
                 }
                 else -> {
                     e.stackTraceToString()
