@@ -50,6 +50,7 @@
         android:minWidth="30dp"
         android:textColor="?attr/text_primary"
         android:textSize="12sp"
+        android:singleLine="true"
         android:translationY="-1dp" />
 
     <TextView

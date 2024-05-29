@@ -15,13 +15,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemGesturesPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -116,25 +118,29 @@ private fun InscriptionPageImp(
         BlurImage(inscription.contentURL)
 
         Column(
-            modifier = Modifier.systemGesturesPadding(),
+            modifier = Modifier.statusBarsPadding().navigationBarsPadding(),
         ) {
-            if (expend) {
-                IconButton(onClick = {
-                    expend = false
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close),
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
-                }
-            } else {
-                IconButton(onClick = onCloseAction) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
+            Row {
+                // Align to image
+                Spacer(modifier = Modifier.width(4.dp))
+                if (expend) {
+                    IconButton(onClick = {
+                        expend = false
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_close),
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                    }
+                } else {
+                    IconButton(onClick = onCloseAction) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                    }
                 }
             }
             SharedTransitionLayout {
@@ -146,151 +152,154 @@ private fun InscriptionPageImp(
                         with(this@AnimatedContent) {
                             Column(
                                 modifier =
-                                    Modifier
-                                        .verticalScroll(scrollState)
-                                        .padding(horizontal = 20.dp)
-                                        .fillMaxSize(),
+                                Modifier
+                                    .verticalScroll(scrollState)
+                                    .padding(horizontal = 20.dp)
+                                    .fillMaxSize(),
                             ) {
                                 Box(modifier = Modifier.height(20.dp))
 
                                 Box(
                                     modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(1f),
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f),
                                 ) {
                                     AsyncImage(
                                         model = inscription.contentURL,
                                         contentDescription = null,
                                         modifier =
-                                            Modifier
-                                                .sharedElement(
-                                                    rememberSharedContentState(key = "image"),
-                                                    animatedVisibilityScope = this@AnimatedContent,
-                                                )
-                                                .fillMaxWidth()
-                                                .fillMaxHeight()
-                                                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                                                    expend = !expend
-                                                }
-                                                .clip(RoundedCornerShape(8.dp)),
+                                        Modifier
+                                            .sharedElement(
+                                                rememberSharedContentState(key = "image"),
+                                                animatedVisibilityScope = this@AnimatedContent,
+                                            )
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                                expend = !expend
+                                            }
+                                            .clip(RoundedCornerShape(8.dp)),
                                         placeholder = painterResource(id = R.drawable.ic_inscription_content),
                                     )
                                 }
                                 if (!expend) {
-                                    Box(modifier = Modifier.height(20.dp))
+                                    Column(modifier = Modifier.padding(horizontal = 8.dp)) {
 
-                                    Row(modifier = Modifier.padding(horizontal = 12.dp)) {
-                                        if (inscription.state == "unspent") {
-                                            Button(
-                                                onClick = onSendAction,
-                                                colors =
+                                        Box(modifier = Modifier.height(20.dp))
+
+                                        Row(modifier = Modifier.padding(horizontal = 4.dp)) {
+                                            if (inscription.state == "unspent") {
+                                                Button(
+                                                    onClick = onSendAction,
+                                                    colors =
                                                     ButtonDefaults.outlinedButtonColors(
                                                         backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
                                                     ),
-                                                modifier = Modifier.weight(1f),
-                                                shape = RoundedCornerShape(20.dp),
-                                                contentPadding = PaddingValues(vertical = 12.dp),
-                                                elevation =
+                                                    modifier = Modifier.weight(1f),
+                                                    shape = RoundedCornerShape(20.dp),
+                                                    contentPadding = PaddingValues(vertical = 12.dp),
+                                                    elevation =
                                                     ButtonDefaults.elevation(
                                                         pressedElevation = 0.dp,
                                                         defaultElevation = 0.dp,
                                                         hoveredElevation = 0.dp,
                                                         focusedElevation = 0.dp,
                                                     ),
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.Center,
                                                 ) {
-                                                    Text(text = stringResource(id = R.string.Send), color = Color.White)
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.Center,
+                                                    ) {
+                                                        Text(text = stringResource(id = R.string.Send), color = Color.White)
+                                                    }
                                                 }
-                                            }
 
-                                            Box(modifier = Modifier.width(28.dp))
-                                        }
-                                        Button(
-                                            onClick = {
-                                                onShareAction.invoke()
-                                            },
-                                            colors =
+                                                Box(modifier = Modifier.width(28.dp))
+                                            }
+                                            Button(
+                                                onClick = {
+                                                    onShareAction.invoke()
+                                                },
+                                                colors =
                                                 ButtonDefaults.outlinedButtonColors(
                                                     backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
                                                 ),
-                                            modifier = Modifier.weight(1f),
-                                            shape = RoundedCornerShape(20.dp),
-                                            contentPadding = PaddingValues(vertical = 11.dp),
-                                            elevation =
+                                                modifier = Modifier.weight(1f),
+                                                shape = RoundedCornerShape(20.dp),
+                                                contentPadding = PaddingValues(vertical = 11.dp),
+                                                elevation =
                                                 ButtonDefaults.elevation(
                                                     pressedElevation = 0.dp,
                                                     defaultElevation = 0.dp,
                                                     hoveredElevation = 0.dp,
                                                     focusedElevation = 0.dp,
                                                 ),
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.Center,
                                             ) {
-                                                Text(text = stringResource(id = R.string.Share), color = Color.White)
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.Center,
+                                                ) {
+                                                    Text(text = stringResource(id = R.string.Share), color = Color.White)
+                                                }
                                             }
                                         }
-                                    }
 
-                                    Box(modifier = Modifier.height(28.dp))
+                                        Box(modifier = Modifier.height(28.dp))
 
-                                    Text(text = stringResource(id = R.string.HASH), fontSize = 16.sp, color = Color(0xFF999999))
-                                    Box(modifier = Modifier.height(8.dp))
-                                    Barcode(
-                                        inscriptionHash,
-                                        modifier =
+                                        Text(text = stringResource(id = R.string.HASH), fontSize = 16.sp, color = Color(0xFF999999))
+                                        Box(modifier = Modifier.height(8.dp))
+                                        Barcode(
+                                            inscriptionHash,
+                                            modifier =
                                             Modifier
                                                 .width(128.dp)
                                                 .height(24.dp),
-                                    )
-                                    Box(modifier = Modifier.height(4.dp))
-                                    SelectionContainer {
-                                        Text(text = inscriptionHash, fontSize = 16.sp, color = Color(0xFF999999))
-                                    }
-
-                                    Box(modifier = Modifier.height(20.dp))
-                                    Text(text = stringResource(id = R.string.ID), fontSize = 16.sp, color = Color(0xFF999999))
-                                    Box(modifier = Modifier.height(8.dp))
-                                    Text(text = inscription.id, fontSize = 16.sp, color = Color.White)
-
-                                    Box(modifier = Modifier.height(20.dp))
-                                    Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
-                                    Box(modifier = Modifier.height(8.dp))
-                                    Text(text = inscription.name ?: "", fontSize = 16.sp, color = Color.White)
-
-                                    Box(modifier = Modifier.height(20.dp))
-                                    Box(Modifier.fillMaxWidth()) {
-                                        Column {
-                                            Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
-                                            Box(modifier = Modifier.height(8.dp))
-                                            Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
-                                            Box(modifier = Modifier.height(5.dp))
-                                            Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
+                                        )
+                                        Box(modifier = Modifier.height(4.dp))
+                                        SelectionContainer {
+                                            Text(text = inscriptionHash, fontSize = 16.sp, color = Color(0xFF999999))
                                         }
 
-                                        AsyncImage(
-                                            model =
+                                        Box(modifier = Modifier.height(20.dp))
+                                        Text(text = stringResource(id = R.string.ID), fontSize = 16.sp, color = Color(0xFF999999))
+                                        Box(modifier = Modifier.height(8.dp))
+                                        Text(text = inscription.id, fontSize = 16.sp, color = Color.White)
+
+                                        Box(modifier = Modifier.height(20.dp))
+                                        Text(text = stringResource(id = R.string.Collection).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+                                        Box(modifier = Modifier.height(8.dp))
+                                        Text(text = inscription.name ?: "", fontSize = 16.sp, color = Color.White)
+
+                                        Box(modifier = Modifier.height(20.dp))
+                                        Box(Modifier.fillMaxWidth()) {
+                                            Column {
+                                                Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
+                                                Box(modifier = Modifier.height(8.dp))
+                                                Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
+                                                Box(modifier = Modifier.height(5.dp))
+                                                Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
+                                            }
+
+                                            AsyncImage(
+                                                model =
                                                 ImageRequest.Builder(LocalContext.current)
                                                     .data(inscription.iconUrl)
                                                     .transformations(CoilRoundedHexagonTransformation())
                                                     .build(),
-                                            contentDescription = null,
-                                            modifier =
+                                                contentDescription = null,
+                                                modifier =
                                                 Modifier
                                                     .align(Alignment.CenterEnd)
                                                     .width(20.dp)
                                                     .height(20.dp)
                                                     .clip(RoundedCornerShape(4.dp)),
-                                            placeholder = painterResource(R.drawable.ic_inscription_icon),
-                                        )
-                                    }
+                                                placeholder = painterResource(R.drawable.ic_inscription_icon),
+                                            )
+                                        }
 
-                                    Box(modifier = Modifier.height(70.dp))
+                                        Box(modifier = Modifier.height(70.dp))
+                                    }
                                 }
                             }
                         }
@@ -312,26 +321,26 @@ private fun InscriptionPageImp(
                         }
                         Box(
                             modifier =
-                                Modifier
-                                    .fillMaxSize()
-                                    .fillMaxHeight(),
+                            Modifier
+                                .fillMaxSize()
+                                .fillMaxHeight(),
                         ) {
                             with(this@AnimatedContent) {
                                 AsyncImage(
                                     model = inscription.contentURL,
                                     contentDescription = null,
                                     modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .sharedElement(
-                                                rememberSharedContentState(key = "image"),
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                            )
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                                                expend = !expend
-                                            },
+                                    Modifier
+                                        .align(Alignment.Center)
+                                        .sharedElement(
+                                            rememberSharedContentState(key = "image"),
+                                            animatedVisibilityScope = this@AnimatedContent,
+                                        )
+                                        .fillMaxWidth()
+                                        .fillMaxHeight()
+                                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                            expend = !expend
+                                        },
                                     placeholder = painterResource(id = R.drawable.ic_inscription_content),
                                 )
                             }
@@ -350,26 +359,26 @@ private fun BlurImage(url: String?) {
             model = url,
             contentDescription = null,
             modifier =
-                Modifier
-                    .fillMaxHeight()
-                    .graphicsLayer {
-                        alpha = 0.5f
-                    }
-                    .blur(30.dp),
+            Modifier
+                .fillMaxHeight()
+                .graphicsLayer {
+                    alpha = 0.5f
+                }
+                .blur(30.dp),
             placeholder = painterResource(R.drawable.ic_inscription_content),
             contentScale = ContentScale.Crop,
         )
     } else {
         AsyncImage(
             model =
-                ImageRequest.Builder(LocalContext.current)
-                    .data(url)
-                    .transformations(BlurTransformation(LocalContext.current))
-                    .build(),
+            ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .transformations(BlurTransformation(LocalContext.current))
+                .build(),
             contentDescription = null,
             modifier =
-                Modifier
-                    .fillMaxHeight(),
+            Modifier
+                .fillMaxHeight(),
             placeholder = painterResource(R.drawable.ic_inscription_content),
             contentScale = ContentScale.Crop,
         )
