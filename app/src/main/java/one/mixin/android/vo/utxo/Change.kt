@@ -42,7 +42,7 @@ fun changeToOutput(
         "",
         "",
         "",
-        "",
+        null,
     )
 }
 
@@ -77,6 +77,6 @@ fun consolidationOutput(
         "",
         "",
         "",
-        "",
+        null,
     )
 }

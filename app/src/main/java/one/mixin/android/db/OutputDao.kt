@@ -11,7 +11,7 @@ import one.mixin.android.vo.safe.SafeInscription
 
 @Dao
 interface OutputDao : BaseDao<Output> {
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash IS NULL ORDER BY sequence ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(
         limit: Int,
         asset: String,
@@ -24,7 +24,7 @@ interface OutputDao : BaseDao<Output> {
         inscriptionHash: String,
     ): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash IS NULL ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(
         limit: Int,
         asset: String,
