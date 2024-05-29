@@ -365,7 +365,7 @@ private fun SlippageInfo(
                     color = MixinAppTheme.colors.textSubtitle,
                 ),
         )
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = descText,
                 maxLines = 1,
