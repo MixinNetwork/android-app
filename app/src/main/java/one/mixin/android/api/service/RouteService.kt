@@ -119,4 +119,9 @@ interface RouteService {
     suspend fun getSwapToken(
         @Path("address") address: String,
     ): MixinResponse<SwapToken?>
+
+    @GET("web3/tokens/search/{query}")
+    suspend fun searchTokens(
+        @Path("query") query: String,
+    ): MixinResponse<List<SwapToken>>
 }

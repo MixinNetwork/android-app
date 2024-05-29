@@ -2,12 +2,15 @@ package one.mixin.android.web3.swap
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.text.Editable
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.jakewharton.rxbinding3.widget.textChanges
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -25,7 +28,7 @@ import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.SearchView
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -82,20 +85,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                 dismiss()
             }
-            searchEt.listener =
-                object : SearchView.OnSearchViewListener {
-                    override fun afterTextChanged(s: Editable?) {
-                        lifecycleScope.launch {
-                            filter(s.toString())
-                        }
-                    }
-
-                    override fun onSearch() {}
-                }
+            searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(stopScope)
+                .subscribe({
+                    searchJob?.cancel()
+                    searchJob = filter(it.toString())
+                }, {})
         }
     }
 
-    private suspend fun filter(s: String) {
+    private var searchJob: Job? = null
+    private fun filter(s: String) = lifecycleScope.launch {
         if (s.isBlank()) {
             adapter.tokens = tokens!!
             if (tokens.isNullOrEmpty()) {
@@ -103,28 +104,42 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 binding.rvVa.displayedChild = 0
             }
-            return
+            return@launch
         }
         val assetList =
             tokens?.filter {
                 it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-            }
-        adapter.tokens =
-            if (assetList.isNullOrEmpty()) {
-                handleMixinResponse(
-                    invokeNetwork = { swapViewModel.getSwapToken(s) },
-                    successBlock = { resp ->
-                        return@handleMixinResponse resp.data
-                    },
-                )?.let { arrayListOf(it) } ?: arrayListOf()
-            } else {
-                ArrayList(assetList)
-            }
+            }?.toMutableList() ?: mutableListOf()
+
+        val total = search(s, assetList)
+
+        adapter.tokens = ArrayList(total)
+        if (!isAdded) {
+            return@launch
+        }
         if (adapter.itemCount == 0) {
             binding.rvVa.displayedChild = 1
         } else {
             binding.rvVa.displayedChild = 0
         }
+    }
+
+    private suspend fun search(s: String, localTokens: MutableList<SwapToken>): List<SwapToken> {
+        if (s.isBlank()) return localTokens
+
+        handleMixinResponse(
+            invokeNetwork = { swapViewModel.searchTokens(s) },
+            successBlock = { resp ->
+                return@handleMixinResponse resp.data
+            },
+        )?.let { remoteList ->
+            localTokens.addAll(
+                remoteList.filter { ra ->
+                    !localTokens.any { a -> a.address.equals(ra.address, true) }
+                }
+            )
+        }
+        return localTokens
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
