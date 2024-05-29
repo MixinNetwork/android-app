@@ -102,7 +102,6 @@ interface RouteService {
         @Query("swapMode") swapMode: String = "ExactIn",
         @Query("autoSlippage") autoSlippage: Boolean = false,
         @Query("slippageBps") slippageBps: Int = 50,
-        @Query("asLegacyTransaction") asLegacyTransaction: Boolean = true,
     ): MixinResponse<QuoteResponse>
 
     @POST("web3/swap")

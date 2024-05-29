@@ -12,7 +12,6 @@ data class SwapRequest(
     @SerializedName("trackingAccount") val trackingAccount: String? = null,
     @SerializedName("computeUnitPriceMicroLamports") val computeUnitPriceMicroLamports: Long? = null,
     @SerializedName("prioritizationFeeLamports") val prioritizationFeeLamports: Long? = null,
-    @SerializedName("asLegacyTransaction") val asLegacyTransaction: Boolean? = null,
     @SerializedName("useTokenLedger") val useTokenLedger: Boolean? = null,
     @SerializedName("destinationTokenAccount") val destinationTokenAccount: String? = null,
     @SerializedName("dynamicComputeUnitLimit") val dynamicComputeUnitLimit: Boolean? = null,
