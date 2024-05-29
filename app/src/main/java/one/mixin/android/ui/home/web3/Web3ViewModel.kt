@@ -241,17 +241,16 @@ class Web3ViewModel
             fromAddress: String,
         ): BigDecimal? {
             val chain = token.getChainFromName()
-            if (chain == Chain.Solana)
-                {
-                    if (token.isSolToken()) {
-                        val tx = VersionedTransaction.from(transaction.data ?: "")
-                        val fee = tx.calcFee()
-                        val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
-                        return fee.add(mb)
-                    } else {
-                        return BigDecimal.ZERO
-                    }
+            if (chain == Chain.Solana) {
+                if (token.isSolToken()) {
+                    val tx = VersionedTransaction.from(transaction.data ?: "")
+                    val fee = tx.calcFee()
+                    val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
+                    return fee.add(mb)
                 } else {
+                    return BigDecimal.ZERO
+                }
+            } else {
                 val gasPrice = ethGasPrice(chain) ?: return null
                 val gasLimit =
                     ethGasLimit(chain, transaction.wcEthereumTransaction!!.toTransaction())?.run {

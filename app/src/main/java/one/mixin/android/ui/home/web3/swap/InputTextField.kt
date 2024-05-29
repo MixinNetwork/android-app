@@ -30,9 +30,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.placeholder
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -174,6 +176,7 @@ fun InputContent(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun Left(
     token: SwapToken?,
@@ -181,12 +184,10 @@ private fun Left(
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
         GlideImage(
-            data = token?.logoURI ?: "",
-            modifier =
-                Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            model = token?.logoURI ?: "",
+            loading = placeholder(R.drawable.ic_avatar_place_holder),
+            modifier = Modifier.size(32.dp).clip(CircleShape),
+            contentDescription = "",
         )
         Box(modifier = Modifier.width(10.dp))
         Text(

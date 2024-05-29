@@ -96,35 +96,40 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     private var searchJob: Job? = null
-    private fun filter(s: String) = lifecycleScope.launch {
-        if (s.isBlank()) {
-            adapter.tokens = tokens!!
-            if (tokens.isNullOrEmpty()) {
-                binding.rvVa.displayedChild = 2
+
+    private fun filter(s: String) =
+        lifecycleScope.launch {
+            if (s.isBlank()) {
+                adapter.tokens = tokens!!
+                if (tokens.isNullOrEmpty()) {
+                    binding.rvVa.displayedChild = 2
+                } else {
+                    binding.rvVa.displayedChild = 0
+                }
+                return@launch
+            }
+            val assetList =
+                tokens?.filter {
+                    it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+                }?.toMutableList() ?: mutableListOf()
+
+            val total = search(s, assetList)
+
+            adapter.tokens = ArrayList(total)
+            if (!isAdded) {
+                return@launch
+            }
+            if (adapter.itemCount == 0) {
+                binding.rvVa.displayedChild = 1
             } else {
                 binding.rvVa.displayedChild = 0
             }
-            return@launch
         }
-        val assetList =
-            tokens?.filter {
-                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-            }?.toMutableList() ?: mutableListOf()
 
-        val total = search(s, assetList)
-
-        adapter.tokens = ArrayList(total)
-        if (!isAdded) {
-            return@launch
-        }
-        if (adapter.itemCount == 0) {
-            binding.rvVa.displayedChild = 1
-        } else {
-            binding.rvVa.displayedChild = 0
-        }
-    }
-
-    private suspend fun search(s: String, localTokens: MutableList<SwapToken>): List<SwapToken> {
+    private suspend fun search(
+        s: String,
+        localTokens: MutableList<SwapToken>,
+    ): List<SwapToken> {
         if (s.isBlank()) return localTokens
 
         handleMixinResponse(
@@ -136,7 +141,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             localTokens.addAll(
                 remoteList.filter { ra ->
                     !localTokens.any { a -> a.address.equals(ra.address, true) }
-                }
+                },
             )
         }
         return localTokens

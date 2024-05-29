@@ -5,7 +5,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class ComputeBudgetTest {
-
     @Test
     fun testDecodeComputeUnitLimit() {
         var data = "022e720200"

@@ -271,32 +271,31 @@ class SwapFragment : BaseFragment() {
         list: List<SwapToken>,
         index: Int,
     ) {
-        if (index == 0)
-            {
-                val supportAssetKeys = swapTokens.map { it.address }
-                Web3TokenListBottomSheetDialogFragment.newInstance(
-                    ArrayList(
-                        web3tokens.filter {
-                            it.assetKey == solanaNativeTokenAssetKey || (it.assetKey != jupiterSolanaTokenAssetKey && supportAssetKeys.contains(it.assetKey))
-                        },
-                    ),
-                ).apply {
-                    setOnClickListener { t ->
-                        val token = swapTokens.firstOrNull { (it.address == jupiterSolanaTokenAssetKey && t.assetKey == solanaNativeTokenAssetKey) || it.address == t.assetKey }
-                        if (token != null) {
-                            if (token == this@SwapFragment.toToken) {
-                                this@SwapFragment.toToken = fromToken
-                            }
-                            this@SwapFragment.fromToken = token
-                            lifecycleScope.launch {
-                                refreshTokensPrice(listOf(token))
-                                onTextChanged(currentText)
-                            }
+        if (index == 0) {
+            val supportAssetKeys = swapTokens.map { it.address }
+            Web3TokenListBottomSheetDialogFragment.newInstance(
+                ArrayList(
+                    web3tokens.filter {
+                        it.assetKey == solanaNativeTokenAssetKey || (it.assetKey != jupiterSolanaTokenAssetKey && supportAssetKeys.contains(it.assetKey))
+                    },
+                ),
+            ).apply {
+                setOnClickListener { t ->
+                    val token = swapTokens.firstOrNull { (it.address == jupiterSolanaTokenAssetKey && t.assetKey == solanaNativeTokenAssetKey) || it.address == t.assetKey }
+                    if (token != null) {
+                        if (token == this@SwapFragment.toToken) {
+                            this@SwapFragment.toToken = fromToken
                         }
-                        dismissNow()
+                        this@SwapFragment.fromToken = token
+                        lifecycleScope.launch {
+                            refreshTokensPrice(listOf(token))
+                            onTextChanged(currentText)
+                        }
                     }
-                }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
-            } else {
+                    dismissNow()
+                }
+            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+        } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
                 ArrayList(
                     list.run {

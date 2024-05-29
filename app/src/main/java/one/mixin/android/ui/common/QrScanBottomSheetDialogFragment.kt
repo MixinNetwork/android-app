@@ -88,23 +88,24 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         WebActivity.show(requireActivity(), text, conversationId)
                         dismiss()
                     }
-            } else if(text.isAppUrl()){
-                openFl.visibility = VISIBLE
-                open.clicks()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .throttleFirst(1, TimeUnit.SECONDS)
-                    .autoDispose(stopScope).subscribe {
-                        try {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(text))
-                            startActivity(intent)
-                        } catch (e: ActivityNotFoundException) {
-                            // do nothing
-                        } catch (e: Exception) {
-                            Timber.e(e, "OpenUrl")
+            } else if (text.isAppUrl())
+                {
+                    openFl.visibility = VISIBLE
+                    open.clicks()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .throttleFirst(1, TimeUnit.SECONDS)
+                        .autoDispose(stopScope).subscribe {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(text))
+                                startActivity(intent)
+                            } catch (e: ActivityNotFoundException) {
+                                // do nothing
+                            } catch (e: Exception) {
+                                Timber.e(e, "OpenUrl")
+                            }
+                            dismiss()
                         }
-                        dismiss()
-                    }
-            } else {
+                } else {
                 openFl.visibility = GONE
             }
         }

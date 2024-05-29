@@ -260,7 +260,8 @@ class WebFragment : BaseFragment() {
                             ClipData.newPlainText(
                                 null,
                                 it.extra,
-                            ))
+                            ),
+                        )
                         toast(R.string.copied_to_clipboard)
                         return@setOnMenuItemClickListener true
                     }

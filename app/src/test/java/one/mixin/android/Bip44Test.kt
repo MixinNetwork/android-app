@@ -71,11 +71,12 @@ class Bip44Test {
 
         val receiver = PublicKey("9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g")
         val instruction = TransferInstruction(sender.publicKey, receiver, 100L)
-        val transaction = Transaction(
-            blockhash,
-            instruction,
-            sender.publicKey
-        )
+        val transaction =
+            Transaction(
+                blockhash,
+                instruction,
+                sender.publicKey,
+            )
         transaction.sign(sender)
         val signature: String = connection.sendTransaction(transaction.serialize())
         println("Transaction Signature: $signature\ntx: ${transaction.serialize().base64Encode()}")

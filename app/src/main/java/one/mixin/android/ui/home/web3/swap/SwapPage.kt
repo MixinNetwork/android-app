@@ -98,18 +98,18 @@ fun SwapPage(
                     center = {
                         Box(
                             modifier =
-                            Modifier
-                                .width(40.dp)
-                                .height(40.dp)
-                                .clip(CircleShape)
-                                .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                .background(MixinAppTheme.colors.backgroundGray)
-                                .clickable {
-                                    isReverse = !isReverse
-                                    switch.invoke()
-                                    context.clickVibrate()
-                                }
-                                .rotate(rotation),
+                                Modifier
+                                    .width(40.dp)
+                                    .height(40.dp)
+                                    .clip(CircleShape)
+                                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .clickable {
+                                        isReverse = !isReverse
+                                        switch.invoke()
+                                        context.clickVibrate()
+                                    }
+                                    .rotate(rotation),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
@@ -131,15 +131,15 @@ fun SwapPage(
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Column(
                         modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .alpha(
-                                if (exchangeRate == 0f) 0f else 1f,
-                            )
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MixinAppTheme.colors.backgroundGray)
-                            .padding(20.dp),
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .alpha(
+                                    if (exchangeRate == 0f) 0f else 1f,
+                                )
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MixinAppTheme.colors.backgroundGray)
+                                .padding(20.dp),
                     ) {
                         Row(
                             modifier =

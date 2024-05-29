@@ -152,40 +152,39 @@ private fun InscriptionPageImp(
                         with(this@AnimatedContent) {
                             Column(
                                 modifier =
-                                Modifier
-                                    .verticalScroll(scrollState)
-                                    .padding(horizontal = 20.dp)
-                                    .fillMaxSize(),
+                                    Modifier
+                                        .verticalScroll(scrollState)
+                                        .padding(horizontal = 20.dp)
+                                        .fillMaxSize(),
                             ) {
                                 Box(modifier = Modifier.height(20.dp))
 
                                 Box(
                                     modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .aspectRatio(1f),
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .aspectRatio(1f),
                                 ) {
                                     AsyncImage(
                                         model = inscription.contentURL,
                                         contentDescription = null,
                                         modifier =
-                                        Modifier
-                                            .sharedElement(
-                                                rememberSharedContentState(key = "image"),
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                            )
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                                                expend = !expend
-                                            }
-                                            .clip(RoundedCornerShape(8.dp)),
+                                            Modifier
+                                                .sharedElement(
+                                                    rememberSharedContentState(key = "image"),
+                                                    animatedVisibilityScope = this@AnimatedContent,
+                                                )
+                                                .fillMaxWidth()
+                                                .fillMaxHeight()
+                                                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                                    expend = !expend
+                                                }
+                                                .clip(RoundedCornerShape(8.dp)),
                                         placeholder = painterResource(id = R.drawable.ic_inscription_content),
                                     )
                                 }
                                 if (!expend) {
                                     Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-
                                         Box(modifier = Modifier.height(20.dp))
 
                                         Row(modifier = Modifier.padding(horizontal = 4.dp)) {
@@ -193,19 +192,19 @@ private fun InscriptionPageImp(
                                                 Button(
                                                     onClick = onSendAction,
                                                     colors =
-                                                    ButtonDefaults.outlinedButtonColors(
-                                                        backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
-                                                    ),
+                                                        ButtonDefaults.outlinedButtonColors(
+                                                            backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
+                                                        ),
                                                     modifier = Modifier.weight(1f),
                                                     shape = RoundedCornerShape(20.dp),
                                                     contentPadding = PaddingValues(vertical = 12.dp),
                                                     elevation =
-                                                    ButtonDefaults.elevation(
-                                                        pressedElevation = 0.dp,
-                                                        defaultElevation = 0.dp,
-                                                        hoveredElevation = 0.dp,
-                                                        focusedElevation = 0.dp,
-                                                    ),
+                                                        ButtonDefaults.elevation(
+                                                            pressedElevation = 0.dp,
+                                                            defaultElevation = 0.dp,
+                                                            hoveredElevation = 0.dp,
+                                                            focusedElevation = 0.dp,
+                                                        ),
                                                 ) {
                                                     Row(
                                                         modifier = Modifier.fillMaxWidth(),
@@ -222,19 +221,19 @@ private fun InscriptionPageImp(
                                                     onShareAction.invoke()
                                                 },
                                                 colors =
-                                                ButtonDefaults.outlinedButtonColors(
-                                                    backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
-                                                ),
+                                                    ButtonDefaults.outlinedButtonColors(
+                                                        backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
+                                                    ),
                                                 modifier = Modifier.weight(1f),
                                                 shape = RoundedCornerShape(20.dp),
                                                 contentPadding = PaddingValues(vertical = 11.dp),
                                                 elevation =
-                                                ButtonDefaults.elevation(
-                                                    pressedElevation = 0.dp,
-                                                    defaultElevation = 0.dp,
-                                                    hoveredElevation = 0.dp,
-                                                    focusedElevation = 0.dp,
-                                                ),
+                                                    ButtonDefaults.elevation(
+                                                        pressedElevation = 0.dp,
+                                                        defaultElevation = 0.dp,
+                                                        hoveredElevation = 0.dp,
+                                                        focusedElevation = 0.dp,
+                                                    ),
                                             ) {
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth(),
@@ -252,9 +251,9 @@ private fun InscriptionPageImp(
                                         Barcode(
                                             inscriptionHash,
                                             modifier =
-                                            Modifier
-                                                .width(128.dp)
-                                                .height(24.dp),
+                                                Modifier
+                                                    .width(128.dp)
+                                                    .height(24.dp),
                                         )
                                         Box(modifier = Modifier.height(4.dp))
                                         SelectionContainer {
@@ -283,17 +282,17 @@ private fun InscriptionPageImp(
 
                                             AsyncImage(
                                                 model =
-                                                ImageRequest.Builder(LocalContext.current)
-                                                    .data(inscription.iconUrl)
-                                                    .transformations(CoilRoundedHexagonTransformation())
-                                                    .build(),
+                                                    ImageRequest.Builder(LocalContext.current)
+                                                        .data(inscription.iconUrl)
+                                                        .transformations(CoilRoundedHexagonTransformation())
+                                                        .build(),
                                                 contentDescription = null,
                                                 modifier =
-                                                Modifier
-                                                    .align(Alignment.CenterEnd)
-                                                    .width(20.dp)
-                                                    .height(20.dp)
-                                                    .clip(RoundedCornerShape(4.dp)),
+                                                    Modifier
+                                                        .align(Alignment.CenterEnd)
+                                                        .width(20.dp)
+                                                        .height(20.dp)
+                                                        .clip(RoundedCornerShape(4.dp)),
                                                 placeholder = painterResource(R.drawable.ic_inscription_icon),
                                             )
                                         }
@@ -321,26 +320,26 @@ private fun InscriptionPageImp(
                         }
                         Box(
                             modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .fillMaxHeight(),
+                                Modifier
+                                    .fillMaxSize()
+                                    .fillMaxHeight(),
                         ) {
                             with(this@AnimatedContent) {
                                 AsyncImage(
                                     model = inscription.contentURL,
                                     contentDescription = null,
                                     modifier =
-                                    Modifier
-                                        .align(Alignment.Center)
-                                        .sharedElement(
-                                            rememberSharedContentState(key = "image"),
-                                            animatedVisibilityScope = this@AnimatedContent,
-                                        )
-                                        .fillMaxWidth()
-                                        .fillMaxHeight()
-                                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                                            expend = !expend
-                                        },
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .sharedElement(
+                                                rememberSharedContentState(key = "image"),
+                                                animatedVisibilityScope = this@AnimatedContent,
+                                            )
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                                expend = !expend
+                                            },
                                     placeholder = painterResource(id = R.drawable.ic_inscription_content),
                                 )
                             }
@@ -359,26 +358,26 @@ private fun BlurImage(url: String?) {
             model = url,
             contentDescription = null,
             modifier =
-            Modifier
-                .fillMaxHeight()
-                .graphicsLayer {
-                    alpha = 0.5f
-                }
-                .blur(30.dp),
+                Modifier
+                    .fillMaxHeight()
+                    .graphicsLayer {
+                        alpha = 0.5f
+                    }
+                    .blur(30.dp),
             placeholder = painterResource(R.drawable.ic_inscription_content),
             contentScale = ContentScale.Crop,
         )
     } else {
         AsyncImage(
             model =
-            ImageRequest.Builder(LocalContext.current)
-                .data(url)
-                .transformations(BlurTransformation(LocalContext.current))
-                .build(),
+                ImageRequest.Builder(LocalContext.current)
+                    .data(url)
+                    .transformations(BlurTransformation(LocalContext.current))
+                    .build(),
             contentDescription = null,
             modifier =
-            Modifier
-                .fillMaxHeight(),
+                Modifier
+                    .fillMaxHeight(),
             placeholder = painterResource(R.drawable.ic_inscription_content),
             contentScale = ContentScale.Crop,
         )

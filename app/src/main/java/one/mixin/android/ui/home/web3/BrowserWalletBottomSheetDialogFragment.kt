@@ -353,9 +353,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun handleException(e: Throwable) {
         Timber.e(e)
-         val msg = if (e is RpcException) {
-            parseJupiterError(e.rawResponse)?.toString(requireContext())
-        } else null
+        val msg =
+            if (e is RpcException) {
+                parseJupiterError(e.rawResponse)?.toString(requireContext())
+            } else {
+                null
+            }
         errorInfo = msg ?: e.message
         reportException("$TAG handleException", e)
         step = Step.Error

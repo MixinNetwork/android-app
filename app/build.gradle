@@ -13,8 +13,8 @@ plugins {
 
 def versionMajor = 1
 def versionMinor = 8
-def versionPatch = 3
-def versionBuild = 0
+def versionPatch = 4
+def versionBuild = 1
 
 android {
     compileSdk 34
@@ -324,6 +324,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "com.github.zjupure:webpdecoder:2.6.4.16.0"
+    implementation "com.github.bumptech.glide:compose:1.0.0-beta01"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
     ksp "com.github.bumptech.glide:ksp:$glideVersion"

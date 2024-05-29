@@ -8,34 +8,86 @@ import one.mixin.android.vo.WithdrawalMemoPossibility
 
 fun mockAsset() =
     Asset(
-        "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "BTC",
+        "Bitcoin",
         "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-        "1", "", "", "1", "10000", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "0",
-        "0", 3, "", "0", null, null,
+        "1",
+        "",
+        "",
+        "1",
+        "10000",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "0",
+        "0",
+        3,
+        "",
+        "0",
+        null,
+        null,
     )
 
 fun mockAssetWithDestinationAndTag() =
     Asset(
-        "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "BTC",
+        "Bitcoin",
         "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-        "1", "eoswithmixin", "1e40671dc72b58606a79f53e2", "1", "10000",
-        "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "0", "0", 3, "", "0", null, WithdrawalMemoPossibility.POSSIBLE,
+        "1",
+        "eoswithmixin",
+        "1e40671dc72b58606a79f53e2",
+        "1",
+        "10000",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "0",
+        "0",
+        3,
+        "",
+        "0",
+        null,
+        WithdrawalMemoPossibility.POSSIBLE,
     )
 
 fun mockAssetWithDestination() =
     Asset(
-        "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "BTC", "Bitcoin",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "BTC",
+        "Bitcoin",
         "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-        "1", "eoswithmixin", "", "1", "10000", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "0",
-        "0", 3, "", "0", null, WithdrawalMemoPossibility.NEGATIVE,
+        "1",
+        "eoswithmixin",
+        "",
+        "1",
+        "10000",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "0",
+        "0",
+        3,
+        "",
+        "0",
+        null,
+        WithdrawalMemoPossibility.NEGATIVE,
     )
 
 fun mockRippleAsset() =
     Asset(
-        Constants.ChainId.RIPPLE_CHAIN_ID, "XRP", "Ripple",
+        Constants.ChainId.RIPPLE_CHAIN_ID,
+        "XRP",
+        "Ripple",
         "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-        "1", "", "", "1", "10000", "c6d0c728-2624-429b-8e0d-d9d19b6592fa", "0",
-        "0", 3, "", "0", null, WithdrawalMemoPossibility.POSITIVE,
+        "1",
+        "",
+        "",
+        "1",
+        "10000",
+        "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
+        "0",
+        "0",
+        3,
+        "",
+        "0",
+        null,
+        WithdrawalMemoPossibility.POSITIVE,
     )
 
 const val MOCK_ASSETS_JSON = """
