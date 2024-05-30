@@ -71,8 +71,11 @@ class NewSchemeParser(
 
                 if (payType == PayType.Uuid) {
                     val user = linkViewModel.refreshUser(urlQueryParser.userId) ?: return Result.failure(ParserError(FAILURE))
-
-                    val biometricItem = TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo, reference = reference)
+                    val biometricItem = if (urlQueryParser.inscription != null) {
+                        buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
+                    } else {
+                        TransferBiometricItem(listOf(user), 1, traceId, token, amount, memo, status, null, returnTo, reference = reference)
+                    }
                     checkRawTransaction(biometricItem)
                 } else if (payType == PayType.MixAddress) {
                     val mixAddress = urlQueryParser.mixAddress
@@ -104,14 +107,26 @@ class NewSchemeParser(
                 val transferFragment: TransferFragment? =
                     if (payType == PayType.Uuid) {
                         val user = linkViewModel.refreshUser(urlQueryParser.userId) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
-                        TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo))
+                        TransferFragment.newInstance(
+                            if (urlQueryParser.inscription != null) {
+                                buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
+                            } else {
+                                buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo)
+                            }
+                        )
                     } else if (payType == PayType.MixAddress) {
                         val mixAddress = urlQueryParser.mixAddress
                         val members = mixAddress.uuidMembers
                         if (mixAddress.uuidMembers.isNotEmpty()) {
                             if (members.size == 1) {
                                 val user = linkViewModel.refreshUser(members.first()) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
-                                TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo, reference = reference))
+                                TransferFragment.newInstance(
+                                    if (urlQueryParser.inscription != null) {
+                                        buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
+                                    } else {
+                                        buildTransferBiometricItem(user, token, amount ?: "", traceId, memo, returnTo, reference = reference)
+                                    }
+                                )
                             } else {
                                 val users = linkViewModel.findOrRefreshUsers(members)
                                 if (users.isEmpty() || users.size < members.size) {
@@ -137,40 +152,34 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun checkInscriptionTransfer(
-        inscriptionHash: String,
-        asset: String?,
-        userId: String,
-        amount: String?,
-        memo: String?,
-        traceId: String,
-    ): Result<Int> {
-        asset ?: return Result.failure(ParserError(FAILURE))
-        val token = checkToken(asset) ?: return Result.failure(ParserError(FAILURE))
-        val inscription = checkInscription(inscriptionHash) ?: return Result.failure(ParserError(FAILURE))
+    private suspend fun buildInscriptionTransfer(
+        urlQueryParser: UrlQueryParser, userId: String, traceId: String
+    ): NftBiometricItem {
+        val token = checkToken(urlQueryParser.asset!!) ?: throw ParserError(FAILURE)
+        val inscriptionHash = urlQueryParser.inscription ?: throw ParserError(FAILURE)
+        val inscription = checkInscription(inscriptionHash) ?: throw ParserError(FAILURE)
         if (token.collectionHash != inscription.collectionHash) {
-            return Result.failure(ParserError(FAILURE))
+            throw ParserError(FAILURE)
         }
-        val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: return Result.failure(ParserError(FAILURE))
-        if (amount != null && amount != inscriptionCollection.unit) {
-            return Result.failure(ParserError(FAILURE))
+        val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: throw ParserError(FAILURE)
+        if (urlQueryParser.amount != null && urlQueryParser.amount != inscriptionCollection.unit) {
+            throw ParserError(FAILURE)
         }
-        val receiver = linkViewModel.refreshUser(userId) ?: return Result.failure(ParserError(FAILURE))
-        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+        val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
+        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSUFFICIENT_BALANCE, token.symbol)
         val nftBiometricItem =
             NftBiometricItem(
                 asset = token,
                 traceId = traceId,
                 amount = output.amount,
-                memo = memo,
+                memo = urlQueryParser.memo,
                 state = PaymentStatus.pending.name,
                 receivers = listOf(receiver),
                 reference = null,
                 inscriptionItem = inscription,
                 inscriptionCollection = inscriptionCollection,
             )
-        TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).show(bottomSheet.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-        return Result.success(SUCCESS)
+        return nftBiometricItem
     }
 
     suspend fun parseExternalTransferUrl(url: String) {
