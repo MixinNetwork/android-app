@@ -30,9 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
+import coil.compose.AsyncImage
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -130,14 +128,14 @@ fun InputContent(
                         onInputChanged?.invoke(it)
                     },
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .onFocusChanged {
-                                if (it.isFocused) {
-                                    keyboardController?.show()
-                                }
-                            },
+                    Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                keyboardController?.show()
+                            }
+                        },
                     interactionSource = interactionSource,
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     textStyle =
@@ -176,16 +174,15 @@ fun InputContent(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun Left(
     token: SwapToken?,
     selectClick: () -> Unit,
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
-        GlideImage(
+        AsyncImage(
             model = token?.logoURI ?: "",
-            loading = placeholder(R.drawable.ic_avatar_place_holder),
+            placeholder = painterResource(R.drawable.ic_avatar_place_holder),
             modifier = Modifier.size(32.dp).clip(CircleShape),
             contentDescription = "",
         )
