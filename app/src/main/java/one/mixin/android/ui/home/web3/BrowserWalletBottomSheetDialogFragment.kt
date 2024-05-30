@@ -228,28 +228,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
         if (chain == Chain.Solana) {
-            lifecycleScope.launch {
-                asset = viewModel.refreshAsset(Chain.Solana.assetId)
-                try {
-                    if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                        val tx = org.sol4k.VersionedTransaction.from(signMessage.data ?: "")
-                        solanaTx = tx
-                        if (token == null) {
-                            val tokenBalanceChange = tx.calcBalanceChange()
-                            val mintAddress = tokenBalanceChange.mint
-                            if (mintAddress.isBlank()) {
-                                return@launch
-                            }
-                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
-                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
-                        }
-                    } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
-                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
-                    }
-                } catch (e: Exception) {
-                    handleException(e)
-                }
-            }
+            refreshSolana()
             return
         }
         val assetId = walletConnectChainIdMap[chain.symbol]
@@ -275,6 +254,34 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
             .launchIn(lifecycleScope)
+    }
+
+    private fun refreshSolana() {
+        tickerFlow(15.seconds)
+            .onEach {
+                try {
+                    if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
+                        val tx = solanaTx ?: org.sol4k.VersionedTransaction.from(signMessage.data ?: "").apply {
+                            solanaTx = this
+                        }
+                        if (token == null) {
+                            val tokenBalanceChange = tx.calcBalanceChange()
+                            val mintAddress = tokenBalanceChange.mint
+                            if (mintAddress.isBlank()) {
+                                asset = viewModel.refreshAsset(Chain.Solana.assetId)
+                                return@onEach
+                            }
+                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
+                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
+                        }
+                    } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
+                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
+                    }
+                } catch (e: Exception) {
+                    handleException(e)
+                }
+                asset = viewModel.refreshAsset(Chain.Solana.assetId)
+            }.launchIn(lifecycleScope)
     }
 
     private fun doAfterPinComplete(pin: String) =
