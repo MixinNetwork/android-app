@@ -105,10 +105,11 @@ fun SessionProposalPage(
                 }
                 else -> {
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(sessionProposalUI.peer.icon)
-                            .decoderFactory(SvgDecoder.Factory())
-                            .build(),
+                        model =
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(sessionProposalUI.peer.icon)
+                                .decoderFactory(SvgDecoder.Factory())
+                                .build(),
                         contentDescription = null,
                         modifier =
                             Modifier

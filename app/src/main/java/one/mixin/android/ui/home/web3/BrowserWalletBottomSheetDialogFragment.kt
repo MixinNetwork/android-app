@@ -258,9 +258,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .onEach {
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                        val tx = solanaTx ?: org.sol4k.VersionedTransaction.from(signMessage.data ?: "").apply {
-                            solanaTx = this
-                        }
+                        val tx =
+                            solanaTx ?: org.sol4k.VersionedTransaction.from(signMessage.data ?: "").apply {
+                                solanaTx = this
+                            }
                         if (token == null) {
                             val tokenBalanceChange = tx.calcBalanceChange()
                             val mintAddress = tokenBalanceChange.mint

@@ -68,15 +68,16 @@ private fun Content(
         Box(modifier = Modifier.height(28.dp))
 
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(connectionUI.icon)
-                .decoderFactory(SvgDecoder.Factory())
-                .build(),
+            model =
+                ImageRequest.Builder(LocalContext.current)
+                    .data(connectionUI.icon)
+                    .decoderFactory(SvgDecoder.Factory())
+                    .build(),
             contentDescription = null,
             modifier =
-            Modifier
-                .size(90.dp)
-                .clip(CircleShape),
+                Modifier
+                    .size(90.dp)
+                    .clip(CircleShape),
             placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
         Box(modifier = Modifier.height(10.dp))

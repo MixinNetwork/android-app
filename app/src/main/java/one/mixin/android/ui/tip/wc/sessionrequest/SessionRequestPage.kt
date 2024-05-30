@@ -148,10 +148,11 @@ fun SessionRequestPage(
 
                     else ->
                         AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(sessionRequestUI.peerUI.icon)
-                                .decoderFactory(SvgDecoder.Factory())
-                                .build(),
+                            model =
+                                ImageRequest.Builder(LocalContext.current)
+                                    .data(sessionRequestUI.peerUI.icon)
+                                    .decoderFactory(SvgDecoder.Factory())
+                                    .build(),
                             contentDescription = null,
                             modifier =
                                 Modifier

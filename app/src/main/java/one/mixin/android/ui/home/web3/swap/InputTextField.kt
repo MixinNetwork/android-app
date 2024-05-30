@@ -128,14 +128,14 @@ fun InputContent(
                         onInputChanged?.invoke(it)
                     },
                     modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onFocusChanged {
-                            if (it.isFocused) {
-                                keyboardController?.show()
-                            }
-                        },
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    keyboardController?.show()
+                                }
+                            },
                     interactionSource = interactionSource,
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                     textStyle =

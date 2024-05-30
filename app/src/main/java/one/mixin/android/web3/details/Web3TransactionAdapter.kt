@@ -14,6 +14,7 @@ import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.svgLoader
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
@@ -125,7 +126,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                             inTv.textColorResource = R.color.wallet_green
                             inTv.text = "+${inTransfer.amount.numberFormat8()}"
                             inSymbolTv.text = inTransfer.symbol
-                            avatar.badge.load(inTransfer.iconUrl) {
+                            avatar.badge.load(inTransfer.iconUrl, imageLoader = root.context.svgLoader()) {
                                 placeholder(R.drawable.ic_avatar_place_holder)
                             }
                             avatar.badge.isVisible = true
@@ -157,10 +158,10 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Approve.value -> {
-                    avatar.bg.load(transaction.fee.iconUrl) {
+                    avatar.bg.load(transaction.fee.iconUrl, imageLoader = root.context.svgLoader()) {
                         placeholder(R.drawable.ic_avatar_place_holder)
                     }
-                    avatar.badge.load(transaction.approvals.firstOrNull()?.iconUrl) {
+                    avatar.badge.load(transaction.approvals.firstOrNull()?.iconUrl, imageLoader = root.context.svgLoader()) {
                         placeholder(R.drawable.ic_no_dapp)
                     }
                     avatar.badge.isVisible = true
@@ -173,10 +174,10 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Mint.value -> {
-                    avatar.bg.load(transaction.fee.iconUrl) {
+                    avatar.bg.load(transaction.fee.iconUrl, imageLoader = root.context.svgLoader()) {
                         placeholder(R.drawable.ic_avatar_place_holder)
                     }
-                    avatar.badge.load(transaction.approvals.firstOrNull()?.iconUrl) {
+                    avatar.badge.load(transaction.approvals.firstOrNull()?.iconUrl, imageLoader = root.context.svgLoader()) {
                         placeholder(R.drawable.ic_no_dapp)
                     }
                     avatar.badge.isVisible = true
@@ -189,13 +190,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Trade.value -> {
-                    avatar.badge.load(transaction.appMetadata?.iconUrl) {
+                    avatar.badge.load(transaction.appMetadata?.iconUrl, imageLoader = root.context.svgLoader()) {
                         placeholder(R.drawable.ic_no_dapp)
                     }
                     avatar.badge.isVisible = true
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            avatar.bg.load(inTransfer.iconUrl) {
+                            avatar.bg.load(inTransfer.iconUrl, imageLoader = root.context.svgLoader()) {
                                 placeholder(R.drawable.ic_avatar_place_holder)
                             }
                             inTv.textColorResource = R.color.wallet_green
@@ -213,13 +214,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Deposit.value -> {
-                    avatar.badge.load(transaction.appMetadata?.iconUrl) {
+                    avatar.badge.load(transaction.appMetadata?.iconUrl, imageLoader = root.context.svgLoader()) {
                         placeholder(R.drawable.ic_no_dapp)
                     }
                     avatar.badge.isVisible = true
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            avatar.bg.load(inTransfer.iconUrl) {
+                            avatar.bg.load(inTransfer.iconUrl, imageLoader = root.context.svgLoader()) {
                                 placeholder(R.drawable.ic_avatar_place_holder)
                             }
                             inTv.textColorResource = R.color.wallet_green

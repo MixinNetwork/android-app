@@ -11,7 +11,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadHexagonImage
-import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.safe.TokenItem
 
 open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
