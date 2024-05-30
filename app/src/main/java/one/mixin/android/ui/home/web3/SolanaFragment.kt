@@ -271,7 +271,7 @@ class SolanaFragment : BaseFragment() {
         err: String,
     ) {
         binding.apply {
-            if (adapter.account != null) return
+            if (!adapter.isEmpty()) return
             empty.isVisible = true
             titleTv.text = err
             receiveTv.setText(R.string.Retry)
