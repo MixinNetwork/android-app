@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
+import coil.load
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
@@ -75,8 +76,12 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
     ) {
         if (collectionHash.isNullOrEmpty()) {
             binding.badge.isVisible = true
-            binding.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
-            binding.badge.loadImage(chainUrl, R.drawable.ic_avatar_place_holder)
+            binding.bg.load(assetUrl) {
+                placeholder(R.drawable.ic_avatar_place_holder)
+            }
+            binding.badge.load(chainUrl) {
+                placeholder(R.drawable.ic_avatar_place_holder)
+            }
         } else {
             binding.badge.isVisible = false
             binding.bg.loadHexagonImage(assetUrl, R.drawable.ic_avatar_place_holder)
