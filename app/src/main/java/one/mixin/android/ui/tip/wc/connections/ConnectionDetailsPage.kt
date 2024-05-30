@@ -70,7 +70,8 @@ private fun Content(
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(connectionUI.icon)
-                .decoderFactory(SvgDecoder.Factory()),
+                .decoderFactory(SvgDecoder.Factory())
+                .build(),
             contentDescription = null,
             modifier =
             Modifier
