@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -119,9 +118,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (activity is WalletConnectActivity || activity is UrlInterpreterActivity) {
                 var realFragmentCount = 0
                 parentFragmentManager.fragments.forEach { f ->
-                    if (f !is SupportRequestManagerFragment) {
-                        realFragmentCount++
-                    }
+                    realFragmentCount++
                 }
                 if (realFragmentCount <= 0) {
                     activity?.finish()
