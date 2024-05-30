@@ -235,6 +235,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
     implementation "io.coil-kt:coil-compose:${coilVersion}"
+    implementation("io.coil-kt:coil-svg:$coilVersion")
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"

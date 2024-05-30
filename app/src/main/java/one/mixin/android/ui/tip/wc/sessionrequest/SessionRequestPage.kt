@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -36,10 +37,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
-import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.WalletConnect
@@ -144,13 +147,16 @@ fun SessionRequestPage(
                     }
 
                     else ->
-                        GlideImage(
-                            data = sessionRequestUI.peerUI.icon,
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(sessionRequestUI.peerUI.icon)
+                                .decoderFactory(SvgDecoder.Factory()),
+                            contentDescription = null,
                             modifier =
                                 Modifier
                                     .size(70.dp)
                                     .clip(CircleShape),
-                            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                            placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
                         )
                 }
                 Box(modifier = Modifier.height(16.dp))
