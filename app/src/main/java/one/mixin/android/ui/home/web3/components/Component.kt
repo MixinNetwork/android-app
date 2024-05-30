@@ -37,9 +37,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.internal.Chain
@@ -90,13 +90,14 @@ fun TransactionPreview(
                 fontSize = 12.sp,
             )
             Box(modifier = Modifier.weight(1f))
-            GlideImage(
-                data = asset?.iconUrl ?: "",
+            AsyncImage(
+                model = asset?.iconUrl,
+                contentDescription = null,
                 modifier =
                     Modifier
                         .size(32.dp)
                         .clip(CircleShape),
-                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
         Text(
@@ -150,13 +151,14 @@ fun TokenTransactionPreview(
                 fontSize = 12.sp,
             )
             Box(modifier = Modifier.weight(1f))
-            GlideImage(
-                data = token.iconUrl,
+            AsyncImage(
+                model = token.iconUrl,
+                contentDescription = null,
                 modifier =
                     Modifier
                         .size(32.dp)
                         .clip(CircleShape),
-                placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
             )
         }
         Text(

@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.CodeType
@@ -57,14 +58,15 @@ private fun AvatarImage(
     identityNumber: String,
     size: Dp,
 ) {
-    if (imageUrl != null && imageUrl.isNotEmpty()) {
-        GlideImage(
-            data = imageUrl,
+    if (!imageUrl.isNullOrEmpty()) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = null,
             modifier =
                 Modifier
                     .size(size)
                     .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
     } else {
         val avatarArray = integerArrayResource(id = R.array.avatar_colors)

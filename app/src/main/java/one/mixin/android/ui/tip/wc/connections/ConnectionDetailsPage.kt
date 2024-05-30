@@ -24,8 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import one.mixin.android.R
-import one.mixin.android.compose.GlideImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.tip.wc.WalletConnect
 
@@ -63,13 +63,14 @@ private fun Content(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(modifier = Modifier.height(28.dp))
-        GlideImage(
-            data = connectionUI.icon ?: "",
+
+        AsyncImage(
+            model = connectionUI.icon, contentDescription = null,
             modifier =
-                Modifier
-                    .size(90.dp)
-                    .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            Modifier
+                .size(90.dp)
+                .clip(CircleShape),
+            placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
         )
         Box(modifier = Modifier.height(10.dp))
         Text(
@@ -95,19 +96,19 @@ private fun Content(
         Box(modifier = Modifier.height(24.dp))
         Box(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(13.dp))
-                    .background(MixinAppTheme.colors.backgroundWindow)
-                    .clickable(onClick = onDisconnectClick),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(13.dp))
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .clickable(onClick = onDisconnectClick),
         ) {
             Text(
                 text = stringResource(id = R.string.disconnect),
                 modifier =
-                    Modifier
-                        .padding(horizontal = 20.dp, vertical = 22.dp)
-                        .align(Alignment.CenterStart),
+                Modifier
+                    .padding(horizontal = 20.dp, vertical = 22.dp)
+                    .align(Alignment.CenterStart),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textBlue,
             )
@@ -120,9 +121,9 @@ fun Loading() {
     MixinAppTheme {
         Box(
             modifier =
-                Modifier
-                    .height(200.dp)
-                    .fillMaxWidth(),
+            Modifier
+                .height(200.dp)
+                .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(
