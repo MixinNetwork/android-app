@@ -9,6 +9,7 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
+    id "org.jetbrains.kotlin.plugin.compose" version "2.0.0"
 }
 
 def versionMajor = 1
@@ -165,6 +166,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.14'
     }
+
     lint {
         abortOnError false
     }
@@ -461,6 +463,13 @@ dependencies {
 
     //Jetpack Datastore - Proto Datastore
     implementation "androidx.datastore:datastore:$datastoreVersion"
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
+
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }
 
 secrets {
