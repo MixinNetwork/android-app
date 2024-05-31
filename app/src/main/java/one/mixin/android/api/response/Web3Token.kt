@@ -84,6 +84,7 @@ fun Web3Token.toSwapToken(): SwapToken {
                 price = null,
             ),
         balance = balance,
+        price = price
     )
 }
 
