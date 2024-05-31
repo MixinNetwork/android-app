@@ -99,8 +99,9 @@ fun SwapPage(
                         Box(
                             modifier =
                                 Modifier
-                                    .width(40.dp)
-                                    .height(40.dp)
+                                    .wrapContentWidth()
+                                    .wrapContentHeight()
+                                    .padding(top = 20.dp)
                                     .clip(CircleShape)
                                     .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
                                     .background(MixinAppTheme.colors.backgroundGray)
@@ -109,10 +110,12 @@ fun SwapPage(
                                         switch.invoke()
                                         context.clickVibrate()
                                     }
+                                    .padding(4.dp)
                                     .rotate(rotation),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
+                                modifier = Modifier.width(32.dp).height(32.dp),
                                 painter = painterResource(id = R.drawable.ic_switch),
                                 contentDescription = null,
                                 tint = MixinAppTheme.colors.textPrimary,
