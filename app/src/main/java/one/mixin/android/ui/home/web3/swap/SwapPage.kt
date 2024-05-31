@@ -230,7 +230,7 @@ fun InputArea(
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(12.dp))
                 .background(MixinAppTheme.colors.backgroundGray)
-                .padding(20.dp),
+                .padding(20.dp, 20.dp, 20.dp, if (readOnly) 20.dp else 10.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -269,15 +269,17 @@ fun InputArea(
                     contentDescription = null,
                     tint = MixinAppTheme.colors.icon,
                 )
-                if (!readOnly) {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    InputAction(text = stringResource(id = R.string.balance_half)) {
-                        onHalf?.invoke()
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    InputAction(text = stringResource(id = R.string.balance_max)) {
-                        onMax?.invoke()
-                    }
+            }
+        }
+        if (!readOnly) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                InputAction(text = stringResource(id = R.string.balance_half)) {
+                    onHalf?.invoke()
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+                InputAction(text = stringResource(id = R.string.balance_max)) {
+                    onMax?.invoke()
                 }
             }
         }
