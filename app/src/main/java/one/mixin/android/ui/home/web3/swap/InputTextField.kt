@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.swap
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +39,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
 import java.math.RoundingMode
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun InputContent(
     token: SwapToken?,
@@ -94,9 +97,8 @@ fun InputContent(
         val focusRequester = remember { FocusRequester() }
         val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
-
-        val valueText =
-            remember {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            val valueText by mutableStateOf(
                 if (token != null) {
                     val v =
                         try {
@@ -108,8 +110,7 @@ fun InputContent(
                 } else {
                     mutableStateOf(BigDecimal.ZERO)
                 }
-            }
-        Column(modifier = Modifier.fillMaxWidth()) {
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
