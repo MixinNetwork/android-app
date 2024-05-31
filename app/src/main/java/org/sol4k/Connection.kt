@@ -5,7 +5,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.put
 import org.sol4k.api.AccountInfo
 import org.sol4k.api.Blockhash
 import org.sol4k.api.Commitment
@@ -177,7 +179,11 @@ class Connection @JvmOverloads constructor(
             "sendTransaction",
             listOf(
                 Json.encodeToJsonElement(encodedTransaction),
-                Json.encodeToJsonElement(mapOf("encoding" to "base64")),
+                buildJsonObject {
+                    put("encoding", "base64")
+                    put("skipPreflight", true)
+                    put("maxRetries", 4)
+                }
             )
         )
     }
