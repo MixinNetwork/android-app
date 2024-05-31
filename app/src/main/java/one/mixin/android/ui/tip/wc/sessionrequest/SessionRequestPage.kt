@@ -37,12 +37,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.WalletConnect
@@ -147,17 +145,13 @@ fun SessionRequestPage(
                     }
 
                     else ->
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(sessionRequestUI.peerUI.icon)
-                                .decoderFactory(SvgDecoder.Factory())
-                                .build(),
-                            contentDescription = null,
+                        CoilImage(
+                            sessionRequestUI.peerUI.icon,
                             modifier =
-                                Modifier
-                                    .size(70.dp)
-                                    .clip(CircleShape),
-                            placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
+                            Modifier
+                                .size(70.dp)
+                                .clip(CircleShape),
+                            placeholder = R.drawable.ic_avatar_place_holder,
                         )
                 }
                 Box(modifier = Modifier.height(16.dp))

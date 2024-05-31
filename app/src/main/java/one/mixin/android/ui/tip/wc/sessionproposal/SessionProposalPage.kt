@@ -32,11 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
@@ -104,17 +102,13 @@ fun SessionProposalPage(
                     )
                 }
                 else -> {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(sessionProposalUI.peer.icon)
-                            .decoderFactory(SvgDecoder.Factory())
-                            .build(),
-                        contentDescription = null,
+                    CoilImage(
+                        model = sessionProposalUI.peer.icon,
                         modifier =
                             Modifier
                                 .size(70.dp)
                                 .clip(CircleShape),
-                        placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
+                        placeholder = R.drawable.ic_avatar_place_holder,
                     )
                 }
             }

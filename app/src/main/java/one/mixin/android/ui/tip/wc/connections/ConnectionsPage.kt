@@ -40,8 +40,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.HighlightText
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -120,14 +120,13 @@ private fun ConnectionItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.width(20.dp))
-        AsyncImage(
+        CoilImage(
             model = connectionUI.icon,
-            contentDescription = null,
             modifier =
                 Modifier
                     .size(50.dp)
                     .clip(CircleShape),
-            placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
+            placeholder = R.drawable.ic_avatar_place_holder,
         )
         Box(modifier = Modifier.width(16.dp))
         Column(

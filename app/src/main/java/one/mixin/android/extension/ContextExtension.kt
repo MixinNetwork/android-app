@@ -65,6 +65,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import coil.ImageLoader
+import coil.decode.SvgDecoder
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -124,6 +126,10 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     val b = attributes.getBoolean(0, false)
     attributes.recycle()
     return b
+}
+
+fun Context.svgLoader(): ImageLoader {
+    return ImageLoader.Builder(this).components { add(SvgDecoder.Factory()) }.build()
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater

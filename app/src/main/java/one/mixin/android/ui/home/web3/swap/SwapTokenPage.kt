@@ -34,10 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.MiddleEllipsisText
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
@@ -62,14 +62,13 @@ fun SwapTokenPage(
                     Modifier
                         .fillMaxWidth(),
             ) {
-                AsyncImage(
+                CoilImage(
                     model = token.logoURI,
-                    contentDescription = null,
                     modifier =
                         Modifier
                             .size(45.dp)
                             .clip(CircleShape),
-                    placeholder = painterResource(id = R.drawable.ic_avatar_place_holder),
+                    placeholder = R.drawable.ic_avatar_place_holder,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {

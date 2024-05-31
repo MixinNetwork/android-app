@@ -16,19 +16,8 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
-import one.mixin.android.widget.GlideRoundedHexagonTransformation
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
-
-fun ImageView.loadImage(uri: String?) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).into(this)
-}
-
-fun ImageView.loadImage(uri: Uri?) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).into(this)
-}
 
 fun ImageView.loadImage(
     uri: String?,
@@ -40,19 +29,6 @@ fun ImageView.loadImage(
     } else {
         if (!isActivityNotDestroyed()) return
         Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
-    }
-}
-
-fun ImageView.loadHexagonImage(
-    uri: String?,
-    @DrawableRes holder: Int,
-    useAppContext: Boolean = false,
-) {
-    if (useAppContext) {
-        Glide.with(MixinApplication.appContext).load(uri).apply(RequestOptions.placeholderOf(holder)).transform(GlideRoundedHexagonTransformation()).into(this)
-    } else {
-        if (!isActivityNotDestroyed()) return
-        Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).transform(GlideRoundedHexagonTransformation()).into(this)
     }
 }
 
@@ -68,23 +44,6 @@ fun ImageView.loadImage(
     if (!isActivityNotDestroyed()) return
     val multi = MultiTransformation(CropTransformation(width, height))
     Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
-}
-
-fun ImageView.loadImageCenterCrop(
-    uri: String?,
-    holder: String? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().dontAnimate().dontTransform().centerCrop().run {
-                return@run if (holder != null) {
-                    placeholder(holder.toDrawable(this@loadImageCenterCrop.width, this@loadImageCenterCrop.height))
-                } else {
-                    this
-                }
-            },
-        ).into(this)
 }
 
 fun ImageView.loadImageCenterCrop(
@@ -460,23 +419,6 @@ fun ImageView.loadBase64(
                 .transform(multi).signature(StringSignature("$uri$mark"))
                 .dontAnimate(),
         ).into(this)
-}
-
-fun ImageView.loadCircleImage(
-    uri: String?,
-    @DrawableRes holder: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    if (uri.isNullOrBlank()) {
-        if (holder != null) {
-            setImageResource(holder)
-        }
-    } else if (holder == null) {
-        Glide.with(this).load(uri).apply(RequestOptions().circleCrop()).into(this)
-    } else {
-        Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder).circleCrop())
-            .into(this)
-    }
 }
 
 fun ImageView.loadRoundImage(

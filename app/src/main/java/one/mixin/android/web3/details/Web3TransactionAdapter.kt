@@ -5,15 +5,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.svgLoader
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
@@ -125,7 +126,9 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                             inTv.textColorResource = R.color.wallet_green
                             inTv.text = "+${inTransfer.amount.numberFormat8()}"
                             inSymbolTv.text = inTransfer.symbol
-                            avatar.badge.loadImage(inTransfer.iconUrl, R.drawable.ic_avatar_place_holder)
+                            avatar.badge.load(inTransfer.iconUrl, imageLoader = root.context.svgLoader()) {
+                                placeholder(R.drawable.ic_avatar_place_holder)
+                            }
                             avatar.badge.isVisible = true
                         }
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
@@ -155,8 +158,12 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Approve.value -> {
-                    avatar.bg.loadImage(transaction.fee.iconUrl, R.drawable.ic_avatar_place_holder)
-                    avatar.badge.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.bg.load(transaction.fee.iconUrl, imageLoader = root.context.svgLoader()) {
+                        placeholder(R.drawable.ic_avatar_place_holder)
+                    }
+                    avatar.badge.load(transaction.approvals.firstOrNull()?.iconUrl, imageLoader = root.context.svgLoader()) {
+                        placeholder(R.drawable.ic_no_dapp)
+                    }
                     avatar.badge.isVisible = true
                     inTv.textColorResource = R.color.wallet_pink
                     inTv.text = "-${transaction.fee.amount.numberFormat8()}"
@@ -167,8 +174,12 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Mint.value -> {
-                    avatar.bg.loadImage(transaction.fee.iconUrl, R.drawable.ic_avatar_place_holder)
-                    avatar.badge.loadImage(transaction.approvals.firstOrNull()?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.bg.load(transaction.fee.iconUrl, imageLoader = root.context.svgLoader()) {
+                        placeholder(R.drawable.ic_avatar_place_holder)
+                    }
+                    avatar.badge.load(transaction.approvals.firstOrNull()?.iconUrl, imageLoader = root.context.svgLoader()) {
+                        placeholder(R.drawable.ic_no_dapp)
+                    }
                     avatar.badge.isVisible = true
                     inTv.textColorResource = R.color.wallet_pink
                     inTv.text = "-${transaction.fee.amount.numberFormat8()}"
@@ -179,11 +190,15 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Trade.value -> {
-                    avatar.badge.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.badge.load(transaction.appMetadata?.iconUrl, imageLoader = root.context.svgLoader()) {
+                        placeholder(R.drawable.ic_no_dapp)
+                    }
                     avatar.badge.isVisible = true
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            avatar.bg.loadImage(inTransfer.iconUrl, R.drawable.ic_avatar_place_holder)
+                            avatar.bg.load(inTransfer.iconUrl, imageLoader = root.context.svgLoader()) {
+                                placeholder(R.drawable.ic_avatar_place_holder)
+                            }
                             inTv.textColorResource = R.color.wallet_green
                             inTv.text = "+${inTransfer.amount.numberFormat8()}"
                             inSymbolTv.text = inTransfer.symbol
@@ -199,11 +214,15 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                 }
 
                 Web3TransactionType.Deposit.value -> {
-                    avatar.badge.loadImage(transaction.appMetadata?.iconUrl, R.drawable.ic_no_dapp)
+                    avatar.badge.load(transaction.appMetadata?.iconUrl, imageLoader = root.context.svgLoader()) {
+                        placeholder(R.drawable.ic_no_dapp)
+                    }
                     avatar.badge.isVisible = true
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            avatar.bg.loadImage(inTransfer.iconUrl, R.drawable.ic_avatar_place_holder)
+                            avatar.bg.load(inTransfer.iconUrl, imageLoader = root.context.svgLoader()) {
+                                placeholder(R.drawable.ic_avatar_place_holder)
+                            }
                             inTv.textColorResource = R.color.wallet_green
                             inTv.text = "+${inTransfer.amount.numberFormat8()}"
                             inSymbolTv.text = inTransfer.symbol
