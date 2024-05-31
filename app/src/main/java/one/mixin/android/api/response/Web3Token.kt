@@ -66,11 +66,11 @@ class Web3Token(
 ) : Parcelable
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
-const val wrappedSolanaTokenAssetKey = "So11111111111111111111111111111111111111112"
+const val wrappedSolTokenAssetKey = "So11111111111111111111111111111111111111112"
 
 fun Web3Token.toSwapToken(): SwapToken {
     return SwapToken(
-        address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolanaTokenAssetKey else assetKey,
+        address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
         decimals = decimals,
         name = name,
         symbol = symbol,
@@ -119,7 +119,7 @@ fun Web3Token.isSolana(): Boolean {
 }
 
 fun Web3Token.isSolToken(): Boolean {
-    return isSolana() && (assetKey == solanaNativeTokenAssetKey || assetKey == wrappedSolanaTokenAssetKey)
+    return isSolana() && (assetKey == solanaNativeTokenAssetKey || assetKey == wrappedSolTokenAssetKey)
 }
 
 private fun Web3Token.getChainAssetKey(): String {
