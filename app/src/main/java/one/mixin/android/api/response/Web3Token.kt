@@ -83,6 +83,7 @@ fun Web3Token.toSwapToken(): SwapToken {
                 chainLogoURI = chainIconUrl,
                 price = null,
             ),
+        balance = balance,
     )
 }
 
