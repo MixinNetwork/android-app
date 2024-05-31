@@ -367,7 +367,7 @@
     <string name="divide">, </string>
     <string name="Documents">Documents</string>
     <string name="Done">Done</string>
-    <string name="Dont_have_assets">No assets</string>
+    <string name="Dont_have_assets">Don\'t have assets?</string>
     <string name="Draw">Draw</string>
     <string name="Duplicate_Transfer_Confirmation">Duplicate Transfer Confirmation</string>
     <string name="Duplicate_Withdraw_Confirmation">Duplicate Withdraw Confirmation</string>
