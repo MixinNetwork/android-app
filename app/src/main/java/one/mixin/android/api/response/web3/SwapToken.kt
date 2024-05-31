@@ -3,7 +3,7 @@ package one.mixin.android.api.response.web3
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.api.response.jupiterSolanaTokenAssetKey
+import one.mixin.android.api.response.wrappedSolanaTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -37,5 +37,5 @@ data class SwapToken(
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
     }
 
-    fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(jupiterSolanaTokenAssetKey, true)
+    fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolanaTokenAssetKey, true)
 }
