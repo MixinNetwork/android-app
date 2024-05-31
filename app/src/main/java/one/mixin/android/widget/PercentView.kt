@@ -18,6 +18,7 @@ import android.view.View
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.forEachWithIndex
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -137,8 +138,12 @@ class PercentView : View {
         } else {
             blurShadow?.eraseColor(Color.TRANSPARENT)
         }
-        val c = Canvas()
-        createShadow(blurShadow, c, context.dpToPx(8f).toFloat())
+        try {
+            val c = Canvas()
+            createShadow(blurShadow, c, context.dpToPx(8f).toFloat())
+        } catch (throwable: Throwable) {
+            Timber.e(throwable)
+        }
         return false
     }
 
