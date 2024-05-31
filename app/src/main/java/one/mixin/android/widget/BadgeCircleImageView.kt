@@ -10,7 +10,6 @@ import coil.load
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadHexagonImage
 import one.mixin.android.vo.safe.TokenItem
 
 open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
@@ -83,7 +82,10 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
             }
         } else {
             binding.badge.isVisible = false
-            binding.bg.loadHexagonImage(assetUrl, R.drawable.ic_avatar_place_holder)
+            binding.bg.load(assetUrl) {
+                placeholder(R.drawable.ic_avatar_place_holder)
+                transformations(CoilRoundedHexagonTransformation())
+            }
         }
     }
 

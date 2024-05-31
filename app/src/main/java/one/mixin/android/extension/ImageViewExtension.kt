@@ -16,7 +16,6 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
-import one.mixin.android.widget.GlideRoundedHexagonTransformation
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
 
@@ -40,19 +39,6 @@ fun ImageView.loadImage(
     } else {
         if (!isActivityNotDestroyed()) return
         Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
-    }
-}
-
-fun ImageView.loadHexagonImage(
-    uri: String?,
-    @DrawableRes holder: Int,
-    useAppContext: Boolean = false,
-) {
-    if (useAppContext) {
-        Glide.with(MixinApplication.appContext).load(uri).apply(RequestOptions.placeholderOf(holder)).transform(GlideRoundedHexagonTransformation()).into(this)
-    } else {
-        if (!isActivityNotDestroyed()) return
-        Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).transform(GlideRoundedHexagonTransformation()).into(this)
     }
 }
 

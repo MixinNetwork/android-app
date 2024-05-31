@@ -5,12 +5,11 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import coil.load
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadHexagonImage
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -19,6 +18,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
     init {
@@ -66,8 +66,13 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         if (safeInscription != null) {
             binding.chatTitleTv.text = safeInscription.name
             binding.chatNumberTv.text = "#${safeInscription.sequence}"
-            binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
-            binding.chatInscriptionIcon.loadHexagonImage(safeInscription.iconURL, R.drawable.ic_inscription_icon)
+            binding.chatInscriptionIv.load(safeInscription.contentURL) {
+                placeholder(R.drawable.ic_default_inscription)
+            }
+            binding.chatInscriptionIcon.load(safeInscription.iconURL) {
+                placeholder(R.drawable.ic_inscription_icon)
+                transformations(CoilRoundedHexagonTransformation())
+            }
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
         }
 
