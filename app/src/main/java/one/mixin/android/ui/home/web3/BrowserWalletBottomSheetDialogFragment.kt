@@ -19,7 +19,6 @@ import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -212,9 +211,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (activity is WalletConnectActivity || activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 activity?.finish()
@@ -261,9 +258,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .onEach {
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                        val tx = solanaTx ?: org.sol4k.VersionedTransaction.from(signMessage.data ?: "").apply {
-                            solanaTx = this
-                        }
+                        val tx =
+                            solanaTx ?: org.sol4k.VersionedTransaction.from(signMessage.data ?: "").apply {
+                                solanaTx = this
+                            }
                         if (token == null) {
                             val tokenBalanceChange = tx.calcBalanceChange()
                             val mintAddress = tokenBalanceChange.mint

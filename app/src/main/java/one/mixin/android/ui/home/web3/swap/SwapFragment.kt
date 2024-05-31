@@ -33,7 +33,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.jupiterSolanaTokenAssetKey
+import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.toSwapToken
 import one.mixin.android.api.response.web3.QuoteResponse
@@ -272,25 +272,18 @@ class SwapFragment : BaseFragment() {
         index: Int,
     ) {
         if (index == 0) {
-            val supportAssetKeys = swapTokens.map { it.address }
             Web3TokenListBottomSheetDialogFragment.newInstance(
-                ArrayList(
-                    web3tokens.filter {
-                        it.assetKey == solanaNativeTokenAssetKey || (it.assetKey != jupiterSolanaTokenAssetKey && supportAssetKeys.contains(it.assetKey))
-                    },
-                ),
+                ArrayList(web3tokens),
             ).apply {
                 setOnClickListener { t ->
-                    val token = swapTokens.firstOrNull { (it.address == jupiterSolanaTokenAssetKey && t.assetKey == solanaNativeTokenAssetKey) || it.address == t.assetKey }
-                    if (token != null) {
-                        if (token == this@SwapFragment.toToken) {
-                            this@SwapFragment.toToken = fromToken
-                        }
-                        this@SwapFragment.fromToken = token
-                        lifecycleScope.launch {
-                            refreshTokensPrice(listOf(token))
-                            onTextChanged(currentText)
-                        }
+                    val token = t.toSwapToken()
+                    if (token == this@SwapFragment.toToken) {
+                        this@SwapFragment.toToken = fromToken
+                    }
+                    this@SwapFragment.fromToken = token
+                    lifecycleScope.launch {
+                        refreshTokensPrice(listOf(token))
+                        onTextChanged(currentText)
                     }
                     dismissNow()
                 }
@@ -342,12 +335,14 @@ class SwapFragment : BaseFragment() {
                 it.map { token ->
                     val t =
                         web3tokens.firstOrNull { web3Token ->
-                            web3Token.assetKey == token.address || (token.address == jupiterSolanaTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
+                            web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                         } ?: return@map token
                     token.balance = t.balance
                     token
                 }
-            fromToken = swapTokens.firstOrNull { t -> fromToken?.address == t.address } ?: swapTokens[0]
+            if (fromToken == null) {
+                fromToken = swapTokens.firstOrNull { t -> fromToken?.address == t.address } ?: swapTokens[0]
+            }
             toToken = swapTokens.firstOrNull { t -> toToken?.address == t.address } ?: swapTokens[1]
 
             refreshTokensPrice(listOf(fromToken!!, toToken!!))

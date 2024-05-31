@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.compose.GlideImage
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.MiddleEllipsisText
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
@@ -62,13 +62,13 @@ fun SwapTokenPage(
                     Modifier
                         .fillMaxWidth(),
             ) {
-                GlideImage(
-                    data = token.logoURI,
+                CoilImage(
+                    model = token.logoURI,
                     modifier =
                         Modifier
                             .size(45.dp)
                             .clip(CircleShape),
-                    placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                    placeholder = R.drawable.ic_avatar_place_holder,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {

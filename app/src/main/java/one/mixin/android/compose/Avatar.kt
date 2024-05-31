@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.integerArrayResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -57,14 +56,14 @@ private fun AvatarImage(
     identityNumber: String,
     size: Dp,
 ) {
-    if (imageUrl != null && imageUrl.isNotEmpty()) {
-        GlideImage(
-            data = imageUrl,
+    if (!imageUrl.isNullOrEmpty()) {
+        CoilImage(
+            model = imageUrl,
             modifier =
                 Modifier
                     .size(size)
                     .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            placeholder = R.drawable.ic_avatar_place_holder,
         )
     } else {
         val avatarArray = integerArrayResource(id = R.array.avatar_colors)

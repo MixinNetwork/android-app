@@ -55,9 +55,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
@@ -165,9 +165,8 @@ private fun InscriptionPageImp(
                                             .fillMaxWidth()
                                             .aspectRatio(1f),
                                 ) {
-                                    AsyncImage(
+                                    CoilImage(
                                         model = inscription.contentURL,
-                                        contentDescription = null,
                                         modifier =
                                             Modifier
                                                 .sharedElement(
@@ -180,7 +179,7 @@ private fun InscriptionPageImp(
                                                     expend = !expend
                                                 }
                                                 .clip(RoundedCornerShape(8.dp)),
-                                        placeholder = painterResource(id = R.drawable.ic_inscription_content),
+                                        placeholder = R.drawable.ic_inscription_content,
                                     )
                                 }
                                 if (!expend) {
@@ -280,20 +279,19 @@ private fun InscriptionPageImp(
                                                 Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
                                             }
 
-                                            AsyncImage(
+                                            CoilImage(
                                                 model =
                                                     ImageRequest.Builder(LocalContext.current)
                                                         .data(inscription.iconUrl)
                                                         .transformations(CoilRoundedHexagonTransformation())
                                                         .build(),
-                                                contentDescription = null,
                                                 modifier =
                                                     Modifier
                                                         .align(Alignment.CenterEnd)
                                                         .width(20.dp)
                                                         .height(20.dp)
                                                         .clip(RoundedCornerShape(4.dp)),
-                                                placeholder = painterResource(R.drawable.ic_inscription_icon),
+                                                placeholder = R.drawable.ic_inscription_icon,
                                             )
                                         }
 
@@ -325,9 +323,8 @@ private fun InscriptionPageImp(
                                     .fillMaxHeight(),
                         ) {
                             with(this@AnimatedContent) {
-                                AsyncImage(
+                                CoilImage(
                                     model = inscription.contentURL,
-                                    contentDescription = null,
                                     modifier =
                                         Modifier
                                             .align(Alignment.Center)
@@ -340,7 +337,7 @@ private fun InscriptionPageImp(
                                             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                                                 expend = !expend
                                             },
-                                    placeholder = painterResource(id = R.drawable.ic_inscription_content),
+                                    placeholder = R.drawable.ic_inscription_content,
                                 )
                             }
                         }
@@ -354,9 +351,8 @@ private fun InscriptionPageImp(
 @Composable
 private fun BlurImage(url: String?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        AsyncImage(
+        CoilImage(
             model = url,
-            contentDescription = null,
             modifier =
                 Modifier
                     .fillMaxHeight()
@@ -364,21 +360,20 @@ private fun BlurImage(url: String?) {
                         alpha = 0.5f
                     }
                     .blur(30.dp),
-            placeholder = painterResource(R.drawable.ic_inscription_content),
+            placeholder = R.drawable.ic_inscription_content,
             contentScale = ContentScale.Crop,
         )
     } else {
-        AsyncImage(
+        CoilImage(
             model =
                 ImageRequest.Builder(LocalContext.current)
                     .data(url)
                     .transformations(BlurTransformation(LocalContext.current))
                     .build(),
-            contentDescription = null,
             modifier =
                 Modifier
                     .fillMaxHeight(),
-            placeholder = painterResource(R.drawable.ic_inscription_content),
+            placeholder = R.drawable.ic_inscription_content,
             contentScale = ContentScale.Crop,
         )
     }

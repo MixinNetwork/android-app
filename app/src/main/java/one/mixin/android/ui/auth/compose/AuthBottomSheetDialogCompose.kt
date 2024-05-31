@@ -65,7 +65,7 @@ import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.compose.GlideImage
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
@@ -126,13 +126,11 @@ fun AuthBottomSheetDialogCompose(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (iconUrl != null) {
-                    GlideImage(
-                        data = iconUrl,
-                        modifier =
-                            Modifier
-                                .size(16.dp)
-                                .clip(CircleShape),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                    CoilImage(
+                        model = iconUrl, placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }

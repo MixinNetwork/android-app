@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -88,24 +87,23 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         WebActivity.show(requireActivity(), text, conversationId)
                         dismiss()
                     }
-            } else if (text.isAppUrl())
-                {
-                    openFl.visibility = VISIBLE
-                    open.clicks()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .throttleFirst(1, TimeUnit.SECONDS)
-                        .autoDispose(stopScope).subscribe {
-                            try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(text))
-                                startActivity(intent)
-                            } catch (e: ActivityNotFoundException) {
-                                // do nothing
-                            } catch (e: Exception) {
-                                Timber.e(e, "OpenUrl")
-                            }
-                            dismiss()
+            } else if (text.isAppUrl()) {
+                openFl.visibility = VISIBLE
+                open.clicks()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .throttleFirst(1, TimeUnit.SECONDS)
+                    .autoDispose(stopScope).subscribe {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(text))
+                            startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            // do nothing
+                        } catch (e: Exception) {
+                            Timber.e(e, "OpenUrl")
                         }
-                } else {
+                        dismiss()
+                    }
+            } else {
                 openFl.visibility = GONE
             }
         }
@@ -119,9 +117,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (activity is WalletConnectActivity || activity is UrlInterpreterActivity) {
                 var realFragmentCount = 0
                 parentFragmentManager.fragments.forEach { f ->
-                    if (f !is SupportRequestManagerFragment) {
-                        realFragmentCount++
-                    }
+                    realFragmentCount++
                 }
                 if (realFragmentCount <= 0) {
                     activity?.finish()

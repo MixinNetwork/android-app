@@ -18,14 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.compose.GlideImage
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.tip.wc.WalletConnect
 
@@ -63,13 +62,14 @@ private fun Content(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(modifier = Modifier.height(28.dp))
-        GlideImage(
-            data = connectionUI.icon ?: "",
+
+        CoilImage(
+            model = connectionUI.icon,
             modifier =
-                Modifier
-                    .size(90.dp)
-                    .clip(CircleShape),
-            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            Modifier
+                .size(90.dp)
+                .clip(CircleShape),
+            placeholder = R.drawable.ic_avatar_place_holder,
         )
         Box(modifier = Modifier.height(10.dp))
         Text(
