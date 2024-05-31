@@ -70,7 +70,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_below="@id/search_view"
-        android:background="?attr/bg_white">
+        android:background="?attr/bg_white"
+        android:visibility="gone">
 
         <RadioGroup
             android:id="@+id/radio_group_explore"
