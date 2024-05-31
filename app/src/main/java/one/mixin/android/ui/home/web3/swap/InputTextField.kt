@@ -30,9 +30,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -180,11 +180,10 @@ private fun Left(
     selectClick: () -> Unit,
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
-        AsyncImage(
+        CoilImage(
             model = token?.logoURI ?: "",
-            placeholder = painterResource(R.drawable.ic_avatar_place_holder),
+            placeholder = R.drawable.ic_avatar_place_holder,
             modifier = Modifier.size(32.dp).clip(CircleShape),
-            contentDescription = "",
         )
         Box(modifier = Modifier.width(10.dp))
         Text(
