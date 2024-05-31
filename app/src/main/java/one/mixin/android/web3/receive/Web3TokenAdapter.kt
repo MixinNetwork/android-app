@@ -11,6 +11,7 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.svgLoader
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -67,10 +68,10 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
     @SuppressLint("SetTextI18n")
     fun bind(token: Web3Token) {
         binding.apply {
-            avatar.bg.load(token.iconUrl) {
+            avatar.bg.load(token.iconUrl, imageLoader = root.context.svgLoader()) {
                 placeholder(R.drawable.ic_avatar_place_holder)
             }
-            avatar.badge.load(token.chainIconUrl) {
+            avatar.badge.load(token.chainIconUrl, imageLoader = root.context.svgLoader()) {
                 placeholder(R.drawable.ic_avatar_place_holder)
             }
             balance.text =
