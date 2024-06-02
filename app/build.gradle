@@ -220,6 +220,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:${coordinatorVersion}"
     implementation "androidx.biometric:biometric:${biometricVersion}"
     implementation "androidx.security:security-crypto:1.0.0"
+    implementation "androidx.window:window:1.1.0"
 
     implementation 'org.sol4k:tweetnacl:0.1.6'
     implementation 'org.sol4k:utilities:0.1.0'

@@ -54,6 +54,10 @@
         android:largeHeap="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         tools:replace="allowBackup">
+        <property
+            android:name="android.window.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED"
+            android:value="true" />
+
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -146,6 +150,11 @@
             android:name=".ui.conversation.ConversationActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity
+            android:name=".ui.conversation.ConversationPlaceholderActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
@@ -447,6 +456,9 @@
             <meta-data
                 android:name="one.mixin.android.startup.EmojiAppInitializer"
                 android:value="androidx.startup" />
+            <meta-data
+                android:name="one.mixin.android.startup.SplitInitializer"
+                android:value='androidx.startup' />
             <meta-data
                 android:name='androidx.lifecycle.ProcessLifecycleInitializer'
                 android:value='androidx.startup' />
