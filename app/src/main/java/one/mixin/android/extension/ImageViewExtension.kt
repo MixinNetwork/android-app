@@ -5,6 +5,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
+import coil.clear
+import coil.dispose
 import coil.load
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -12,6 +14,7 @@ import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.util.StringSignature
@@ -29,6 +32,7 @@ fun ImageView.loadImage(
 }
 
 fun ImageView.clear() {
+    this.dispose()
     Glide.with(this).clear(this)
 }
 
@@ -400,23 +404,6 @@ fun RLottieImageView.loadLottie(
                 .signature(StringSignature(cacheKey)),
         )
         .into(this)
-}
-
-@Suppress("unused")
-fun ImageView.loadBase64(
-    uri: ByteArray?,
-    width: Int,
-    height: Int,
-    mark: Int,
-) {
-    if (!isActivityNotDestroyed()) return
-    val multi = MultiTransformation(CropTransformation(width, height))
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().centerCrop()
-                .transform(multi).signature(StringSignature("$uri$mark"))
-                .dontAnimate(),
-        ).into(this)
 }
 
 fun ImageView.loadRoundImage(
