@@ -17,7 +17,6 @@ import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.sp
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
@@ -127,7 +126,7 @@ class AvatarView : ViewAnimator {
                 avatarSimple.setBackgroundResource(0)
                 avatarSimple.setImageResource(0)
                 avatarSimple.setPadding(0)
-                avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
+                Glide.with(this).load(url).apply(RequestOptions.placeholderOf(R.drawable.ic_avatar_place_holder)).into(avatarSimple)
                 POS_AVATAR
             } else {
                 POS_TEXT
@@ -139,7 +138,7 @@ class AvatarView : ViewAnimator {
         avatarSimple.setBackgroundResource(0)
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
-        avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
+        Glide.with(this).load(url).apply(RequestOptions.placeholderOf(R.drawable.ic_avatar_place_holder)).into(avatarSimple)
     }
 
     fun renderApp(app: BotInterface) {

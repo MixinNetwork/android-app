@@ -25,7 +25,6 @@ fun ImageView.loadImage(
     uri: String?,
     @DrawableRes holder: Int,
 ) {
-    setImageResource(holder)
     this.load(uri, imageLoader = context.svgLoader()) {
         placeholder(holder)
     }
