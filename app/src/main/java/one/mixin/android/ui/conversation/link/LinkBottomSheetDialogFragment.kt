@@ -68,6 +68,8 @@ import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
+import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
