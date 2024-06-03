@@ -13,8 +13,13 @@ class CreateAssociatedTokenAccountInstruction(
     owner: PublicKey,
     mint: PublicKey,
 ) : Instruction {
+    companion object {
+        @Suppress("unused")
+        private const val instructionCreate = 0
+        private const val instructionCreateIdempotent = 1
+    }
 
-    override val data: ByteArray = byteArrayOf(0)
+    override val data: ByteArray = byteArrayOf(instructionCreateIdempotent.toByte())
 
     override val keys: List<AccountMeta> = listOf(
         AccountMeta.signerAndWritable(payer),

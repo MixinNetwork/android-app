@@ -14,7 +14,6 @@ import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.text.style.BackgroundColorSpan
-import androidx.core.net.toUri
 import androidx.media3.common.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
