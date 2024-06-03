@@ -73,9 +73,9 @@ interface ConversationService {
     ): Observable<MixinResponse<ConversationResponse>>
 
     @POST("conversations/{id}/rotate")
-    fun rotate(
+    suspend fun rotate(
         @Path("id") id: String,
-    ): Observable<MixinResponse<ConversationResponse>>
+    ): MixinResponse<ConversationResponse>
 
     @POST("conversations/{id}/mute")
     fun mute(

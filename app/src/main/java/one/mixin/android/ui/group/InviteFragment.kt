@@ -7,11 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentInviteBinding
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -107,18 +111,28 @@ class InviteFragment : BaseFragment() {
         }
 
         binding.inviteRevoke.setOnClickListener {
-            inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe(
-                {
-                    if (it.isSuccess) {
-                        val cr = it.data!!
-                        binding.inviteLink.text = cr.codeUrl
-                        inviteViewModel.updateCodeUrl(cr.conversationId, cr.codeUrl)
+            lifecycleScope.launch {
+                val dialog =
+                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                        setCancelable(false)
                     }
-                },
-                {
-                    ErrorHandler.handleError(it)
-                },
-            )
+                handleMixinResponse(
+                    invokeNetwork = {
+                        inviteViewModel.rotate(conversationId)
+                    },
+                    endBlock = {
+                        dialog.dismiss()
+                    },
+                    successBlock = {
+                        if (it.isSuccess) {
+                            val cr = it.data!!
+                            binding.inviteLink.text = cr.codeUrl
+                            inviteViewModel.updateCodeUrl(cr.conversationId, cr.codeUrl)
+                            toast(R.string.Success)
+                        }
+                    },
+                )
+            }
         }
 
         refreshUrl()

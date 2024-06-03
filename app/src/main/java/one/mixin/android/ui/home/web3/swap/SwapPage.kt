@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -93,14 +94,19 @@ fun SwapPage(
         if (fromToken == null) {
             Loading()
         } else {
-            Column {
+            Column(
+                modifier =
+                Modifier
+                    .verticalScroll(rememberScrollState())
+            ) {
                 SwapLayout(
                     center = {
                         Box(
                             modifier =
                                 Modifier
-                                    .width(40.dp)
-                                    .height(40.dp)
+                                    .wrapContentWidth()
+                                    .wrapContentHeight()
+                                    .padding(top = 20.dp)
                                     .clip(CircleShape)
                                     .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
                                     .background(MixinAppTheme.colors.backgroundGray)
@@ -109,10 +115,12 @@ fun SwapPage(
                                         switch.invoke()
                                         context.clickVibrate()
                                     }
+                                    .padding(4.dp)
                                     .rotate(rotation),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
+                                modifier = Modifier.width(32.dp).height(32.dp),
                                 painter = painterResource(id = R.drawable.ic_switch),
                                 contentDescription = null,
                                 tint = MixinAppTheme.colors.textPrimary,
@@ -230,7 +238,7 @@ fun InputArea(
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(12.dp))
                 .background(MixinAppTheme.colors.backgroundGray)
-                .padding(20.dp),
+                .padding(20.dp, 20.dp, 20.dp, if (readOnly) 20.dp else 10.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -269,15 +277,17 @@ fun InputArea(
                     contentDescription = null,
                     tint = MixinAppTheme.colors.icon,
                 )
-                if (!readOnly) {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    InputAction(text = stringResource(id = R.string.balance_half)) {
-                        onHalf?.invoke()
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    InputAction(text = stringResource(id = R.string.balance_max)) {
-                        onMax?.invoke()
-                    }
+            }
+        }
+        if (!readOnly) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                InputAction(text = stringResource(id = R.string.balance_half)) {
+                    onHalf?.invoke()
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+                InputAction(text = stringResource(id = R.string.balance_max)) {
+                    onMax?.invoke()
                 }
             }
         }

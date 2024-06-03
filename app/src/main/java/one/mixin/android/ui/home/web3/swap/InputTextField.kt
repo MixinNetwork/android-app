@@ -128,6 +128,7 @@ fun InputContent(
                         valueText.value = v.multiply(BigDecimal(token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
                         onInputChanged?.invoke(it)
                     },
+                    maxLines = 1,
                     modifier =
                         Modifier
                             .fillMaxWidth()

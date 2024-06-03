@@ -13,6 +13,9 @@ import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.startup.AppInitializer
 import androidx.work.Configuration
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.util.DebugLogger
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.mapbox.maps.loader.MapboxMapsInitializer
@@ -32,6 +35,7 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
+import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -82,7 +86,8 @@ open class MixinApplication :
     Application(),
     Application.ActivityLifecycleCallbacks,
     Configuration.Provider,
-    CameraXConfig.Provider {
+    CameraXConfig.Provider,
+    ImageLoaderFactory {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface MixinJobManagerEntryPoint {
@@ -406,5 +411,20 @@ open class MixinApplication :
             }
         }
         return false
+    }
+
+    @Inject
+    lateinit var okHttpClient: OkHttpClient
+
+    override fun newImageLoader(): ImageLoader {
+
+        return ImageLoader.Builder(this)
+            .okHttpClient(okHttpClient)
+            .apply {
+                if (BuildConfig.DEBUG){
+                    logger(DebugLogger())
+                }
+            }
+            .build()
     }
 }
