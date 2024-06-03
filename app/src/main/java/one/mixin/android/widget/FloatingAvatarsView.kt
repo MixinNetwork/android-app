@@ -157,7 +157,7 @@ class FloatingAvatarsView : ViewGroup {
                         borderColor = this@FloatingAvatarsView.borderColor
                     }
                 addView(circleView)
-                circleView.loadImage(t, R.drawable.ic_link_place_holder, true)
+                circleView.loadImage(t, R.drawable.ic_link_place_holder)
             }
     }
 }

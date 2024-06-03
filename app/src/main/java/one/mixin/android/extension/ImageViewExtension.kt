@@ -24,7 +24,6 @@ import one.mixin.android.widget.lottie.RLottieImageView
 fun ImageView.loadImage(
     uri: String?,
     @DrawableRes holder: Int,
-    useAppContext: Boolean = false,
 ) {
     this.load(uri) {
         placeholder(holder)
@@ -34,16 +33,6 @@ fun ImageView.loadImage(
 fun ImageView.clear() {
     this.dispose()
     Glide.with(this).clear(this)
-}
-
-fun ImageView.loadImage(
-    uri: String?,
-    width: Int,
-    height: Int,
-) {
-    if (!isActivityNotDestroyed()) return
-    val multi = MultiTransformation(CropTransformation(width, height))
-    Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
 }
 
 fun ImageView.loadImageCenterCrop(
