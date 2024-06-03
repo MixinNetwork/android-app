@@ -5,16 +5,15 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
+import coil.load
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
-import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
@@ -24,11 +23,8 @@ fun ImageView.loadImage(
     @DrawableRes holder: Int,
     useAppContext: Boolean = false,
 ) {
-    if (useAppContext) {
-        Glide.with(MixinApplication.appContext).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
-    } else {
-        if (!isActivityNotDestroyed()) return
-        Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
+    this.load(uri) {
+        placeholder(holder)
     }
 }
 
@@ -382,9 +378,11 @@ fun RLottieImageView.loadSticker(
         when (imgType) {
             "JSON" ->
                 loadLottie(it, cacheKey)
+
             "GIF" -> {
                 loadGif(url)
             }
+
             else -> loadImage(url)
         }
     }
