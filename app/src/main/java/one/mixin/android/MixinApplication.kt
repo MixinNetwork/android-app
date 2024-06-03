@@ -36,6 +36,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.web3.Web3Database
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceInfo
@@ -128,6 +129,9 @@ open class MixinApplication :
     @Inject
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
+
+    @Inject
+    lateinit var web3Database: Web3Database
 
     override fun onCreate() {
         super.onCreate()

@@ -1,5 +1,6 @@
 package one.mixin.android.tip.wc
 
+import androidx.room.ColumnInfo
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
@@ -14,6 +15,9 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.db.web3.TransactionDao
+import one.mixin.android.db.web3.Web3Database
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -25,9 +29,12 @@ import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
+import one.mixin.android.tip.wc.internal.web3ChainId
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.webrtc.CallDebugLiveData
 import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.RpcUrl
@@ -48,9 +55,14 @@ import timber.log.Timber
 import java.math.BigInteger
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
+
+    private val transactionDao by lazy {
+        MixinApplication.get().web3Database.transactionDao()
+    }
 
     private val gson =
         GsonBuilder()
@@ -595,7 +607,7 @@ object WalletConnectV2 : WalletConnect() {
         if (transactionCount.hasError()) {
             throwError(transactionCount.error)
         }
-        val nonce = transactionCount.transactionCount
+        val nonce = transactionDao.lastNonce(chain.web3ChainId())?.let { BigInteger.valueOf(it + 1) } ?: transactionCount.transactionCount
         val v = Numeric.toBigInt(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
@@ -626,6 +638,7 @@ object WalletConnectV2 : WalletConnect() {
         if (approve) {
             approveRequestInternal(hexMessage, sessionRequest)
         }
+        transactionDao.insert(one.mixin.android.vo.web3.Transaction(hexMessage, chain.web3ChainId(), credential.address, hexMessage, nonce.toLong(), nowInUtc()))
         return hexMessage
     }
 
