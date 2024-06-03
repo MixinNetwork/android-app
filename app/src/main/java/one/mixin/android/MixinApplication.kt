@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
+import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -412,9 +413,13 @@ open class MixinApplication :
         return false
     }
 
+    @Inject
+    lateinit var okHttpClient: OkHttpClient
+
     override fun newImageLoader(): ImageLoader {
 
         return ImageLoader.Builder(this)
+            .okHttpClient(okHttpClient)
             .apply {
                 if (BuildConfig.DEBUG){
                     logger(DebugLogger())

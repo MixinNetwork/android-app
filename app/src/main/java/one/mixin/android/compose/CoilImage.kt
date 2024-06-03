@@ -19,6 +19,7 @@ fun CoilImage(model: String?, placeholder: Int, modifier: Modifier, contentScale
             .build(),
         contentDescription = null,
         placeholder = painterResource(id = placeholder),
+        error = painterResource(id = placeholder),
         contentScale = contentScale
     )
 }
@@ -30,6 +31,7 @@ fun CoilImage(model: ImageRequest, placeholder: Int, modifier: Modifier, content
         model = model,
         contentDescription = null,
         placeholder = painterResource(id = placeholder),
+        error = painterResource(id = placeholder),
         contentScale = contentScale
     )
 }
