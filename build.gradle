@@ -56,7 +56,7 @@ buildscript {
         ext.signalVersion = '2.8.1'
         ext.fabVersion = '1.6'
         ext.playVersion = '2.1.0'
-        ext.googlePlayServicesVersion = '18.0.1'
+        ext.googlePlayServicesVersion = '18.1.0'
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
         ext.shimmerVersion = '0.5.0'
@@ -100,7 +100,7 @@ buildscript {
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
         ext.balloonVersion = '1.6.3'
-        ext.markdownVersion = '0.7.2'
+        ext.markdownVersion = '0.7.3'
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20240303'
@@ -129,7 +129,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.4.1'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
-        classpath 'com.google.gms:google-services:4.4.1'
+        classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
         classpath 'com.google.firebase:perf-plugin:1.4.2'
     }
