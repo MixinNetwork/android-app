@@ -114,7 +114,7 @@ class SixLayout : ConstraintLayout {
             if (index < clips.size) {
                 val app = clips[index].app
                 if (app != null) {
-                    avatars[index].loadImage(app.iconUrl, R.drawable.ic_link_place_holder, true)
+                    avatars[index].loadImage(app.iconUrl, R.drawable.ic_link_place_holder)
                 } else {
                     avatars[index].setImageResource(R.drawable.ic_link_place_holder)
                 }
