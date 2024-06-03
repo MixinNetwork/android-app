@@ -5,12 +5,10 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
-import coil.clear
 import coil.dispose
 import coil.load
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
@@ -27,6 +25,7 @@ fun ImageView.loadImage(
 ) {
     this.load(uri, imageLoader = context.svgLoader()) {
         placeholder(holder)
+        error(holder)
     }
 }
 
