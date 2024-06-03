@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -93,7 +94,11 @@ fun SwapPage(
         if (fromToken == null) {
             Loading()
         } else {
-            Column {
+            Column(
+                modifier =
+                Modifier
+                    .verticalScroll(rememberScrollState())
+            ) {
                 SwapLayout(
                     center = {
                         Box(
