@@ -60,10 +60,10 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
-import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.uber.autodispose.autoDispose
@@ -85,6 +85,7 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.copy
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -1507,6 +1508,7 @@ class WebFragment : BaseFragment() {
         super.onResume()
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
 
@@ -1524,13 +1526,13 @@ class WebFragment : BaseFragment() {
                             Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
                         outFile.copyFromInputStream(ByteArrayInputStream(imageData))
                     } else {
-                        val file =
-                            Glide.with(MixinApplication.appContext)
-                                .asFile()
-                                .load(url)
-                                .submit()
-                                .get(10, TimeUnit.SECONDS)
-                        outFile.copyFromInputStream(FileInputStream(file))
+                        if (url == null) return@launch
+                        val loader = requireContext().imageLoader
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
+                        val result  = loader.execute(request)
+                        if (result !is SuccessResult) return@launch
+                        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile()?:return@launch
+                        f.copy(outFile)
                     }
                     MediaScannerConnection.scanFile(
                         requireContext(),
