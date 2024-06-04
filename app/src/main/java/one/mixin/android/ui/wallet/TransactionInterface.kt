@@ -19,7 +19,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
@@ -29,9 +28,11 @@ import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.round
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Ticker
@@ -59,8 +60,8 @@ interface TransactionInterface {
                     if (asset == null || snapshot == null) {
                         toast(R.string.Data_error)
                     } else {
-                        contentBinding.avatar.setOnClickListener {
-                            clickAvatar(fragment, asset)
+                        contentBinding.avatarVa.setOnClickListener {
+                            clickAvatar(fragment, asset, snapshot.inscriptionHash)
                         }
                         updateUI(fragment, contentBinding, asset, snapshot)
                         fetchThatTimePrice(
@@ -85,8 +86,8 @@ interface TransactionInterface {
                 toast(R.string.Data_error)
             }
         } else {
-            contentBinding.avatar.setOnClickListener {
-                clickAvatar(fragment, tokenItem)
+            contentBinding.avatarVa.setOnClickListener {
+                clickAvatar(fragment, tokenItem, snapshotItem.inscriptionHash)
             }
             updateUI(fragment, contentBinding, tokenItem, snapshotItem)
             fetchThatTimePrice(
@@ -111,9 +112,12 @@ interface TransactionInterface {
     private fun clickAvatar(
         fragment: Fragment,
         asset: TokenItem,
+        inscriptionHash: String?,
     ) {
         val curActivity = fragment.requireActivity()
-        if (curActivity is WalletActivity) {
+        if (inscriptionHash != null) {
+            InscriptionActivity.show(curActivity, inscriptionHash)
+        } else if (curActivity is WalletActivity) {
             if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
                 fragment.view?.navigate(
                     R.id.action_transaction_fragment_to_transactions,
@@ -278,16 +282,37 @@ interface TransactionInterface {
         contentBinding.apply {
             val amountVal = snapshot.amount.toFloatOrNull()
             val isPositive = if (amountVal == null) false else amountVal > 0
-            ViewBadgeCircleImageBinding.bind(contentBinding.avatar).apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            if (snapshot.inscriptionHash.isNullOrEmpty()) {
+                avatarVa.displayedChild = 0
+                contentBinding.avatar.loadToken(asset)
+                avatar
+            } else {
+                avatarVa.displayedChild = 1
+                iconIv.round(20)
+                iconIv.loadImage(snapshot.contentUrl, R.drawable.ic_default_inscription)
+            }
+            if (!snapshot.inscriptionHash.isNullOrEmpty()) {
+                inscriptionHashLayout.isVisible = true
+                idLayout.isVisible = true
+                collectionLayout.isVisible = true
+                inscriptionHashTv.text = snapshot.inscriptionHash
+                idTv.text = "#${snapshot.sequence}"
+                collectionTv.text = snapshot.name
             }
 
             val amountText =
-                if (isPositive) {
-                    "+${snapshot.amount.numberFormat()}"
+                if (snapshot.inscriptionHash.isNullOrEmpty()) {
+                    if (isPositive) {
+                        "+${snapshot.amount.numberFormat()}"
+                    } else {
+                        snapshot.amount.numberFormat()
+                    }
                 } else {
-                    snapshot.amount.numberFormat()
+                    if (isPositive) {
+                        "+1"
+                    } else {
+                        "-1"
+                    }
                 }
             val amountColor =
                 fragment.resources.getColor(
@@ -305,7 +330,7 @@ interface TransactionInterface {
                     null,
                 )
             val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
-            valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, asset.symbol, amountColor, symbolColor)
+            valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, if (snapshot.inscriptionHash.isNullOrEmpty()) asset.symbol else "", amountColor, symbolColor)
             val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
             val pricePerUnit =
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"

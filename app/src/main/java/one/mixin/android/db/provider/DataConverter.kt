@@ -17,6 +17,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.safe.SafeInscription
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.Callable
 
@@ -168,6 +169,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfAssetSymbol = cursor.getColumnIndexOrThrow("assetSymbol")
     val cursorIndexOfAssetId = cursor.getColumnIndexOrThrow("assetId")
     val cursorIndexOfAssetIcon = cursor.getColumnIndexOrThrow("assetIcon")
+    val cursorIndexOfAssetCollectionHash = cursor.getColumnIndexOrThrow("assetCollectionHash")
     val cursorIndexOfAssetUrl = cursor.getColumnIndexOrThrow("assetUrl")
     val cursorIndexOfAssetWidth = cursor.getColumnIndexOrThrow("assetWidth")
     val cursorIndexOfAssetHeight = cursor.getColumnIndexOrThrow("assetHeight")
@@ -257,6 +259,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
         val tmpAssetSymbol: String? = cursor.getString(cursorIndexOfAssetSymbol)
         val tmpAssetId: String? = cursor.getString(cursorIndexOfAssetId)
         val tmpAssetIcon: String? = cursor.getString(cursorIndexOfAssetIcon)
+        val tmpAssetCollectionHash: String? = cursor.getString(cursorIndexOfAssetCollectionHash)
         val tmpAssetUrl: String? = cursor.getString(cursorIndexOfAssetUrl)
         val tmpAssetWidth: Int? =
             if (cursor.isNull(cursorIndexOfAssetWidth)) {
@@ -270,6 +273,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             } else {
                 cursor.getInt(cursorIndexOfAssetHeight)
             }
+
         val tmpStickerId: String? = cursor.getString(cursorIndexOfStickerId)
         val tmpAssetName: String? = cursor.getString(cursorIndexOfAssetName)
         val tmpAssetType: String? = cursor.getString(cursorIndexOfAssetType)
@@ -352,6 +356,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tmpAssetType,
                 tmpAssetSymbol,
                 tmpAssetIcon,
+                tmpAssetCollectionHash,
                 tmpAssetUrl,
                 tmpAssetHeight,
                 tmpAssetWidth,
@@ -600,6 +605,7 @@ fun callableTokenItem(
             val cursorIndexOfAssetKey = 16
             val cursorIndexOfDust = 17
             val cursorIndexOfWithdrawalMemoPossibility = 18
+            val cursorIndexOfCollectionHash = 19
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -715,6 +721,12 @@ fun callableTokenItem(
                     } else {
                         WithdrawalMemoPossibilityConverter().revertDate(cursor.getString(cursorIndexOfWithdrawalMemoPossibility))
                     }
+                val tmpCollectionHash: String? =
+                    if (cursor.isNull(cursorIndexOfCollectionHash)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfCollectionHash)
+                    }
 
                 item =
                     TokenItem(
@@ -737,6 +749,7 @@ fun callableTokenItem(
                         tmpAssetKey,
                         tmpDust,
                         tmpDepositWithdrawalMemoPossibility,
+                        tmpCollectionHash,
                     )
                 result.add(item)
             }
@@ -1007,7 +1020,7 @@ fun convertChatHistoryMessageItem(
             cursor.count,
         )
     while (cursor.moveToNext()) {
-        val _item: ChatHistoryMessageItem
+        val item: ChatHistoryMessageItem
         val tmpMessageId: String? =
             if (cursor.isNull(cursorIndexOfMessageId)) {
                 null
@@ -1208,7 +1221,7 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfMentions)
             }
-        _item =
+        item =
             ChatHistoryMessageItem(
                 null,
                 tmpConversationId,
@@ -1245,7 +1258,44 @@ fun convertChatHistoryMessageItem(
                 tmpQuoteContent,
                 tmpMentions,
             )
-        list.add(_item)
+        list.add(item)
     }
     return list
+}
+
+@SuppressLint("RestrictedApi")
+fun callableSafeInscription(
+    db: MixinDatabase,
+    statement: RoomSQLiteQuery,
+    cancellationSignal: CancellationSignal,
+): Callable<List<SafeInscription>> {
+    return Callable<List<SafeInscription>> {
+        val cursor = query(db, statement, false, cancellationSignal)
+        try {
+            val cursorIndexOfCollectionHash = 0
+            val cursorIndexOfInscriptionHash = 1
+            val cursorIndexOfSequence = 2
+            val cursorIndexOfContentType = 3
+            val cursorIndexOfContentURL = 4
+            val cursorIndexOfName = 6
+            val cursorIndexOfIconURL = 7
+            val result: MutableList<SafeInscription> = ArrayList(cursor.count)
+            while (cursor.moveToNext()) {
+                val item: SafeInscription
+                val tmpCollectionHash: String = cursor.getString(cursorIndexOfCollectionHash)
+                val tmpInscriptionHash: String = cursor.getString(cursorIndexOfInscriptionHash)
+                val tmpSequence: Long = cursor.getLong(cursorIndexOfSequence)
+                val tmpContentType: String = cursor.getString(cursorIndexOfContentType)
+                val tmpContentURL: String = cursor.getString(cursorIndexOfContentURL)
+                val tmpName: String = cursor.getString(cursorIndexOfName)
+                val tmpIconURL: String = cursor.getString(cursorIndexOfIconURL)
+                item = SafeInscription(tmpCollectionHash, tmpInscriptionHash, tmpSequence, tmpName, tmpContentType, tmpContentURL, tmpIconURL)
+                result.add(item)
+            }
+            return@Callable result
+        } finally {
+            cursor.close()
+            statement.release()
+        }
+    }
 }

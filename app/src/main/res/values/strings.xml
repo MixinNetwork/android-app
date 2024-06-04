@@ -58,6 +58,7 @@
     <string name="alert_key_contact_text_message">sent you a message</string>
     <string name="alert_key_contact_transcript_message">sent you an transcript</string>
     <string name="alert_key_contact_transfer_message">sent you a transfer</string>
+    <string name="alert_key_contact_collectible_message">sent you an inscription</string>
     <string name="alert_key_contact_video_message">sent you a video</string>
     <string name="alert_key_group_audio_invite_message">%1$s invites you to a voice call</string>
     <string name="alert_key_group_audio_message">%1$s sent an audio</string>
@@ -236,6 +237,7 @@
     <string name="Click_to_unlock">Click to unlock</string>
     <string name="Close">Close</string>
     <string name="Closing_Balance">Closing Balance</string>
+    <string name="Collectibles">Collectibles</string>
     <string name="Combine_and_forward">Combine and forward</string>
     <string name="Confirm">Confirm</string>
     <string name="Confirm_fingerprint">Confirm fingerprint</string>
@@ -272,6 +274,7 @@
     <string name="Content_too_long">Content too long</string>
     <string name="content_transcript">[Transcript]</string>
     <string name="content_transfer">[Transfer]</string>
+    <string name="content_collection">[Collectible]</string>
     <string name="content_video">[Video]</string>
     <string name="content_voice">[Voice call]</string>
     <string name="Continue">Continue</string>
@@ -283,6 +286,7 @@
     <string name="Conversation_not_found">Conversation not found.</string>
     <string name="copied_to_clipboard">Copied to Clipboard</string>
     <string name="Copy">Copy</string>
+    <string name="Copy_hash">Copy Hash</string>
     <string name="Copy_invite">Copy Invite Link</string>
     <string name="Copy_link">Copy Link</string>
     <string name="Create">Create</string>
@@ -363,7 +367,7 @@
     <string name="divide">, </string>
     <string name="Documents">Documents</string>
     <string name="Done">Done</string>
-    <string name="Dont_have_assets">Don\'t have assets?</string>
+    <string name="Dont_have_assets">No assets</string>
     <string name="Draw">Draw</string>
     <string name="Duplicate_Transfer_Confirmation">Duplicate Transfer Confirmation</string>
     <string name="Duplicate_Withdraw_Confirmation">Duplicate Withdraw Confirmation</string>
@@ -812,8 +816,10 @@
     <string name="Refuse">Refuse</string>
     <string name="Registering">Registering…</string>
     <string name="Reload">Reload</string>
+    <string name="Remove">Remove</string>
     <string name="Remove_all">Remove All</string>
     <string name="Remove_all_floats">Remove all floats?</string>
+    <string name="Remove_UTXO">Remove the UTXO?</string>
     <string name="Remove_Bot">Remove Bot</string>
     <string name="Remove_Contact">Remove Contact</string>
     <string name="Remove_emergency_contact">Remove emergency contact</string>
@@ -868,6 +874,7 @@
     <string name="search_hint">assets, contacts and messages</string>
     <string name="SEARCH_MESSAGES">SEARCH MESSAGES</string>
     <string name="search_placeholder_asset">Name, Symbol</string>
+    <string name="search_placeholder_inscription">Search name</string>
     <string name="search_placeholder_number">Search Mixin ID or phone number: </string>
     <plurals name="search_related_message">
         <item quantity="one">%1$d related message</item>
@@ -1481,8 +1488,10 @@
     <string name="web3_sending_success">Sending Success</string>
     <string name="Browser">Browser</string>
     <string name="copy_address">Copy Address</string>
+    <string name="copy_contract_address">Copy Contract Address</string>
     <string name="coming_soon">Coming soon</string>
     <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
+    <string name="web3_sol_deposit_description">Use this address for receiving tokens on Solana.</string>
     <string name="No_asset">Don’t have assets</string>
     <string name="Ethereum_Account">Ethereum Account</string>
     <string name="Solana_Account">Solana Account</string>
@@ -1495,4 +1504,36 @@
     <string name="From_mixin_wallet">From Mixin Wallet</string>
     <string name="From_address">From address</string>
     <string name="From_address_desc">From another wallet or exchange</string>
+    <string name="NO_COLLECTIBLES">NO COLLECTIBLES</string>
+    <string name="HASH">HASH</string>
+    <string name="ID" translatable="false">ID</string>
+    <string name="Collection">Collection</string>
+    <string name="NFT_TOKEN">NFT TOKEN</string>
+    <string name="Collectible">Collectible</string>
+    <string name="inscription_Hash">Inscription Hash</string>
+    <string name="Swap">Swap</string>
+    <string name="Swapping">Swapping</string>
+    <string name="Pay">Pay</string>
+    <string name="Received">received</string>
+    <string name="Review_Order">Review Order</string>
+    <string name="View_Transaction">View Transaction</string>
+    <string name="Confirming_Transaction">Confirming Transaction</string>
+    <string name="Transaction_Success">Transaction Success</string>
+    <string name="Transaction_Failed">Transaction Failed</string>
+    <string name="Best_price">Best price</string>
+    <string name="Slippage">Slippage</string>
+    <string name="slippage_auto">Auto</string>
+    <string name="slippage_auto_desc">Recommends the right slippage for different currencies to help you trade successfully</string>
+    <string name="slippage_custom">Custom</string>
+    <string name="slippage_custom_desc">Trades will be executed according to the slippage you set</string>
+    <string name="slippage_high_warning">Your transaction may be frontrun and result in an unfavourable trade</string>
+    <string name="slippage_invalid">Slippage cannot be greater than 50% and cannot be less than 0.1%</string>
+    <string name="select_token">Select Token</string>
+    <string name="Contract">Contract</string>
+    <string name="swap_desc">%1$s will be deposited into your wallet once the transaction is complete</string>
+    <string name="view_on_explorer">View on Explorer</string>
+    <string name="search_swap_token">Search by token or address</string>
+    <string name="Slippage_tolerance_exceeded">Slippage tolerance exceeded</string>
+    <string name="balance_max">MAX</string>
+    <string name="balance_half">HALF</string>
 </resources>

@@ -18,7 +18,6 @@ import one.mixin.android.databinding.ViewContentQrBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.vo.safe.DepositEntry
@@ -54,8 +53,7 @@ class ContentQRView : ViewAnimator {
             if (showPb) return
 
             qrAvatar.apply {
-                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                loadToken(asset)
                 setBorder()
             }
             val destination = selectedDestination ?: depositEntry.destination

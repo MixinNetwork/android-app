@@ -147,6 +147,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -691,6 +692,26 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onInscriptionClick(
+                conversationId: String,
+                messageId: String,
+                assetId: String?,
+                inscriptionHash: String?,
+                snapshotId: String?,
+            ) {
+                if (inscriptionHash == null) {
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, messageId, null, snapshotId))
+                }
+                activity?.addFragment(
+                    this@ConversationFragment,
+                    TransactionFragment.newInstance(
+                        assetId = assetId,
+                        snapshotId = snapshotId,
+                    ),
+                    TransactionFragment.TAG,
+                )
             }
 
             override fun onUrlLongClick(url: String) {
@@ -2614,7 +2635,7 @@ class ConversationFragment() :
                                 )
                                     .add(
                                         R.id.container,
-                                        FriendsFragment.newInstance(conversationId).apply {
+                                        FriendsFragment.newInstance().apply {
                                             setOnFriendClick {
                                                 sendContactMessage(it.userId)
                                                 parentFragmentManager.popBackStackImmediate()

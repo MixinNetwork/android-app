@@ -11,7 +11,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressChangedBottomBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -50,8 +49,7 @@ class AddressChangedBottomSheet : MixinBottomSheetDialogFragment() {
         contentView = bottomSendBinding.root
         (dialog as BottomSheet).setCustomView(contentView)
         bottomSendBinding.apply {
-            assetIcon.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetIcon.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.loadToken(token)
             title.text = getString(R.string.depost_address_updated, token.symbol)
             content.text = getString(R.string.depost_address_updated_description, token.symbol)
             gotItTv.setOnClickListener { dismiss() }

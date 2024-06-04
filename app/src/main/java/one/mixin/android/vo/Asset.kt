@@ -105,8 +105,28 @@ data class PriceAndChange(
 
 fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem =
     AssetItem(
-        assetId, symbol, name, iconUrl, balance, destination, depositEntries, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
-        confirmations, chainIconUrl, null, null, null, assetKey, reserve, withdrawalMemoPossibility,
+        assetId,
+        symbol,
+        name,
+        iconUrl,
+        balance,
+        destination,
+        depositEntries,
+        tag,
+        priceBtc,
+        priceUsd,
+        chainId,
+        changeUsd,
+        changeBtc,
+        false,
+        confirmations,
+        chainIconUrl,
+        null,
+        null,
+        null,
+        assetKey,
+        reserve,
+        withdrawalMemoPossibility,
     )
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) =
@@ -120,6 +140,7 @@ fun Asset.toTopAssetItem(chainIconUrl: String?) =
         assetKey,
         priceUsd,
         changeUsd,
+        null,
     )
 
 fun Token?.priceUSD(): BigDecimal =

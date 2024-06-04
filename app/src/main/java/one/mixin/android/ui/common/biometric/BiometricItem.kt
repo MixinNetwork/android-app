@@ -5,6 +5,8 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -15,7 +17,7 @@ open class BiometricItem(
     open val amount: String,
     open val memo: String?,
     open val state: String,
-    open val reference: String?
+    open val reference: String?,
 ) : Parcelable
 
 @Parcelize
@@ -25,7 +27,7 @@ open class AssetBiometricItem(
     override var amount: String,
     override var memo: String?,
     override var state: String,
-    override var reference: String?
+    override var reference: String?,
 ) : BiometricItem(amount, memo, state, reference)
 
 @Parcelize
@@ -39,7 +41,7 @@ class TransferBiometricItem(
     override var state: String,
     var trace: Trace?,
     val returnTo: String?,
-    override var reference: String?
+    override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
 fun buildEmptyTransferBiometricItem(user: User) =
@@ -85,7 +87,7 @@ fun buildAddressBiometricItem(
     memo: String?,
     returnTo: String?,
     from: Int,
-    reference: String?
+    reference: String?,
 ) =
     AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
 
@@ -133,20 +135,18 @@ open class SafeMultisigsBiometricItem(
     override var amount: String,
     override var memo: String?,
     override var state: String,
-    override var reference:String?
+    override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
 @Parcelize
 class NftBiometricItem(
-    val requestId: String,
-    val senders: Array<String>,
-    val receivers: Array<String>,
-    val sendersThreshold: Int,
-    val receiversThreshold: Int,
-    val tokenId: String,
-    val action: String,
-    val rawTransaction: String,
-    override val amount: String,
-    override val memo: String?,
-    override val state: String,
-) : BiometricItem(amount, memo, state, null)
+    override var asset: TokenItem?,
+    override val traceId: String,
+    override var amount: String,
+    override var memo: String?,
+    override var state: String,
+    override var reference: String?,
+    val receivers: List<User>,
+    val inscriptionItem: InscriptionItem,
+    val inscriptionCollection: InscriptionCollection,
+) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)

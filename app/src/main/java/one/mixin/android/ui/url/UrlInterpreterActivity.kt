@@ -80,8 +80,9 @@ class UrlInterpreterActivity : BaseActivity() {
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        } else if (data.toString().startsWith(Constants.Scheme.HTTPS_MIXIN_WC) || data.toString().startsWith(Constants.Scheme.MIXIN_WC)
-            || data.toString().startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX)) {
+        } else if (data.toString().startsWith(Constants.Scheme.HTTPS_MIXIN_WC) || data.toString().startsWith(Constants.Scheme.MIXIN_WC) ||
+            data.toString().startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX)
+        ) {
             val wcUri = convertWcLink(data.toString())
             if (wcUri != null && WalletConnect.isEnabled()) {
                 if (MixinApplication.get().topActivity is WebActivity) {

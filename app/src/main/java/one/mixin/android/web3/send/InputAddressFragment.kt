@@ -18,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.supportDeposit
+import one.mixin.android.api.response.supportDepositFromMixin
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -39,23 +39,29 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.InputFragment
+import org.sol4k.PublicKey
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint
 class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
-
     companion object {
         const val TAG = "InputAddressFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
-        fun newInstance(address: String, web3Token: Web3Token, chainToken: Web3Token?) = InputAddressFragment().apply {
-            withArgs {
-                putParcelable(ARGS_TOKEN, web3Token)
-                putParcelable(ARGS_CHAIN_TOKEN, chainToken)
-                putString(ARGS_ADDRESS, address)
+
+        fun newInstance(
+            address: String,
+            web3Token: Web3Token,
+            chainToken: Web3Token?,
+        ) =
+            InputAddressFragment().apply {
+                withArgs {
+                    putParcelable(ARGS_TOKEN, web3Token)
+                    putParcelable(ARGS_CHAIN_TOKEN, chainToken)
+                    putString(ARGS_ADDRESS, address)
+                }
             }
-        }
     }
 
     private val address by lazy {
@@ -127,15 +133,20 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             lifecycleScope.launch {
                 var toAddress = web3ViewModel.findAddres(token)
                 binding.addrEt.hideKeyboard()
-                if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
-                else {
-                    val alertDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                        show()
-                    }
+                if (toAddress != null) {
+                    navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
+                } else {
+                    val alertDialog =
+                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                            show()
+                        }
                     toAddress = web3ViewModel.findAndSyncDepositEntry(token)
                     alertDialog.dismiss()
-                    if (toAddress != null) navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
-                    else toast(R.string.Not_found)
+                    if (toAddress != null) {
+                        navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
+                    } else {
+                        toast(R.string.Not_found)
+                    }
                 }
             }
         }
@@ -202,11 +213,11 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
 
     private val supportDeposit by lazy {
-        token.supportDeposit()
+        token.supportDepositFromMixin()
     }
 
     private fun updateSaveButton() {
-        if (binding.addrEt.text.isNotEmpty() && isValidEthAddress(binding.addrEt.text.toString())) {
+        if (binding.addrEt.text.isNotEmpty() && isValidAddress(binding.addrEt.text.toString())) {
             binding.continueTv.isEnabled = true
             binding.continueTv.textColor = requireContext().getColor(R.color.white)
         } else {
@@ -215,7 +226,15 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
     }
 
-    private fun isValidEthAddress(address: String): Boolean {
-        return WalletUtils.isValidAddress(address)
+    private fun isValidAddress(address: String): Boolean {
+        return if (token.chainName.equals("solana", true)) {
+            try {
+                PublicKey(address).isOnCurve()
+            } catch (e: Exception) {
+                false
+            }
+        } else {
+            WalletUtils.isValidAddress(address)
+        }
     }
 }

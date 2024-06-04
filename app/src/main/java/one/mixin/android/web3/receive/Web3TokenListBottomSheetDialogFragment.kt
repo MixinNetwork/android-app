@@ -21,7 +21,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
 class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
     companion object {
         const val ARGS_TOKENS = "args_tokens"
         const val TAG = "Web3TokenListBottomSheetDialogFragment"
@@ -70,7 +69,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                 dismiss()
             }
             searchEt.listener =

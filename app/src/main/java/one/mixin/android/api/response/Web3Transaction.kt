@@ -9,8 +9,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
@@ -34,7 +34,7 @@ data class Web3Transaction(
     @SerializedName("app_metadata")
     val appMetadata: AppMetadata?,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 ) : Parcelable {
     val icon: String?
         get() {
@@ -44,7 +44,7 @@ data class Web3Transaction(
                 }
 
                 Web3TransactionType.Send.value -> {
-                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.iconUrl
+                    return (transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value } ?: transfers.firstOrNull { it.direction == Web3TransactionDirection.Self.value })?.iconUrl
                 }
 
                 Web3TransactionType.Receive.value -> {
@@ -85,7 +85,11 @@ data class Web3Transaction(
         get() {
             return when (operationType) {
                 Web3TransactionType.Send.value -> {
-                    MixinApplication.appContext.getString(R.string.Send_transfer)
+                    if (sender == receiver) {
+                        MixinApplication.appContext.getString(R.string.Receive)
+                    } else {
+                        MixinApplication.appContext.getString(R.string.Send_transfer)
+                    }
                 }
 
                 Web3TransactionType.Receive.value -> {
@@ -96,7 +100,7 @@ data class Web3Transaction(
                     MixinApplication.appContext.getString(R.string.Withdrawal)
                 }
 
-                Web3TransactionType.Trade.value ->{
+                Web3TransactionType.Trade.value -> {
                     MixinApplication.appContext.getString(R.string.Trade)
                 }
 
@@ -134,7 +138,6 @@ data class Web3Transaction(
     fun value(context: Context): SpannedString {
         return when (operationType) {
             Web3TransactionType.Receive.value -> {
-
                 transfers.find { it.direction == Web3TransactionDirection.In.value }?.run {
                     buildAmountSymbol(context, "+${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
                 }
@@ -155,6 +158,8 @@ data class Web3Transaction(
             Web3TransactionType.Send.value -> {
                 transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
                     buildAmountSymbol(context, "-${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_pink, null), context.colorFromAttribute(R.attr.text_primary))
+                } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value }?.run {
+                    buildAmountSymbol(context, "+${amount.numberFormat()}", symbol, context.resources.getColor(if (status == Web3TransactionStatus.Pending.value) R.color.wallet_text_gray else R.color.wallet_green, null), context.colorFromAttribute(R.attr.text_primary))
                 }
             }
 
@@ -193,7 +198,7 @@ data class Web3Transaction(
                 }
 
                 Web3TransactionType.Send.value -> {
-                    transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
+                    (transfers.find { it.direction == Web3TransactionDirection.Out.value } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value })?.run {
                         "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
                     }
                 }

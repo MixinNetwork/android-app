@@ -1,6 +1,5 @@
 package one.mixin.android.ui.tip.wc.sessionrequest
 
-import GlideImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -40,6 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
@@ -52,7 +54,6 @@ import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
@@ -144,13 +145,13 @@ fun SessionRequestPage(
                     }
 
                     else ->
-                        GlideImage(
-                            data = sessionRequestUI.peerUI.icon,
+                        CoilImage(
+                            sessionRequestUI.peerUI.icon,
                             modifier =
-                                Modifier
-                                    .size(70.dp)
-                                    .clip(CircleShape),
-                            placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                            Modifier
+                                .size(70.dp)
+                                .clip(CircleShape),
+                            placeholder = R.drawable.ic_avatar_place_holder,
                         )
                 }
                 Box(modifier = Modifier.height(16.dp))
@@ -196,21 +197,23 @@ fun SessionRequestPage(
                 Box(modifier = Modifier.height(8.dp))
                 Text(
                     modifier = Modifier.padding(horizontal = 24.dp),
-                    text = errorInfo ?: stringResource(
-                        id = if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
-                            if (sessionRequestUI.data is WCEthereumSignMessage) {
-                                if (signType == 0) {
-                                    R.string.web3_signing_transaction_success
+                    text =
+                        errorInfo ?: stringResource(
+                            id =
+                                if (step == WalletConnectBottomSheetDialogFragment.Step.Done) {
+                                    if (sessionRequestUI.data is WCEthereumSignMessage) {
+                                        if (signType == 0) {
+                                            R.string.web3_signing_transaction_success
+                                        } else {
+                                            R.string.web3_signing_transaction_success
+                                        }
+                                    } else {
+                                        R.string.web3_signing_transaction_success
+                                    }
                                 } else {
-                                    R.string.web3_signing_transaction_success
-                                }
-                            } else {
-                                R.string.web3_signing_transaction_success
-                            }
-                        } else {
-                            R.string.web3_ensure_trust
-                        }
-                    ),
+                                    R.string.web3_ensure_trust
+                                },
+                        ),
                     textAlign = TextAlign.Center,
                     style =
                         TextStyle(
@@ -238,12 +241,12 @@ fun SessionRequestPage(
                         } else {
                             TransactionPreview(
                                 balance =
-                                Convert.fromWei(
-                                    Numeric.toBigInt(
-                                        sessionRequestUI.data.value ?: "0",
-                                    ).toBigDecimal(),
-                                    Convert.Unit.ETHER,
-                                ),
+                                    Convert.fromWei(
+                                        Numeric.toBigInt(
+                                            sessionRequestUI.data.value ?: "0",
+                                        ).toBigDecimal(),
+                                        Convert.Unit.ETHER,
+                                    ),
                                 sessionRequestUI.chain,
                                 asset,
                             )
@@ -258,7 +261,7 @@ fun SessionRequestPage(
                 }
                 Box(modifier = Modifier.height(20.dp))
 
-                val fee = tipGas?.displayValue() ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue() ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
@@ -315,9 +318,10 @@ fun SessionRequestPage(
                         Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                             Box(modifier = Modifier.height(20.dp))
                             CircularProgressIndicator(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .align(Alignment.CenterHorizontally),
+                                modifier =
+                                    Modifier
+                                        .size(40.dp)
+                                        .align(Alignment.CenterHorizontally),
                                 color = MixinAppTheme.colors.accent,
                             )
                         }
@@ -418,9 +422,9 @@ fun FeeInfo(
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
     ) {
         Text(
             text = stringResource(id = R.string.network_fee).uppercase(),
@@ -430,7 +434,7 @@ fun FeeInfo(
         Box(modifier = Modifier.height(4.dp))
         Row(
             modifier =
-            Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {

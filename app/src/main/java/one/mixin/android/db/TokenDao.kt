@@ -21,7 +21,7 @@ interface TokenDao : BaseDao<Token> {
             a1.price_btc AS priceBtc, a1.price_usd AS priceUsd,
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
-            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility
+            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash 
             FROM tokens a1 
             LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
@@ -32,7 +32,7 @@ interface TokenDao : BaseDao<Token> {
         const val POSTFIX_ASSET_ITEM =
             " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
-            " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
+            " WHERE ae.hidden IS NULL OR NOT ae.hidden $POSTFIX_ASSET_ITEM"
     }
 
     @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
@@ -55,6 +55,9 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("SELECT * FROM tokens WHERE kernel_asset_id = :asset")
     suspend fun findTokenByAsset(asset: String): Token?
+
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.kernel_asset_id = :asset")
+    suspend fun findTokenItemByAsset(asset: String): TokenItem?
 
     @Query("SELECT kernel_asset_id FROM tokens WHERE kernel_asset_id IN (:kernelIds)")
     suspend fun findExistByKernelAssetId(kernelIds: List<String>): List<String>
@@ -94,21 +97,6 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.chain_id IN (:chainIds) AND balance > 0 $POSTFIX")
     suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        """$PREFIX_ASSET_ITEM 
-        WHERE ae.balance > 0 
-        AND (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
-        ORDER BY 
-            a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
-            a1.price_usd*ae.balance DESC
-        """,
-    )
-    suspend fun fuzzySearchAsset(
-        name: String,
-        symbol: String,
-    ): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

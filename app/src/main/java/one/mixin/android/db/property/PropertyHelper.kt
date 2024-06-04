@@ -3,6 +3,7 @@ package one.mixin.android.db.property
 import android.os.Build
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_INSCRIPTION
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -68,6 +69,13 @@ object PropertyHelper {
     suspend fun checkBackupMigrated(action: () -> Unit) {
         val backupMigrated = findValueByKey(PREF_MIGRATION_BACKUP, true)
         if (!backupMigrated) {
+            action.invoke()
+        }
+    }
+
+    suspend fun checkInscriptionMigrated(action: () -> Unit) {
+        val value = findValueByKey(PREF_MIGRATION_INSCRIPTION, false)
+        if (!value) {
             action.invoke()
         }
     }

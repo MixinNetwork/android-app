@@ -62,7 +62,6 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.web3.js.DAppMethod
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -134,6 +133,7 @@ import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -148,11 +148,12 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.web3.convertWcLink
+import one.mixin.android.web3.js.DAppMethod
 import one.mixin.android.web3.js.JsInjectorClient
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SwitchChain
-import one.mixin.android.web3.convertWcLink
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -172,6 +173,7 @@ class WebFragment : BaseFragment() {
         private const val FILE_CHOOSER = 0x01
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
+        private const val CONTEXT_MENU_ID_COPY_LINK = 0x13
         const val URL = "url"
         const val CONVERSATION_ID = "conversation_id"
         const val ARGS_APP = "args_app"
@@ -248,6 +250,19 @@ class WebFragment : BaseFragment() {
                     menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
                     menu.getItem(1).setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+                WebView.HitTestResult.SRC_ANCHOR_TYPE, WebView.HitTestResult.ANCHOR_TYPE -> {
+                    menu.add(0, CONTEXT_MENU_ID_COPY_LINK, 0, R.string.Copy_link)
+                    menu.getItem(0).setOnMenuItemClickListener { _ ->
+                        requireContext().getClipboardManager().setPrimaryClip(
+                            ClipData.newPlainText(
+                                null,
+                                it.extra,
+                            ),
+                        )
+                        toast(R.string.copied_to_clipboard)
                         return@setOnMenuItemClickListener true
                     }
                 }
@@ -489,7 +504,8 @@ class WebFragment : BaseFragment() {
                 { url ->
                     currentUrl = url
                     isFinished = true
-                }, { title, url ->
+                },
+                { title, url ->
                     currentUrl = url
                     currentTitle = title
                 },
@@ -841,38 +857,50 @@ class WebFragment : BaseFragment() {
                     },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
-            webView.addJavascriptInterface(Web3Interface(
-                onWalletActionSuccessful = { e ->
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript(e, Timber::d)
-                    }
-                },
-                onWalletActionError = { id->
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${id}, null)") {}
-                    }
-                },
-                onBrowserSign = { message ->
-                    lifecycleScope.launch {
-                        showBrowserBottomSheetDialogFragment(
-                            requireActivity(),
-                            message,
-                            currentUrl = currentUrl,
-                            currentTitle = currentTitle,
-                            onReject = {
-                                lifecycleScope.launch {
-                                    webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
-                                }
-                            },
-                            onDone = { callback ->
-                                lifecycleScope.launch {
-                                    if (callback != null) webView.evaluateJavascript(callback) {}
-                                }
-                            },
-                        )
-                    }
-                },
-            ), "_mw_")
+            webView.addJavascriptInterface(
+                Web3Interface(
+                    onWalletActionSuccessful = { e ->
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript(e, Timber::d)
+                        }
+                    },
+                    onWalletActionError = { id ->
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse($id, null)") {}
+                        }
+                    },
+                    onBrowserSign = { message ->
+                        lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+
+                            showBrowserBottomSheetDialogFragment(
+                                requireActivity(),
+                                message,
+                                currentUrl = currentUrl,
+                                currentTitle = currentTitle,
+                                onReject = {
+                                    lifecycleScope.launch {
+                                        webView.evaluateJavascript("window.${JsSigner.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
+                                    }
+                                },
+                                onDone = { callback ->
+                                    lifecycleScope.launch {
+                                        if (callback != null) webView.evaluateJavascript(callback) {}
+                                    }
+                                },
+                            )
+                        }
+                    },
+                    onEmptyAddress = { network ->
+                        lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+
+                            WalletUnlockBottomSheetDialogFragment.getInstance(network).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        }
+                    },
+                ),
+                "_mw_",
+            )
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -1584,14 +1612,18 @@ class WebFragment : BaseFragment() {
             JsInjectorClient()
         }
 
-        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+        override fun onPageStarted(
+            view: WebView?,
+            url: String?,
+            favicon: Bitmap?,
+        ) {
             super.onPageStarted(view, url, favicon)
             view ?: return
             view.clearCache(true)
             Timber.e("onPageStarted ${JsSigner.currentChain.name}")
             if (!redirect) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
-                view.evaluateJavascript(jsInjectorClient.initJs(view.context, JsSigner.currentChain, JsSigner.address), null)
+                view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }
             redirect = false
         }
@@ -1621,7 +1653,11 @@ class WebFragment : BaseFragment() {
             loadingError = true
         }
 
-        override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+        override fun onReceivedSslError(
+            view: WebView?,
+            handler: SslErrorHandler?,
+            error: SslError?,
+        ) {
             handler?.proceed()
             Timber.e("${error?.toString()}")
         }
@@ -1648,7 +1684,8 @@ class WebFragment : BaseFragment() {
 
             if (url.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
                 url.startsWith(Constants.Scheme.MIXIN_WC) ||
-                url.startsWith(Constants.Scheme.HTTPS_MIXIN_WC)) {
+                url.startsWith(Constants.Scheme.HTTPS_MIXIN_WC)
+            ) {
                 val wcUrl = convertWcLink(url)
                 if (wcUrl != null) {
                     // handle wallet connect url
@@ -1720,10 +1757,12 @@ class WebFragment : BaseFragment() {
             fun onPageFinished()
         }
     }
+
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
         val onWalletActionError: (Long) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
+        val onEmptyAddress: (String) -> Unit,
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
@@ -1732,7 +1771,15 @@ class WebFragment : BaseFragment() {
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
             val network = obj.getString("network")
-            when(method) {
+            if (network == JsSigner.JsSignerNetwork.Solana.name) {
+                JsSigner.useSolana()
+            } else {
+                JsSigner.useEvm()
+            }
+            if (isAddressEmpty(network)) {
+                return
+            }
+            when (method) {
                 DAppMethod.REQUESTACCOUNTS -> {
                     onWalletActionSuccessful("window.$network.setAddress(\"${JsSigner.address}\");")
                     onWalletActionSuccessful("window.$network.sendResponse($id, [\"${JsSigner.address}\"]);")
@@ -1743,7 +1790,14 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNMESSAGE -> {
-                    signMessage(id, obj.getJSONObject("object").toString())
+                    val o = obj.getJSONObject("object")
+                    val data =
+                        if (network == JsSigner.JsSignerNetwork.Solana.name) {
+                            o.getString("data")
+                        } else {
+                            o.toString()
+                        }
+                    signMessage(id, data)
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
@@ -1758,39 +1812,64 @@ class WebFragment : BaseFragment() {
                     val transaction = obj.getJSONObject("object")
                     val to = transaction.getString("to")
                     val from = transaction.getString("from")
-                    val gas = if (transaction.has("gas")) {
-                        transaction.getString("gas")
-                    } else {
-                        null
-                    }
-                    val data = if (transaction.has("data")) {
-                        transaction.getString("data")
-                    } else {
-                        null
-                    }
-                    val value = if (transaction.has("value")) {
-                        transaction.getString("value")
-                    } else {
-                        "0x0"
-                    }
-                    val maxPriorityFeePerGas = if (transaction.has("maxPriorityFeePerGas")) {
-                        transaction.getString("maxPriorityFeePerGas")
-                    } else {
-                        null
-                    }
-                    val maxFeePerGas = if (transaction.has("maxFeePerGas")) {
-                        transaction.getString("maxFeePerGas")
-                    } else {
-                        null
-                    }
+                    val gas =
+                        if (transaction.has("gas")) {
+                            transaction.getString("gas")
+                        } else {
+                            null
+                        }
+                    val data =
+                        if (transaction.has("data")) {
+                            transaction.getString("data")
+                        } else {
+                            null
+                        }
+                    val value =
+                        if (transaction.has("value")) {
+                            transaction.getString("value")
+                        } else {
+                            "0x0"
+                        }
+                    val maxPriorityFeePerGas =
+                        if (transaction.has("maxPriorityFeePerGas")) {
+                            transaction.getString("maxPriorityFeePerGas")
+                        } else {
+                            null
+                        }
+                    val maxFeePerGas =
+                        if (transaction.has("maxFeePerGas")) {
+                            transaction.getString("maxFeePerGas")
+                        } else {
+                            null
+                        }
 
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                }
+
+                DAppMethod.SIGNRAWTRANSACTION -> {
+                    val o = obj.getJSONObject("object")
+                    val raw = o.getString("raw")
+                    signRawTransaction(id, raw)
+                }
+
+                DAppMethod.SINGIN -> {
+                    val o = obj.getJSONObject("object")
+                    val data = o.getJSONObject("data")
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
                 }
 
                 else -> {
                     Timber.e("json $json")
                 }
             }
+        }
+
+        private fun isAddressEmpty(network: String): Boolean {
+            if (JsSigner.address.isBlank()) {
+                onEmptyAddress(network)
+                return true
+            }
+            return false
         }
 
         private fun signTransaction(
@@ -1800,11 +1879,24 @@ class WebFragment : BaseFragment() {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
         }
 
-        private fun signMessage(callbackId: Long, data: String) {
+        private fun signRawTransaction(
+            callbackId: Long,
+            raw: String,
+        ) {
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw))
+        }
+
+        private fun signMessage(
+            callbackId: Long,
+            data: String,
+        ) {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
-        private fun signPersonalMessage(callbackId: Long, data:JSONObject) {
+        private fun signPersonalMessage(
+            callbackId: Long,
+            data: JSONObject,
+        ) {
             try {
                 val address = data.getString("address")
                 if (!address.equals(JsSigner.address, true)) {
@@ -1816,7 +1908,10 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        private fun signTypedMessage(callbackId: Long, data: JSONObject) {
+        private fun signTypedMessage(
+            callbackId: Long,
+            data: JSONObject,
+        ) {
             try {
                 val address = data.getString("address")
                 if (!address.equals(JsSigner.address, true)) {
@@ -1828,16 +1923,25 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        private fun ethCall(callbackId: Long, recipient: String) {
+        private fun ethCall(
+            callbackId: Long,
+            recipient: String,
+        ) {
             // do nothing
             Timber.e("ethCall $callbackId $recipient")
         }
 
-        private fun walletAddEthereumChain(callbackId: Long, msgParams: String) {
+        private fun walletAddEthereumChain(
+            callbackId: Long,
+            msgParams: String,
+        ) {
             Timber.e("walletAddEthereumChain $callbackId $msgParams")
         }
 
-        private fun walletSwitchEthereumChain(callbackId: Long, msgParams: String) {
+        private fun walletSwitchEthereumChain(
+            callbackId: Long,
+            msgParams: String,
+        ) {
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = JsSigner.switchChain(switchChain)
             if (result.isSuccess) {
@@ -1851,7 +1955,7 @@ class WebFragment : BaseFragment() {
                     }
                 };
                 mixinwallet.${JsSigner.currentNetwork}.setConfig(config);
-                """
+                """,
                 )
                 onWalletActionSuccessful("window.${JsSigner.currentNetwork}.emitChainChanged('${JsSigner.currentChain.hexReference}');")
             }
@@ -1912,7 +2016,6 @@ class WebFragment : BaseFragment() {
         fun close() {
             closeAction?.invoke()
         }
-
 
         @JavascriptInterface
         fun getTipAddress(

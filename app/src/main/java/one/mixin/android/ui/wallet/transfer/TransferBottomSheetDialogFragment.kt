@@ -48,6 +48,7 @@ import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.UtxoException
@@ -113,23 +114,34 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         initType()
         transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
-        if (t is SafeMultisigsBiometricItem) {
-            lifecycleScope.launch {
-                val item = t as SafeMultisigsBiometricItem
-                val result = bottomViewModel.findMultiUsers(item.senders, item.receivers)
-                if (result != null) {
-                    val senders = result.first
-                    val receivers = result.second
-                    binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers) { user ->
-                        if (user.userId == Session.getAccountId()) return@render
-                        showUserBottom(parentFragmentManager, user)
+        when (t) {
+            is SafeMultisigsBiometricItem -> {
+                lifecycleScope.launch {
+                    val item = t as SafeMultisigsBiometricItem
+                    val result = bottomViewModel.findMultiUsers(item.senders, item.receivers)
+                    if (result != null) {
+                        val senders = result.first
+                        val receivers = result.second
+                        binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers) { user ->
+                            if (user.userId == Session.getAccountId()) return@render
+                            showUserBottom(parentFragmentManager, user)
+                        }
                     }
                 }
             }
-        } else {
-            binding.content.render(t) { user ->
-                if (user.userId == Session.getAccountId()) return@render
-                showUserBottom(parentFragmentManager, user)
+
+            is NftBiometricItem -> {
+                binding.content.render(t) { user ->
+                    if (user.userId == Session.getAccountId()) return@render
+                    showUserBottom(parentFragmentManager, user)
+                }
+            }
+
+            else -> {
+                binding.content.render(t) { user ->
+                    if (user.userId == Session.getAccountId()) return@render
+                    showUserBottom(parentFragmentManager, user)
+                }
             }
         }
 
@@ -153,7 +165,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
-                        binding.header.awaiting(transferType, t.asset!!)
+                        if (t is NftBiometricItem) {
+                            binding.header.awaiting(transferType, (t as NftBiometricItem).inscriptionItem, t.asset!!)
+                        } else {
+                            binding.header.awaiting(transferType, t.asset!!)
+                        }
                         preCheck()
                     }
 
@@ -235,6 +251,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
 
+                is NftBiometricItem -> {
+                    TransferType.nft
+                }
+
                 else -> {
                     throw IllegalArgumentException("Unknown type")
                 }
@@ -270,6 +290,19 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             "${Fiats.getSymbol()}$fiatAmount",
                         ),
                     )
+                }
+                if (tips.isEmpty()) {
+                    binding.transferAlert.isVisible = false
+                } else {
+                    binding.transferAlert.isVisible = true
+                    binding.transferAlert.warning(R.drawable.ic_transfer_warning, tips)
+                }
+            } else if (t is NftBiometricItem) {
+                // check Stranger
+                val transferBiometricItem = t as NftBiometricItem
+                val tips = mutableListOf<String>()
+                if (!isStrangerTransferDisable() && transferBiometricItem.receivers.size == 1 && transferBiometricItem.receivers.first().relationship != UserRelationship.FRIEND.name) {
+                    tips.add(getString(R.string.unfamiliar_person_reminder, transferBiometricItem.receivers.first().fullName, transferBiometricItem.receivers.first().identityNumber))
                 }
                 if (tips.isEmpty()) {
                     binding.transferAlert.isVisible = false
@@ -500,6 +533,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo, t.reference)
                             }
 
+                            is NftBiometricItem -> {
+                                trace = null
+                                bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), t.amount, pin, t.traceId, t.memo, inscriptionHash = t.inscriptionItem.inscriptionHash)
+                            }
+
                             is AddressTransferBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
                                 bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
@@ -587,6 +625,21 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         getDescription(),
                     )
                 }
+            }
+
+            is NftBiometricItem -> {
+                val user = t.receivers.first()
+                BiometricInfo(
+                    getString(
+                        R.string.transfer_to,
+                        user.fullName,
+                    ),
+                    getString(
+                        R.string.contact_mixin_id,
+                        user.identityNumber,
+                    ),
+                    getDescription(),
+                )
             }
 
             is AddressTransferBiometricItem -> {

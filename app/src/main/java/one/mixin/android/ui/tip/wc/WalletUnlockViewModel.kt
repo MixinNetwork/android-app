@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import javax.inject.Inject
 

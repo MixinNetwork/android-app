@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun ItemContent(
@@ -28,7 +28,7 @@ fun ItemContent(
             text = title,
             color = MixinAppTheme.colors.textSubtitle,
             fontSize = 14.sp,
-            maxLines = 1
+            maxLines = 1,
         )
         Box(modifier = Modifier.height(4.dp))
         Text(

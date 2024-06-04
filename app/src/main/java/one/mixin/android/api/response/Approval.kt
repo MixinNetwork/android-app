@@ -10,5 +10,5 @@ data class Approval(
     val symbol: String,
     @SerializedName("icon_url") val iconUrl: String,
     val sender: String,
-    val amount: String
+    val amount: String,
 ) : Parcelable

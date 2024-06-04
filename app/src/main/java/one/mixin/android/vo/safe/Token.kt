@@ -13,7 +13,13 @@ import kotlinx.serialization.Serializable
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "tokens", indices = [Index(value = arrayOf("kernel_asset_id"))])
+@Entity(
+    tableName = "tokens",
+    indices = [
+        Index(value = arrayOf("kernel_asset_id")),
+        Index(value = arrayOf("collection_hash")),
+    ],
+)
 @Serializable
 data class Token(
     @PrimaryKey
@@ -69,6 +75,10 @@ data class Token(
     @SerializedName("dust")
     @SerialName("dust")
     val dust: String,
+    @SerializedName("collection_hash")
+    @ColumnInfo(name = "collection_hash")
+    @SerialName("collection_hash")
+    val collectionHash: String?,
 ) : Parcelable
 
 data class TokenPriceAndChange(
@@ -105,4 +115,5 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         assetKey,
         dust,
         null,
+        collectionHash,
     )

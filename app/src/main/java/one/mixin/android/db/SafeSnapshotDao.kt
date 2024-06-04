@@ -15,10 +15,13 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
             """
                 SELECT s.snapshot_id, s.type, s.asset_id, s.amount, s.created_at, s.opponent_id, s.trace_id, s.memo,
                 s.confirmations, s.transaction_hash, s.opening_balance, s.closing_balance, s.deposit AS deposit, s.withdrawal AS withdrawal,
-                u.avatar_url, u.full_name AS opponent_ful_name, t.symbol AS asset_symbol, t.confirmations AS asset_confirmations 
+                u.avatar_url, u.full_name AS opponent_ful_name, t.symbol AS asset_symbol, t.confirmations AS asset_confirmations,
+                i.inscription_hash, i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, ic.icon_url 
                 FROM safe_snapshots s 
                 LEFT JOIN users u ON u.user_id = s.opponent_id 
-                LEFT JOIN tokens t ON t.asset_id = s.asset_id 
+                LEFT JOIN tokens t ON t.asset_id = s.asset_id
+                LEFT JOIN inscription_items i on i.inscription_hash = s.inscription_hash
+                LEFT JOIN inscription_collections ic on i.collection_hash = ic.collection_hash
             """
     }
 
@@ -109,6 +112,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
         limit: Int,
         rowId: Long,
     ): List<SafeSnapshot>
+
+    @Query("SELECT inscription_hash FROM safe_snapshots WHERE snapshot_id = :snapshotId")
+    suspend fun findHashBySnapshotId(snapshotId: String): String?
 
     @Query("SELECT rowid FROM safe_snapshots WHERE snapshot_id = :snapshotId")
     fun getSnapshotRowId(snapshotId: String): Long?

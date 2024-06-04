@@ -335,6 +335,12 @@ object NotificationGenerator : Injector() {
                 notificationBuilder.setContentTitle(user.fullName)
                 contentText = context.getString(R.string.alert_key_contact_transfer_message)
             }
+
+            message.type == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> {
+                notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_collectible_message))
+                notificationBuilder.setContentTitle(user.fullName)
+                contentText = context.getString(R.string.alert_key_contact_transfer_message)
+            }
             message.type == MessageCategory.APP_BUTTON_GROUP.name ||
                 message.type == MessageCategory.APP_CARD.name -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {

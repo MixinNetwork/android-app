@@ -16,7 +16,6 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,6 +37,7 @@ import one.mixin.android.api.response.getScopes
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.appendQueryParamsFromOtherUri
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
@@ -68,8 +68,11 @@ import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
+import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -83,6 +86,7 @@ import one.mixin.android.ui.oldwallet.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.NftBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
@@ -94,6 +98,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.convertWcLink
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -326,7 +332,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         index = multisigs.senders.indexOf(Session.getAccountId()),
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
-                        reference = null
+                        reference = null,
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
@@ -766,8 +772,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)
             handleTipScheme(uri)
-        } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC)
-            || url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
+        } else if (url.startsWith(Scheme.HTTPS_TIP_SIGN) || url.startsWith(Scheme.MIXIN_TIP_SIGN)) {
+            lifecycleScope.launch(errorHandler) {
+                if (!handleTipSignScheme(url.toUri())) {
+                    showError()
+                }
+            }
+        } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
+            url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
             val wcUri = convertWcLink(url.toString())
             if (wcUri != null && WalletConnect.isEnabled()) {
@@ -838,9 +850,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 if (isAdded) {
@@ -848,6 +858,39 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+
+    private fun handleTipSignScheme(uri: Uri): Boolean {
+        val chain = uri.getQueryParameter("chain")
+        if (chain.isNullOrBlank() || !chain.equals(JsSigner.JsSignerNetwork.Solana.name, true)) {
+            return false
+        }
+        val raw = uri.getQueryParameter("raw")
+        if (raw.isNullOrBlank()) {
+            return false
+        }
+        val action = uri.getQueryParameter("action")
+        if (action.isNullOrBlank() || !action.equals("signRawTransaction", true)) {
+            return false
+        }
+        val data =
+            try {
+                raw.base64RawURLDecode().base64Encode()
+            } catch (e: IllegalArgumentException) {
+                return false
+            }
+        JsSigner.useSolana()
+        if (JsSigner.address.isBlank()) {
+            WalletUnlockBottomSheetDialogFragment.getInstance(JsSigner.JsSignerNetwork.Solana.name)
+                .setOnDismiss { dismiss() }
+                .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+            return true
+        }
+        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data)
+        BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
+            .setOnDismiss { dismiss() }
+            .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
+        return true
     }
 
     private fun handleTipScheme(uri: Uri) {

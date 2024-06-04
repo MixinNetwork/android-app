@@ -2,16 +2,15 @@ package one.mixin.android.ui.home.web3
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
-import one.mixin.android.api.service.TipService
+import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.service.Web3Service
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
-import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import org.web3j.exceptions.MessageDecodingException
@@ -26,10 +25,9 @@ class BrowserWalletBottomSheetViewModel
     @Inject
     internal constructor(
         private val assetRepo: TokenRepository,
-        private val tipService: TipService,
+        private val web3Service: Web3Service,
         private val tip: Tip,
     ) : ViewModel() {
-
         suspend fun ethGasLimit(
             chain: Chain,
             transaction: Transaction,
@@ -40,12 +38,15 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        private fun convertToGasLimit(estimate: EthEstimateGas, defaultLimit: BigInteger?): BigInteger? {
+        private fun convertToGasLimit(
+            estimate: EthEstimateGas,
+            defaultLimit: BigInteger?,
+        ): BigInteger? {
             return if (estimate.hasError()) {
-                if (estimate.error.code === -32000) //out of gas
-                {
-                    defaultLimit
-                } else {
+                if (estimate.error.code === -32000) // out of gas
+                    {
+                        defaultLimit
+                    } else {
                     BigInteger.ZERO
                 }
             } else if (estimate.amountUsed.compareTo(BigInteger.ZERO) > 0) {
@@ -57,35 +58,46 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethGasPrice(chain)?.run {
-                try {
-                    this.gasPrice
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethGasPrice(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethGasPrice(chain)?.run {
+                    try {
+                        this.gasPrice
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
-                try {
-                    this.maxPriorityFeePerGas
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
+                    try {
+                        this.maxPriorityFeePerGas
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        suspend fun getTipPriv(
+        suspend fun getWeb3Priv(
             context: Context,
             pin: String,
+            chainId: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey)
+            return tipPrivToPrivateKey(spendKey, chainId)
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
+        suspend fun web3Tokens(address: List<String>): List<Web3Token> {
+            val resp = web3Service.web3Tokens(address.joinToString(","))
+            return if (resp.isSuccess) {
+                resp.data ?: emptyList()
+            } else {
+                emptyList()
+            }
+        }
     }

@@ -624,12 +624,12 @@ class ConversationListFragment : LinkFragment() {
         name: String?,
         circleId: String?,
     ) {
-        if (viewDestroyed()) return
-
-        setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
+        if (viewDestroyed()) return
+
         binding.searchBar.hideContainer()
+        setCircleName(name)
         this.circleId = circleId
         observeOtherCircleUnread(circleId)
     }
@@ -856,6 +856,10 @@ class ConversationListFragment : LinkFragment() {
                     }
                     conversationItem.contentType == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
                         binding.msgTv.setText(R.string.content_transfer)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
+                    }
+                    conversationItem.contentType == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> {
+                        binding.msgTv.setText(R.string.content_collection)
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                     }
                     conversationItem.isSticker() -> {

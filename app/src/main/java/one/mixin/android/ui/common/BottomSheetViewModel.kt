@@ -75,6 +75,8 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
@@ -266,7 +268,15 @@ class BottomSheetViewModel
                         val transactionHash = signWithdrawal.hash
                         Timber.e("Kernel Withdrawal($traceId): db insert snapshot")
                         tokenRepository.insertSafeSnapshot(
-                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
+                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(),
+                            senderId,
+                            "",
+                            transactionHash,
+                            traceId,
+                            assetId,
+                            amount,
+                            memo,
+                            SafeSnapshotType.withdrawal,
                             withdrawal =
                                 SafeWithdrawal(
                                     "",
@@ -277,9 +287,9 @@ class BottomSheetViewModel
                         Timber.e("Kernel Withdrawal($traceId): db insert fee snapshot")
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$feeTransactionHash".toByteArray()).toString(), senderId, receiverId, feeTransactionHash, feeTraceId, feeAssetId, feeAmount, "", SafeSnapshotType.snapshot)
                         Timber.e("Kernel Withdrawal($traceId): db raw transaction")
-                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc(), withdrawalUtxos.inscriptionHash))
                         Timber.e("Kernel Withdrawal($traceId): db insert fee raw transaction")
-                        tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc()))
+                        tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc(), null))
                     }
                     Timber.e("Kernel Withdrawal($traceId): db end")
                     jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
@@ -296,7 +306,15 @@ class BottomSheetViewModel
                         val transactionHash = signWithdrawal.hash
                         Timber.e("Kernel Withdrawal($traceId): db update insert snapshot")
                         tokenRepository.insertSafeSnapshot(
-                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, traceId, assetId, amount, memo, SafeSnapshotType.withdrawal,
+                            UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(),
+                            senderId,
+                            "",
+                            transactionHash,
+                            traceId,
+                            assetId,
+                            amount,
+                            memo,
+                            SafeSnapshotType.withdrawal,
                             withdrawal =
                                 SafeWithdrawal(
                                     "",
@@ -304,7 +322,7 @@ class BottomSheetViewModel
                                 ),
                         )
                         Timber.e("Kernel Withdrawal($traceId): db update raw transaction")
-                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc()))
+                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc(), withdrawalUtxos.inscriptionHash))
                     }
                     Timber.e("Kernel Withdrawal($traceId): db end")
                     jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
@@ -339,7 +357,7 @@ class BottomSheetViewModel
             pin: String,
             trace: String,
             memo: String?,
-            reference: String?
+            reference: String?,
         ): MixinResponse<*> {
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
@@ -350,7 +368,7 @@ class BottomSheetViewModel
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction?.state == OutputState.unspent) {
                 Timber.e("Kernel Address Transaction($trace): sync restore")
-                return innerTransaction(rawTransaction.rawTransaction, trace, listOf())
+                return innerTransaction(rawTransaction.rawTransaction, trace, listOf(), utxoWrapper.inscriptionHash)
             }
 
             val senderId = Session.getAccountId()!!
@@ -395,9 +413,9 @@ class BottomSheetViewModel
                     }
                     val transactionHash = sign.hash
                     Timber.e("Kernel Address Transaction($trace): sign db insert snapshot")
-                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
+                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot, reference = reference)
                     Timber.e("Kernel Address Transaction($trace): sign db insert raw transaction")
-                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
+                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), utxoWrapper.inscriptionHash))
                     Timber.e("Kernel Address Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                     tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
                     Timber.e("Kernel Address Transaction: sign end")
@@ -405,7 +423,7 @@ class BottomSheetViewModel
             }
             Timber.e("Kernel Address Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            val innerTransactionResponse = innerTransaction(signResult.raw, trace, listOf())
+            val innerTransactionResponse = innerTransaction(signResult.raw, trace, listOf(), utxoWrapper.inscriptionHash)
             Timber.e("Kernel Address Transaction($trace): end")
             return innerTransactionResponse
         }
@@ -419,17 +437,18 @@ class BottomSheetViewModel
             trace: String,
             memo: String?,
             reference: String? = null,
+            inscriptionHash: String? = null,
         ): MixinResponse<*> {
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
-            val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
+            val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, inscriptionHash))
             Timber.e("Kernel Transaction($trace): begin")
             val rawTransaction = tokenRepository.findRawTransaction(trace)
             if (rawTransaction != null) {
                 Timber.e("Kernel Transaction($trace): sync restore")
-                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds)
+                return innerTransaction(rawTransaction.rawTransaction, trace, receiverIds, utxoWrapper.inscriptionHash)
             }
             Timber.e("Kernel Transaction($trace): request ghost key")
             val senderIds = listOf(Session.getAccountId()!!)
@@ -487,10 +506,10 @@ class BottomSheetViewModel
                                 ""
                             }
                         Timber.e("Kernel Transaction($trace): sign db insert snapshot")
-                        tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot)
+                        tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot, reference = reference ?: inscriptionHash)
                     }
                     Timber.e("Kernel Transaction($trace): sign db insert raw transaction")
-                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc()))
+                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), utxoWrapper.inscriptionHash))
                     Timber.e("Kernel Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                     tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
                     Timber.e("Kernel Transaction: sign end")
@@ -498,7 +517,7 @@ class BottomSheetViewModel
             }
             Timber.e("Kernel Transaction($trace): db end")
             jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
-            val innerTransactionResponse = innerTransaction(signResult.raw, trace, receiverIds, isConsolidation)
+            val innerTransactionResponse = innerTransaction(signResult.raw, trace, receiverIds, utxoWrapper.inscriptionHash, isConsolidation)
             Timber.e("Kernel Transaction($trace): end")
             return innerTransactionResponse
         }
@@ -507,6 +526,7 @@ class BottomSheetViewModel
             raw: String,
             traceId: String,
             receiverIds: List<String>,
+            inscriptionHash: String?,
             isConsolidation: Boolean = false,
         ): MixinResponse<List<TransactionResponse>> {
             Timber.e("Kernel Transaction($traceId): innerTransaction")
@@ -533,11 +553,11 @@ class BottomSheetViewModel
                     val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
                     initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
                     Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage $conversationId")
-                    tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId)
+                    tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), conversationId, inscriptionHash)
                 }
             } else if (receiverIds.size > 1) {
                 Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage")
-                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "")
+                tokenRepository.insertSnapshotMessage(transactionRsp.data!!.first(), "", inscriptionHash)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             Timber.e("Kernel Transaction($traceId): innerTransaction end")
@@ -570,9 +590,10 @@ class BottomSheetViewModel
         private suspend fun packUtxo(
             asset: String,
             amount: String,
+            inscriptionHash: String? = null,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
-            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash)
 
             if (candidateOutputs.isEmpty()) {
                 throw EmptyUtxoException
@@ -888,9 +909,36 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun findInscriptionCollectionByHash(hash: String): InscriptionCollection? =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findInscriptionCollectionByHash(hash)
+            }
+
+        suspend fun findInscriptionByHash(hash: String): InscriptionItem? =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findInscriptionByHash(hash)
+            }
+
+        suspend fun findUnspentOutputByHash(hash: String): Output? =
+            withContext(Dispatchers.IO) {
+                tokenRepository.findUnspentOutputByHash(hash)
+            }
+
         suspend fun refreshAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
                 tokenRepository.findOrSyncAsset(assetId)
+            }
+        }
+
+        suspend fun refreshInscriptionItem(assetId: String): InscriptionItem? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.getInscriptionItem(assetId)
+            }
+        }
+
+        suspend fun refreshInscriptionCollection(hash: String): InscriptionCollection? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.getInscriptionCollection(hash)
             }
         }
 

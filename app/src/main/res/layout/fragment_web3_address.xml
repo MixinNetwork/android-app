@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:titleText="@string/Receive" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/qr_fl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/warning_tv">
+
+            <ImageView
+                android:id="@+id/qr"
+                android:layout_width="240dp"
+                android:layout_height="240dp"
+                tools:ignore="ContentDescription" />
+
+            <one.mixin.android.widget.BadgeCircleImageView
+                android:id="@+id/qr_avatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="38dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="38dp"
+            android:gravity="center_horizontal"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary" />
+
+        <Button
+            android:id="@+id/copy"
+            style="@style/AppTheme.MaterialButton"
+            android:layout_width="116dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginTop="16dp"
+            android:text="@string/Copy"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/bottom_hint_tv"
+            android:text="@string/web3_deposit_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="38dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="38dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal"
+            android:textColor="?attr/text_assist"/>
+
+        <FrameLayout
+            android:id="@+id/bottom_hint_fl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_1"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_web3_chain_eth" />
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_2"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_web3_chain_polygon"
+                android:layout_marginStart="12dp" />
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_3"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="24dp"
+                android:src="@drawable/ic_web3_chain_bsc" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+</LinearLayout>

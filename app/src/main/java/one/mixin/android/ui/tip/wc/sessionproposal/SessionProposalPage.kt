@@ -1,6 +1,5 @@
 package one.mixin.android.ui.tip.wc.sessionproposal
 
-import GlideImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,10 +34,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.walletconnect.web3.wallet.client.Wallet
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.home.web3.components.ActionBottom
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
@@ -101,13 +102,13 @@ fun SessionProposalPage(
                     )
                 }
                 else -> {
-                    GlideImage(
-                        data = sessionProposalUI.peer.icon,
+                    CoilImage(
+                        model = sessionProposalUI.peer.icon,
                         modifier =
                             Modifier
                                 .size(70.dp)
                                 .clip(CircleShape),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
+                        placeholder = R.drawable.ic_avatar_place_holder,
                     )
                 }
             }
@@ -137,12 +138,18 @@ fun SessionProposalPage(
                 text = errorInfo ?: stringResource(id = R.string.allow_dapp_access_address_and_transaction),
                 style =
                     TextStyle(
-                        color = if (errorInfo != null || step !in listOf(
-                                WalletConnectBottomSheetDialogFragment.Step.Loading,
-                                WalletConnectBottomSheetDialogFragment.Step.Done,
-                                WalletConnectBottomSheetDialogFragment.Step.Sending
-                            )
-                        ) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                        color =
+                            if (errorInfo != null || step !in
+                                listOf(
+                                    WalletConnectBottomSheetDialogFragment.Step.Loading,
+                                    WalletConnectBottomSheetDialogFragment.Step.Done,
+                                    WalletConnectBottomSheetDialogFragment.Step.Sending,
+                                )
+                            ) {
+                                MixinAppTheme.colors.tipError
+                            } else {
+                                MixinAppTheme.colors.textPrimary
+                            },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.W400,
                     ),

@@ -25,6 +25,8 @@ data class RawTransaction(
     val state: OutputState,
     @ColumnInfo(name = "created_at")
     val createdAt: String,
+    @ColumnInfo(name = "inscription_hash")
+    val inscriptionHash: String?,
 )
 
 fun formatDestination(

@@ -1,10 +1,10 @@
 package one.mixin.android
 
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.junit.Test
-import org.sol4k.Base58.decode
 import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.PublicKey
@@ -71,13 +71,14 @@ class Bip44Test {
 
         val receiver = PublicKey("9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g")
         val instruction = TransferInstruction(sender.publicKey, receiver, 100L)
-        val transaction = Transaction(
-            blockhash,
-            instruction,
-            sender.publicKey
-        )
+        val transaction =
+            Transaction(
+                blockhash,
+                instruction,
+                sender.publicKey,
+            )
         transaction.sign(sender)
-        val signature: String = connection.sendTransaction(transaction)
-        println("Transaction Signature: $signature")
+        val signature: String = connection.sendTransaction(transaction.serialize())
+        println("Transaction Signature: $signature\ntx: ${transaction.serialize().base64Encode()}")
     }
 }

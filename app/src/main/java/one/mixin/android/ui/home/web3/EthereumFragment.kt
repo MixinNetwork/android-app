@@ -41,12 +41,12 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.web3.send.InputAddressFragment
-import one.mixin.android.web3.receive.Wbe3ReceiveFragment
-import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
-import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.receive.Web3AddressFragment
+import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
+import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -64,8 +64,8 @@ class EthereumFragment : BaseFragment() {
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val adapter by lazy {
         Web3WalletAdapter(ETHEREUM_CHAIN_ID).apply {
-            setOnWeb3Click {token->
-                address?.let {address->
+            setOnWeb3Click { token ->
+                address?.let { address ->
                     navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
                 }
             }
@@ -111,8 +111,8 @@ class EthereumFragment : BaseFragment() {
 
     private val sendCallback = fun(list: List<Web3Token>) {
         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
-            setOnClickListener {token->
-                address?.let {add->
+            setOnClickListener { token ->
+                address?.let { add ->
                     navTo(InputAddressFragment.newInstance(add, token, token.findChainToken(tokens)), InputAddressFragment.TAG)
                 }
                 dismissNow()
@@ -145,17 +145,20 @@ class EthereumFragment : BaseFragment() {
     }
 
     private var address: String? = null
+
     fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            this@EthereumFragment.address = address
-            if (address.isBlank()) {
-                adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum) {
-                    WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+            if (isAdded) {
+                this@EthereumFragment.address = address
+                if (address.isBlank()) {
+                    adapter.setContent(getString(R.string.web3_account_network, getString(R.string.Ethereum)), getString(R.string.access_dapps_defi_projects), R.drawable.ic_ethereum) {
+                        WalletUnlockBottomSheetDialogFragment.getInstance(TYPE_ETH).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    adapter.address = address
+                    refreshAccount(address)
                 }
-            } else {
-                adapter.address = address
-                refreshAccount(address)
             }
         }
     }
@@ -214,37 +217,39 @@ class EthereumFragment : BaseFragment() {
             binding.progress.isVisible = false
             return
         }
-        val account = try {
-            val response = web3ViewModel.web3Account(address)
-            if (!isAdded) return
-            if (response.errorCode == ErrorHandler.OLD_VERSION) {
-                dialog?.dismiss()
-                dialog = alertDialogBuilder()
-                    .setTitle(R.string.Update_Mixin)
-                    .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                    .setNegativeButton(R.string.Later) { dialog, _ ->
-                        dialog.dismiss()
-                    }.setPositiveButton(R.string.Update) { dialog, _ ->
-                        requireContext().openMarket(parentFragmentManager, lifecycleScope)
-                        dialog.dismiss()
-                    }.create()
-                dialog?.show()
-                throw MixinResponseException(
-                    response.errorCode,
-                    getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName),
-                )
-            } else if (response.error != null) {
-                handleError(address, response.errorDescription)
+        val account =
+            try {
+                val response = web3ViewModel.web3Account(address)
+                if (!isAdded) return
+                if (response.errorCode == ErrorHandler.OLD_VERSION) {
+                    dialog?.dismiss()
+                    dialog =
+                        alertDialogBuilder()
+                            .setTitle(R.string.Update_Mixin)
+                            .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                            .setNegativeButton(R.string.Later) { dialog, _ ->
+                                dialog.dismiss()
+                            }.setPositiveButton(R.string.Update) { dialog, _ ->
+                                requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                                dialog.dismiss()
+                            }.create()
+                    dialog?.show()
+                    throw MixinResponseException(
+                        response.errorCode,
+                        getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName),
+                    )
+                } else if (response.error != null) {
+                    handleError(address, response.errorDescription)
+                    binding.progress.isVisible = false
+                    return
+                }
+                response
+            } catch (e: Exception) {
+                if (!isAdded) return
+                handleError(address, e.message ?: getString(R.string.Unknown))
                 binding.progress.isVisible = false
                 return
             }
-            response
-        } catch (e: Exception) {
-            if (!isAdded) return
-            handleError(address, e.message ?: getString(R.string.Unknown))
-            binding.progress.isVisible = false
-            return
-        }
         account.data?.let { data ->
             adapter.account = data
             tokens = data.tokens
@@ -255,7 +260,10 @@ class EthereumFragment : BaseFragment() {
 
     private var tokens = emptyList<Web3Token>()
 
-    private fun handleError(address: String, err: String) {
+    private fun handleError(
+        address: String,
+        err: String,
+    ) {
         binding.apply {
             if (adapter.account != null) return
             empty.isVisible = true
@@ -276,7 +284,7 @@ class EthereumFragment : BaseFragment() {
             titleTv.setText(R.string.No_asset)
             receiveTv.setText(R.string.Receive)
             receiveTv.setOnClickListener {
-                navTo(Wbe3ReceiveFragment(), Wbe3ReceiveFragment.TAG)
+                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
             }
         }
     }
@@ -286,10 +294,5 @@ class EthereumFragment : BaseFragment() {
         if (!hidden) {
             updateUI()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        updateUI()
     }
 }

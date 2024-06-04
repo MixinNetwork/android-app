@@ -36,11 +36,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.compose.SettingPageScaffold
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.localTime
 import one.mixin.android.ui.setting.PinLogsFragment
 import one.mixin.android.ui.setting.SettingViewModel
-import one.mixin.android.ui.setting.ui.compose.SettingPageScaffold
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.LogResponse
 import timber.log.Timber
 

@@ -68,9 +68,21 @@ class ConversationListViewModel
                 participants.mapTo(mutableList) { Participant(conversationId, it.userId, "", createAt) }
                 val conversation =
                     Conversation(
-                        c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
-                        c.announcement, null, c.payType, createAt, null, null,
-                        null, 0, ConversationStatus.START.ordinal, null,
+                        c.conversationId,
+                        c.ownerId,
+                        c.category,
+                        c.name,
+                        c.iconUrl,
+                        c.announcement,
+                        null,
+                        c.payType,
+                        createAt,
+                        null,
+                        null,
+                        null,
+                        0,
+                        ConversationStatus.START.ordinal,
+                        null,
                     )
                 messageRepository.insertConversation(conversation, mutableList)
 

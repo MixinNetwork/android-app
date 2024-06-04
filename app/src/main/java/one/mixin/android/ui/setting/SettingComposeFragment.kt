@@ -25,13 +25,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.compose.MixinSettingFragment
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toUri
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
-import one.mixin.android.ui.setting.ui.compose.MixinSettingFragment
 import one.mixin.android.ui.setting.ui.page.AboutPage
 import one.mixin.android.ui.setting.ui.page.AccountPage
 import one.mixin.android.ui.setting.ui.page.AccountPrivacyPage
@@ -52,7 +53,6 @@ import one.mixin.android.ui.setting.ui.page.PinSettingPage
 import one.mixin.android.ui.setting.ui.page.SecurityPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
 import one.mixin.android.ui.setting.ui.page.ViewEmergencyContactPage
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.vo.User
 import timber.log.Timber
 

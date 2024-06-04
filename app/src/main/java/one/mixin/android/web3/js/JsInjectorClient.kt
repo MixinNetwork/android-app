@@ -8,9 +8,10 @@ import timber.log.Timber
 import java.io.IOException
 
 class JsInjectorClient {
-    fun initJs(context: Context, chain: Chain, address: String): String {
+    fun initJs(context: Context): String {
         val initSrc = loadFile(context, rawRes = R.raw.init)
-        return String.format(initSrc, chain.chainReference, chain.rpcUrl, address)
+        val solAddress = if (JsSigner.currentChain == Chain.Solana) JsSigner.solanaAddress else ""
+        return String.format(initSrc, Chain.Ethereum.chainReference, Chain.Ethereum.rpcUrl, JsSigner.evmAddress, solAddress)
     }
 
     fun loadProviderJs(context: Context): String {
@@ -18,7 +19,10 @@ class JsInjectorClient {
     }
 
     companion object {
-        fun loadFile(context: Context, @RawRes rawRes: Int): String {
+        fun loadFile(
+            context: Context,
+            @RawRes rawRes: Int,
+        ): String {
             var buffer = ByteArray(0)
             try {
                 val `in` = context.resources.openRawResource(rawRes)

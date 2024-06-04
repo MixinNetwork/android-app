@@ -23,7 +23,6 @@ import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
@@ -105,8 +104,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             titleView.rightAnimator.setOnClickListener { }
             titleView.setSubTitle(getString(R.string.Order_Confirm), "")
             buyVa.displayedChild = 2
-            assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetAvatar.loadToken(asset)
             TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
                 payWith,
                 8,

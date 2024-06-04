@@ -44,6 +44,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
@@ -91,6 +92,7 @@ import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
 import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
+import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -131,6 +133,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -306,11 +309,15 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 lifecycleScope.launch {
                     if (e is WCEvent.V2) {
-                        val type = e.chainType ?: TYPE_ETH
-                        if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                        } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        if (e.requestType != WalletConnect.RequestType.Connect) {
+                            val type = e.chainType ?: TYPE_ETH
+                            if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            } else {
+                                WalletConnectActivity.show(this@MainActivity, e)
+                            }
                         } else {
                             WalletConnectActivity.show(this@MainActivity, e)
                         }
@@ -447,6 +454,10 @@ class MainActivity : BlazeBaseActivity() {
 
             PropertyHelper.checkCleanupQuoteContent {
                 jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
+            }
+
+            PropertyHelper.checkInscriptionMigrated {
+                jobManager.addJobInBackground(InscriptionMigrationJob())
             }
 
             jobManager.addJobInBackground(RefreshContactJob())
@@ -863,6 +874,10 @@ class MainActivity : BlazeBaseActivity() {
         ExploreFragment()
     }
 
+    private val collectiblesFragment by lazy {
+        CollectiblesFragment()
+    }
+
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
@@ -876,6 +891,12 @@ class MainActivity : BlazeBaseActivity() {
 
                     R.id.nav_wallet -> {
                         openWallet()
+                        conversationListFragment.hideCircles()
+                        true
+                    }
+
+                    R.id.nav_collectibles -> {
+                        navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
                         conversationListFragment.hideCircles()
                         true
                     }

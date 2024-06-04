@@ -58,6 +58,7 @@
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_transcript_message">分享一个聊天记录</string>
     <string name="alert_key_contact_transfer_message">发送一笔转账</string>
+    <string name="alert_key_contact_collectible_message">发送一个藏品</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
     <string name="alert_key_group_audio_invite_message">%1$s邀请你进行语音通话</string>
     <string name="alert_key_group_audio_message">%1$s发送一条语音</string>
@@ -231,6 +232,7 @@
     <string name="Click_to_unlock">点击解锁</string>
     <string name="Close">关闭</string>
     <string name="Closing_Balance">期末余额</string>
+    <string name="Collectibles">藏品</string>
     <string name="Combine_and_forward">合并转发</string>
     <string name="Confirm">确认</string>
     <string name="Confirm_fingerprint">确认指纹</string>
@@ -267,6 +269,7 @@
     <string name="Content_too_long">内容过长</string>
     <string name="content_transcript">[聊天记录]</string>
     <string name="content_transfer">[转账]</string>
+    <string name="content_collection">[藏品]</string>
     <string name="content_video">[视频]</string>
     <string name="content_voice">[语音电话]</string>
     <string name="Continue">继续</string>
@@ -278,6 +281,7 @@
     <string name="Conversation_not_found">找不到该会话</string>
     <string name="copied_to_clipboard">已拷贝</string>
     <string name="Copy">复制</string>
+    <string name="Copy_hash">复制 Hash</string>
     <string name="Copy_invite">复制邀请链接</string>
     <string name="Copy_link">复制链接</string>
     <string name="Create">创建</string>
@@ -353,7 +357,7 @@
     <string name="divide">、</string>
     <string name="Documents">文档</string>
     <string name="Done">完成</string>
-    <string name="Dont_have_assets">没有资产？</string>
+    <string name="Dont_have_assets">没有资产</string>
     <string name="Draw">绘制</string>
     <string name="Duplicate_Transfer_Confirmation">重复转账确认</string>
     <string name="Duplicate_Withdraw_Confirmation">重复提现确认</string>
@@ -793,8 +797,10 @@
     <string name="Refuse">拒绝</string>
     <string name="Registering">注册中…</string>
     <string name="Reload">重新载入</string>
+    <string name="Remove">删除</string>
     <string name="Remove_all">全部删除</string>
     <string name="Remove_all_floats">确定删除全部浮窗？</string>
+    <string name="Remove_UTXO">删除这个 UTXO?</string>
     <string name="Remove_Bot">删除机器人</string>
     <string name="Remove_Contact">删除联系人</string>
     <string name="Remove_emergency_contact">移除紧急联系人</string>
@@ -849,6 +855,7 @@
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="SEARCH_MESSAGES">搜索消息</string>
     <string name="search_placeholder_asset">名称, 符号</string>
+    <string name="search_placeholder_inscription">搜索名称</string>
     <string name="search_placeholder_number">搜索 Mixin ID 或手机号码：</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d 条相关的消息</item>
@@ -1447,6 +1454,7 @@
     <string name="web3_sending_success">发送成功</string>
     <string name="Browser">浏览器</string>
     <string name="copy_address">复制地址</string>
+    <string name="copy_contract_address">复制合约地址</string>
     <string name="coming_soon">即将推出</string>
     <string name="web3_deposit_description">使用此地址在 Ethereum、Polygon、BSC 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
@@ -1461,4 +1469,34 @@
     <string name="From_mixin_wallet">从 Mixin 钱包转入</string>
     <string name="From_address">从地址转入</string>
     <string name="From_address_desc">从其他钱包或交易所转入</string>
+    <string name="NO_COLLECTIBLES">没有藏品</string>
+    <string name="Collection">合集</string>
+    <string name="HASH">哈希</string>
+    <string name="inscription_Hash">藏品哈希</string>
+    <string name="NFT_TOKEN">NFT 代币</string>
+    <string name="Swap">闪兑</string>
+    <string name="Swapping">兑换中</string>
+    <string name="Pay">支付</string>
+    <string name="Received">收到</string>
+    <string name="Review_Order">预览订单</string>
+    <string name="View_Transaction">查看区块链浏览器</string>
+    <string name="Confirming_Transaction">正在确认交易</string>
+    <string name="Transaction_Success">交易成功</string>
+    <string name="Transaction_Failed">交易失败</string>
+    <string name="Best_price">最优价格</string>
+    <string name="Slippage">滑点</string>
+    <string name="slippage_auto">自动</string>
+    <string name="slippage_auto_desc">根据不同币种推荐合适的滑点，帮助你交易成功</string>
+    <string name="slippage_custom">自定义</string>
+    <string name="slippage_custom_desc">将按照您设置的滑点执行交易</string>
+    <string name="slippage_high_warning">您的交易可能会抢先交易并导致不利的交易</string>
+    <string name="slippage_invalid">滑点不可大于 50% 且不可小于 0.1%</string>
+    <string name="select_token">选择代币</string>
+    <string name="Contract">合约</string>
+    <string name="swap_desc">%1$s 将会在交易完成后存入您的钱包</string>
+    <string name="view_on_explorer">在浏览器查看</string>
+    <string name="search_swap_token">按代币或合约地址搜索</string>
+    <string name="Slippage_tolerance_exceeded">超出滑点范围</string>
+    <string name="balance_max">最大</string>
+    <string name="balance_half">取半</string>
 </resources>

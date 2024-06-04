@@ -6,5 +6,5 @@
 /captures
 google-services.json
 .DS_Store
-
+/.kotlin
 .externalNativeBuild

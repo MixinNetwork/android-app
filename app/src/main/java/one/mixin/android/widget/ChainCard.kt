@@ -23,7 +23,7 @@ class ChainCard : FrameLayout {
         title: String,
         subTitle: String,
         @DrawableRes icon: Int,
-        onClickListener: OnClickListener
+        onClickListener: OnClickListener,
     ) {
         _binding.title.text = title
         _binding.subTitle.text = subTitle

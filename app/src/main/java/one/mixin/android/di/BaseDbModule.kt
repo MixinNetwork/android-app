@@ -190,4 +190,12 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideRawTransactionDao(db: MixinDatabase) = db.rawTransactionDao()
+
+    @Singleton
+    @Provides
+    fun provideInscriptionCollectionDao(db: MixinDatabase) = db.inscriptionCollectionDao()
+
+    @Singleton
+    @Provides
+    fun provideInscriptionDao(db: MixinDatabase) = db.inscriptionDao()
 }

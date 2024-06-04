@@ -60,11 +60,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.database.getStringOrNull
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import coil.ImageLoader
+import coil.decode.SvgDecoder
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -124,6 +125,10 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     val b = attributes.getBoolean(0, false)
     attributes.recycle()
     return b
+}
+
+fun Context.svgLoader(): ImageLoader {
+    return ImageLoader.Builder(this).components { add(SvgDecoder.Factory()) }.build()
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater
@@ -725,13 +730,30 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, bitrate,
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                resultWidth,
+                resultHeight,
+                thumbnail,
+                fileName,
+                bitrate,
             )
         } else {
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
-                fileName, 0, false,
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                mediaWith,
+                mediaHeight,
+                thumbnail,
+                fileName,
+                0,
+                false,
             )
         }
     } catch (e: Exception) {

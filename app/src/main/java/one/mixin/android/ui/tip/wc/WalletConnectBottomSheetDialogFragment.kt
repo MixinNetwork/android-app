@@ -18,7 +18,6 @@ import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
@@ -30,11 +29,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
-import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
-import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -54,13 +50,13 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
-import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.home.web3.swap.parseJupiterError
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
@@ -70,7 +66,8 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import org.sol4k.Transaction
+import org.sol4k.VersionedTransaction
+import org.sol4k.exception.RpcException
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -246,9 +243,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (activity is WalletConnectActivity || activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 activity?.finish()
@@ -280,24 +275,25 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 else -> {}
             }
 
-            account = if (chain != Chain.Solana) {
-                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            } else {
-                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-            }
+            account =
+                if (chain != Chain.Solana) {
+                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                } else {
+                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                }
 
             if (requestType != RequestType.SessionRequest) return@launch
             val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@launch
 
             var signData = this@WalletConnectBottomSheetDialogFragment.signData
             if (signData == null) {
-                signData = try {
-                    val account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                    viewModel.parseV2SignData(account, sessionRequest)
-                } catch (e: Exception) {
-                    toast(e.message ?: "Unknown error")
-                    null
-                }
+                signData =
+                    try {
+                        viewModel.parseV2SignData(account, sessionRequest)
+                    } catch (e: Exception) {
+                        toast(e.message ?: "Unknown error")
+                        null
+                    }
             }
 
             // not supported sessionRequest, like eth_call
@@ -310,6 +306,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             if (signData.signMessage is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
+            } else if (signData.signMessage is VersionedTransaction) {
+                asset = viewModel.refreshAsset(Chain.Solana.assetId)
             }
         }
 
@@ -364,8 +362,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        if (signedTransactionData is Transaction) {
-                                            viewModel.sendTransaction(signedTransactionData)
+                                        if (signedTransactionData is VersionedTransaction) {
+                                            viewModel.sendTransaction(signedTransactionData, sessionRequest)
                                         } else {
                                             viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
                                         }
@@ -443,6 +441,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 is WalletConnectException -> {
                     "code: ${e.code}, message: ${e.message}"
                 }
+                is RpcException -> {
+                    parseJupiterError(e.rawResponse)?.toString(requireContext()) ?: e.message
+                }
                 else -> {
                     e.stackTraceToString()
                 }
@@ -459,7 +460,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
-    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is WcSolanaTransaction
+
+    private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransaction
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

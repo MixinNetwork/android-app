@@ -86,7 +86,7 @@ class UtxosFragment : BaseFragment() {
     }
 
     private val adapter by lazy {
-        UtxoAdapter()
+        UtxoAdapter(showRemove)
     }
 
     @SuppressLint("SetTextI18n")
@@ -111,14 +111,14 @@ class UtxosFragment : BaseFragment() {
         }
     }
 
-    class UtxoAdapter :
+    class UtxoAdapter(val action: (UtxoItem) -> Unit) :
         PagingDataAdapter<UtxoItem, UtxoHolder>(UtxoItemDiffCallBack) {
         override fun onBindViewHolder(
             holder: UtxoHolder,
             position: Int,
         ) {
             getItem(position)?.let {
-                holder.bind(it)
+                holder.bind(it, action)
             }
         }
 
@@ -131,7 +131,10 @@ class UtxosFragment : BaseFragment() {
     }
 
     class UtxoHolder(val binding: ItemWalletUtxoBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: UtxoItem) {
+        fun bind(
+            item: UtxoItem,
+            action: (UtxoItem) -> Unit,
+        ) {
             binding.apply {
                 name.text = item.outputId
                 hash.text = item.transactionHash
@@ -139,9 +142,7 @@ class UtxosFragment : BaseFragment() {
                 value.textColorResource = if (item.state == "unspent") R.color.wallet_green else R.color.wallet_pink
             }
             binding.root.setOnLongClickListener {
-                it.context?.getClipboardManager()
-                    ?.setPrimaryClip(ClipData.newPlainText(null, item.transactionHash))
-                toast(R.string.copied_to_clipboard)
+                action(item)
                 true
             }
         }
@@ -164,6 +165,23 @@ class UtxosFragment : BaseFragment() {
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }
         bottomSheet.show()
+    }
+
+    private val showRemove: (UtxoItem) -> Unit = { item ->
+        alertDialogBuilder()
+            .setMessage(getString(R.string.Remove_UTXO))
+            .setNegativeButton(R.string.Copy_hash) { dialog, _ ->
+                requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, item.transactionHash))
+                toast(R.string.copied_to_clipboard)
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.Remove) { dialog, _ ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    walletViewModel.removeUtxo(item.outputId)
+                }
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private var loadingDialog: Dialog? = null
@@ -225,7 +243,7 @@ class UtxosFragment : BaseFragment() {
             Timber.d("$TAG sync outputs sequence: $sequence")
             val userId = requireNotNull(Session.getAccountId())
             val members = buildHashMembers(listOf(userId))
-            val resp = walletViewModel.getOutputs(members, 1, sequence, syncOutputLimit, asset = kernelAssetId)
+            val resp = walletViewModel.getOutputs(members, 1, sequence, syncOutputLimit, asset = kernelAssetId, state = "unspent")
             if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
                 Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
                 showError(resp.errorDescription)

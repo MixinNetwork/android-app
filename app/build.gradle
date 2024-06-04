@@ -9,11 +9,12 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
+    id "org.jetbrains.kotlin.plugin.compose" version "2.0.0"
 }
 
 def versionMajor = 1
-def versionMinor = 7
-def versionPatch = 6
+def versionMinor = 8
+def versionPatch = 5
 def versionBuild = 1
 
 android {
@@ -163,8 +164,9 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.11'
+        kotlinCompilerExtensionVersion '1.5.14'
     }
+
     lint {
         abortOnError false
     }
@@ -199,7 +201,7 @@ ksp {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
-    implementation platform("com.google.firebase:firebase-bom:32.8.1")
+    implementation platform("com.google.firebase:firebase-bom:33.0.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation("androidx.activity:activity-ktx:$activity_version")
@@ -219,7 +221,8 @@ dependencies {
     implementation "androidx.biometric:biometric:${biometricVersion}"
     implementation "androidx.security:security-crypto:1.0.0"
 
-    implementation 'org.sol4k:sol4k:0.4.1'
+    implementation 'org.sol4k:tweetnacl:0.1.6'
+    implementation 'org.sol4k:utilities:0.1.0'
 
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
@@ -231,6 +234,8 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
+    implementation "io.coil-kt:coil-compose:${coilVersion}"
+    implementation("io.coil-kt:coil-svg:$coilVersion")
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
@@ -332,6 +337,8 @@ dependencies {
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}")
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
+    implementation "com.facebook.shimmer:shimmer:${shimmerVersion}"
+    implementation "com.valentinilk.shimmer:compose-shimmer:${composeShimmerVersion}"
 
     implementation "com.uber.autodispose:autodispose:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android:${autodisposeVersion}"
@@ -456,6 +463,13 @@ dependencies {
 
     //Jetpack Datastore - Proto Datastore
     implementation "androidx.datastore:datastore:$datastoreVersion"
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
+
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }
 
 secrets {
