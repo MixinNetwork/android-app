@@ -47,6 +47,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceInfo
@@ -423,7 +424,18 @@ open class MixinApplication :
     @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
-            .okHttpClient(OkHttpClient.Builder().build())
+            .okHttpClient(
+                OkHttpClient.Builder()
+                    .addInterceptor { chain ->
+                        val original = chain.request()
+                        val requestBuilder = original.newBuilder()
+                            .header("User-Agent", API_UA)
+                            .method(original.method, original.body)
+                        val request = requestBuilder.build()
+                        chain.proceed(request)
+                    }
+                    .build()
+            )
             .components {
                 if (SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder.Factory())
