@@ -19,7 +19,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerBinding
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
@@ -162,12 +161,14 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     height = (width * (3f / 4)).toInt()
                 }
                 item.clear()
+                item.scaleType = ImageView.ScaleType.CENTER
                 item.setImageDrawable(AppCompatResources.getDrawable(ctx, R.drawable.ic_gif_search))
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
                 val images = data!![position - 1].images
                 val previewImage = images.fixed_width_downsampled
                 val sendImage = images.fixed_width
+                item.scaleType = ImageView.ScaleType.CENTER_CROP
                 item.loadImage(previewImage.url, R.drawable.ic_giphy_place_holder)
                 item.setOnClickListener { listener?.onItemClick(position, sendImage, previewImage.url) }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {

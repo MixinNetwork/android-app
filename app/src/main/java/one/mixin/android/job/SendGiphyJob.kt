@@ -68,26 +68,20 @@ class SendGiphyJob(
                 MediaStatus.PENDING,
                 MessageStatus.SENDING.name,
             )
+        messageDao.insert(message)
         conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-        // Todo check
-        MessageFlow.update(message.conversationId, message.messageId)
+        MessageFlow.insert(message.conversationId, message.messageId)
     }
 
     @OptIn(ExperimentalCoilApi::class)
     override fun onRun() = runBlocking {
         val ctx = MixinApplication.appContext
-        val request = ImageRequest.Builder(ctx)
-            .data(url)
-            .target {
-                ctx.imageLoader.diskCache?.openSnapshot(url)?.use { snapshot ->
-                    val imageFile = snapshot.data.toFile()
-                    if (imageFile.length() > 0) {
-                        sendMessage(ctx, imageFile)
-                    }
-                }
-            }
-            .build()
-        ctx.imageLoader.enqueue(request)
+        val loader = ctx.imageLoader
+        val request = ImageRequest.Builder(ctx).data(url).build()
+        val result  = loader.execute(request)
+        if (result !is SuccessResult) return@runBlocking
+        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile()?:return@runBlocking
+        sendMessage(ctx, f)
         return@runBlocking
     }
 

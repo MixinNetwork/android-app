@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatGalleryBinding
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.util.image.HeicLoader
@@ -74,7 +73,7 @@ class GalleryItemAdapter(
                 holder.binding.gifTv.isVisible = true
                 holder.binding.videoIv.isVisible = false
                 holder.binding.durationTv.isVisible = false
-                imageView.loadGif(item.uri.toString(), centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+                imageView.loadImage(item.uri, R.drawable.ic_giphy_place_holder)
             } else {
                 holder.binding.gifTv.isVisible = false
                 if (item.isVideo) {
