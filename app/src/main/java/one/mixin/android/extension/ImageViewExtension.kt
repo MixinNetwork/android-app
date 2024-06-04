@@ -5,6 +5,9 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
+import coil.decode.BitmapFactoryDecoder
+import coil.decode.VideoFrameDecoder
+import coil.decode.SvgDecoder
 import coil.dispose
 import coil.load
 import com.bumptech.glide.Glide
@@ -21,51 +24,31 @@ import one.mixin.android.widget.lottie.RLottieImageView
 
 fun ImageView.loadImage(
     uri: String?,
-    @DrawableRes holder: Int,
+    @DrawableRes holder: Int?,
 ) {
-    this.load(uri, imageLoader = context.svgLoader()) {
-        placeholder(holder)
-        error(holder)
+    this.load(uri) {
+        if (holder != null) {
+            placeholder(holder)
+            error(holder)
+        }
+    }
+}
+
+fun ImageView.loadImage(
+    uri: Uri?,
+    @DrawableRes holder: Int? = null,
+) {
+    this.load(uri) {
+        if (holder != null) {
+            placeholder(holder)
+            error(holder)
+        }
     }
 }
 
 fun ImageView.clear() {
     this.dispose()
     Glide.with(this).clear(this)
-}
-
-fun ImageView.loadImageCenterCrop(
-    uri: String?,
-    @DrawableRes holder: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().dontAnimate().dontTransform().centerCrop().run {
-                return@run if (holder != null) {
-                    this.placeholder(holder)
-                } else {
-                    this
-                }
-            },
-        ).into(this)
-}
-
-fun ImageView.loadImageCenterCrop(
-    uri: Uri?,
-    @DrawableRes holder: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().dontAnimate().dontTransform().centerCrop().run {
-                return@run if (holder != null) {
-                    this.placeholder(holder)
-                } else {
-                    this
-                }
-            },
-        ).into(this)
 }
 
 fun ImageView.loadImage(

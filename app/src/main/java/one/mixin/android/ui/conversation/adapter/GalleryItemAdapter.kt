@@ -15,7 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatGalleryBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGif
-import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.util.image.HeicLoader
 import one.mixin.android.util.image.ImageListener
@@ -96,7 +96,7 @@ class GalleryItemAdapter(
                         },
                     )
                 } else {
-                    imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                    imageView.loadImage(item.uri, R.drawable.image_holder)
                 }
             }
             if (selectedUri == item.uri) {
