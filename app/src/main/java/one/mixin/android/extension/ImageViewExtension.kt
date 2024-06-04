@@ -27,6 +27,7 @@ fun ImageView.loadImage(
         if (holder != null) {
             placeholder(holder)
             error(holder)
+            allowHardware(false)
         }
     }
 }
@@ -39,6 +40,7 @@ fun ImageView.loadImage(
         if (holder != null) {
             placeholder(holder)
             error(holder)
+            allowHardware(false)
         }
     }
 }
