@@ -15,6 +15,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.net.http.SslError
@@ -59,6 +60,9 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -285,16 +289,16 @@ class WebFragment : BaseFragment() {
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 lifecycleScope.launch {
                     try {
-                        val bitmap =
+                        val result =
                             withContext(Dispatchers.IO) {
-                                Glide.with(requireContext())
-                                    .asBitmap()
-                                    .load(url)
-                                    .submit()
-                                    .get(10, TimeUnit.SECONDS)
+                                val loader = requireContext().imageLoader
+                                val request = ImageRequest.Builder(requireContext()).data(url).build()
+                                loader.execute(request)
                             }
-                        if (isDetached) return@launch
 
+                        if (isDetached) return@launch
+                        if (result !is SuccessResult) return@launch
+                        val bitmap = (result.drawable as BitmapDrawable).bitmap
                         processor.detect(
                             lifecycleScope,
                             bitmap,
