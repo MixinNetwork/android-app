@@ -5,23 +5,23 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.MutableContextWrapper
+import android.os.Build
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
+import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.startup.AppInitializer
 import androidx.work.Configuration
-import coil.ComponentRegistry
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import coil.decode.BitmapFactoryDecoder
-import coil.decode.Decoder
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
-import coil.fetch.SourceResult
-import coil.request.Options
 import coil.util.DebugLogger
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
@@ -423,21 +423,21 @@ open class MixinApplication :
     @Inject
     lateinit var okHttpClient: OkHttpClient
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .okHttpClient(okHttpClient)
             .components {
-                add { result, options, _ ->
-                    Timber.e("mime:${result.mimeType}")
-                    when {
-                        // Todo support other mime
-                        result.mimeType?.startsWith("video", true) == true-> VideoFrameDecoder(result.source, options)
-                        else -> BitmapFactoryDecoder(result.source, options)
-                    }
+                if (SDK_INT >= Build.VERSION_CODES.P) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
                 }
+                add(VideoFrameDecoder.Factory())
+                add(SvgDecoder.Factory())
             }
             .apply {
-                if (BuildConfig.DEBUG){
+                if (BuildConfig.DEBUG) {
                     logger(DebugLogger())
                 }
             }
