@@ -420,13 +420,9 @@ open class MixinApplication :
         return false
     }
 
-    @Inject
-    lateinit var okHttpClient: OkHttpClient
-
     @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
-            .okHttpClient(okHttpClient)
             .components {
                 if (SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder.Factory())

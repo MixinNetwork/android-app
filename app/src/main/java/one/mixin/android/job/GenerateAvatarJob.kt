@@ -14,8 +14,11 @@ import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.birbit.android.jobqueue.Params
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -29,7 +32,6 @@ import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 class GenerateAvatarJob(
     private val groupId: String,
@@ -51,7 +53,7 @@ class GenerateAvatarJob(
 
     override fun getRetryLimit() = 0
 
-    override fun onRun() {
+    override fun onRun() = runBlocking{
         val users = mutableListOf<User>()
         texts = ArrayMap()
         if (list == null) {
@@ -68,7 +70,7 @@ class GenerateAvatarJob(
                 conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
             }
             RxBus.publish(AvatarEvent(groupId, f.absolutePath))
-            return
+            return@runBlocking
         }
 
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
@@ -77,7 +79,7 @@ class GenerateAvatarJob(
         try {
             getBitmaps(bitmaps, users)
         } catch (e: Exception) {
-            return
+            return@runBlocking
         }
         drawInternal(c, bitmaps)
         result.saveGroupAvatar(applicationContext, name)
@@ -346,7 +348,7 @@ class GenerateAvatarJob(
         }
     }
 
-    private fun getBitmaps(
+    private suspend fun getBitmaps(
         bitmaps: MutableList<Bitmap>,
         users: MutableList<User>,
     ) {
@@ -358,13 +360,19 @@ class GenerateAvatarJob(
                 texts[i] = AvatarView.checkEmoji(user.fullName)
                 bitmaps.add(getBitmapByPlaceHolder(user.userId))
             } else {
-                bitmaps.add(
-                    Glide.with(applicationContext)
-                        .asBitmap()
-                        .load(item)
-                        .submit()
-                        .get(10, TimeUnit.SECONDS),
-                )
+                val request = ImageRequest.Builder(applicationContext)
+                    .data(item)
+                    .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
+                    .build()
+
+                val result = applicationContext.imageLoader.execute(request)
+                val bitmap = (result as? SuccessResult)?.drawable?.toBitmap()
+                if (bitmap != null) {
+                    bitmaps.add(bitmap)
+                } else {
+                    // Handle the case where the bitmap could not be loaded
+                    bitmaps.add(getBitmapByPlaceHolder(users[i].userId))
+                }
             }
         }
     }

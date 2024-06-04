@@ -5,9 +5,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
-import coil.decode.BitmapFactoryDecoder
-import coil.decode.VideoFrameDecoder
-import coil.decode.SvgDecoder
 import coil.dispose
 import coil.load
 import com.bumptech.glide.Glide
