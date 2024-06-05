@@ -291,6 +291,11 @@ object JsSigner {
         return tx
     }
 
+    fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
+        val conn = Connection(RpcUrl.MAINNNET)
+        return conn.sendTransaction(tx.serialize())
+    }
+
     fun solanaSignIn(
         priv: ByteArray,
         signInInput: SignInInput,

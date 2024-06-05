@@ -24,16 +24,13 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.calcSolBalanceChange
 import one.mixin.android.api.response.getChainFromName
-import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
@@ -58,15 +55,10 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.InputFragment
-import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.send.InputAddressFragment
-import org.sol4k.Connection
-import org.sol4k.RpcUrl
 import org.sol4k.SignInInput
-import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
 import org.sol4k.exception.RpcException
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -136,7 +128,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
-    private var solanaTx: VersionedTransaction? by mutableStateOf(null)
+    private var solanaTx: org.sol4k.VersionedTransaction? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
 
     override fun onCreateView(
@@ -305,7 +297,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
-                    val sig = sendAndConfirmationTx(tx)
+                    val sig = JsSigner.sendSolanaTransaction(tx)
                     onTxhash?.invoke(sig, tx.message.recentBlockhash)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
@@ -338,34 +330,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         super.onDismiss(dialog)
         onDismissAction?.invoke()
-    }
-
-    private suspend fun sendAndConfirmationTx(tx: VersionedTransaction): String {
-        val conn = Connection(RpcUrl.MAINNNET)
-        val sig = conn.sendTransaction(tx.serialize())
-        val txState = handleMixinResponse(
-            invokeNetwork = { viewModel.getWeb3Tx(sig) },
-            successBlock = { it.data?.state }
-        ) ?: TxState.NotFound.name
-
-        when (txState) {
-            TxState.Success.name -> {
-                return sig
-            }
-            TxState.Failed.name -> {
-                throw Web3Exception(0, getString(R.string.Transaction_Failed))
-            }
-            TxState.NotFound.name -> {
-                if (!conn.isBlockhashValid(tx.message.recentBlockhash, Commitment.CONFIRMED)) {
-                    throw Web3Exception(0, getString(R.string.Transaction_Failed))
-                }
-                delay(3.seconds)
-                return sendAndConfirmationTx(tx)
-            }
-            else -> {
-                throw IllegalStateException("invalid tx state")
-            }
-        }
     }
 
     private fun checkGas(
