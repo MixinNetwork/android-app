@@ -5,9 +5,13 @@ import androidx.lifecycle.ViewModel
 import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
-import one.mixin.android.api.service.TipService
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
@@ -15,8 +19,12 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.web3.Web3Exception
 import org.sol4k.Connection
 import org.sol4k.RpcUrl
+import org.sol4k.api.Commitment
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -24,13 +32,14 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class WalletConnectBottomSheetViewModel
     @Inject
     internal constructor(
-        private val assetRepo: TokenRepository,
-        private val tipService: TipService,
+        private val tokenRepo: TokenRepository,
+        private val assetRepository: AssetRepository,
         private val tip: Tip,
     ) : ViewModel() {
         suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
@@ -114,17 +123,38 @@ class WalletConnectBottomSheetViewModel
             return tipPrivToPrivateKey(spendKey, chainId)
         }
 
-        suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+        suspend fun refreshAsset(assetId: String) = tokenRepo.refreshAsset(assetId)
 
-        fun sendTransaction(
-            transaction: org.sol4k.VersionedTransaction,
+        suspend fun sendAndConfirmationTx(
+            tx: org.sol4k.VersionedTransaction,
             sessionRequest: Wallet.Model.SessionRequest,
         ): String? {
-            val connection = Connection(RpcUrl.MAINNNET)
-            val signature: String = connection.sendTransaction(transaction.serialize())
-            Timber.d("signature $signature")
-            WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
-            return null
+            val conn = Connection(RpcUrl.MAINNNET)
+            val sig = conn.sendTransaction(tx.serialize())
+            val txState = handleMixinResponse(
+                invokeNetwork = { getWeb3Tx(sig) },
+                successBlock = { it.data?.state }
+            ) ?: TxState.NotFound.name
+
+            when (txState) {
+                TxState.Success.name -> {
+                    WalletConnectV2.approveSolanaTransaction(sig, sessionRequest)
+                    return null
+                }
+                TxState.Failed.name -> {
+                    throw WalletConnectException(0,MixinApplication.get().getString(R.string.Transaction_Failed))
+                }
+                TxState.NotFound.name -> {
+                    if (!conn.isBlockhashValid(tx.message.recentBlockhash, Commitment.CONFIRMED)) {
+                        throw WalletConnectException(0, MixinApplication.get().getString(R.string.Transaction_Failed))
+                    }
+                    delay(3.seconds)
+                    return sendAndConfirmationTx(tx, sessionRequest)
+                }
+                else -> {
+                    throw IllegalStateException("invalid tx state")
+                }
+            }
         }
 
         fun sendTransaction(
@@ -152,4 +182,6 @@ class WalletConnectBottomSheetViewModel
                 return errorInfo
             }
         }
+
+        suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
     }

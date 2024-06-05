@@ -363,7 +363,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
                                         if (signedTransactionData is VersionedTransaction) {
-                                            viewModel.sendTransaction(signedTransactionData, sessionRequest)
+                                            viewModel.sendAndConfirmationTx(signedTransactionData, sessionRequest)
                                         } else {
                                             viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
                                         }

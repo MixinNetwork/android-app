@@ -13,6 +13,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.ui.oldwallet.AssetRepository
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -24,7 +25,8 @@ import javax.inject.Inject
 class BrowserWalletBottomSheetViewModel
     @Inject
     internal constructor(
-        private val assetRepo: TokenRepository,
+        private val tokenRepo: TokenRepository,
+        private val assetRepository: AssetRepository,
         private val web3Service: Web3Service,
         private val tip: Tip,
     ) : ViewModel() {
@@ -90,7 +92,7 @@ class BrowserWalletBottomSheetViewModel
             return tipPrivToPrivateKey(spendKey, chainId)
         }
 
-        suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+        suspend fun refreshAsset(assetId: String) = tokenRepo.refreshAsset(assetId)
 
         suspend fun web3Tokens(address: List<String>): List<Web3Token> {
             val resp = web3Service.web3Tokens(address.joinToString(","))
@@ -100,4 +102,6 @@ class BrowserWalletBottomSheetViewModel
                 emptyList()
             }
         }
+
+        suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
     }
