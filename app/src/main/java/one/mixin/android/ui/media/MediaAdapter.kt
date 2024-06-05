@@ -8,7 +8,6 @@ import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemMediaBinding
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
@@ -61,14 +60,14 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
         if (item.isImage()) {
             val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
             if (isGif) {
-                imageView.loadGif(
+                imageView.loadImage(
                     item.absolutePath(),
                     holder = R.drawable.ic_giphy_place_holder,
                     base64Holder = item.thumbImage,
                 )
                 binding.gifTv.isVisible = true
             } else {
-                imageView.loadImage(item.absolutePath(), item.thumbImage)
+                imageView.loadImage(item.absolutePath(), base64Holder = item.thumbImage)
                 binding.gifTv.isVisible = false
             }
             binding.videoIv.isVisible = false

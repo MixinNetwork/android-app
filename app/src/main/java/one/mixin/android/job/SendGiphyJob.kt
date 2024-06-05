@@ -1,23 +1,16 @@
 package one.mixin.android.job
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
-import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.birbit.android.jobqueue.Params
-import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.extension.copy
-import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.getImagePath
@@ -25,11 +18,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.widget.gallery.MimeType
-import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 
 class SendGiphyJob(
     private val conversationId: String,

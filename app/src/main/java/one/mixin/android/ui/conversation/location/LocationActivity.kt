@@ -224,7 +224,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
             val image = currentLocation.getImageUrl()
             if (image != null) {
-                binding.locationIcon.loadImage(image)
+                binding.locationIcon.loadImage(data = image)
             } else {
                 binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
             }

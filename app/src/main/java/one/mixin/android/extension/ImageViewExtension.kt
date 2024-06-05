@@ -7,6 +7,9 @@ import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import coil.dispose
 import coil.load
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -20,14 +23,27 @@ import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
 
 fun ImageView.loadImage(
-    uri: String?,
-    @DrawableRes holder: Int?,
+    data: String?,
+    @DrawableRes holder: Int? = null,
+    base64Holder: String? = null,
+    onSuccess: ((
+        request: ImageRequest, result: SuccessResult
+    ) -> Unit)? = null,
+    onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null
 ) {
-    this.load(uri) {
-        if (holder != null) {
+    this.load(data) {
+        if (base64Holder != null) {
+            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+        } else if (holder != null) {
             placeholder(holder)
             error(holder)
             allowHardware(false)
+        }
+        onSuccess?.let {
+            listener(
+                onSuccess = onSuccess,
+                onError = onError ?: { _, _ -> }
+            )
         }
     }
 }
@@ -35,9 +51,12 @@ fun ImageView.loadImage(
 fun ImageView.loadImage(
     uri: Uri?,
     @DrawableRes holder: Int? = null,
+    base64Holder: String? = null,
 ) {
     this.load(uri) {
-        if (holder != null) {
+        if (base64Holder != null) {
+            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+        } else if (holder != null) {
             placeholder(holder)
             error(holder)
             allowHardware(false)
@@ -48,60 +67,6 @@ fun ImageView.loadImage(
 fun ImageView.clear() {
     this.dispose()
     Glide.with(this).clear(this)
-}
-
-fun ImageView.loadImage(
-    uri: String?,
-    base64Holder: String? = null,
-    requestListener: RequestListener<Drawable?>? = null,
-    overrideWidth: Int? = null,
-    overrideHeight: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    var requestOptions = RequestOptions().dontTransform()
-    if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
-    }
-    if (overrideWidth != null && overrideHeight != null) {
-        requestOptions = requestOptions.override(overrideWidth, overrideHeight)
-    }
-    if (requestListener != null) {
-        Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
-            .into(this)
-    } else {
-        Glide.with(this).load(uri).apply(requestOptions).into(this)
-    }
-}
-
-fun ImageView.loadGif(
-    uri: String?,
-    requestListener: RequestListener<Drawable?>? = null,
-    centerCrop: Boolean? = null,
-    @DrawableRes holder: Int? = null,
-    base64Holder: String? = null,
-    overrideWidth: Int? = null,
-    overrideHeight: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    var requestOptions = RequestOptions().dontTransform()
-    if (centerCrop != null) {
-        requestOptions = requestOptions.centerCrop()
-    }
-    if (holder != null) {
-        requestOptions = requestOptions.placeholder(holder)
-    }
-    if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
-    }
-    if (overrideWidth != null && overrideHeight != null) {
-        requestOptions = requestOptions.override(overrideWidth, overrideHeight)
-    }
-    if (requestListener != null) {
-        Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
-            .into(this)
-    } else {
-        Glide.with(this).load(uri).apply(requestOptions).into(this)
-    }
 }
 
 fun ImageView.loadGifMark(
@@ -354,10 +319,10 @@ fun RLottieImageView.loadSticker(
                 loadLottie(it, cacheKey)
 
             "GIF" -> {
-                loadGif(url)
+                loadImage(url,null,null)
             }
 
-            else -> loadImage(url)
+            else -> loadImage(url,null,null)
         }
     }
 }
