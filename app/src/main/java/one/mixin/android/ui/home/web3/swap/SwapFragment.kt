@@ -223,10 +223,10 @@ class SwapFragment : BaseFragment() {
                                         requireActivity(),
                                         signMessage,
                                         amount = qr.inAmount,
-                                        onTxhash = { hash, blockhash ->
+                                        onTxhash = { hash, serializedTx ->
                                             lifecycleScope.launch {
                                                 txhash = hash
-                                                val txStateFragment = TransactionStateFragment.newInstance(hash, blockhash, toToken!!.symbol).apply {
+                                                val txStateFragment = TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
                                                     setCloseAction {
                                                         navigateUp(navController)
                                                         parentFragmentManager.popBackStackImmediate()

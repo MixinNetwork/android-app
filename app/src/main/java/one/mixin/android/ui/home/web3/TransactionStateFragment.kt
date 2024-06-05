@@ -11,9 +11,11 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.Tx
@@ -23,9 +25,12 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.tickerFlow
+import org.sol4k.Connection
+import org.sol4k.RpcUrl
+import org.sol4k.VersionedTransaction
+import org.sol4k.api.Commitment
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 
@@ -34,23 +39,23 @@ class TransactionStateFragment : BaseFragment() {
     companion object {
         const val TAG = "TransactionStateFragment"
 
-        const val ARGS_TXHASH = "args_txhash"
+        const val ARGS_TX = "args_tx"
         const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
-        const val ARGS_BLOCKHASH = "args_blockhash"
 
-        fun newInstance(txhash: String, blockhash: String, tokenSymbol: String) = TransactionStateFragment().withArgs {
-            putString(ARGS_TXHASH, txhash)
-            putString(ARGS_BLOCKHASH, blockhash)
+        fun newInstance(tx: String, tokenSymbol: String) = TransactionStateFragment().withArgs {
+            putString(ARGS_TX, tx)
             putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
         }
     }
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
-    private val txhash: String by lazy { requireArguments().getString(ARGS_TXHASH)!! }
+    private val tx: VersionedTransaction by lazy {
+        val serializedTx = requireArguments().getString(ARGS_TX)!!
+        VersionedTransaction.from(serializedTx)
+    }
     private val symbol: String by lazy { requireArguments().getString(ARGS_TOKEN_SYMBOL)!! }
-    private val blockhash: String by lazy { requireArguments().getString(ARGS_BLOCKHASH)!! }
 
-    private var tx: Tx? by mutableStateOf(null)
+    private var txState: Tx? by mutableStateOf(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,10 +68,10 @@ class TransactionStateFragment : BaseFragment() {
                     darkTheme = context.isNightMode(),
                 ) {
                     TransactionStatePage(
-                        tx = tx ?: Tx(TxState.NotFound.name),
+                        tx = txState ?: Tx(TxState.NotFound.name),
                         symbol = symbol,
                         viewTx = {
-                            WebActivity.show(context, "https://solscan.io/tx/$txhash", null)
+                            WebActivity.show(context, "https://solscan.io/tx/${tx.signatures[0]}", null)
                         },
                     ) {
                         val action = closeAction
@@ -84,17 +89,22 @@ class TransactionStateFragment : BaseFragment() {
 
 
     private var refreshTxJob: Job? = null
+    private val conn = Connection(RpcUrl.MAINNNET)
 
     private fun refreshTx() {
-        Timber.e("$TAG txhash: $txhash, blockhash: $blockhash")
+        val blockhash = tx.message.recentBlockhash
+        Timber.e("$TAG txhash: ${tx.signatures[0]}, blockhash: $blockhash")
         refreshTxJob?.cancel()
-        refreshTxJob =
-            tickerFlow(2.seconds)
-                .onEach {
+        refreshTxJob = tickerFlow(2.seconds)
+            .onEach {
+                try {
+                    val sig = withContext(Dispatchers.IO) {
+                        conn.sendTransaction(tx.serialize())
+                    }
                     handleMixinResponse(
-                        invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
+                        invokeNetwork = { web3ViewModel.getWeb3Tx(sig) },
                         successBlock = {
-                            tx = it.data
+                            txState = it.data
                         },
                         failureBlock = {
                             if (it.errorCode == 401) {
@@ -104,16 +114,22 @@ class TransactionStateFragment : BaseFragment() {
                             return@handleMixinResponse true
                         },
                     )
-                    if (tx?.state?.isFinalTxState() == true) {
+                    if (txState?.state?.isFinalTxState() == true) {
                         refreshTxJob?.cancel()
                     } else {
-                        if (!web3ViewModel.isBlockhashValid(blockhash)) {
+                        val isBlockhashValid = withContext(Dispatchers.IO) {
+                            conn.isBlockhashValid(blockhash, Commitment.CONFIRMED)
+                        }
+                        if (!isBlockhashValid) {
                             Timber.e("$TAG blockhash $blockhash valid")
                             refreshTxJob?.cancel()
-                            tx = Tx(TxState.Failed.name)
+                            txState = Tx(TxState.Failed.name)
                         }
                     }
-                }.launchIn(lifecycleScope)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            }.launchIn(lifecycleScope)
     }
 
     private var closeAction: (() -> Unit)? = null
