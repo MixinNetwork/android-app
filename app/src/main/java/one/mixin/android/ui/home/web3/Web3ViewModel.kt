@@ -7,11 +7,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.PriorityFeeRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.response.isSolToken
+import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.repository.TokenRepository
@@ -269,10 +272,20 @@ class Web3ViewModel
 
         suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
 
-        suspend fun isBlockhashValid(blockhash: String): Boolean = withContext(Dispatchers.IO) {
-            val conn = Connection(RpcUrl.MAINNNET)
-            return@withContext conn.isBlockhashValid(blockhash, Commitment.PROCESSED)
-        }
+        suspend fun isBlockhashValid(blockhash: String): Boolean =
+            withContext(Dispatchers.IO) {
+                val conn = Connection(RpcUrl.MAINNNET)
+                return@withContext conn.isBlockhashValid(blockhash, Commitment.PROCESSED)
+            }
 
         suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
-}
+
+        suspend fun getPriorityFee(tx: String): PriorityFeeResponse? {
+            return handleMixinResponse(
+                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx)) },
+                successBlock = {
+                    it.data
+                },
+            )
+        }
+    }

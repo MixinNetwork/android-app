@@ -7,8 +7,8 @@ import java.math.BigDecimal
 
 private const val InstructionRequestUnits = 0
 private const val InstructionRequestHeapFrame = 1
-private const val InstructionSetComputeUnitLimit = 2
-private const val InstructionSetComputeUnitPrice = 3
+const val InstructionSetComputeUnitLimit = 2
+const val InstructionSetComputeUnitPrice = 3
 
 internal fun computeBudget(data: List<ByteArray>): BigDecimal {
     if (data.size != 2) return BigDecimal.ZERO

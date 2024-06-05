@@ -31,11 +31,11 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.toSwapToken
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
@@ -226,12 +226,13 @@ class SwapFragment : BaseFragment() {
                                         onTxhash = { hash, serializedTx ->
                                             lifecycleScope.launch {
                                                 txhash = hash
-                                                val txStateFragment = TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
-                                                    setCloseAction {
-                                                        navigateUp(navController)
-                                                        parentFragmentManager.popBackStackImmediate()
+                                                val txStateFragment =
+                                                    TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
+                                                        setCloseAction {
+                                                            navigateUp(navController)
+                                                            parentFragmentManager.popBackStackImmediate()
+                                                        }
                                                     }
-                                                }
                                                 navTo(txStateFragment, TransactionStateFragment.TAG)
                                             }
                                         },

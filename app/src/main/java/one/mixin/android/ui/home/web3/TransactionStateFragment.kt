@@ -42,11 +42,16 @@ class TransactionStateFragment : BaseFragment() {
         const val ARGS_TX = "args_tx"
         const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
 
-        fun newInstance(tx: String, tokenSymbol: String) = TransactionStateFragment().withArgs {
-            putString(ARGS_TX, tx)
-            putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
-        }
+        fun newInstance(
+            tx: String,
+            tokenSymbol: String,
+        ) =
+            TransactionStateFragment().withArgs {
+                putString(ARGS_TX, tx)
+                putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
+            }
     }
+
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val tx: VersionedTransaction by lazy {
@@ -87,7 +92,6 @@ class TransactionStateFragment : BaseFragment() {
         }
     }
 
-
     private var refreshTxJob: Job? = null
     private val conn = Connection(RpcUrl.MAINNNET)
 
@@ -95,44 +99,48 @@ class TransactionStateFragment : BaseFragment() {
         val blockhash = tx.message.recentBlockhash
         Timber.e("$TAG txhash: ${tx.signatures[0]}, blockhash: $blockhash")
         refreshTxJob?.cancel()
-        refreshTxJob = tickerFlow(2.seconds)
-            .onEach {
-                try {
-                    val sig = withContext(Dispatchers.IO) {
-                        conn.sendTransaction(tx.serialize())
-                    }
-                    handleMixinResponse(
-                        invokeNetwork = { web3ViewModel.getWeb3Tx(sig) },
-                        successBlock = {
-                            txState = it.data
-                        },
-                        failureBlock = {
-                            if (it.errorCode == 401) {
-                                web3ViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
-                                refreshTx()
+        refreshTxJob =
+            tickerFlow(2.seconds)
+                .onEach {
+                    try {
+                        val sig =
+                            withContext(Dispatchers.IO) {
+                                conn.sendTransaction(tx.serialize())
                             }
-                            return@handleMixinResponse true
-                        },
-                    )
-                    if (txState?.state?.isFinalTxState() == true) {
-                        refreshTxJob?.cancel()
-                    } else {
-                        val isBlockhashValid = withContext(Dispatchers.IO) {
-                            conn.isBlockhashValid(blockhash, Commitment.CONFIRMED)
-                        }
-                        if (!isBlockhashValid) {
-                            Timber.e("$TAG blockhash $blockhash valid")
+                        handleMixinResponse(
+                            invokeNetwork = { web3ViewModel.getWeb3Tx(sig) },
+                            successBlock = {
+                                txState = it.data
+                            },
+                            failureBlock = {
+                                if (it.errorCode == 401) {
+                                    web3ViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
+                                    refreshTx()
+                                }
+                                return@handleMixinResponse true
+                            },
+                        )
+                        if (txState?.state?.isFinalTxState() == true) {
                             refreshTxJob?.cancel()
-                            txState = Tx(TxState.Failed.name)
+                        } else {
+                            val isBlockhashValid =
+                                withContext(Dispatchers.IO) {
+                                    conn.isBlockhashValid(blockhash, Commitment.CONFIRMED)
+                                }
+                            if (!isBlockhashValid) {
+                                Timber.e("$TAG blockhash $blockhash valid")
+                                refreshTxJob?.cancel()
+                                txState = Tx(TxState.Failed.name)
+                            }
                         }
+                    } catch (e: Exception) {
+                        Timber.e(e)
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                }
-            }.launchIn(lifecycleScope)
+                }.launchIn(lifecycleScope)
     }
 
     private var closeAction: (() -> Unit)? = null
+
     fun setCloseAction(action: () -> Unit): TransactionStateFragment {
         this.closeAction = action
         return this

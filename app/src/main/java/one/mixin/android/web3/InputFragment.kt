@@ -281,7 +281,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 alertDialog.dismiss()
                             },
                         ) {
-                            val transaction = token.buildTransaction(fromAddress, toAddress, amount)
+                            val transaction =
+                                token.buildTransaction(fromAddress, toAddress, amount) { tx ->
+                                    web3ViewModel.getPriorityFee(tx)
+                                }
                             showBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 transaction,
@@ -292,7 +295,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 onTxhash = { _, serializedTx ->
                                     val txStateFragment = TransactionStateFragment.newInstance(serializedTx, token.symbol)
                                     navTo(txStateFragment, TransactionStateFragment.TAG)
-                                }
+                                },
                             )
                         }
                     }

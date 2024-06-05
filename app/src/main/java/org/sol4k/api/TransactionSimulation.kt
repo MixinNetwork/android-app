@@ -4,4 +4,7 @@ sealed class TransactionSimulation
 
 class TransactionSimulationError(val error: String) : TransactionSimulation()
 
-class TransactionSimulationSuccess(val logs: List<String>) : TransactionSimulation()
+class TransactionSimulationSuccess(
+    val logs: List<String>,
+    val unitsConsumed: Long,
+) : TransactionSimulation()

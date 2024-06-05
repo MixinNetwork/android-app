@@ -93,9 +93,9 @@ fun TransactionPreview(
             CoilImage(
                 model = asset?.iconUrl,
                 modifier =
-                Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
         }
@@ -153,9 +153,9 @@ fun TokenTransactionPreview(
             CoilImage(
                 model = token.iconUrl,
                 modifier =
-                Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
         }
