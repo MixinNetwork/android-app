@@ -167,8 +167,6 @@ import one.mixin.android.widget.WebControlView
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -1529,9 +1527,9 @@ class WebFragment : BaseFragment() {
                         if (url == null) return@launch
                         val loader = requireContext().imageLoader
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        val result  = loader.execute(request)
+                        val result = loader.execute(request)
                         if (result !is SuccessResult) return@launch
-                        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile()?:return@launch
+                        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile() ?: return@launch
                         f.copy(outFile)
                     }
                     MediaScannerConnection.scanFile(

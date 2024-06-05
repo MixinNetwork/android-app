@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -1030,7 +1029,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         lifecycleScope.launch {
             val loader = requireContext().imageLoader
             val request = ImageRequest.Builder(requireContext()).data(user.avatarUrl).build()
-            val result  = loader.execute(request).drawable as BitmapDrawable? ?:return@launch
+            val result = loader.execute(request).drawable as BitmapDrawable? ?: return@launch
             user.fullName?.let {
                 val conversationId = conversationId
                 addPinShortcut(

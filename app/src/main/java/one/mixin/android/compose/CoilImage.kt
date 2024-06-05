@@ -8,25 +8,35 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
 @Composable
-fun CoilImage(model: String?, placeholder: Int, modifier: Modifier, contentScale: ContentScale = ContentScale.Fit) {
+fun CoilImage(
+    model: String?,
+    placeholder: Int,
+    modifier: Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
     AsyncImage(
         modifier = modifier,
         model = model,
         contentDescription = null,
         placeholder = painterResource(id = placeholder),
         error = painterResource(id = placeholder),
-        contentScale = contentScale
+        contentScale = contentScale,
     )
 }
 
 @Composable
-fun CoilImage(model: ImageRequest, placeholder: Int, modifier: Modifier, contentScale: ContentScale = ContentScale.Fit) {
+fun CoilImage(
+    model: ImageRequest,
+    placeholder: Int,
+    modifier: Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
     AsyncImage(
         modifier = modifier,
         model = model,
         contentDescription = null,
         placeholder = painterResource(id = placeholder),
         error = painterResource(id = placeholder),
-        contentScale = contentScale
+        contentScale = contentScale,
     )
 }

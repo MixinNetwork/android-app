@@ -493,7 +493,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         }
     }
 
-    private suspend fun refreshGas(t:Web3Token) {
+    private suspend fun refreshGas(t: Web3Token) {
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
             val transaction =

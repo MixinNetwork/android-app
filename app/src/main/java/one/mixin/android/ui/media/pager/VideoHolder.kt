@@ -102,7 +102,7 @@ class VideoHolder(
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
-            binding.previewIv.loadImage(messageItem.thumbUrl, null, base64Holder =  messageItem.thumbImage)
+            binding.previewIv.loadImage(messageItem.thumbUrl, null, base64Holder = messageItem.thumbImage)
         } else {
             if (messageItem.absolutePath() != null) {
                 binding.previewIv.loadImage(messageItem.absolutePath(), null, null)

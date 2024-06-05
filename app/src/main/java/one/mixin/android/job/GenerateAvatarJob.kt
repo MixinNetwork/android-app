@@ -53,45 +53,46 @@ class GenerateAvatarJob(
 
     override fun getRetryLimit() = 0
 
-    override fun onRun() = runBlocking{
-        val users = mutableListOf<User>()
-        texts = ArrayMap()
-        if (list == null) {
-            users.addAll(participantDao.getParticipantsAvatar(groupId))
-        } else {
-            val us = runBlocking { userDao.findMultiUsersByIds(list.toSet()) }
-            users.addAll(us)
-        }
-        val name = getIconUrlName(groupId, users)
-        val f = applicationContext.getGroupAvatarPath(name, false)
-        val icon = conversationDao.getGroupIconUrl(groupId)
-        if (f.exists()) {
-            if (f.absolutePath != name) {
-                conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+    override fun onRun() =
+        runBlocking {
+            val users = mutableListOf<User>()
+            texts = ArrayMap()
+            if (list == null) {
+                users.addAll(participantDao.getParticipantsAvatar(groupId))
+            } else {
+                val us = runBlocking { userDao.findMultiUsersByIds(list.toSet()) }
+                users.addAll(us)
             }
-            RxBus.publish(AvatarEvent(groupId, f.absolutePath))
-            return@runBlocking
-        }
+            val name = getIconUrlName(groupId, users)
+            val f = applicationContext.getGroupAvatarPath(name, false)
+            val icon = conversationDao.getGroupIconUrl(groupId)
+            if (f.exists()) {
+                if (f.absolutePath != name) {
+                    conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+                }
+                RxBus.publish(AvatarEvent(groupId, f.absolutePath))
+                return@runBlocking
+            }
 
-        val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val c = Canvas(result)
-        val bitmaps = mutableListOf<Bitmap>()
-        try {
-            getBitmaps(bitmaps, users)
-        } catch (e: Exception) {
-            return@runBlocking
-        }
-        drawInternal(c, bitmaps)
-        result.saveGroupAvatar(applicationContext, name)
-        if (icon != null && icon != f.absolutePath) {
+            val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val c = Canvas(result)
+            val bitmaps = mutableListOf<Bitmap>()
             try {
-                File(icon).delete()
+                getBitmaps(bitmaps, users)
             } catch (e: Exception) {
+                return@runBlocking
             }
+            drawInternal(c, bitmaps)
+            result.saveGroupAvatar(applicationContext, name)
+            if (icon != null && icon != f.absolutePath) {
+                try {
+                    File(icon).delete()
+                } catch (e: Exception) {
+                }
+            }
+            conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+            RxBus.publish(AvatarEvent(groupId, f.absolutePath))
         }
-        conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
-        RxBus.publish(AvatarEvent(groupId, f.absolutePath))
-    }
 
     private fun drawInternal(
         canvas: Canvas,
@@ -360,10 +361,11 @@ class GenerateAvatarJob(
                 texts[i] = AvatarView.checkEmoji(user.fullName)
                 bitmaps.add(getBitmapByPlaceHolder(user.userId))
             } else {
-                val request = ImageRequest.Builder(applicationContext)
-                    .data(item)
-                    .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
-                    .build()
+                val request =
+                    ImageRequest.Builder(applicationContext)
+                        .data(item)
+                        .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
+                        .build()
 
                 val result = applicationContext.imageLoader.execute(request)
                 val bitmap = (result as? SuccessResult)?.drawable?.toBitmap()

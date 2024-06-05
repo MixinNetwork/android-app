@@ -8,7 +8,10 @@ class GrayscaleTransformation : Transformation {
     override val cacheKey: String
         get() = "grayscale_transformation"
 
-    override suspend fun transform(input: Bitmap, size: Size): Bitmap {
+    override suspend fun transform(
+        input: Bitmap,
+        size: Size,
+    ): Bitmap {
         val width = input.width
         val height = input.height
         val grayBitmap = Bitmap.createBitmap(width, height, input.config)

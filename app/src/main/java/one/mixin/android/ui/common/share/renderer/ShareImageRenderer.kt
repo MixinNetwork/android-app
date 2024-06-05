@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
 import one.mixin.android.vo.MessageStatus

@@ -27,9 +27,12 @@ fun ImageView.loadImage(
     data: String?,
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
-    onSuccess: ((
-        request: ImageRequest, result: SuccessResult
-    ) -> Unit)? = null,
+    onSuccess: (
+        (
+            request: ImageRequest,
+            result: SuccessResult,
+        ) -> Unit
+    )? = null,
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
@@ -45,7 +48,7 @@ fun ImageView.loadImage(
         onSuccess?.let {
             listener(
                 onSuccess = onSuccess,
-                onError = onError ?: { _, _ -> }
+                onError = onError ?: { _, _ -> },
             )
         }
     }
@@ -322,10 +325,10 @@ fun RLottieImageView.loadSticker(
                 loadLottie(it, cacheKey)
 
             "GIF" -> {
-                loadImage(url,null,null)
+                loadImage(url, null, null)
             }
 
-            else -> loadImage(url,null,null)
+            else -> loadImage(url, null, null)
         }
     }
 }
