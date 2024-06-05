@@ -10,6 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
@@ -446,6 +448,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         BigDecimal(tokenBalance).subtract(fee).toPlainString()
                     }
             }
+        } else if (asset != null && (asset?.assetId == ETHEREUM_CHAIN_ID || asset?.assetId == SOLANA_CHAIN_ID)) {
+            if (fee == null) {
+                if (!dialog.isShowing) {
+                    lifecycleScope.launch {
+                        dialog.show()
+                        refreshGas()
+                    }
+                }
+            } else {
+                v =
+                    if (isReverse) {
+                        BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                    } else {
+                        BigDecimal(tokenBalance).subtract(fee).toPlainString()
+                    }
+            }
         } else {
             v =
                 if (isReverse) {
@@ -458,7 +476,24 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private suspend fun refreshGas() {
-        val t = token ?: return
+        if (asset != null) {
+            refreshGas(asset!!)
+        } else if (token != null) {
+            refreshGas(token!!)
+        }
+    }
+
+    private suspend fun refreshGas(t: TokenItem) {
+        val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
+        feeResponse.data?.firstOrNull()
+        if (feeResponse.isSuccess) {
+            feeResponse.data?.firstOrNull()?.let {
+                fee = BigDecimal(it.amount)
+            }
+        }
+    }
+
+    private suspend fun refreshGas(t:Web3Token) {
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
             val transaction =

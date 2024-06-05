@@ -11,7 +11,6 @@ import kotlinx.serialization.json.put
 import org.sol4k.api.AccountInfo
 import org.sol4k.api.Blockhash
 import org.sol4k.api.Commitment
-import org.sol4k.api.Commitment.FINALIZED
 import org.sol4k.api.EpochInfo
 import org.sol4k.api.Health
 import org.sol4k.api.IsBlockhashValidResult
@@ -42,12 +41,12 @@ import java.util.Base64
 
 class Connection @JvmOverloads constructor(
     private val rpcUrl: String,
-    private val commitment: Commitment = FINALIZED,
+    private val commitment: Commitment = Commitment.CONFIRMED,
 ) {
     @JvmOverloads
     constructor(
         rpcUrl: RpcUrl,
-        commitment: Commitment = FINALIZED,
+        commitment: Commitment = Commitment.CONFIRMED,
     ) : this(rpcUrl.value, commitment)
 
     private val jsonParser = Json {
@@ -63,7 +62,7 @@ class Connection @JvmOverloads constructor(
     @JvmOverloads
     fun getTokenAccountBalance(
         accountAddress: PublicKey,
-        commitment: Commitment = this.commitment,
+        commitment: Commitment = Commitment.FINALIZED,
     ): TokenAccountBalance {
         val result: TokenBalanceResult = rpcCall(
             "getTokenAccountBalance",
@@ -182,8 +181,8 @@ class Connection @JvmOverloads constructor(
                 Json.encodeToJsonElement(encodedTransaction),
                 buildJsonObject {
                     put("encoding", "base64")
-                    put("skipPreflight", true)
-                    put("maxRetries", 4)
+                    put("skipPreflight", false)
+                    put("preflightCommitment", "confirmed")
                 }
             )
         )

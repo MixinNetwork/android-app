@@ -51,8 +51,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
@@ -99,41 +101,41 @@ fun SwapPage(
                         .verticalScroll(rememberScrollState()),
             ) {
                 SwapLayout(
-                    center = {
+                    centerCompose = {
                         Box(
                             modifier =
-                                Modifier
-                                    .wrapContentWidth()
-                                    .wrapContentHeight()
-                                    .padding(top = 20.dp)
-                                    .clip(CircleShape)
-                                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                    .background(MixinAppTheme.colors.backgroundGray)
-                                    .clickable {
-                                        isReverse = !isReverse
-                                        switch.invoke()
-                                        context.clickVibrate()
-                                    }
-                                    .padding(4.dp)
-                                    .rotate(rotation),
+                            Modifier
+                                .width(40.dp)
+                                .height(40.dp)
+                                .clip(CircleShape)
+                                .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                                .background(MixinAppTheme.colors.backgroundGray)
+                                .clickable {
+                                    isReverse = !isReverse
+                                    switch.invoke()
+                                    context.clickVibrate()
+                                }
+                                .rotate(rotation),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                modifier = Modifier.width(32.dp).height(32.dp),
                                 painter = painterResource(id = R.drawable.ic_switch),
                                 contentDescription = null,
                                 tint = MixinAppTheme.colors.textPrimary,
                             )
                         }
                     },
-                    content = {
+                    headerCompose = {
                         InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onHalf, onMax) {
                             inputText.value = it
                             onInputChanged.invoke(it)
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+
+                    },
+                    bottomCompose = {
                         InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { selectCallback(1) })
                     },
+                    margin = 6.dp
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Column(
@@ -453,26 +455,69 @@ private fun InputAction(
 
 @Composable
 fun SwapLayout(
-    content: @Composable ColumnScope.() -> Unit,
-    center: @Composable BoxScope.() -> Unit,
+    headerCompose: @Composable () -> Unit,
+    bottomCompose: @Composable () -> Unit,
+    centerCompose: @Composable () -> Unit,
+    margin: Dp
 ) {
-    Box(
+    ConstraintLayout(
         modifier =
-            Modifier
-                .wrapContentHeight()
-                .wrapContentWidth(),
-        contentAlignment = Alignment.Center,
+        Modifier
+            .wrapContentHeight()
+            .wrapContentWidth()
+            .padding(horizontal = 20.dp, vertical = margin)
     ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.Top,
-        ) {
-            content()
+        val (headerRef, bottomRef, centerRef) = createRefs()
+        Box(modifier = Modifier.constrainAs(headerRef) {
+            top.linkTo(parent.top)
+            bottom.linkTo(bottomRef.top, margin)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }) {
+            headerCompose()
         }
-        center()
+        Box(modifier = Modifier.constrainAs(bottomRef) {
+            top.linkTo(parent.bottom)
+            bottom.linkTo(headerRef.bottom, margin)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }) {
+            bottomCompose()
+        }
+        Box(modifier = Modifier.constrainAs(centerRef) {
+            top.linkTo(headerRef.bottom)
+            bottom.linkTo(bottomRef.top)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+        }) {
+            centerCompose()
+        }
     }
+}
+
+@Preview
+@Composable
+fun SwapLayoutPreview() {
+    SwapLayout(
+        headerCompose = {
+            Box(modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth()
+                .background(color = Color.Red))
+        },
+        bottomCompose = {
+            Box(modifier = Modifier
+                .height(140.dp)
+                .fillMaxWidth()
+                .background(color = Color.Green))
+        },
+        centerCompose = {
+            Box(modifier = Modifier
+                .size(40.dp)
+                .background(color = Color.Blue))
+        },
+        margin = 20.dp
+    )
 }
 
 @Preview

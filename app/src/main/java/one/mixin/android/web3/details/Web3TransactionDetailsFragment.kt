@@ -8,6 +8,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -128,7 +130,8 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
         }
-        binding.transactionsRv.layoutManager = LinearLayoutManager(requireContext())
+        binding.transactionsRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+        binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.transactionsRv.adapter = adapter
         lifecycleScope.launch {
             binding.progress.isVisible = true

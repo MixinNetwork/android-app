@@ -8,12 +8,10 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toBitmap
@@ -104,17 +102,17 @@ class VideoHolder(
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
-            binding.previewIv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
+            binding.previewIv.loadImage(messageItem.thumbUrl, null, base64Holder =  messageItem.thumbImage)
         } else {
             if (messageItem.absolutePath() != null) {
-                binding.previewIv.loadVideo(messageItem.absolutePath())
+                binding.previewIv.loadImage(messageItem.absolutePath(), null, null)
             } else {
                 val imageData =
                     messageItem.thumbImage?.toBitmap(
                         messageItem.mediaWidth ?: 0,
                         messageItem.mediaHeight ?: 0,
                     )
-                Glide.with(itemView).load(imageData).into(binding.previewIv)
+                binding.previewIv.setImageBitmap(imageData)
             }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
                 maybeLoadVideo(videoStatusCache, messageItem)

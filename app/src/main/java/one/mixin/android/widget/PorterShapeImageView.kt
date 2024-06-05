@@ -86,7 +86,7 @@ class PorterShapeImageView : PorterImageView {
             shape!!.setBounds(0, 0, drawableWidth, drawableHeight)
             val widthRatio = viewWidth.toFloat() / drawableWidth.toFloat()
             val heightRatio = viewHeight.toFloat() / drawableHeight.toFloat()
-            val scale = Math.min(widthRatio, heightRatio)
+            val scale = widthRatio.coerceAtMost(heightRatio)
             val dx = ((viewWidth - drawableWidth * scale) * 0.5f + 0.5f).toInt().toFloat()
             val dy = ((viewHeight - drawableHeight * scale) * 0.5f + 0.5f).toInt().toFloat()
 

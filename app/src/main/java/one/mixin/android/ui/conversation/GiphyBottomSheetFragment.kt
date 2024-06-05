@@ -17,7 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGiphySearchBottomSheetBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.loadGif
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -239,7 +239,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 width = size
                 height = (size * (3f / 4)).toInt()
             }
-            item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+            item.loadImage(previewImage.url, holder = R.drawable.ic_giphy_place_holder)
             holder.itemView.setOnClickListener { listener.onGifClick(sendImage, previewImage.url) }
         }
     }
