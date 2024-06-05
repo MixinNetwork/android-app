@@ -1,29 +1,33 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.hashForDate
+import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.svgLoader
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.GrayscaleTransformation
 import java.math.BigDecimal
+import kotlin.math.abs
 
-class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
     fun isEmpty() = transactions.isEmpty()
 
     var transactions: List<Web3Transaction> = emptyList()
@@ -55,6 +59,19 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
         } else {
             Web3TransactionHolder(ItemWeb3TransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
+    }
+
+    override fun getHeaderId(position: Int): Long {
+        if (position == 0) return -1
+        val transaction = transactions[position - 1]
+        return abs(transaction.createdAt.hashForDate())
+    }
+
+    override fun onCreateHeaderViewHolder(parent: ViewGroup) = SnapshotHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
+
+    override fun onBindHeaderViewHolder(holder: SnapshotHeaderViewHolder, position: Int) {
+        val transaction = transactions[position - 1]
+        holder.bind(transaction.createdAt)
     }
 
     override fun getItemCount(): Int {
