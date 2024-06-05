@@ -20,7 +20,6 @@ import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
 import org.sol4k.Transaction
 import org.sol4k.VersionedTransaction
-import org.sol4k.api.TransactionSimulationSuccess
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
 import org.sol4k.instruction.Instruction
 import org.sol4k.instruction.SetComputeUnitLimitInstruction
@@ -35,12 +34,9 @@ import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.Uint
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
-import kotlin.math.ceil
-import kotlin.math.max
 
 @Parcelize
 class Web3Token(
@@ -239,29 +235,16 @@ suspend fun Web3Token.buildTransaction(
         var tx = transaction.serialize().base64Encode()
 
         val priorityFeeResponse = estimatePriorityFee?.invoke(tx)
-        if (priorityFeeResponse != null && priorityFeeResponse.priorityFeeEstimate > 0) {
-            val txSimulation =
-                withContext(Dispatchers.IO) {
-                    transaction.recentBlockhash = conn.getLatestBlockhash()
-                    transaction.addPlaceholderSignature()
-                    conn.simulateTransaction(transaction.serialize())
-                }
-            val units =
-                if (txSimulation is TransactionSimulationSuccess) {
-                    Timber.d("unitsConsumed ${txSimulation.unitsConsumed}")
-                    max(5000, ceil(txSimulation.unitsConsumed * 1.1).toInt())
-                } else {
-                    5000
-                }
+        if (priorityFeeResponse != null && priorityFeeResponse.price > 0) {
             val newInstructions = mutableListOf<Instruction>()
             newInstructions.add(
                 SetComputeUnitLimitInstruction(
-                    units = units,
+                    units = priorityFeeResponse.units,
                 ),
             )
             newInstructions.add(
                 SetComputeUnitPriceInstruction(
-                    microLamports = priorityFeeResponse.priorityFeeEstimate.toLong(),
+                    microLamports = priorityFeeResponse.price.toLong(),
                 ),
             )
             newInstructions.addAll(instructions)
