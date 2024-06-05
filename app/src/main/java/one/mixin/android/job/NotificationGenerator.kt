@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
@@ -18,12 +19,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.LocusIdCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,6 +63,7 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.picker.toTimeInterval
+import timber.log.Timber
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
@@ -603,34 +602,28 @@ object NotificationGenerator : Injector() {
             val width =
                 context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width)
 
-            Glide.with(context)
-                .asBitmap()
-                .load(url)
-                .apply(RequestOptions().fitCenter().circleCrop())
-                .listener(
-                    object : RequestListener<Bitmap> {
-                        override fun onResourceReady(
-                            resource: Bitmap,
-                            model: Any,
-                            target: Target<Bitmap>?,
-                            dataSource: DataSource,
-                            isFirstResource: Boolean,
-                        ): Boolean {
-                            onComplete(resource)
-                            return false
-                        }
-
-                        override fun onLoadFailed(
-                            e: GlideException?,
-                            model: Any?,
-                            target: Target<Bitmap>,
-                            isFirstResource: Boolean,
-                        ): Boolean {
-                            onComplete(null)
-                            return false
-                        }
-                    },
-                ).submit(width, height)
+            loadImageWithCoil(context, url, width, height, onComplete)
         }
+    }
+
+
+    private fun loadImageWithCoil(context: Context, url: String?, width: Int, height: Int, onComplete: (Bitmap?) -> Unit) {
+        val imageLoader = context.imageLoader
+        val request = ImageRequest.Builder(context)
+            .data(url)
+            .size(width, height)
+            .transformations(CircleCropTransformation())
+            .target(
+                onSuccess = { drawable ->
+                    val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                    onComplete(bitmap)
+                },
+                onError = {
+                    onComplete(null)
+                }
+            )
+            .build()
+
+        imageLoader.enqueue(request)
     }
 }

@@ -17,6 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
         android:transitionName="@string/avatar_transition_name"
         tools:ignore="ContentDescription"/>
 

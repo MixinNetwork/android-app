@@ -48,7 +48,7 @@ class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.View
     ) {
         binding.apply {
             root.setOnClickListener { callback.invoke(inscriptionItem) }
-            inscriptionIv.loadImage(uri = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
+            inscriptionIv.loadImage(data = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
             title.text = inscriptionItem.name
             subTitle.text = "#${inscriptionItem.sequence}"
         }

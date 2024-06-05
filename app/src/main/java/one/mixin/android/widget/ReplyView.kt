@@ -15,7 +15,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -74,7 +74,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.isImage() -> {
                 binding.replyViewTv.setText(R.string.Photo)
                 setIcon(R.drawable.ic_type_pic)
-                binding.replyViewIv.loadImageCenterCrop(messageItem.absolutePath(), R.drawable.image_holder)
+                binding.replyViewIv.loadImage(messageItem.absolutePath(), R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -82,7 +82,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.isVideo() -> {
                 binding.replyViewTv.setText(R.string.Video)
                 setIcon(R.drawable.ic_type_video)
-                binding.replyViewIv.loadImageCenterCrop(messageItem.absolutePath(), R.drawable.image_holder)
+                binding.replyViewIv.loadImage(messageItem.absolutePath(), R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -90,7 +90,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.isLive() -> {
                 binding.replyViewTv.setText(R.string.Live)
                 setIcon(R.drawable.ic_type_live)
-                binding.replyViewIv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
+                binding.replyViewIv.loadImage(messageItem.thumbUrl, R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -98,7 +98,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.isSticker() -> {
                 binding.replyViewTv.setText(R.string.Sticker)
                 setIcon(R.drawable.ic_type_stiker)
-                binding.replyViewIv.loadImageCenterCrop(messageItem.assetUrl, R.drawable.image_holder)
+                binding.replyViewIv.loadImage(messageItem.assetUrl, R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE

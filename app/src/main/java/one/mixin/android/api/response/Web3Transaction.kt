@@ -11,6 +11,9 @@ import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.setting.getLanguagePos
+import one.mixin.android.util.getLanguage
+import one.mixin.android.util.needsSpaceBetweenWords
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
@@ -81,32 +84,43 @@ data class Web3Transaction(
             }
         }
 
-    val title: String
-        get() {
-            return when (operationType) {
-                Web3TransactionType.Send.value -> {
-                    if (sender == receiver) {
-                        MixinApplication.appContext.getString(R.string.Receive)
+    fun title(context: Context): String {
+        return when (operationType) {
+            Web3TransactionType.Send.value -> {
+                if (sender == receiver) {
+                    context.getString(R.string.Receive)
+                } else {
+                    context.getString(R.string.Send_transfer)
+                }
+            }
+
+            Web3TransactionType.Receive.value -> {
+                context.getString(R.string.Receive)
+            }
+
+            Web3TransactionType.Withdraw.value -> {
+                context.getString(R.string.Withdrawal)
+            }
+
+            Web3TransactionType.Trade.value -> {
+                context.getString(R.string.Trade)
+            }
+
+            else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+        }.run {
+            if (status == Web3TransactionStatus.Failed.value) {
+                "$this${
+                    if (needsSpaceBetweenWords()) {
+                        " "
                     } else {
-                        MixinApplication.appContext.getString(R.string.Send_transfer)
+                        ""
                     }
-                }
-
-                Web3TransactionType.Receive.value -> {
-                    MixinApplication.appContext.getString(R.string.Receive)
-                }
-
-                Web3TransactionType.Withdraw.value -> {
-                    MixinApplication.appContext.getString(R.string.Withdrawal)
-                }
-
-                Web3TransactionType.Trade.value -> {
-                    MixinApplication.appContext.getString(R.string.Trade)
-                }
-
-                else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                }${context.getString(R.string.Failed)}"
+            } else {
+                this
             }
         }
+    }
 
     val subTitle: String
         get() {
