@@ -17,6 +17,15 @@ fun isCurrChinese(): Boolean = (getLanguage() ?: Locale.getDefault().language) =
 
 fun isFollowSystem(): Boolean = AppCompatDelegate.getApplicationLocales().isEmpty
 
+fun needsSpaceBetweenWords(): Boolean {
+    return when (getLanguage()) {
+        Locale.SIMPLIFIED_CHINESE.language -> false
+        Locale.TRADITIONAL_CHINESE.language -> false
+        Locale.JAPANESE.language -> false
+        else -> true
+    }
+}
+
 fun getLocalString(
     context: Context,
     @StringRes resId: Int,

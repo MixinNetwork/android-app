@@ -1499,5 +1499,5 @@
     <string name="Slippage_tolerance_exceeded">超出滑点范围</string>
     <string name="balance_max">最大</string>
     <string name="balance_half">取半</string>
-    <string name="Failed_blank">失败</string>
+    <string name="Failed">失败</string>
 </resources>

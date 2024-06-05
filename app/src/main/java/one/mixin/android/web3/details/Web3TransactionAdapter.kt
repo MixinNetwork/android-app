@@ -1,6 +1,7 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -83,7 +84,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
     @SuppressLint("SetTextI18n")
     fun bind(transaction: Web3Transaction) {
         binding.apply {
-            titleTv.text = transaction.title
+            titleTv.text = transaction.title(root.context)
             subTitleTv.text = transaction.subTitle
             when (transaction.operationType) {
                 Web3TransactionType.Send.value -> {
