@@ -235,16 +235,16 @@ suspend fun Web3Token.buildTransaction(
         var tx = transaction.serialize().base64Encode()
 
         val priorityFeeResponse = estimatePriorityFee?.invoke(tx)
-        if (priorityFeeResponse != null && priorityFeeResponse.price > 0) {
+        if (priorityFeeResponse != null && priorityFeeResponse.unitPrice > 0) {
             val newInstructions = mutableListOf<Instruction>()
             newInstructions.add(
                 SetComputeUnitLimitInstruction(
-                    units = priorityFeeResponse.units,
+                    units = priorityFeeResponse.unitLimit,
                 ),
             )
             newInstructions.add(
                 SetComputeUnitPriceInstruction(
-                    microLamports = priorityFeeResponse.price.toLong(),
+                    microLamports = priorityFeeResponse.unitPrice,
                 ),
             )
             newInstructions.addAll(instructions)
