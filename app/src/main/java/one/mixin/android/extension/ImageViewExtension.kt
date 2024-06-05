@@ -10,6 +10,7 @@ import coil.load
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import coil.transform.Transformation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -29,7 +30,8 @@ fun ImageView.loadImage(
     onSuccess: ((
         request: ImageRequest, result: SuccessResult
     ) -> Unit)? = null,
-    onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null
+    onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
+    transformation: Transformation? = null,
 ) {
     this.load(data) {
         if (base64Holder != null) {
@@ -39,6 +41,7 @@ fun ImageView.loadImage(
             error(holder)
             allowHardware(false)
         }
+        if (transformation != null) transformations(transformation)
         onSuccess?.let {
             listener(
                 onSuccess = onSuccess,

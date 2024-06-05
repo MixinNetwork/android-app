@@ -105,6 +105,12 @@ data class Web3Transaction(
                 }
 
                 else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            }.run {
+                if (status == Web3TransactionStatus.Failed.value) {
+                    this + MixinApplication.appContext.getString(R.string.Failed_blank)
+                } else {
+                    this
+                }
             }
         }
 

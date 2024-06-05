@@ -1536,4 +1536,5 @@
     <string name="Slippage_tolerance_exceeded">Slippage tolerance exceeded</string>
     <string name="balance_max">MAX</string>
     <string name="balance_half">HALF</string>
+    <string name="Failed_blank"> Failed</string>
 </resources>
