@@ -20,6 +20,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -31,6 +32,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
@@ -287,6 +289,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 amount = amount,
                                 toAddress = toAddress,
                                 chainToken = chainToken,
+                                onTxhash = { hash, blockhash ->
+                                    val txStateFragment = TransactionStateFragment.newInstance(hash, blockhash, token.symbol)
+                                    navTo(txStateFragment, TransactionStateFragment.TAG)
+                                }
                             )
                         }
                     }

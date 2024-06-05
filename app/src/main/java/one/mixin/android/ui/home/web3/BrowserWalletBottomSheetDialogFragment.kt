@@ -298,7 +298,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
                     val sig = JsSigner.sendSolanaTransaction(tx)
-                    onTxhash?.invoke(sig)
+                    onTxhash?.invoke(sig, tx.message.recentBlockhash)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -403,7 +403,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
-    fun setOnTxhash(callback: (String) -> Unit): BrowserWalletBottomSheetDialogFragment {
+    fun setOnTxhash(callback: (String, String) -> Unit): BrowserWalletBottomSheetDialogFragment {
         onTxhash = callback
         return this
     }
@@ -411,7 +411,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var onDone: ((String?) -> Unit)? = null
     private var onRejectAction: (() -> Unit)? = null
     private var onDismissAction: (() -> Unit)? = null
-    private var onTxhash: ((String) -> Unit)? = null
+    private var onTxhash: ((String, String) -> Unit)? = null
 
     fun getBiometricInfo() =
         BiometricInfo(
@@ -448,7 +448,7 @@ fun showBrowserBottomSheetDialogFragment(
     currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
-    onTxhash: ((String) -> Unit)? = null,
+    onTxhash: ((String, String) -> Unit)? = null,
 ) {
     val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
     onDone?.let {
