@@ -40,15 +40,10 @@ class TransactionStateFragment : BaseFragment() {
         const val TAG = "TransactionStateFragment"
 
         const val ARGS_TX = "args_tx"
-        const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
 
-        fun newInstance(
-            tx: String,
-            tokenSymbol: String,
-        ) =
+        fun newInstance(tx: String) =
             TransactionStateFragment().withArgs {
                 putString(ARGS_TX, tx)
-                putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
             }
     }
 
@@ -58,7 +53,6 @@ class TransactionStateFragment : BaseFragment() {
         val serializedTx = requireArguments().getString(ARGS_TX)!!
         VersionedTransaction.from(serializedTx)
     }
-    private val symbol: String by lazy { requireArguments().getString(ARGS_TOKEN_SYMBOL)!! }
 
     private var txState: Tx? by mutableStateOf(null)
 
@@ -74,7 +68,6 @@ class TransactionStateFragment : BaseFragment() {
                 ) {
                     TransactionStatePage(
                         tx = txState ?: Tx(TxState.NotFound.name),
-                        symbol = symbol,
                         viewTx = {
                             WebActivity.show(context, "https://solscan.io/tx/${tx.signatures[0]}", null)
                         },
@@ -96,19 +89,23 @@ class TransactionStateFragment : BaseFragment() {
     private val conn = Connection(RpcUrl.MAINNNET)
 
     private fun refreshTx() {
+        val txhash = tx.signatures[0]
         val blockhash = tx.message.recentBlockhash
-        Timber.e("$TAG txhash: ${tx.signatures[0]}, blockhash: $blockhash")
+        Timber.e("$TAG txhash: ${txhash}, blockhash: $blockhash")
         refreshTxJob?.cancel()
         refreshTxJob =
             tickerFlow(2.seconds)
                 .onEach {
                     try {
-                        val sig =
-                            withContext(Dispatchers.IO) {
+                        withContext(Dispatchers.IO) {
+                            try {
                                 conn.sendTransaction(tx.serialize())
+                            } catch (ignored: Exception) {
+                                Timber.d("loop sendTransaction ${ignored.stackTraceToString()}")
                             }
+                        }
                         handleMixinResponse(
-                            invokeNetwork = { web3ViewModel.getWeb3Tx(sig) },
+                            invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
                             successBlock = {
                                 txState = it.data
                             },
@@ -129,8 +126,16 @@ class TransactionStateFragment : BaseFragment() {
                                 }
                             if (!isBlockhashValid) {
                                 Timber.e("$TAG blockhash $blockhash valid")
+                                val ts = handleMixinResponse(
+                                    invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
+                                    successBlock = { it.data },
+                                )
                                 refreshTxJob?.cancel()
-                                txState = Tx(TxState.Failed.name)
+                                txState = if (ts?.state?.isFinalTxState() == true) {
+                                    ts
+                                } else {
+                                    Tx(TxState.Failed.name)
+                                }
                             }
                         }
                     } catch (e: Exception) {

@@ -227,7 +227,7 @@ class SwapFragment : BaseFragment() {
                                             lifecycleScope.launch {
                                                 txhash = hash
                                                 val txStateFragment =
-                                                    TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
+                                                    TransactionStateFragment.newInstance(serializedTx).apply {
                                                         setCloseAction {
                                                             navigateUp(navController)
                                                             parentFragmentManager.popBackStackImmediate()

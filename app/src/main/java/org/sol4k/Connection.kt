@@ -31,7 +31,6 @@ import org.sol4k.rpc.RpcRequest
 import org.sol4k.rpc.RpcResponse
 import org.sol4k.rpc.SimulateTransactionResponse
 import org.sol4k.rpc.TokenBalanceResult
-import timber.log.Timber
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.math.BigInteger
@@ -230,7 +229,6 @@ class Connection @JvmOverloads constructor(
             val (result) = jsonParser.decodeFromString<RpcResponse<T>>(responseBody)
             return result
         } catch (e: SerializationException) {
-            Timber.e(e)
             val (error) = jsonParser.decodeFromString<RpcErrorResponse>(responseBody)
             throw RpcException(error.code, error.message, responseBody)
         }

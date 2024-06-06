@@ -295,7 +295,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 toAddress = toAddress,
                                 chainToken = chainToken,
                                 onTxhash = { _, serializedTx ->
-                                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx, token.symbol)
+                                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx)
                                     navTo(txStateFragment, TransactionStateFragment.TAG)
                                 },
                             )

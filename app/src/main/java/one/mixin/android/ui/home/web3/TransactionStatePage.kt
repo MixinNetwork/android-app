@@ -21,13 +21,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -40,7 +38,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun TransactionStatePage(
     tx: Tx,
-    symbol: String,
     viewTx: () -> Unit,
     close: () -> Unit,
 ) {
@@ -55,7 +52,7 @@ fun TransactionStatePage(
                     verticalScroll(rememberScrollState())
                 },
         ) {
-            Content(tx, symbol, viewTx, close)
+            Content(tx, viewTx, close)
         }
     }
 }
@@ -63,7 +60,6 @@ fun TransactionStatePage(
 @Composable
 private fun Content(
     tx: Tx,
-    symbol: String,
     viewTx: () -> Unit,
     close: () -> Unit,
 ) {
@@ -72,7 +68,7 @@ private fun Content(
     ) {
         Spacer(modifier = Modifier.height(64.dp))
         Spacer(modifier = Modifier.height(100.dp))
-        StateInfo(tx = tx, symbol)
+        StateInfo(tx = tx)
         Spacer(modifier = Modifier.height(20.dp))
         Box(
             modifier =
@@ -124,7 +120,6 @@ private fun Content(
 @Composable
 private fun StateInfo(
     tx: Tx,
-    symbol: String,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -171,16 +166,6 @@ private fun StateInfo(
                     color = MixinAppTheme.colors.textPrimary,
                 ),
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            modifier = Modifier.alpha(if (tx.state.isTxFailed()) 0f else 1f),
-            text = stringResource(id = R.string.swap_desc, symbol),
-            textAlign = TextAlign.Center,
-            style =
-                TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
-                ),
-        )
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
