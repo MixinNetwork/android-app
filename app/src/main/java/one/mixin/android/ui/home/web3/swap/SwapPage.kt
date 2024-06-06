@@ -44,6 +44,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -179,11 +181,15 @@ fun SwapPage(
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     val checkBalance = checkBalance(inputText.value, fromToken.balance)
+                    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+                    val focusManager = LocalFocusManager.current
                     if (inputText.value.isNotEmpty()) {
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading && checkBalance == true,
                             onClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
                                 onSwap.invoke()
                             },
                             colors =
