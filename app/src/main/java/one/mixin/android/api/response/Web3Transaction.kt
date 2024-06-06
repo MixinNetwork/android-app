@@ -68,10 +68,9 @@ data class Web3Transaction(
                 }
 
                 else -> {
-                    fee.iconUrl
+                    return fee.iconUrl
                 }
             }
-            return null
         }
 
     val badge: String?

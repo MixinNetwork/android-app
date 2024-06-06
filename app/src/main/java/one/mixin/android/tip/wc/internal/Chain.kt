@@ -44,7 +44,7 @@ sealed class Chain(
 }
 
 internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -124,17 +124,17 @@ fun getSupportedNamespaces(
     chain: Chain,
     address: String,
 ): Map<String, Wallet.Model.Namespace.Session> {
-    return when (chain) {
-        is Chain.Solana -> {
+    return when {
+        chain == Chain.Solana -> {
             getSolanaNamespaces(address)
         }
 
-        is Chain.Polygon, is Chain.Ethereum, is Chain.BinanceSmartChain -> {
+        evmChainList.contains(chain) -> {
             getEvmNamespaces(address)
         }
 
         else -> {
-            throw IllegalArgumentException("No support")
+            throw IllegalArgumentException("Not supported chain ${chain.name}")
         }
     }
 }

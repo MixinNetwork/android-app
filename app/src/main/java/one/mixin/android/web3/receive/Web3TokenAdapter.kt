@@ -5,13 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.svgLoader
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -68,12 +67,9 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
     @SuppressLint("SetTextI18n")
     fun bind(token: Web3Token) {
         binding.apply {
-            avatar.bg.load(token.iconUrl, imageLoader = root.context.svgLoader()) {
-                placeholder(R.drawable.ic_avatar_place_holder)
-            }
-            avatar.badge.load(token.chainIconUrl, imageLoader = root.context.svgLoader()) {
-                placeholder(R.drawable.ic_avatar_place_holder)
-            }
+            avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
+            avatar.badge.loadImage(token.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
+
             balance.text =
                 try {
                     if (token.balance.numberFormat().toFloat() == 0f) {
