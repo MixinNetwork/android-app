@@ -48,13 +48,15 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 }
 
 fun generateEd25519KeyPair(): EdKeyPair {
-    val priv = Ed25519.generateKey()
-    val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
     return if (useGoEd()) {
-        goEdKeyPair
+        val priv = Ed25519.generateKey()
+        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
     } else {
         val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
         val ktEdKeyPair = EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+
+        val priv = Ed25519.newKeyFromSeed(ktEdKeyPair.privateKey)
+        val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
         if (!goEdKeyPair.privateKey.contentEquals(ktEdKeyPair.privateKey) || !goEdKeyPair.publicKey.contentEquals(ktEdKeyPair.publicKey)) {
             throw InvalidEd25519Exception()
         }
