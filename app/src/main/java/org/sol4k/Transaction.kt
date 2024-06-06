@@ -4,7 +4,7 @@ import org.sol4k.instruction.Instruction
 import java.nio.ByteBuffer
 
 class Transaction(
-    private val recentBlockhash: String,
+    var recentBlockhash: String,
     private val instructions: List<Instruction>,
     private val feePayer: PublicKey,
 ) {
@@ -20,6 +20,10 @@ class Transaction(
         val message = transactionMessage()
         val signature = keypair.sign(message)
         signatures.add(Base58.encode(signature))
+    }
+
+    fun addPlaceholderSignature() {
+        signatures.add(Base58.encode(ByteArray(SIGNATURE_LENGTH)))
     }
 
     private fun transactionMessage(): ByteArray {

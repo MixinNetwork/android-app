@@ -34,7 +34,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                         ViewCompat.setTransitionName(imageView, "transition")
                         mediaPagerAdapterListener.onReadyPostTransition(imageView)
                     }
-                }
+                },
             )
         } else {
             imageView.loadImage(

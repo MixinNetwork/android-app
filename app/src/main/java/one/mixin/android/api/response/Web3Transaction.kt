@@ -5,14 +5,11 @@ import android.os.Parcelable
 import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.ui.setting.getLanguagePos
-import one.mixin.android.util.getLanguage
 import one.mixin.android.util.needsSpaceBetweenWords
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection

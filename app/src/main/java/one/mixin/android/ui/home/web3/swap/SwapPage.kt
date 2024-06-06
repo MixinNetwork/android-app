@@ -4,12 +4,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -46,6 +44,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -98,25 +98,25 @@ fun SwapPage(
         } else {
             Column(
                 modifier =
-                Modifier
-                    .verticalScroll(rememberScrollState())
+                    Modifier
+                        .verticalScroll(rememberScrollState()),
             ) {
                 SwapLayout(
                     centerCompose = {
                         Box(
                             modifier =
-                            Modifier
-                                .width(40.dp)
-                                .height(40.dp)
-                                .clip(CircleShape)
-                                .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                .background(MixinAppTheme.colors.backgroundGray)
-                                .clickable {
-                                    isReverse = !isReverse
-                                    switch.invoke()
-                                    context.clickVibrate()
-                                }
-                                .rotate(rotation),
+                                Modifier
+                                    .width(40.dp)
+                                    .height(40.dp)
+                                    .clip(CircleShape)
+                                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .clickable {
+                                        isReverse = !isReverse
+                                        switch.invoke()
+                                        context.clickVibrate()
+                                    }
+                                    .rotate(rotation),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
@@ -131,12 +131,11 @@ fun SwapPage(
                             inputText.value = it
                             onInputChanged.invoke(it)
                         }
-
                     },
                     bottomCompose = {
                         InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { selectCallback(1) })
                     },
-                    margin = 6.dp
+                    margin = 6.dp,
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Column(
@@ -182,11 +181,15 @@ fun SwapPage(
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     val checkBalance = checkBalance(inputText.value, fromToken.balance)
+                    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+                    val focusManager = LocalFocusManager.current
                     if (inputText.value.isNotEmpty()) {
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading && checkBalance == true,
                             onClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
                                 onSwap.invoke()
                             },
                             colors =
@@ -459,38 +462,47 @@ fun SwapLayout(
     headerCompose: @Composable () -> Unit,
     bottomCompose: @Composable () -> Unit,
     centerCompose: @Composable () -> Unit,
-    margin: Dp
+    margin: Dp,
 ) {
     ConstraintLayout(
         modifier =
-        Modifier
-            .wrapContentHeight()
-            .wrapContentWidth()
-            .padding(horizontal = 20.dp, vertical = margin)
+            Modifier
+                .wrapContentHeight()
+                .wrapContentWidth()
+                .padding(horizontal = 20.dp, vertical = margin),
     ) {
         val (headerRef, bottomRef, centerRef) = createRefs()
-        Box(modifier = Modifier.constrainAs(headerRef) {
-            top.linkTo(parent.top)
-            bottom.linkTo(bottomRef.top, margin)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-        }) {
+        Box(
+            modifier =
+                Modifier.constrainAs(headerRef) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(bottomRef.top, margin)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+        ) {
             headerCompose()
         }
-        Box(modifier = Modifier.constrainAs(bottomRef) {
-            top.linkTo(parent.bottom)
-            bottom.linkTo(headerRef.bottom, margin)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-        }) {
+        Box(
+            modifier =
+                Modifier.constrainAs(bottomRef) {
+                    top.linkTo(parent.bottom)
+                    bottom.linkTo(headerRef.bottom, margin)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+        ) {
             bottomCompose()
         }
-        Box(modifier = Modifier.constrainAs(centerRef) {
-            top.linkTo(headerRef.bottom)
-            bottom.linkTo(bottomRef.top)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-        }) {
+        Box(
+            modifier =
+                Modifier.constrainAs(centerRef) {
+                    top.linkTo(headerRef.bottom)
+                    bottom.linkTo(bottomRef.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+        ) {
             centerCompose()
         }
     }
@@ -501,23 +513,32 @@ fun SwapLayout(
 fun SwapLayoutPreview() {
     SwapLayout(
         headerCompose = {
-            Box(modifier = Modifier
-                .height(100.dp)
-                .fillMaxWidth()
-                .background(color = Color.Red))
+            Box(
+                modifier =
+                    Modifier
+                        .height(100.dp)
+                        .fillMaxWidth()
+                        .background(color = Color.Red),
+            )
         },
         bottomCompose = {
-            Box(modifier = Modifier
-                .height(140.dp)
-                .fillMaxWidth()
-                .background(color = Color.Green))
+            Box(
+                modifier =
+                    Modifier
+                        .height(140.dp)
+                        .fillMaxWidth()
+                        .background(color = Color.Green),
+            )
         },
         centerCompose = {
-            Box(modifier = Modifier
-                .size(40.dp)
-                .background(color = Color.Blue))
+            Box(
+                modifier =
+                    Modifier
+                        .size(40.dp)
+                        .background(color = Color.Blue),
+            )
         },
-        margin = 20.dp
+        margin = 20.dp,
     )
 }
 

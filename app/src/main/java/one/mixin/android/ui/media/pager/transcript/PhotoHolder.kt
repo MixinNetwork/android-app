@@ -33,7 +33,6 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                         ViewCompat.setTransitionName(imageView, "transition")
                         mediaPagerAdapterListener.onReadyPostTransition(imageView)
                     }
-
                 },
                 base64Holder = messageItem.thumbImage,
             )

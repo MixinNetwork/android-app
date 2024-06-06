@@ -428,13 +428,14 @@ open class MixinApplication :
                 OkHttpClient.Builder()
                     .addInterceptor { chain ->
                         val original = chain.request()
-                        val requestBuilder = original.newBuilder()
-                            .header("User-Agent", API_UA)
-                            .method(original.method, original.body)
+                        val requestBuilder =
+                            original.newBuilder()
+                                .header("User-Agent", API_UA)
+                                .method(original.method, original.body)
                         val request = requestBuilder.build()
                         chain.proceed(request)
                     }
-                    .build()
+                    .build(),
             )
             .components {
                 if (SDK_INT >= Build.VERSION_CODES.P) {

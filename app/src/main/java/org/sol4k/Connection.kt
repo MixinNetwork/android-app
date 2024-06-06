@@ -187,8 +187,8 @@ class Connection @JvmOverloads constructor(
         )
     }
 
-    fun simulateTransaction(transaction: VersionedTransaction): TransactionSimulation {
-        val encodedTransaction = Base64.getEncoder().encodeToString(transaction.serialize())
+    fun simulateTransaction(transaction: ByteArray): TransactionSimulation {
+        val encodedTransaction = Base64.getEncoder().encodeToString(transaction)
         val result: SimulateTransactionResponse = rpcCall(
             "simulateTransaction",
             listOf(
@@ -196,14 +196,14 @@ class Connection @JvmOverloads constructor(
                 Json.encodeToJsonElement(mapOf("encoding" to "base64")),
             )
         )
-        val (err, logs) = result.value
+        val (err, logs, unitsConsumed) = result.value
         if (err != null) {
             when (err) {
                 is JsonPrimitive -> return TransactionSimulationError(err.content)
                 else -> throw IllegalArgumentException("Failed to parse the error")
             }
         } else if (logs != null) {
-            return TransactionSimulationSuccess(logs)
+            return TransactionSimulationSuccess(logs, unitsConsumed ?: 0)
         }
         throw IllegalArgumentException("Unable to parse simulation response")
     }
@@ -228,7 +228,7 @@ class Connection @JvmOverloads constructor(
         try {
             val (result) = jsonParser.decodeFromString<RpcResponse<T>>(responseBody)
             return result
-        } catch (_: SerializationException) {
+        } catch (e: SerializationException) {
             val (error) = jsonParser.decodeFromString<RpcErrorResponse>(responseBody)
             throw RpcException(error.code, error.message, responseBody)
         }

@@ -66,9 +66,9 @@ private fun Content(
         CoilImage(
             model = connectionUI.icon,
             modifier =
-            Modifier
-                .size(90.dp)
-                .clip(CircleShape),
+                Modifier
+                    .size(90.dp)
+                    .clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
         Box(modifier = Modifier.height(10.dp))

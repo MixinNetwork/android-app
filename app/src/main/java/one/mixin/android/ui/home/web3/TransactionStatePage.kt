@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.isFinalTxState
 import one.mixin.android.api.response.web3.isTxFailed
@@ -39,9 +38,9 @@ import one.mixin.android.api.response.web3.isTxSuccess
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
-fun SwapStatePage(
+fun TransactionStatePage(
     tx: Tx,
-    toToken: SwapToken,
+    symbol: String?,
     viewTx: () -> Unit,
     close: () -> Unit,
 ) {
@@ -56,7 +55,7 @@ fun SwapStatePage(
                     verticalScroll(rememberScrollState())
                 },
         ) {
-            Content(tx, toToken, viewTx, close)
+            Content(tx, symbol, viewTx, close)
         }
     }
 }
@@ -64,7 +63,7 @@ fun SwapStatePage(
 @Composable
 private fun Content(
     tx: Tx,
-    toToken: SwapToken,
+    symbol: String?,
     viewTx: () -> Unit,
     close: () -> Unit,
 ) {
@@ -73,7 +72,7 @@ private fun Content(
     ) {
         Spacer(modifier = Modifier.height(64.dp))
         Spacer(modifier = Modifier.height(100.dp))
-        StateInfo(tx = tx, toToken)
+        StateInfo(tx = tx, symbol)
         Spacer(modifier = Modifier.height(20.dp))
         Box(
             modifier =
@@ -125,7 +124,7 @@ private fun Content(
 @Composable
 private fun StateInfo(
     tx: Tx,
-    toToken: SwapToken,
+    symbol: String?,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -172,16 +171,20 @@ private fun StateInfo(
                     color = MixinAppTheme.colors.textPrimary,
                 ),
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            modifier = Modifier.alpha(if (tx.state.isTxFailed()) 0f else 1f),
-            text = stringResource(id = R.string.swap_desc, toToken.symbol),
-            textAlign = TextAlign.Center,
-            style =
-                TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
-                ),
-        )
+        if (symbol != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                modifier = Modifier.alpha(if (tx.state.isTxFailed()) 0f else 1f),
+                text = stringResource(id = R.string.swap_desc, symbol),
+                textAlign = TextAlign.Center,
+                style =
+                    TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.textSubtitle,
+                    ),
+            )
+        } else {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }

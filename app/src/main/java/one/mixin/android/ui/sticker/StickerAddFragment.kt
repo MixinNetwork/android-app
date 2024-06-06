@@ -21,7 +21,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
@@ -50,7 +49,6 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.lang.Integer.max
 import java.lang.Integer.min
-import java.util.concurrent.TimeUnit
 
 @Suppress("BlockingMethodInNonBlockingContext")
 @AndroidEntryPoint
@@ -130,7 +128,7 @@ class StickerAddFragment : BaseFragment() {
                     try {
                         val loader = requireContext().imageLoader
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        val result  = loader.execute(request).drawable as BitmapDrawable? ?:return@withContext 0
+                        val result = loader.execute(request).drawable as BitmapDrawable? ?: return@withContext 0
                         val byteArray = result.bitmap.toBytes()
                         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
                         if (bitmap.width < dp100) {
@@ -197,10 +195,11 @@ class StickerAddFragment : BaseFragment() {
                 stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
             }
             val loader = requireContext().imageLoader
-            val request = ImageRequest.Builder(requireContext()).data(r.data?.assetUrl).size(r.data!!.assetWidth, r.data!!.assetHeight)
-                .listener { _, _ ->
-                    handleBack(R.string.Add_success)
-                }.build()
+            val request =
+                ImageRequest.Builder(requireContext()).data(r.data?.assetUrl).size(r.data!!.assetWidth, r.data!!.assetHeight)
+                    .listener { _, _ ->
+                        handleBack(R.string.Add_success)
+                    }.build()
             loader.execute(request)
         }
 
@@ -226,10 +225,10 @@ class StickerAddFragment : BaseFragment() {
 
                 val byteArray =
                     if (mimeType == MimeType.GIF.toString()) {
-                        val request = ImageRequest.Builder( requireContext()).data(url).build()
-                        val result = loader.execute(request).drawable?:return@withContext null
-                        val w =result.intrinsicWidth
-                        val h =result.intrinsicHeight
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
+                        val result = loader.execute(request).drawable ?: return@withContext null
+                        val w = result.intrinsicWidth
+                        val h = result.intrinsicHeight
                         if (min(w, h) >= MIN_SIZE && max(w, h) <= MAX_SIZE) {
                             loader.diskCache?.openSnapshot(url)?.data?.toFile()?.toByteArray() ?: return@withContext null
                         } else {
@@ -237,14 +236,14 @@ class StickerAddFragment : BaseFragment() {
                             return@withContext null
                         }
                     } else {
-                        val request = ImageRequest.Builder( requireContext()).data(url).build()
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
                         loader.execute(request)
                         loader.diskCache?.openSnapshot(url)?.data?.toFile()?.toByteArray() ?: return@withContext null
                     }
 
                 StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
             } else {
-                val request = ImageRequest.Builder( requireContext()).data(url).build()
+                val request = ImageRequest.Builder(requireContext()).data(url).build()
                 var bitmap = (loader.execute(request).drawable as BitmapDrawable?)?.bitmap ?: return@withContext null
 
                 val ratio = bitmap.width / bitmap.height.toFloat()

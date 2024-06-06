@@ -63,7 +63,6 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.picker.toTimeInterval
-import timber.log.Timber
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
@@ -606,23 +605,29 @@ object NotificationGenerator : Injector() {
         }
     }
 
-
-    private fun loadImageWithCoil(context: Context, url: String?, width: Int, height: Int, onComplete: (Bitmap?) -> Unit) {
+    private fun loadImageWithCoil(
+        context: Context,
+        url: String?,
+        width: Int,
+        height: Int,
+        onComplete: (Bitmap?) -> Unit,
+    ) {
         val imageLoader = context.imageLoader
-        val request = ImageRequest.Builder(context)
-            .data(url)
-            .size(width, height)
-            .transformations(CircleCropTransformation())
-            .target(
-                onSuccess = { drawable ->
-                    val bitmap = (drawable as? BitmapDrawable)?.bitmap
-                    onComplete(bitmap)
-                },
-                onError = {
-                    onComplete(null)
-                }
-            )
-            .build()
+        val request =
+            ImageRequest.Builder(context)
+                .data(url)
+                .size(width, height)
+                .transformations(CircleCropTransformation())
+                .target(
+                    onSuccess = { drawable ->
+                        val bitmap = (drawable as? BitmapDrawable)?.bitmap
+                        onComplete(bitmap)
+                    },
+                    onError = {
+                        onComplete(null)
+                    },
+                )
+                .build()
 
         imageLoader.enqueue(request)
     }

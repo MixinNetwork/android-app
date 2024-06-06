@@ -326,6 +326,4 @@ class EditFragment : VisionFragment() {
                 binding.previewVideoTexture.setTransform(matrix)
             }
         }
-
-
 }

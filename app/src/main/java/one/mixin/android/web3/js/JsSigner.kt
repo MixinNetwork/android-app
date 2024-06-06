@@ -25,6 +25,7 @@ import org.sol4k.RpcUrl
 import org.sol4k.SignInAccount
 import org.sol4k.SignInInput
 import org.sol4k.SignInOutput
+import org.sol4k.api.Commitment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -283,7 +284,7 @@ object JsSigner {
         // use latest blockhash should not break other signatures
         if (tx.signatures.size <= 1) {
             val conn = Connection(RpcUrl.MAINNNET)
-            val blockhash = conn.getLatestBlockhash()
+            val blockhash = conn.getLatestBlockhash(Commitment.CONFIRMED)
             tx.message.recentBlockhash = blockhash
         }
         tx.sign(holder)

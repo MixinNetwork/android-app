@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
+import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.base64Encode
@@ -21,6 +22,8 @@ import org.sol4k.Transaction
 import org.sol4k.VersionedTransaction
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
 import org.sol4k.instruction.Instruction
+import org.sol4k.instruction.SetComputeUnitLimitInstruction
+import org.sol4k.instruction.SetComputeUnitPriceInstruction
 import org.sol4k.instruction.SplTransferInstruction
 import org.sol4k.instruction.TransferInstruction
 import org.sol4k.lamportToSol
@@ -84,7 +87,7 @@ fun Web3Token.toSwapToken(): SwapToken {
                 price = null,
             ),
         balance = balance,
-        price = price
+        price = price,
     )
 }
 
@@ -172,19 +175,20 @@ suspend fun Web3Token.buildTransaction(
     fromAddress: String,
     toAddress: String,
     v: String,
+    estimatePriorityFee: (suspend (String) -> PriorityFeeResponse?)? = null,
 ): JsSignMessage {
     if (chainName.equals("solana", true)) {
         JsSigner.useSolana()
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
+        val conn = Connection(RpcUrl.MAINNNET)
         if (isSolToken()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
             val tokenMintAddress = PublicKey(assetKey)
             val (receiveAssociatedAccount) = PublicKey.findProgramDerivedAddress(receiver, tokenMintAddress)
-            val conn = Connection(RpcUrl.MAINNNET)
             val receiveAssociatedAccountInfo =
                 withContext(Dispatchers.IO) {
                     conn.getAccountInfo(receiveAssociatedAccount)
@@ -228,7 +232,26 @@ suspend fun Web3Token.buildTransaction(
                 instructions,
                 sender,
             )
-        val tx = transaction.serialize().base64Encode()
+        var tx = transaction.serialize().base64Encode()
+
+        val priorityFeeResponse = estimatePriorityFee?.invoke(tx)
+        if (priorityFeeResponse != null && priorityFeeResponse.unitPrice > 0) {
+            val newInstructions = mutableListOf<Instruction>()
+            newInstructions.add(
+                SetComputeUnitLimitInstruction(
+                    units = priorityFeeResponse.unitLimit,
+                ),
+            )
+            newInstructions.add(
+                SetComputeUnitPriceInstruction(
+                    microLamports = priorityFeeResponse.unitPrice,
+                ),
+            )
+            newInstructions.addAll(instructions)
+            val newTransaction = Transaction(toAddress, newInstructions, sender)
+            tx = newTransaction.serialize().base64Encode()
+        }
+
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx)
     } else {
         JsSigner.useEvm()

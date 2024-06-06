@@ -109,7 +109,7 @@ fun InputContent(
                     mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING))
                 } else {
                     mutableStateOf(BigDecimal.ZERO)
-                }
+                },
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),

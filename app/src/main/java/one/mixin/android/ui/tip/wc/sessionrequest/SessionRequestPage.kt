@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -148,9 +147,9 @@ fun SessionRequestPage(
                         CoilImage(
                             sessionRequestUI.peerUI.icon,
                             modifier =
-                            Modifier
-                                .size(70.dp)
-                                .clip(CircleShape),
+                                Modifier
+                                    .size(70.dp)
+                                    .clip(CircleShape),
                             placeholder = R.drawable.ic_avatar_place_holder,
                         )
                 }

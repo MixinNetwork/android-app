@@ -127,10 +127,12 @@ fun AuthBottomSheetDialogCompose(
             ) {
                 if (iconUrl != null) {
                     CoilImage(
-                        model = iconUrl, placeholder = R.drawable.ic_avatar_place_holder,
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clip(CircleShape),
+                        model = iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier =
+                            Modifier
+                                .size(16.dp)
+                                .clip(CircleShape),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }

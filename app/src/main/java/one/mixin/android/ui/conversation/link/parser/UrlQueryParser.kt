@@ -1,15 +1,15 @@
 package one.mixin.android.ui.conversation.link.parser
 
 import android.net.Uri
-import java.io.UnsupportedEncodingException
-import java.math.BigDecimal
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 import one.mixin.android.extension.isUUID
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser.Companion.FAILURE
 import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.toMixAddress
+import java.io.UnsupportedEncodingException
+import java.math.BigDecimal
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 class UrlQueryParser(uri: Uri, from: Int) {
     val lastPath: String = uri.lastPathSegment ?: throw ParserError(FAILURE)
@@ -27,13 +27,19 @@ class UrlQueryParser(uri: Uri, from: Int) {
     }
 
     val userId: String by lazy {
-        if (payType == PayType.Uuid) lastPath
-        else throw ParserError(FAILURE)
+        if (payType == PayType.Uuid) {
+            lastPath
+        } else {
+            throw ParserError(FAILURE)
+        }
     }
 
     val mixAddress by lazy {
-        if (payType == PayType.MixAddress) lastPath.toMixAddress() ?: throw ParserError(FAILURE)
-        else throw ParserError(FAILURE)
+        if (payType == PayType.MixAddress) {
+            lastPath.toMixAddress() ?: throw ParserError(FAILURE)
+        } else {
+            throw ParserError(FAILURE)
+        }
     }
 
     val asset: String? by lazy {
@@ -50,7 +56,9 @@ class UrlQueryParser(uri: Uri, from: Int) {
                 throw ParserError(FAILURE)
             }
             a.stripTrailingZeros().toPlainString()
-        } else null
+        } else {
+            null
+        }
     }
 
     val memo: String? by lazy {

@@ -32,6 +32,7 @@ import org.sol4k.Connection
 import org.sol4k.Keypair
 import org.sol4k.RpcUrl
 import org.sol4k.VersionedTransaction
+import org.sol4k.api.Commitment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -435,7 +436,7 @@ object WalletConnectV2 : WalletConnect() {
             // use latest blockhash should not break other signatures
             if (signMessage.signatures.size <= 1) {
                 val conn = Connection(RpcUrl.MAINNNET)
-                val blockhash = conn.getLatestBlockhash()
+                val blockhash = conn.getLatestBlockhash(Commitment.CONFIRMED)
                 signMessage.message.recentBlockhash = blockhash
             }
             signMessage.sign(holder)

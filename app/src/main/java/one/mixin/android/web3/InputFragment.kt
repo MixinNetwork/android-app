@@ -22,6 +22,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -33,6 +34,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
@@ -281,7 +283,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 alertDialog.dismiss()
                             },
                         ) {
-                            val transaction = token.buildTransaction(fromAddress, toAddress, amount)
+                            val transaction =
+                                token.buildTransaction(fromAddress, toAddress, amount) { tx ->
+                                    web3ViewModel.getPriorityFee(tx)
+                                }
                             showBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 transaction,
@@ -289,6 +294,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 amount = amount,
                                 toAddress = toAddress,
                                 chainToken = chainToken,
+                                onTxhash = { _, serializedTx ->
+                                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx, null)
+                                    navTo(txStateFragment, TransactionStateFragment.TAG)
+                                },
                             )
                         }
                     }
@@ -484,7 +493,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         }
     }
 
-    private suspend fun refreshGas(t:Web3Token) {
+    private suspend fun refreshGas(t: Web3Token) {
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
             val transaction =

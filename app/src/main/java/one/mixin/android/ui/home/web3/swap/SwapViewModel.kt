@@ -38,8 +38,6 @@ class SwapViewModel
             swapRequest: SwapRequest,
         ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
 
-        suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
-
         suspend fun getSwapToken(address: String) = assetRepository.getSwapToken(address)
 
         suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)

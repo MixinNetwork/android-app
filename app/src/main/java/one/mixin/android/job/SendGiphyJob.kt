@@ -63,43 +63,48 @@ class SendGiphyJob(
     }
 
     @OptIn(ExperimentalCoilApi::class)
-    override fun onRun() = runBlocking {
-        val ctx = MixinApplication.appContext
-        val loader = ctx.imageLoader
-        val request = ImageRequest.Builder(ctx).data(url).build()
-        val result  = loader.execute(request)
-        if (result !is SuccessResult) return@runBlocking
-        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile()?:return@runBlocking
-        sendMessage(ctx, f)
-        return@runBlocking
-    }
+    override fun onRun() =
+        runBlocking {
+            val ctx = MixinApplication.appContext
+            val loader = ctx.imageLoader
+            val request = ImageRequest.Builder(ctx).data(url).build()
+            val result = loader.execute(request)
+            if (result !is SuccessResult) return@runBlocking
+            val f = loader.diskCache?.openSnapshot(url)?.data?.toFile() ?: return@runBlocking
+            sendMessage(ctx, f)
+            return@runBlocking
+        }
 
-    private fun sendMessage(ctx: Context, imageFile: File) = runBlocking(Dispatchers.IO) {
-        val file = ctx.getImagePath().createGifTemp(conversationId, messageId)
-        imageFile.copy(file)
-        val thumbnail = file.encodeBlurHash()
-        val mediaSize = file.length()
-        val message =
-            createMediaMessage(
-                messageId,
-                conversationId,
-                senderId,
-                category,
-                null,
-                file.name,
-                MimeType.GIF.toString(),
-                mediaSize,
-                width,
-                height,
-                thumbnail,
-                null,
-                null,
-                time,
-                MediaStatus.PENDING,
-                MessageStatus.SENDING.name,
-            )
-        messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
-        MessageFlow.update(message.conversationId, message.messageId)
-        jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-    }
+    private fun sendMessage(
+        ctx: Context,
+        imageFile: File,
+    ) =
+        runBlocking(Dispatchers.IO) {
+            val file = ctx.getImagePath().createGifTemp(conversationId, messageId)
+            imageFile.copy(file)
+            val thumbnail = file.encodeBlurHash()
+            val mediaSize = file.length()
+            val message =
+                createMediaMessage(
+                    messageId,
+                    conversationId,
+                    senderId,
+                    category,
+                    null,
+                    file.name,
+                    MimeType.GIF.toString(),
+                    mediaSize,
+                    width,
+                    height,
+                    thumbnail,
+                    null,
+                    null,
+                    time,
+                    MediaStatus.PENDING,
+                    MessageStatus.SENDING.name,
+                )
+            messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
+            MessageFlow.update(message.conversationId, message.messageId)
+            jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+        }
 }
