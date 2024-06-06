@@ -127,10 +127,6 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     return b
 }
 
-fun Context.svgLoader(): ImageLoader {
-    return ImageLoader.Builder(this).components { add(SvgDecoder.Factory()) }.build()
-}
-
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
