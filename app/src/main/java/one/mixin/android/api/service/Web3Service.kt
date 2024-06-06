@@ -36,7 +36,7 @@ interface Web3Service {
         @Query("addresses") addresses: String,
     ): MixinResponse<List<Web3Token>>
 
-    @POST("transactions/priorityfee")
+    @POST("estimate-priority-fees")
     suspend fun getPriorityFee(
         @Body priorityFeeRequest: PriorityFeeRequest,
     ): MixinResponse<PriorityFeeResponse>
