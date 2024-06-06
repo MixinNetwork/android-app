@@ -87,25 +87,87 @@ data class Web3Transaction(
         return when (operationType) {
             Web3TransactionType.Send.value -> {
                 if (sender == receiver) {
-                    context.getString(R.string.Receive)
+                    context.getString(R.string.web3_receive)
                 } else {
-                    context.getString(R.string.Send_transfer)
+                    context.getString(R.string.web3_send)
                 }
             }
 
             Web3TransactionType.Receive.value -> {
-                context.getString(R.string.Receive)
+                context.getString(R.string.web3_receive)
             }
 
             Web3TransactionType.Withdraw.value -> {
-                context.getString(R.string.Withdrawal)
+                context.getString(R.string.web3_withdraw)
             }
 
             Web3TransactionType.Trade.value -> {
-                context.getString(R.string.Trade)
+                context.getString(R.string.web3_trade)
             }
 
-            else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            Web3TransactionType.Approve.value -> {
+                context.getString(R.string.web3_approve)
+            }
+
+            Web3TransactionType.Borrow.value -> {
+                context.getString(R.string.web3_borrow)
+            }
+
+            Web3TransactionType.Burn.value -> {
+                context.getString(R.string.web3_burn)
+            }
+
+            Web3TransactionType.Cancel.value -> {
+                context.getString(R.string.web3_cancel)
+            }
+
+            Web3TransactionType.Claim.value -> {
+                context.getString(R.string.web3_claim)
+            }
+
+            Web3TransactionType.Deploy.value -> {
+                context.getString(R.string.web3_deploy)
+            }
+
+            Web3TransactionType.Deposit.value -> {
+                context.getString(R.string.web3_deposit)
+            }
+
+            Web3TransactionType.Execute.value -> {
+                context.getString(R.string.web3_execute)
+            }
+
+            Web3TransactionType.Mint.value -> {
+                context.getString(R.string.web3_mint)
+            }
+
+            Web3TransactionType.Repay.value -> {
+                context.getString(R.string.web3_repay)
+            }
+
+            Web3TransactionType.Stake.value -> {
+                context.getString(R.string.web3_stake)
+            }
+
+            Web3TransactionType.Unstake.value -> {
+                context.getString(R.string.web3_unstake)
+            }
+
+            Web3TransactionType.NftMint.value -> {
+                context.getString(R.string.web3_nft_mint)
+            }
+
+            Web3TransactionType.NftTransfer.value -> {
+                context.getString(R.string.web3_nft_transfer)
+            }
+
+            Web3TransactionType.NftBurn.value -> {
+                context.getString(R.string.web3_nft_burn)
+            }
+
+            else -> operationType.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            }
         }.run {
             if (status == Web3TransactionStatus.Failed.value) {
                 "$this${

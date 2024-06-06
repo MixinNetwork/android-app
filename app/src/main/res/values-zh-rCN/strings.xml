@@ -1500,4 +1500,25 @@
     <string name="balance_max">最大</string>
     <string name="balance_half">取半</string>
     <string name="Failed">失败</string>
+    <!-- Web3 -->
+    <string name="web3_approve">批准</string>
+    <string name="web3_borrow">借款</string>
+    <string name="web3_burn">燃烧</string>
+    <string name="web3_cancel">取消</string>
+    <string name="web3_claim">认领</string>
+    <string name="web3_deploy">部署</string>
+    <string name="web3_deposit">存款</string>
+    <string name="web3_execute">执行</string>
+    <string name="web3_mint">铸造</string>
+    <string name="web3_receive">接收</string>
+    <string name="web3_repay">还款</string>
+    <string name="web3_send">发送</string>
+    <string name="web3_stake">质押</string>
+    <string name="web3_trade">交易</string>
+    <string name="web3_unstake">解押</string>
+    <string name="web3_withdraw">提现</string>
+    <string name="web3_nft_mint">NFT铸造</string>
+    <string name="web3_nft_transfer">NFT转移</string>
+    <string name="web3_nft_burn">NFT燃烧</string>
+    <string name="web3_unknown">未知</string>
 </resources>

@@ -1537,4 +1537,25 @@
     <string name="balance_max">MAX</string>
     <string name="balance_half">HALF</string>
     <string name="Failed">Failed</string>
+    <!-- Web3 -->
+    <string name="web3_approve">Approve</string>
+    <string name="web3_borrow">Borrow</string>
+    <string name="web3_burn">Burn</string>
+    <string name="web3_cancel">Cancel</string>
+    <string name="web3_claim">Claim</string>
+    <string name="web3_deploy">Deploy</string>
+    <string name="web3_deposit">Deposit</string>
+    <string name="web3_execute">Execute</string>
+    <string name="web3_mint">Mint</string>
+    <string name="web3_receive">Receive</string>
+    <string name="web3_repay">Repay</string>
+    <string name="web3_send">Send</string>
+    <string name="web3_stake">Stake</string>
+    <string name="web3_trade">Trade</string>
+    <string name="web3_unstake">Unstake</string>
+    <string name="web3_withdraw">Withdraw</string>
+    <string name="web3_nft_mint">Nft_mint</string>
+    <string name="web3_nft_transfer">Nft_transfer</string>
+    <string name="web3_nft_burn">Nft_burn</string>
+    <string name="web3_unknown">Unknown</string>
 </resources>
