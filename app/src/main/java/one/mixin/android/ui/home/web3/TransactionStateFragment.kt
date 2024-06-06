@@ -40,10 +40,15 @@ class TransactionStateFragment : BaseFragment() {
         const val TAG = "TransactionStateFragment"
 
         const val ARGS_TX = "args_tx"
+        const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
 
-        fun newInstance(tx: String) =
+        fun newInstance(
+            tx: String,
+            tokenSymbol: String?,
+        ) =
             TransactionStateFragment().withArgs {
                 putString(ARGS_TX, tx)
+                tokenSymbol?.let { putString(ARGS_TOKEN_SYMBOL, it) }
             }
     }
 
@@ -53,6 +58,7 @@ class TransactionStateFragment : BaseFragment() {
         val serializedTx = requireArguments().getString(ARGS_TX)!!
         VersionedTransaction.from(serializedTx)
     }
+    private val symbol: String? by lazy { requireArguments().getString(ARGS_TOKEN_SYMBOL) }
 
     private var txState: Tx? by mutableStateOf(null)
 
@@ -68,6 +74,7 @@ class TransactionStateFragment : BaseFragment() {
                 ) {
                     TransactionStatePage(
                         tx = txState ?: Tx(TxState.NotFound.name),
+                        symbol = symbol,
                         viewTx = {
                             WebActivity.show(context, "https://solscan.io/tx/${tx.signatures[0]}", null)
                         },
