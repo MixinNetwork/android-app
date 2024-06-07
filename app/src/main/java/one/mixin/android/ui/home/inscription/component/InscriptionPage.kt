@@ -69,6 +69,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 fun InscriptionPage(
     inscriptionHash: String,
     onCloseAction: () -> Unit,
+    onMoreAction: () -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -91,7 +92,7 @@ fun InscriptionPage(
     if (value == null) {
         Box {}
     } else {
-        InscriptionPageImp(value, inscriptionHash, onCloseAction, onSendAction, onShareAction)
+        InscriptionPageImp(value, inscriptionHash, onCloseAction, onMoreAction, onSendAction, onShareAction)
     }
 }
 
@@ -101,6 +102,7 @@ private fun InscriptionPageImp(
     inscription: InscriptionState,
     inscriptionHash: String,
     onCloseAction: () -> Unit,
+    onMoreAction: () -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -118,7 +120,10 @@ private fun InscriptionPageImp(
         BlurImage(inscription.contentURL)
 
         Column(
-            modifier = Modifier.statusBarsPadding().navigationBarsPadding(),
+            modifier =
+                Modifier
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
         ) {
             Row {
                 // Align to image
@@ -141,6 +146,14 @@ private fun InscriptionPageImp(
                             tint = Color.White,
                         )
                     }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = onMoreAction) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_home_more),
+                        contentDescription = null,
+                        tint = Color.White,
+                    )
                 }
             }
             SharedTransitionLayout {

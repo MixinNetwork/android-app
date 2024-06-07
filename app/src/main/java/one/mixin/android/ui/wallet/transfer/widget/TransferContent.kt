@@ -164,12 +164,22 @@ class TransferContent : LinearLayout {
         _binding.apply {
             amount.isVisible = false
             address.isVisible = false
-            receive.isVisible = true
-            sender.isVisible = true
             name.isVisible = true
             name.setContent(R.string.Collectible, "${nftBiometricItem.inscriptionCollection.name} #${nftBiometricItem.inscriptionItem.sequence}", amountAs(nftBiometricItem.amount, nftBiometricItem.asset!!))
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
-            receive.setContent(R.plurals.Receiver_title, nftBiometricItem.receivers, null, userClick)
+            if (nftBiometricItem.release) {
+                receive.isVisible = false
+                sender.isVisible = false
+                token.isVisible = true
+                token.setContent(R.string.Token, "${nftBiometricItem.amount} ${nftBiometricItem.asset?.symbol}", amountAs(nftBiometricItem.amount, nftBiometricItem.asset!!), nftBiometricItem.asset)
+                networkFee.isVisible = true
+                networkFee.setContent(R.string.Fee, "0")
+            } else {
+                receive.isVisible = true
+                sender.isVisible = true
+                sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+                receive.setContent(R.plurals.Receiver_title, nftBiometricItem.receivers, null, userClick)
+            }
+
             total.isVisible = false
             total.setContent(R.string.Total, "${nftBiometricItem.amount} ${nftBiometricItem.asset?.symbol}", amountAs(nftBiometricItem.amount, nftBiometricItem.asset!!))
 

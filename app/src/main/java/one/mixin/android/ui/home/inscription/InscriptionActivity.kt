@@ -1,19 +1,24 @@
 package one.mixin.android.ui.home.inscription
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewInscriptionMenuBinding
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionsJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
@@ -21,6 +26,8 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toUser
+import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -71,7 +78,9 @@ class InscriptionActivity : BaseActivity() {
         SystemUIManager.lightUI(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         setContent {
-            InscriptionPage(inscriptionHash, { finish() }, onSendAction, onShareAction)
+            InscriptionPage(inscriptionHash, { finish() }, {
+                showBottom()
+            }, onSendAction, onShareAction)
         }
         jobManager.addJobInBackground(SyncInscriptionsJob(listOf(inscriptionHash)))
     }
@@ -102,5 +111,30 @@ class InscriptionActivity : BaseActivity() {
                 resources.getText(R.string.Share),
             ),
         )
+    }
+
+    private var _bottomBinding: ViewInscriptionMenuBinding? = null
+    private val bottomBinding get() = requireNotNull(_bottomBinding)
+
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(this)
+        _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        bottomBinding.cancelTv.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+        bottomBinding.releaseTv.setOnClickListener {
+            lifecycleScope.launch {
+                val self = Session.getAccount()?.toUser() ?: return@launch
+                val nftBiometricItem = web3ViewModel.buildNftTransaction(inscriptionHash, self, true) ?: return@launch
+                TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).show(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
+            }
+
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
     }
 }

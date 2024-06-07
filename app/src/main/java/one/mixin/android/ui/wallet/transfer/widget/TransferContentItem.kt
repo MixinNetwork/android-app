@@ -7,15 +7,18 @@ import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
+import coil.load
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferContentBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
-class TransferContentItem : LinearLayout {
+class TransferContentItem : RelativeLayout {
     private val _binding: ItemTransferContentBinding
 
     private val dp28 = 28.dp
@@ -24,7 +27,6 @@ class TransferContentItem : LinearLayout {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        orientation = VERTICAL
         _binding = ItemTransferContentBinding.inflate(LayoutInflater.from(context), this)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.TransferContentItem)
         val selectable = ta.getBoolean(R.styleable.TransferContentItem_selectable, false)
@@ -38,12 +40,20 @@ class TransferContentItem : LinearLayout {
         @StringRes titleResId: Int,
         contentStr: String,
         foot: String? = null,
+        token: TokenItem? = null,
     ) {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
             content.text = contentStr
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot
+            tokenIv.isVisible = token != null
+            token?.let { t ->
+                tokenIv.load(t.iconUrl) {
+                    placeholder(R.drawable.ic_avatar_place_holder)
+                    if (t.collectionHash != null) transformations(CoilRoundedHexagonTransformation())
+                }
+            }
         }
     }
 

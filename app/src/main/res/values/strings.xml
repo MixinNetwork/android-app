@@ -1554,8 +1554,18 @@
     <string name="web3_trade">Trade</string>
     <string name="web3_unstake">Unstake</string>
     <string name="web3_withdraw">Withdraw</string>
-    <string name="web3_nft_mint">Nft_mint</string>
-    <string name="web3_nft_transfer">Nft_transfer</string>
-    <string name="web3_nft_burn">Nft_burn</string>
+    <string name="web3_nft_mint">NFT mint</string>
+    <string name="web3_nft_transfer">NFT transfer</string>
+    <string name="web3_nft_burn">NFT burn</string>
     <string name="web3_unknown">Unknown</string>
+    <string name="Release">Release</string>
+    <string name="inscription_releasing">Releasing</string>
+    <string name="inscription_releasing_description">The inscription is being released, please wait!</string>
+    <string name="inscription_release_success">Release Successful</string>
+    <string name="inscription_release_failed">Release Failed</string>
+    <string name="inscription_released_description">The inscription was released successfully. Click to view the tokens.</string>
+    <string name="inscription_release_confirmation">Release Inscription</string>
+    <string name="inscription_release_hint">Releasing the inscription will immediately provide the corresponding tokens, which can be transferred, traded, or used to mint new inscriptions.</string>
+    <string name="inscription_not_found">Inscription does not exist</string>
+    <string name="Token">Token</string>
 </resources>

@@ -252,7 +252,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
 
                 is NftBiometricItem -> {
-                    TransferType.nft
+                    if ((t as NftBiometricItem).release) TransferType.nftRelease else TransferType.nft
                 }
 
                 else -> {
@@ -300,6 +300,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else if (t is NftBiometricItem) {
                 // check Stranger
                 val transferBiometricItem = t as NftBiometricItem
+                if (transferBiometricItem.release)
+                    {
+                        binding.transferAlert.isVisible = false
+                        return@launch
+                    }
                 val tips = mutableListOf<String>()
                 if (!isStrangerTransferDisable() && transferBiometricItem.receivers.size == 1 && transferBiometricItem.receivers.first().relationship != UserRelationship.FRIEND.name) {
                     tips.add(getString(R.string.unfamiliar_person_reminder, transferBiometricItem.receivers.first().fullName, transferBiometricItem.receivers.first().identityNumber))
@@ -535,7 +540,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                             is NftBiometricItem -> {
                                 trace = null
-                                bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), t.amount, pin, t.traceId, t.memo, inscriptionHash = t.inscriptionItem.inscriptionHash)
+                                val amount = t.releaseAmount ?: t.amount
+                                bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), amount, pin, t.traceId, t.memo, inscriptionHash = t.inscriptionItem.inscriptionHash, release = t.release)
                             }
 
                             is AddressTransferBiometricItem -> {
