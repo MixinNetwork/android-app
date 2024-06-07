@@ -80,7 +80,7 @@ class InscriptionActivity : BaseActivity() {
         setContent {
             InscriptionPage(inscriptionHash, { finish() }, {
                 showBottom()
-            },onSendAction, onShareAction)
+            }, onSendAction, onShareAction)
         }
         jobManager.addJobInBackground(SyncInscriptionsJob(listOf(inscriptionHash)))
     }
@@ -115,7 +115,6 @@ class InscriptionActivity : BaseActivity() {
 
     private var _bottomBinding: ViewInscriptionMenuBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
-
 
     @SuppressLint("InflateParams")
     private fun showBottom() {

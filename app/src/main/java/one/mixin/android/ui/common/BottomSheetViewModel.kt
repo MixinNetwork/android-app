@@ -438,7 +438,7 @@ class BottomSheetViewModel
             memo: String?,
             reference: String? = null,
             inscriptionHash: String? = null,
-            release: Boolean? = null
+            release: Boolean? = null,
         ): MixinResponse<*> {
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)

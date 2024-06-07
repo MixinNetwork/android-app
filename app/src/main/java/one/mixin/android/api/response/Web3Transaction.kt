@@ -162,9 +162,10 @@ data class Web3Transaction(
                 context.getString(R.string.web3_nft_burn)
             }
 
-            else -> operationType.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            }
+            else ->
+                operationType.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                }
         }.run {
             if (status == Web3TransactionStatus.Failed.value) {
                 "$this${

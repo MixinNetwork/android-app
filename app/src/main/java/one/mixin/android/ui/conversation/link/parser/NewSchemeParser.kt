@@ -152,14 +152,15 @@ class NewSchemeParser(
             throw ParserError(FAILURE)
         }
         val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: throw ParserError(FAILURE)
-        val releaseAmount = if (urlQueryParser.amount != null) {
-            val amount = BigDecimal(urlQueryParser.amount)
-            val unit = BigDecimal(inscriptionCollection.unit)
-            if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
-            if (amount == unit) null else urlQueryParser.amount
-        } else {
-            null
-        }
+        val releaseAmount =
+            if (urlQueryParser.amount != null) {
+                val amount = BigDecimal(urlQueryParser.amount)
+                val unit = BigDecimal(inscriptionCollection.unit)
+                if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
+                if (amount == unit) null else urlQueryParser.amount
+            } else {
+                null
+            }
         if (releaseAmount != null && userId != Session.getAccountId()) throw ParserError(FAILURE)
         val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
         val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.inscription_not_found))

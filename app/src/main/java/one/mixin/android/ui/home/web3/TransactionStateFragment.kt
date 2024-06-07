@@ -98,7 +98,7 @@ class TransactionStateFragment : BaseFragment() {
     private fun refreshTx() {
         val txhash = tx.signatures[0]
         val blockhash = tx.message.recentBlockhash
-        Timber.e("$TAG txhash: ${txhash}, blockhash: $blockhash")
+        Timber.e("$TAG txhash: $txhash, blockhash: $blockhash")
         refreshTxJob?.cancel()
         refreshTxJob =
             tickerFlow(2.seconds)
@@ -133,16 +133,18 @@ class TransactionStateFragment : BaseFragment() {
                                 }
                             if (!isBlockhashValid) {
                                 Timber.e("$TAG blockhash $blockhash valid")
-                                val ts = handleMixinResponse(
-                                    invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
-                                    successBlock = { it.data },
-                                )
+                                val ts =
+                                    handleMixinResponse(
+                                        invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
+                                        successBlock = { it.data },
+                                    )
                                 refreshTxJob?.cancel()
-                                txState = if (ts?.state?.isFinalTxState() == true) {
-                                    ts
-                                } else {
-                                    Tx(TxState.Failed.name)
-                                }
+                                txState =
+                                    if (ts?.state?.isFinalTxState() == true) {
+                                        ts
+                                    } else {
+                                        Tx(TxState.Failed.name)
+                                    }
                             }
                         }
                     } catch (e: Exception) {

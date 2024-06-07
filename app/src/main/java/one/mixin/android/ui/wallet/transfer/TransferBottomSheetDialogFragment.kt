@@ -73,7 +73,6 @@ import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
 import java.io.IOException
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.ExecutionException
@@ -301,10 +300,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else if (t is NftBiometricItem) {
                 // check Stranger
                 val transferBiometricItem = t as NftBiometricItem
-                if (transferBiometricItem.release){
-                    binding.transferAlert.isVisible = false
-                    return@launch
-                }
+                if (transferBiometricItem.release)
+                    {
+                        binding.transferAlert.isVisible = false
+                        return@launch
+                    }
                 val tips = mutableListOf<String>()
                 if (!isStrangerTransferDisable() && transferBiometricItem.receivers.size == 1 && transferBiometricItem.receivers.first().relationship != UserRelationship.FRIEND.name) {
                     tips.add(getString(R.string.unfamiliar_person_reminder, transferBiometricItem.receivers.first().fullName, transferBiometricItem.receivers.first().identityNumber))

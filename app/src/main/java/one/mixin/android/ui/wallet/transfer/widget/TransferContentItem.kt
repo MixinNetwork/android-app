@@ -7,7 +7,6 @@ import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
@@ -15,7 +14,6 @@ import coil.load
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferContentBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
