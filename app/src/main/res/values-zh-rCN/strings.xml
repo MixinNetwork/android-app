@@ -1521,4 +1521,14 @@
     <string name="web3_nft_transfer">NFT转移</string>
     <string name="web3_nft_burn">NFT燃烧</string>
     <string name="web3_unknown">未知</string>
+    <string name="Release">分解</string>
+    <string name="inscription_releasing">分解中</string>
+    <string name="inscription_releasing_description">铭文正在分解中，请稍候！</string>
+    <string name="inscription_release_success">分解成功</string>
+    <string name="inscription_release_failed">分解失败</string>
+    <string name="inscription_released_description">收藏品分解成功，点击查看代币。</string>
+    <string name="inscription_release_confirmation">分解收藏品</string>
+    <string name="inscription_release_hint">分解收藏品可以立刻获得相应的代币，代币可转账、交易或重新铸造收藏品。</string>
+    <string name="inscription_not_found">藏品不存在</string>
+    <string name="Token">代币</string>
 </resources>

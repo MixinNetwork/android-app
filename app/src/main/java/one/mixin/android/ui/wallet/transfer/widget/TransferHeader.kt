@@ -38,6 +38,11 @@ class TransferHeader : LinearLayout {
                     subTitle.setText(R.string.transfer_sending_description)
                 }
 
+                TransferType.nftRelease -> {
+                    title.setText(R.string.inscription_releasing)
+                    subTitle.setText(R.string.inscription_releasing_description)
+                }
+
                 TransferType.addressTransfer -> {
                     title.setText(R.string.Adding_Address)
                     subTitle.setText(R.string.address_adding_description)
@@ -85,6 +90,10 @@ class TransferHeader : LinearLayout {
                     title.setText(R.string.Transfer_Failed)
                 }
 
+                TransferType.nftRelease -> {
+                    title.setText(R.string.inscription_release_failed)
+                }
+
                 TransferType.addressTransfer -> {
                     title.setText(R.string.Confirm_Adding_Address)
                 }
@@ -121,6 +130,11 @@ class TransferHeader : LinearLayout {
                 TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Transfer_Success)
                     subTitle.setText(R.string.transfer_sent_description)
+                }
+
+                TransferType.nftRelease -> {
+                    title.setText(R.string.inscription_release_success)
+                    subTitle.setText(R.string.inscription_released_description)
                 }
 
                 TransferType.addressTransfer -> {
@@ -173,7 +187,7 @@ class TransferHeader : LinearLayout {
     ) {
         _binding.apply {
             icon.displayedChild =
-                if (type == TransferType.nft) {
+                if (type == TransferType.nft || type == TransferType.nftRelease) {
                     1
                 } else {
                     0
@@ -182,6 +196,11 @@ class TransferHeader : LinearLayout {
                 TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Transfer_confirmation)
                     subTitle.setText(R.string.review_transfer_hint)
+                }
+
+                TransferType.nftRelease -> {
+                    title.setText(R.string.inscription_release_confirmation)
+                    subTitle.setText(R.string.inscription_release_hint)
                 }
 
                 TransferType.addressTransfer -> {

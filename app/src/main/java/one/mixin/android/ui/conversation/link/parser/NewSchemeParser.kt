@@ -34,6 +34,7 @@ class NewSchemeParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
 ) {
     companion object {
+        const val INSCRIPTION_NOT_FOUND = -2
         const val INSUFFICIENT_BALANCE = -1
         const val FAILURE = 0
         const val SUCCESS = 1
@@ -58,12 +59,13 @@ class NewSchemeParser(
                 if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
                 val token: TokenItem = checkToken(asset) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
 
-                val tokensExtra = linkViewModel.findTokensExtra(asset)
-
-                if (tokensExtra == null) {
-                    return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
-                } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
-                    return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                if (urlQueryParser.inscription == null) {
+                    val tokensExtra = linkViewModel.findTokensExtra(asset)
+                    if (tokensExtra == null) {
+                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                    } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
+                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                    }
                 }
 
                 if (payType == PayType.Uuid) {
@@ -162,11 +164,17 @@ class NewSchemeParser(
             throw ParserError(FAILURE)
         }
         val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: throw ParserError(FAILURE)
-        if (urlQueryParser.amount != null && urlQueryParser.amount != inscriptionCollection.unit) {
-            throw ParserError(FAILURE)
+        val releaseAmount = if (urlQueryParser.amount != null) {
+            val amount = BigDecimal(urlQueryParser.amount)
+            val unit = BigDecimal(inscriptionCollection.unit)
+            if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
+            if (amount == unit) null else urlQueryParser.amount
+        } else {
+            null
         }
+        if (releaseAmount != null && userId != Session.getAccountId()) throw ParserError(FAILURE)
         val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
-        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSUFFICIENT_BALANCE, token.symbol)
+        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.inscription_not_found))
         val nftBiometricItem =
             NftBiometricItem(
                 asset = token,
@@ -178,6 +186,7 @@ class NewSchemeParser(
                 reference = null,
                 inscriptionItem = inscription,
                 inscriptionCollection = inscriptionCollection,
+                releaseAmount = releaseAmount,
             )
         return nftBiometricItem
     }

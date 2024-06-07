@@ -46,6 +46,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 
@@ -156,12 +157,18 @@ class Web3ViewModel
         suspend fun buildNftTransaction(
             inscriptionHash: String,
             receiver: User,
+            release: Boolean = false
         ): NftBiometricItem? =
             withContext(Dispatchers.IO) {
                 val output = tokenRepository.findUnspentOutputByHash(inscriptionHash) ?: return@withContext null
                 val inscriptionItem = tokenRepository.findInscriptionByHash(inscriptionHash) ?: return@withContext null
                 val inscriptionCollection = tokenRepository.findInscriptionCollectionByHash(inscriptionHash) ?: return@withContext null
                 val asset = tokenRepository.findTokenItemByAsset(output.asset) ?: return@withContext null
+                val releaseAmount = if (release) {
+                    BigDecimal(output.amount).divide(BigDecimal(2), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+                } else {
+                    null
+                }
                 return@withContext NftBiometricItem(
                     asset = asset,
                     traceId = UUID.randomUUID().toString(),
@@ -172,6 +179,7 @@ class Web3ViewModel
                     reference = null,
                     inscriptionItem = inscriptionItem,
                     inscriptionCollection = inscriptionCollection,
+                    releaseAmount = releaseAmount
                 )
             }
 

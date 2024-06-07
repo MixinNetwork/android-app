@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.ui.wallet.NetworkFee
@@ -149,4 +150,8 @@ class NftBiometricItem(
     val receivers: List<User>,
     val inscriptionItem: InscriptionItem,
     val inscriptionCollection: InscriptionCollection,
-) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
+    val releaseAmount: String?,
+) : AssetBiometricItem(asset, traceId, amount, memo, state, reference) {
+    @IgnoredOnParcel
+    val release by lazy { releaseAmount != null }
+}
