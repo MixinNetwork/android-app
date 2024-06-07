@@ -54,7 +54,7 @@ class NewSchemeParser(
             val asset = urlQueryParser.asset
             val amount = urlQueryParser.amount
             val traceId = urlQueryParser.trace ?: UUID.randomUUID().toString()
-            if (asset != null && amount != null) {
+            if (asset != null && (amount != null || urlQueryParser.inscription != null)) {
                 val status = getPaymentStatus(traceId) ?: return Result.failure(ParserError(FAILURE))
                 if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
                 val token: TokenItem = checkToken(asset) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
@@ -74,7 +74,7 @@ class NewSchemeParser(
                         if (urlQueryParser.inscription != null) {
                             buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
                         } else {
-                            TransferBiometricItem(listOf(user), 1, traceId, token, amount, urlQueryParser.memo, status, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+                            TransferBiometricItem(listOf(user), 1, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         }
                     checkRawTransaction(biometricItem)
                 } else if (payType == PayType.MixAddress) {
@@ -84,17 +84,17 @@ class NewSchemeParser(
                         if (users.isEmpty() || users.size < mixAddress.uuidMembers.size) {
                             return Result.failure(ParserError(FAILURE))
                         }
-                        val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, amount, urlQueryParser.memo, status, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+                        val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         checkRawTransaction(biometricItem)
                     } else if (mixAddress.xinMembers.isNotEmpty()) {
-                        val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, amount, urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+                        val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         checkRawTransaction(addressTransferBiometricItem)
                     } else {
                         return Result.failure(ParserError(FAILURE))
                     }
                 } else {
                     // TODO verify address?
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(urlQueryParser.lastPath, traceId, token, amount, urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(urlQueryParser.lastPath, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                     checkRawTransaction(addressTransferBiometricItem)
                 }
             } else {
@@ -107,26 +107,14 @@ class NewSchemeParser(
                 val transferFragment: TransferFragment? =
                     if (payType == PayType.Uuid) {
                         val user = linkViewModel.refreshUser(urlQueryParser.userId) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
-                        TransferFragment.newInstance(
-                            if (urlQueryParser.inscription != null) {
-                                buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
-                            } else {
-                                buildTransferBiometricItem(user, token, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo)
-                            },
-                        )
+                        TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo))
                     } else if (payType == PayType.MixAddress) {
                         val mixAddress = urlQueryParser.mixAddress
                         val members = mixAddress.uuidMembers
                         if (mixAddress.uuidMembers.isNotEmpty()) {
                             if (members.size == 1) {
                                 val user = linkViewModel.refreshUser(members.first()) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
-                                TransferFragment.newInstance(
-                                    if (urlQueryParser.inscription != null) {
-                                        buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
-                                    } else {
-                                        buildTransferBiometricItem(user, token, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo, reference = urlQueryParser.reference)
-                                    },
-                                )
+                                TransferFragment.newInstance(buildTransferBiometricItem(user, token, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo, reference = urlQueryParser.reference))
                             } else {
                                 val users = linkViewModel.findOrRefreshUsers(members)
                                 if (users.isEmpty() || users.size < members.size) {
