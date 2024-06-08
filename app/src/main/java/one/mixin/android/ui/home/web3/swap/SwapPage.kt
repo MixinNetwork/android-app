@@ -73,7 +73,6 @@ fun SwapPage(
     inputText: MutableState<String>,
     outputText: String,
     exchangeRate: Float,
-    autoSlippage: Boolean,
     slippageBps: Int,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
@@ -177,7 +176,7 @@ fun SwapPage(
                                     ),
                             )
                         }
-                        SlippageInfo(autoSlippage, slippageBps, onShowSlippage)
+                        SlippageInfo(slippageBps, onShowSlippage)
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     val checkBalance = checkBalance(inputText.value, fromToken.balance)
@@ -343,17 +342,11 @@ fun SwapPageScaffold(
 
 @Composable
 private fun SlippageInfo(
-    autoSlippage: Boolean,
     slippageBps: Int,
     onShowSlippage: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val descText =
-        if (autoSlippage) {
-            "${LocalContext.current.getString(R.string.slippage_auto)} (${slippageBps.slippageBpsDisplay()}%)"
-        } else {
-            "${slippageBps.slippageBpsDisplay()}%"
-        }
+    val descText = "${slippageBps.slippageBpsDisplay()}%"
     val highSlippage = slippageBps > SwapFragment.DangerousSlippage
     Spacer(modifier = Modifier.height(16.dp))
     Row(
@@ -545,13 +538,13 @@ fun SwapLayoutPreview() {
 @Preview
 @Composable
 fun PreviewSlippageInfo() {
-    SlippageInfo(autoSlippage = true, slippageBps = 50) {}
+    SlippageInfo(slippageBps = 50) {}
 }
 
 @Preview
 @Composable
 fun PreviewSlippageInfoWarning() {
-    SlippageInfo(autoSlippage = true, slippageBps = 600) {}
+    SlippageInfo(slippageBps = 600) {}
 }
 
 @Preview

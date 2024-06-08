@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
@@ -37,9 +38,11 @@ import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -62,6 +65,7 @@ class SwapFragment : BaseFragment() {
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
         const val MinSlippage = 10
+        const val DefaultSlippage = 100
 
         const val maxLeftAmount = 0.01
 
@@ -81,7 +85,6 @@ class SwapFragment : BaseFragment() {
     private var inputText = mutableStateOf("")
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
-    private var autoSlippage: Boolean by mutableStateOf(true)
     private var slippageBps: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private val web3tokens by lazy {
@@ -97,6 +100,12 @@ class SwapFragment : BaseFragment() {
     @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        slippageBps = defaultSharedPreferences.getInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
+        if (slippageBps > DefaultSlippage) {
+            slippageBps = DefaultSlippage
+            defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
+        }
+
         lifecycleScope.launch {
             textInputFlow
                 .debounce(500L)
@@ -156,7 +165,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, autoSlippage, slippageBps, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippageBps, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -176,11 +185,11 @@ class SwapFragment : BaseFragment() {
                                 textInputFlow.value = input
                             }, {
                                 val qr = quoteResp ?: return@SwapPage
-                                SwapSlippageBottomSheetDialogFragment.newInstance(autoSlippage, qr.slippageBps)
-                                    .setOnSlippage { auto, bps ->
-                                        val needQuote = autoSlippage != auto || bps != slippageBps
-                                        autoSlippage = auto
+                                SwapSlippageBottomSheetDialogFragment.newInstance(qr.slippageBps)
+                                    .setOnSlippage { bps ->
+                                        val needQuote = bps != slippageBps
                                         slippageBps = bps
+                                        defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
                                         if (needQuote) {
                                             lifecycleScope.launch {
                                                 quote(currentText)
@@ -385,7 +394,7 @@ class SwapFragment : BaseFragment() {
 
         isLoading = true
         quoteResp = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), autoSlippage, slippageBps) },
+            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), slippageBps) },
             successBlock = {
                 return@handleMixinResponse it.data
             },

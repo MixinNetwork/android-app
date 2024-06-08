@@ -31,20 +31,16 @@ class SwapSlippageBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "SwapSlippageBottomSheetDialogFragment"
 
-        const val ARGS_AUTO_SLIPPAGE = "args_auto_slippage"
         const val ARGS_SLIPPAGE_BPS = "args_slippage_bps"
 
         fun newInstance(
-            autoSlippage: Boolean,
             slippageBps: Int,
         ) =
             SwapSlippageBottomSheetDialogFragment().withArgs {
-                putBoolean(ARGS_AUTO_SLIPPAGE, autoSlippage)
                 putInt(ARGS_SLIPPAGE_BPS, slippageBps)
             }
     }
 
-    private val autoSlippage by lazy { requireArguments().getBoolean(ARGS_AUTO_SLIPPAGE) }
     private val slippageBps by lazy { requireArguments().getInt(ARGS_SLIPPAGE_BPS) }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -60,10 +56,10 @@ class SwapSlippageBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
 
             setContent {
-                SwapSlippagePage(autoSlippage, slippageBps, {
+                SwapSlippagePage(slippageBps, {
                     dismiss()
-                }) { auto, bps ->
-                    onSlippage?.invoke(auto, bps)
+                }) { bps ->
+                    onSlippage?.invoke(bps)
                     dismiss()
                 }
             }
@@ -142,9 +138,9 @@ class SwapSlippageBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dismissAllowingStateLoss()
     }
 
-    private var onSlippage: ((Boolean, Int) -> Unit)? = null
+    private var onSlippage: ((Int) -> Unit)? = null
 
-    fun setOnSlippage(callback: (Boolean, Int) -> Unit): SwapSlippageBottomSheetDialogFragment {
+    fun setOnSlippage(callback: (Int) -> Unit): SwapSlippageBottomSheetDialogFragment {
         onSlippage = callback
         return this
     }
