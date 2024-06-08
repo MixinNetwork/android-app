@@ -378,7 +378,7 @@ class AssetRepository
             inputMint: String,
             outputMint: String,
             amount: String,
-            slippageBps: Int = 50,
+            slippageBps: Int,
         ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, slippageBps = slippageBps)
 
         suspend fun web3Swap(
