@@ -1,6 +1,9 @@
 package one.mixin.android.ui.home.web3
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +23,17 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -54,6 +63,7 @@ import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BrowserPage(
     account: String,
@@ -80,17 +90,17 @@ fun BrowserPage(
     MixinAppTheme {
         Column(
             modifier =
-                Modifier
-                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .background(MixinAppTheme.colors.background),
+            Modifier
+                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(MixinAppTheme.colors.background),
         ) {
             Column(
                 modifier =
-                    Modifier
-                        .verticalScroll(rememberScrollState())
-                        .weight(weight = 1f, fill = true),
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .weight(weight = 1f, fill = true),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(modifier = Modifier.height(50.dp))
@@ -165,8 +175,24 @@ fun BrowserPage(
                         ),
                 )
                 Box(modifier = Modifier.height(8.dp))
+                val clipboardManager = LocalClipboardManager.current
+                val haptics = LocalHapticFeedback.current
                 Text(
-                    modifier = Modifier.padding(horizontal = 24.dp),
+                    modifier =
+                    Modifier
+                        .padding(horizontal = 24.dp)
+                        .combinedClickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            enabled = !errorInfo.isNullOrBlank(),
+                            onClick = {},
+                            onLongClick = {
+                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                clipboardManager.setText(AnnotatedString(errorInfo ?: "Nothing"))
+                                toast(R.string.copied_to_clipboard)
+                            },
+                            onLongClickLabel = stringResource(id = R.string.copied_to_clipboard)
+                        ),
                     text =
                         errorInfo ?: stringResource(
                             id =
@@ -193,10 +219,10 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(10.dp))
                 Box(
                     modifier =
-                        Modifier
-                            .height(10.dp)
-                            .fillMaxWidth()
-                            .background(MixinAppTheme.colors.backgroundWindow),
+                    Modifier
+                        .height(10.dp)
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.backgroundWindow),
                 )
                 if (JsSignMessage.isSignMessage(type)) {
                     MessagePreview(content = data ?: "") {

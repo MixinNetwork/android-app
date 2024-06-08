@@ -49,18 +49,13 @@ import java.math.RoundingMode
 
 @Composable
 fun SwapSlippagePage(
-    autoSlippage: Boolean,
     slippageBps: Int,
     onCancel: () -> Unit,
-    onConfirm: (Boolean, Int) -> Unit,
+    onConfirm: (Int) -> Unit,
 ) {
     val customText =
         rememberSaveable {
             mutableStateOf(slippageBps.slippageBpsDisplay())
-        }
-    val auto =
-        remember {
-            mutableStateOf(autoSlippage)
         }
     MixinAppTheme {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -88,9 +83,8 @@ fun SwapSlippagePage(
                     )
                 }
             }
-            Auto(auto, autoSlippage, slippageBps)
-            Custom(auto, customText)
-            val enabled = auto.value || customText.value.isSlippageValid()
+            Custom(customText)
+            val enabled = customText.value.isSlippageValid()
             Button(
                 modifier =
                     Modifier
@@ -98,7 +92,7 @@ fun SwapSlippagePage(
                         .padding(20.dp, 10.dp),
                 enabled = enabled,
                 onClick = {
-                    onConfirm.invoke(auto.value, customText.value.toIntSlippage())
+                    onConfirm.invoke(customText.value.toIntSlippage())
                 },
                 colors =
                     ButtonDefaults.outlinedButtonColors(
@@ -163,7 +157,6 @@ private fun Auto(
 
 @Composable
 private fun Custom(
-    auto: MutableState<Boolean>,
     bps: MutableState<String>,
 ) {
     val context = LocalContext.current
@@ -173,10 +166,7 @@ private fun Custom(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(20.dp, 10.dp)
-                .border(1.dp, color = if (!auto.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, shape = RoundedCornerShape(12.dp))
-                .clickable {
-                    auto.value = false
-                }
+                .border(1.dp, color = MixinAppTheme.colors.textPrimary)
                 .padding(20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
@@ -197,76 +187,74 @@ private fun Custom(
                     color = MixinAppTheme.colors.textMinor,
                 ),
         )
-        if (!auto.value) {
-            val focusRequester = remember { FocusRequester() }
-            val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
-            val interactionSource = remember { MutableInteractionSource() }
-            val focused = remember { mutableStateOf(false) }
-            Spacer(modifier = Modifier.height(10.dp))
-            BasicTextField(
-                value = bps.value,
-                onValueChange = {
-                    bps.value = it
-                },
+        val focusRequester = remember { FocusRequester() }
+        val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+        val interactionSource = remember { MutableInteractionSource() }
+        val focused = remember { mutableStateOf(false) }
+        Spacer(modifier = Modifier.height(10.dp))
+        BasicTextField(
+            value = bps.value,
+            onValueChange = {
+                bps.value = it
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester)
+                    .onFocusChanged {
+                        if (it.isFocused) {
+                            keyboardController?.show()
+                        }
+                        focused.value = it.isFocused
+                    },
+            interactionSource = interactionSource,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            textStyle =
+                TextStyle(
+                    fontSize = 20.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Start,
+                ),
+            cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+        ) { innerTextField ->
+            Row(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onFocusChanged {
-                            if (it.isFocused) {
-                                keyboardController?.show()
-                            }
-                            focused.value = it.isFocused
-                        },
-                interactionSource = interactionSource,
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                textStyle =
-                    TextStyle(
-                        fontSize = 20.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        textAlign = TextAlign.Start,
-                    ),
-                cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-            ) { innerTextField ->
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, color = if (focused.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, RoundedCornerShape(8.dp))
-                            .padding(10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Box(contentAlignment = Alignment.CenterStart) {
-                        innerTextField()
-                        if (bps.value.isEmpty()) {
-                            Text(
-                                text = "0.1 - 50",
-                                fontSize = 16.sp,
-                                color = MixinAppTheme.colors.textSubtitle,
-                            )
-                        }
+                        .border(1.dp, color = if (focused.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, RoundedCornerShape(8.dp))
+                        .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Box(contentAlignment = Alignment.CenterStart) {
+                    innerTextField()
+                    if (bps.value.isEmpty()) {
+                        Text(
+                            text = "0.1 - 50",
+                            fontSize = 16.sp,
+                            color = MixinAppTheme.colors.textSubtitle,
+                        )
                     }
-                    Text(
-                        text = "%",
-                        style =
-                            TextStyle(
-                                fontSize = 20.sp,
-                                color = MixinAppTheme.colors.textPrimary,
-                            ),
-                    )
                 }
-            }
-            if (!bps.value.isSlippageValid()) {
-                Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = context.getString(R.string.slippage_invalid),
+                    text = "%",
                     style =
                         TextStyle(
-                            fontSize = 14.sp,
-                            color = MixinAppTheme.colors.tipError,
+                            fontSize = 20.sp,
+                            color = MixinAppTheme.colors.textPrimary,
                         ),
                 )
             }
+        }
+        if (!bps.value.isSlippageValid()) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = context.getString(R.string.slippage_invalid),
+                style =
+                    TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.tipError,
+                    ),
+            )
         }
     }
 }
@@ -277,7 +265,11 @@ private fun String.toIntSlippage(): Int {
     return if (this.isBlank()) {
         0
     } else {
-        BigDecimal(this).multiply(BigDecimal(100)).toInt()
+        try {
+            BigDecimal(this).multiply(BigDecimal(100)).toInt()
+        } catch (e: NumberFormatException) {
+            0
+        }
     }
 }
 
@@ -303,10 +295,6 @@ fun PreviewAuto() {
 @Composable
 fun PreviewCustom() {
     Custom(
-        auto =
-            remember {
-                mutableStateOf(false)
-            },
         bps =
             remember {
                 mutableStateOf("50")

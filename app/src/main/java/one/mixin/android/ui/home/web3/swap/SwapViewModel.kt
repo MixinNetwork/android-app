@@ -30,9 +30,8 @@ class SwapViewModel
             inputMint: String,
             outputMint: String,
             amount: String,
-            autoSlippage: Boolean,
-            slippageBps: Int = 50,
-        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, autoSlippage, slippageBps)
+            slippageBps: Int,
+        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippageBps)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,

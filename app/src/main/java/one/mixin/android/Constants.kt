@@ -76,6 +76,7 @@ object Constants {
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
+        const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"

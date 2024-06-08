@@ -99,9 +99,7 @@ interface RouteService {
         @Query("inputMint") inputMint: String,
         @Query("outputMint") outputMint: String,
         @Query("amount") amount: String,
-        @Query("swapMode") swapMode: String = "ExactIn",
-        @Query("autoSlippage") autoSlippage: Boolean = false,
-        @Query("slippageBps") slippageBps: Int = 50,
+        @Query("slippageBps") slippageBps: Int,
     ): MixinResponse<QuoteResponse>
 
     @POST("web3/swap")
