@@ -397,7 +397,7 @@ dependencies {
     implementation platform("com.walletconnect:android-bom:1.31.0")
     implementation "com.walletconnect:android-core"
     implementation "com.walletconnect:web3wallet"
-    implementation 'com.solanamobile:rpc-core:0.2.5'
+    implementation 'com.solanamobile:rpc-core:0.2.6'
     implementation 'com.solanamobile:web3-solana:0.2.3'
     implementation 'com.solanamobile:web3-core-solana:0.1.3'
 
