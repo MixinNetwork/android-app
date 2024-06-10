@@ -1,6 +1,7 @@
 package one.mixin.android.extension
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
@@ -44,6 +45,38 @@ fun ImageView.loadImage(
             error(holder)
             allowHardware(false)
         }
+        if (transformation != null) transformations(transformation)
+        onSuccess?.let {
+            listener(
+                onSuccess = onSuccess,
+                onError = onError ?: { _, _ -> },
+            )
+        }
+    }
+}
+
+fun ImageView.loadImageCompat(
+    data: String?,
+    @DrawableRes holder: Int? = null,
+    base64Holder: String? = null,
+    onSuccess: (
+        (
+        request: ImageRequest,
+        result: SuccessResult,
+    ) -> Unit
+    )? = null,
+    onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
+    transformation: Transformation? = null,
+) {
+    this.load(data) {
+        if (base64Holder != null) {
+            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+        } else if (holder != null) {
+            placeholder(holder)
+            error(holder)
+        }
+        allowHardware(false)
+        bitmapConfig(Bitmap.Config.ARGB_8888)
         if (transformation != null) transformations(transformation)
         onSuccess?.let {
             listener(
