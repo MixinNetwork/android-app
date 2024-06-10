@@ -10,6 +10,7 @@ import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
@@ -52,17 +53,29 @@ fun generateEd25519KeyPair(): EdKeyPair {
         EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
     } else {
         val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
-        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+        val ktEdKeyPair = EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+
+        val priv = Ed25519.newKeyFromSeed(ktEdKeyPair.privateKey)
+        val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+        if (!goEdKeyPair.privateKey.contentEquals(ktEdKeyPair.privateKey) || !goEdKeyPair.publicKey.contentEquals(ktEdKeyPair.publicKey)) {
+            throw InvalidEd25519Exception()
+        }
+        ktEdKeyPair
     }
 }
 
 fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
+    val priv = Ed25519.newKeyFromSeed(seed)
+    val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
     return if (useGoEd()) {
-        val priv = Ed25519.newKeyFromSeed(seed)
-        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+        goEdKeyPair
     } else {
         val keyPair = one.mixin.eddsa.KeyPair.newKeyPairFromSeed(seed.toByteString(), checkOnCurve = true)
-        EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+        val ktEdKeyPair = EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
+        if (!goEdKeyPair.privateKey.contentEquals(ktEdKeyPair.privateKey) || !goEdKeyPair.publicKey.contentEquals(ktEdKeyPair.publicKey)) {
+            throw InvalidEd25519Exception()
+        }
+        ktEdKeyPair
     }
 }
 
