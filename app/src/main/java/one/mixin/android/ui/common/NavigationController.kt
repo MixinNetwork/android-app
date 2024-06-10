@@ -46,7 +46,7 @@ class NavigationController(mainActivity: MainActivity) {
             val tx = fragmentManager.beginTransaction()
             val tag = destination.tag
             val f = fragmentManager.findFragmentByTag(tag)
-            if (f == null) {
+            if (f == null || !f.isAdded) {
                 tx.add(R.id.root_view, destinationFragment, tag)
             } else {
                 tx.show(f)
