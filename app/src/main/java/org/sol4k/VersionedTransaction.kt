@@ -2,9 +2,14 @@ package org.sol4k
 
 import okio.Buffer
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
+import org.sol4k.Transaction.Companion
+import org.sol4k.instruction.CompiledInstruction
+import org.sol4k.instruction.SetComputeUnitLimitInstruction
+import org.sol4k.instruction.SetComputeUnitPriceInstruction
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
+import kotlin.math.acos
 import kotlin.math.max
 
 class VersionedTransaction(
@@ -43,6 +48,20 @@ class VersionedTransaction(
         b.write(messageData)
         return b.readByteArray()
     }
+
+    fun setPriorityFee(unitPrice: Long, unitLimit: Int): Boolean {
+        val voidSig = Base58.encode(ByteArray(SIGNATURE_LENGTH))
+        if (signatures.any { s ->
+            s != voidSig
+        }) {
+            return false
+        }
+        message.setPriorityFee(unitPrice, unitLimit)
+        // TODO check tx exceed max size?
+        return true
+    }
+
+    fun isSimpleTransfer(): Boolean = message.isSimpleTransfer()
 
     fun calcFee(): BigDecimal {
         val sigFee = lamportToSol(BigDecimal(5000 * max(signatures.size, 1)))
