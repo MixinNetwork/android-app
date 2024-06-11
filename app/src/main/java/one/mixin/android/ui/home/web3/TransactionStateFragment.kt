@@ -128,6 +128,9 @@ class TransactionStateFragment : BaseFragment() {
                             },
                         )
                         if (txState?.state?.isFinalTxState() == true) {
+                            if (txState?.state?.isTxSuccess() == true) {
+                                RxBus.publish(SolanaRefreshEvent())
+                            }
                             refreshTxJob?.cancel()
                         } else {
                             val isBlockhashValid =
