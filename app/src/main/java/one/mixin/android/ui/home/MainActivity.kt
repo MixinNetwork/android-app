@@ -38,7 +38,11 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
@@ -878,40 +882,52 @@ class MainActivity : BlazeBaseActivity() {
         CollectiblesFragment()
     }
 
+    private val channel = Channel<Int>(Channel.CONFLATED)
+    @OptIn(FlowPreview::class)
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
             bottomNav.setOnItemSelectedListener {
-                when (it.itemId) {
-                    R.id.nav_chat -> {
-                        navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-                        true
-                    }
-
-                    R.id.nav_wallet -> {
-                        openWallet()
-                        conversationListFragment.hideCircles()
-                        true
-                    }
-
-                    R.id.nav_collectibles -> {
-                        navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
-                        conversationListFragment.hideCircles()
-                        true
-                    }
-
-                    R.id.nav_explore -> {
-                        navigationController.navigate(NavigationController.Explore, exploreFragment)
-                        conversationListFragment.hideCircles()
-                        true
-                    }
-
-                    else -> {
-                        conversationListFragment.hideCircles()
-                        false
-                    }
+                lifecycleScope.launch {
+                    channel.send(it.itemId)
                 }
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_explore, R.id.nav_collectibles)
+            }
+        }
+        lifecycleScope.launch {
+            channel
+                .receiveAsFlow()
+                .debounce(300)
+                .collect { itemId ->
+                    handleNavigationItemSelected(itemId)
+                }
+        }
+    }
+
+    private fun handleNavigationItemSelected(itemId: Int) {
+        when (itemId) {
+            R.id.nav_chat -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            }
+
+            R.id.nav_wallet -> {
+                openWallet()
+                conversationListFragment.hideCircles()
+            }
+
+            R.id.nav_collectibles -> {
+                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+                conversationListFragment.hideCircles()
+            }
+
+            R.id.nav_explore -> {
+                navigationController.navigate(NavigationController.Explore, exploreFragment)
+                conversationListFragment.hideCircles()
+            }
+
+            else -> {
+                conversationListFragment.hideCircles()
             }
         }
     }
