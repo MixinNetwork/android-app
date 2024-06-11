@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
@@ -184,17 +185,11 @@ class SwapFragment : BaseFragment() {
                                 Timber.e("input $input")
                                 textInputFlow.value = input
                             }, {
-                                val qr = quoteResp ?: return@SwapPage
-                                SwapSlippageBottomSheetDialogFragment.newInstance(qr.slippageBps)
+                                SwapSlippageBottomSheetDialogFragment.newInstance(slippageBps)
                                     .setOnSlippage { bps ->
-                                        val needQuote = bps != slippageBps
                                         slippageBps = bps
                                         defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
-                                        if (needQuote) {
-                                            lifecycleScope.launch {
-                                                quote(currentText)
-                                            }
-                                        }
+                                        refreshQuote(inputText.value)
                                     }
                                     .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
                             }, {
@@ -225,7 +220,7 @@ class SwapFragment : BaseFragment() {
                                                 return@handleMixinResponse false
                                             },
                                         ) ?: return@launch
-                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction)
+                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction, priorityLevel = PriorityLevel.High)
                                     JsSigner.useSolana()
                                     isLoading = false
                                     showBrowserBottomSheetDialogFragment(

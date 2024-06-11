@@ -6,7 +6,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.PriorityFeeRequest
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.tip.Tip
@@ -99,5 +103,14 @@ class BrowserWalletBottomSheetViewModel
             } else {
                 emptyList()
             }
+        }
+
+        suspend fun getPriorityFee(tx: String, priorityLevel: PriorityLevel): PriorityFeeResponse? {
+            return handleMixinResponse(
+                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx, priorityLevel)) },
+                successBlock = {
+                    it.data
+                },
+            )
         }
     }

@@ -3,13 +3,15 @@ package org.sol4k
 import okio.Buffer
 import org.sol4k.VersionedTransaction.Companion.PUBLIC_KEY_LENGTH
 import org.sol4k.instruction.CompiledInstruction
+import org.sol4k.instruction.SetComputeUnitLimitInstruction
+import org.sol4k.instruction.SetComputeUnitPriceInstruction
 
 data class Message(
     val version: MessageVersion,
     val header: MessageHeader,
-    val accounts: List<PublicKey>,
+    var accounts: List<PublicKey>,
     var recentBlockhash: String,
-    val instructions: List<CompiledInstruction>,
+    var instructions: List<CompiledInstruction>,
     val addressLookupTables: List<CompiledAddressLookupTable>,
 ) {
 
@@ -67,6 +69,27 @@ data class Message(
             b.write(accountLookupTableSerializedData.readByteString())
         }
         return b.readByteArray()
+    }
+
+    fun setPriorityFee(unitPrice: Long, unitLimit: Int) {
+        val leftInstructions = instructions.filter { i ->
+            accounts[i.programIdIndex] != Constants.COMPUTE_BUDGET_PROGRAM_ID
+        }
+        var programIdIdx = accounts.indexOf(Constants.COMPUTE_BUDGET_PROGRAM_ID)
+        if (programIdIdx == -1) {
+            programIdIdx = accounts.size
+            header.numReadonlyUnsignedAccounts+=1
+            accounts = accounts.toMutableList().apply {
+                add(Constants.COMPUTE_BUDGET_PROGRAM_ID)
+            }.toList()
+        }
+        val setComputeUnitLimitInstruction = SetComputeUnitLimitInstruction(unitLimit)
+        val setComputeUnitPriceInstruction = SetComputeUnitPriceInstruction(unitPrice)
+        val newInstructions = mutableListOf<CompiledInstruction>()
+        newInstructions.add(setComputeUnitLimitInstruction.toCompiledInstruction(programIdIdx))
+        newInstructions.add(setComputeUnitPriceInstruction.toCompiledInstruction(programIdIdx))
+        newInstructions.addAll(leftInstructions)
+        instructions = newInstructions
     }
 
     companion object {
@@ -169,5 +192,5 @@ data class Message(
 data class MessageHeader(
     val numRequireSignatures: Int,
     val numReadonlySignedAccounts: Int,
-    val numReadonlyUnsignedAccounts: Int,
+    var numReadonlyUnsignedAccounts: Int,
 )

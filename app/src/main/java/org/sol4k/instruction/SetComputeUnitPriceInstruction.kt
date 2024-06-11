@@ -21,4 +21,12 @@ class SetComputeUnitPriceInstruction(
     override val keys: List<AccountMeta> = emptyList()
 
     override val programId: PublicKey = COMPUTE_BUDGET_PROGRAM_ID
+
+    fun toCompiledInstruction(programIdIndex: Int): CompiledInstruction {
+        return CompiledInstruction(
+            data = data,
+            accounts = emptyList(),
+            programIdIndex = programIdIndex,
+        )
+    }
 }

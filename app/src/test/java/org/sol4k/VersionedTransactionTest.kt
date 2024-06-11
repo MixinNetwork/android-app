@@ -2,6 +2,7 @@ package org.sol4k
 
 import one.mixin.android.extension.base64Encode
 import org.junit.Test
+import org.sol4k.instruction.TransferInstruction
 
 class VersionedTransactionTest {
     @Test
@@ -64,5 +65,32 @@ class VersionedTransactionTest {
         tx = VersionedTransaction.from(t)
         balanceChange = tx.calcBalanceChange()
         println(balanceChange)
+    }
+
+    @Test
+    fun testSetPriorityFee() {
+        val payer = PublicKey("5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9")
+        val receiver = PublicKey("9B5XszUGdMaxCZ7uSQhPzdks5ZQSmWxrmzCSvtJ6Ns6g")
+        val instruction = TransferInstruction(payer, receiver, 100L)
+        val transaction = Transaction(payer.toBase58(), instruction, payer)
+        transaction.addPlaceholderSignature()
+        var tx = VersionedTransaction.from(transaction.serialize().base64Encode())
+        var fee = tx.calcFee()
+        println("fee $fee")
+        var success = tx.setPriorityFee(20000, 600000)
+        println("setPriorityFee success $success")
+        fee  = tx.calcFee()
+        println("new fee $fee")
+        println("new tx ${tx.serialize().base64Encode()}")
+
+        var t = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAoVQxhqYIKKYYeMpA6TRO9mmZnz7F7ey0Arxzusf/Es0tJwccDT11PCgZnvGncl43WttfK2QUfCBVUqNg8vpBi7S3yqkxCBRoNKvUQM6+vM7hdUBgKi+akZpbvaCpd1sVYfl6fiMQT0LnAXBDu2lQOARhtYi5QbgO4L6/gDqyD/dS+fPs/q96K8ow96krYAokWVzZaNzbWKSIcxNgQQzBKEgwkKzcQCjJktPFDq/uMmm1vR0JPHfzTSU/YmDHMVPYs3qLLQ4QY0S20HU2ioqmnunsWIpHYgUUVifOcbOi5XS4HL5/Tq7ETeVhqOTtChh/pFHz+eEhBUyQfl0VMvc6/zgMjqi5tCwzl46rfpfq7Ar6aeSwFEFdHMOzjAsCPJTqq91ipydsU+eIhTH/m/TKngg0D0n/6oHyWCREj1ntWq4ZfgINIPkc3KG4eh6BHDA91d4BVdrP+dBe5F+DHttZ3bCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALzjEbkBDAlaM77NkXMPfqXNLSveCkWI7UEgNs31WEWCMlyWPTiSJ8bs9ECkUjg2DC1oTmdr/EIQEjnvY2+n4WaXVyp4Ez121kLcUui/jLLFZEz/BwZK3Ilf9B9OcsEAeAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAC0P/on9df2SnTAmx8pWHneSwmrNt/J3VFLMhqns4zl6Mb6evO+2606PWXzaqvJdDGxu+TC0vbg5HymAgNFL11hBHnVW/IxwG7udMVuzmgVB/2xst6j9I5RArHNola8E48Gm4hX/quBhPtof2NGGMA12sQ53BrrO1WYoPAAAAAAAQbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpfwvmlw/gXULgLIhT912jP0NhVJRdx73Gp6B8AFCvBgsIDwAFAvPQAgAPAAkDjA4AAAAAAAANBgAFABMLFAEBCwIABQwCAAAAgJaYAAAAAAAUAQUBEQ0GAAkAEQsUAQESGBQABQkSERIQEg4ADAgFCQoCBBQBAwYHEiPlF8uXeuOtKgEAAAAaZAABgJaYAAAAAAA2mRQAAAAAADIAABQDBQAAAQk="
+        tx = VersionedTransaction.from(t)
+        fee = tx.calcFee()
+        println("fee $fee")
+        success = tx.setPriorityFee(20000, 600000)
+        println("setPriorityFee success $success")
+        fee  = tx.calcFee()
+        println("new fee $fee")
+        println("new tx ${tx.serialize().base64Encode()}")
     }
 }

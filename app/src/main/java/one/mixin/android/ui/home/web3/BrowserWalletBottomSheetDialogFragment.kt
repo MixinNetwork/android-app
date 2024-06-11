@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.calcSolBalanceChange
 import one.mixin.android.api.response.getChainFromName
@@ -60,6 +61,7 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
+import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -260,8 +262,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx =
-                            solanaTx ?: org.sol4k.VersionedTransaction.from(signMessage.data ?: "").apply {
-                                solanaTx = this
+                            solanaTx ?: VersionedTransaction.from(signMessage.data ?: "").apply {
+                                val txWithPriorityFee = updateTxPriorityFee(this, signMessage.priorityLevel)
+                                solanaTx = txWithPriorityFee
                             }
                         if (token == null) {
                             val tokenBalanceChange = tx.calcBalanceChange()
@@ -331,6 +334,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         super.onDismiss(dialog)
         onDismissAction?.invoke()
+    }
+
+    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, priorityLevel: PriorityLevel): VersionedTransaction {
+        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), priorityLevel)
+        if (priorityFeeResp != null && priorityFeeResp.unitPrice > 0) {
+            tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)
+        }
+        return tx
     }
 
     private fun checkGas(
