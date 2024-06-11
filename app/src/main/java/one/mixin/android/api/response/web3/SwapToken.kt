@@ -38,4 +38,10 @@ data class SwapToken(
     }
 
     fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolTokenAssetKey, true)
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is SwapToken) return false
+
+        return address == other.address
+    }
 }
