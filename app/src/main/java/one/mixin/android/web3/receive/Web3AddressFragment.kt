@@ -58,15 +58,21 @@ class Web3AddressFragment : BaseFragment() {
             val isSolana = exploreSolana(requireContext())
             if (isSolana) {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)
+                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_sol)
                 binding.avatar2.isVisible = false
                 binding.avatar3.isVisible = false
-                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_sol)
+                binding.avatar4.isVisible = false
+                binding.avatar5.isVisible = false
+                binding.avatar6.isVisible = false
                 binding.bottomHintTv.setText(R.string.web3_sol_deposit_description)
             } else {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
+                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_eth)
                 binding.avatar2.isVisible = true
                 binding.avatar3.isVisible = true
-                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_eth)
+                binding.avatar4.isVisible = true
+                binding.avatar5.isVisible = true
+                binding.avatar6.isVisible = true
                 binding.bottomHintTv.setText(R.string.web3_deposit_description)
             }
             qr.post {
