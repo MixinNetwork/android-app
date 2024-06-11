@@ -184,17 +184,11 @@ class SwapFragment : BaseFragment() {
                                 Timber.e("input $input")
                                 textInputFlow.value = input
                             }, {
-                                val qr = quoteResp ?: return@SwapPage
-                                SwapSlippageBottomSheetDialogFragment.newInstance(qr.slippageBps)
+                                SwapSlippageBottomSheetDialogFragment.newInstance(slippageBps)
                                     .setOnSlippage { bps ->
-                                        val needQuote = bps != slippageBps
                                         slippageBps = bps
                                         defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
-                                        if (needQuote) {
-                                            lifecycleScope.launch {
-                                                quote(currentText)
-                                            }
-                                        }
+                                        refreshQuote(inputText.value)
                                     }
                                     .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
                             }, {

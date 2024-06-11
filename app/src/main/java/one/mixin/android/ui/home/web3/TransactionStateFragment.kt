@@ -132,7 +132,7 @@ class TransactionStateFragment : BaseFragment() {
                                     conn.isBlockhashValid(blockhash, Commitment.CONFIRMED)
                                 }
                             if (!isBlockhashValid) {
-                                Timber.e("$TAG blockhash $blockhash valid")
+                                Timber.e("$TAG blockhash $blockhash invalid")
                                 val ts =
                                     handleMixinResponse(
                                         invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
