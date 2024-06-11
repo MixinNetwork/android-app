@@ -17,11 +17,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.TxState
 import one.mixin.android.api.response.web3.isFinalTxState
+import one.mixin.android.api.response.web3.isTxSuccess
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.event.SolanaRefreshEvent
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -125,6 +128,9 @@ class TransactionStateFragment : BaseFragment() {
                             },
                         )
                         if (txState?.state?.isFinalTxState() == true) {
+                            if (txState?.state?.isTxSuccess() == true) {
+                                RxBus.publish(SolanaRefreshEvent())
+                            }
                             refreshTxJob?.cancel()
                         } else {
                             val isBlockhashValid =
@@ -141,6 +147,9 @@ class TransactionStateFragment : BaseFragment() {
                                 refreshTxJob?.cancel()
                                 txState =
                                     if (ts?.state?.isFinalTxState() == true) {
+                                        if (ts.state.isTxSuccess()) {
+                                            RxBus.publish(SolanaRefreshEvent())
+                                        }
                                         ts
                                     } else {
                                         Tx(TxState.Failed.name)

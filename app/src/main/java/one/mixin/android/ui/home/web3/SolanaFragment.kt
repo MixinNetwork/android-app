@@ -25,6 +25,7 @@ import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.SolanaRefreshEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
@@ -143,10 +144,19 @@ class SolanaFragment : BaseFragment() {
         }
         RxBus.listen(WCUnlockEvent::class.java)
             .autoDispose(destroyScope)
-            .subscribe { e ->
+            .subscribe { _ ->
                 updateUI()
             }
         updateUI()
+        RxBus.listen(SolanaRefreshEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe {
+                address?.let { address ->
+                    lifecycleScope.launch {
+                        refreshAccount(address)
+                    }
+                }
+            }
         return binding.root
     }
 
