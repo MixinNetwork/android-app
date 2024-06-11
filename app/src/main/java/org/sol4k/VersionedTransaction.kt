@@ -61,8 +61,6 @@ class VersionedTransaction(
         return true
     }
 
-    fun isSimpleTransfer(): Boolean = message.isSimpleTransfer()
-
     fun calcFee(): BigDecimal {
         val sigFee = lamportToSol(BigDecimal(5000 * max(signatures.size, 1)))
         val accounts = message.accounts

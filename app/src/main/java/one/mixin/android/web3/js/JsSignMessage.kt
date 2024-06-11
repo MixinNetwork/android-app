@@ -3,6 +3,7 @@ package one.mixin.android.web3.js
 import android.os.Parcelable
 import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
@@ -14,6 +15,7 @@ class JsSignMessage(
     val type: Int,
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
+    val priorityLevel: PriorityLevel = PriorityLevel.Medium,
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0

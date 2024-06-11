@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
@@ -285,7 +286,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         ) {
                             val transaction =
                                 token.buildTransaction(fromAddress, toAddress, amount) { tx ->
-                                    web3ViewModel.getPriorityFee(tx)
+                                    web3ViewModel.getPriorityFee(tx, PriorityLevel.Medium)
                                 }
                             showBrowserBottomSheetDialogFragment(
                                 requireActivity(),

@@ -92,13 +92,6 @@ data class Message(
         instructions = newInstructions
     }
 
-    fun isSimpleTransfer(): Boolean {
-        return instructions.all { i ->
-            val programId = accounts[i.programIdIndex]
-            programId == Constants.COMPUTE_BUDGET_PROGRAM_ID || programId == Constants.SYSTEM_PROGRAM || programId == Constants.TOKEN_PROGRAM_ID
-        }
-    }
-
     companion object {
         fun deserialize(d: ByteArray): Message {
             var data = d

@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.PriorityFeeRequest
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
@@ -104,9 +105,9 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun getPriorityFee(tx: String): PriorityFeeResponse? {
+        suspend fun getPriorityFee(tx: String, priorityLevel: PriorityLevel): PriorityFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx)) },
+                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx, priorityLevel)) },
                 successBlock = {
                     it.data
                 },
