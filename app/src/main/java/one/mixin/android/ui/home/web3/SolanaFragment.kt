@@ -144,12 +144,12 @@ class SolanaFragment : BaseFragment() {
         }
         RxBus.listen(WCUnlockEvent::class.java)
             .autoDispose(destroyScope)
-            .subscribe { e ->
+            .subscribe { _ ->
                 updateUI()
             }
         updateUI()
         RxBus.listen(SolanaRefreshEvent::class.java)
-            .autoDispose(stopScope)
+            .autoDispose(destroyScope)
             .subscribe {
                 address?.let { address ->
                     lifecycleScope.launch {
