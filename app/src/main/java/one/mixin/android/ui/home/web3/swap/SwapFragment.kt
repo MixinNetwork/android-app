@@ -262,10 +262,10 @@ class SwapFragment : BaseFragment() {
             ).apply {
                 setOnClickListener { t ->
                     val token = t.toSwapToken()
-                    if (token == this@SwapFragment.toToken) {
-                        this@SwapFragment.toToken = fromToken
+                    if (token == toToken) {
+                        toToken = fromToken
                     }
-                    this@SwapFragment.fromToken = token
+                    fromToken = token
                     lifecycleScope.launch {
                         refreshTokensPrice(listOf(token))
                         onTextChanged(currentText)
@@ -286,10 +286,10 @@ class SwapFragment : BaseFragment() {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                         return@setOnClickListener
                     }
-                    if (token == this@SwapFragment.fromToken) {
-                        this@SwapFragment.fromToken = toToken
+                    if (token == fromToken) {
+                        fromToken = toToken
                     }
-                    this@SwapFragment.toToken = token
+                    toToken = token
                     lifecycleScope.launch {
                         refreshTokensPrice(listOf(token))
                         onTextChanged(currentText)
@@ -328,7 +328,7 @@ class SwapFragment : BaseFragment() {
             if (fromToken == null) {
                 fromToken = swapTokens.firstOrNull { t -> fromToken?.address == t.address } ?: swapTokens[0]
             }
-            toToken = swapTokens.firstOrNull { t -> toToken?.address == t.address } ?: swapTokens[1]
+            toToken = swapTokens.firstOrNull { t -> toToken?.address == t.address }
 
             refreshTokensPrice(listOf(fromToken!!, toToken!!))
         }
