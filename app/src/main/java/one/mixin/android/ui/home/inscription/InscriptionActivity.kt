@@ -173,7 +173,7 @@ class InscriptionActivity : BaseActivity() {
                     ) {
                         ShareCard(modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFFFFFFF))
+                            .background(Color(0xFF3B3F44))
                             .wrapContentHeight()
                             .onGloballyPositioned { coordinates ->
                                 targetSize.value = coordinates.size
@@ -182,7 +182,7 @@ class InscriptionActivity : BaseActivity() {
                         Spacer(modifier = Modifier.height(12.dp))
                         ShareBottom(modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFFFFFFF))
+                            .background(Color(0xFF3B3F44))
                             .padding(16.dp), onShare = { bottomSize ->
                             onShare(targetSize.value, bottomSize)
                         }, onCopy = onCopy, onSave = { bottomSize ->

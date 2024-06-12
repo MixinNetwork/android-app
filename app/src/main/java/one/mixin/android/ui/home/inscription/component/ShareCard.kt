@@ -1,4 +1,5 @@
 import android.graphics.Bitmap
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,15 +14,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.request.ImageRequest
@@ -34,7 +37,6 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
 fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value: InscriptionState) {
-
     Column(
         modifier = modifier
     ) {
@@ -47,9 +49,9 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
         )
         Row(modifier = Modifier.padding(20.dp)) {
             Column(modifier = Modifier.height(100.dp)) {
-                Text(text = value.name ?: "", fontSize = 18.sp, color = Color.Black, maxLines = 2)
+                Text(text = value.name ?: "", fontSize = 18.sp, color = Color.White, maxLines = 2)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = value.id, fontSize = 12.sp, color = Color(0xFF333333))
+                Text(text = value.id, fontSize = 12.sp, color = Color(0x66FFFFFF))
                 Spacer(modifier = Modifier.weight(1f))
                 Barcode(
                     inscriptionHash,
@@ -57,7 +59,6 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
                         .width(132.dp)
                         .height(30.dp),
                 )
-
             }
             Spacer(modifier = Modifier.weight(1f))
             Box {
@@ -82,5 +83,58 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
                 )
             }
         }
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            DashedDivider(
+                thickness = 1.dp,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Row {
+                Column(modifier = Modifier.height(36.dp)) {
+                    Text(text = "Mixin Collectibles", fontSize = 15.sp, color = Color.White)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "inscription.mixin.space", fontSize = 12.sp, color = Color(0x66FFFFFF))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Image(painter = painterResource(id = R.drawable.ic_collectibles_logo), contentDescription = null)
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun DashedDividerPreview() {
+    DashedDivider(
+        thickness = 1.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    )
+}
+
+@Composable
+fun DashedDivider(
+    thickness: Dp,
+    color: Color = Color(0xFF6E7073),
+    phase: Float = 10.dp.value,
+    intervals: FloatArray = floatArrayOf(15.dp.value, 15.dp.value),
+    modifier: Modifier
+) {
+    Canvas(
+        modifier = modifier
+    ) {
+        val dividerHeight = thickness.toPx()
+        drawRoundRect(
+            color = color,
+            style = Stroke(
+                width = dividerHeight,
+                pathEffect = PathEffect.dashPathEffect(
+                    intervals = intervals,
+                    phase = phase
+                )
+            )
+        )
     }
 }
