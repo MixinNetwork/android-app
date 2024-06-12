@@ -130,13 +130,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var account: String by mutableStateOf("")
     private var signedTransactionData: Any? = null
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
