@@ -56,7 +56,10 @@ import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.home.web3.swap.parseJupiterError
+import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
+import one.mixin.android.ui.home.web3.error.ProgramErrorHandler
+import one.mixin.android.ui.home.web3.error.RaydiumErrorHandler
+import one.mixin.android.ui.home.web3.error.SolanaErrorHandler
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
@@ -107,6 +110,8 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
 
+    private val solanaErrorHandler = SolanaErrorHandler()
+
     private var processCompleted = false
 
     private val requestType by lazy { RequestType.entries[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
@@ -124,13 +129,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
     private var account: String by mutableStateOf("")
     private var signedTransactionData: Any? = null
-
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -442,7 +440,11 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     "code: ${e.code}, message: ${e.message}"
                 }
                 is RpcException -> {
-                    parseJupiterError(e.rawResponse)?.toString(requireContext()) ?: e.message
+                    solanaErrorHandler.reset()
+                        .addHandler(JupiterErrorHandler(e.rawResponse))
+                        .addHandler(RaydiumErrorHandler(e.rawResponse))
+                        .addHandler(ProgramErrorHandler(e.rawResponse))
+                        .start(requireContext())
                 }
                 else -> {
                     e.stackTraceToString()
