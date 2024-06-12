@@ -173,7 +173,7 @@ class InscriptionActivity : BaseActivity() {
                     ) {
                         ShareCard(modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF3B3F44))
+                            .background(Color.White)
                             .wrapContentHeight()
                             .onGloballyPositioned { coordinates ->
                                 targetSize.value = coordinates.size
@@ -182,7 +182,7 @@ class InscriptionActivity : BaseActivity() {
                         Spacer(modifier = Modifier.height(12.dp))
                         ShareBottom(modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF3B3F44))
+                            .background(Color.White)
                             .padding(16.dp), onShare = { bottomSize ->
                             onShare(targetSize.value, bottomSize)
                         }, onCopy = onCopy, onSave = { bottomSize ->
@@ -221,7 +221,7 @@ class InscriptionActivity : BaseActivity() {
         startActivity(Intent.createChooser(share, getString(R.string.Share)))
     }
 
-    val onCopy: () -> Unit = {
+    private val onCopy: () -> Unit = {
         isShareDialogVisible = false
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, "$INSCRIPTION$inscriptionHash"))
         toast(R.string.copied_to_clipboard)

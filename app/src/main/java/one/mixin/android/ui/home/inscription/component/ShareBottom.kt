@@ -44,7 +44,7 @@ fun ShareBottom(modifier: Modifier, onShare: (IntSize) -> Unit, onCopy: () -> Un
         ) {
             Image(painter = painterResource(id = R.drawable.ic_inscription_share), contentDescription = null)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = stringResource(id = R.string.Share), fontSize = 12.sp, color = Color.White)
+            Text(text = stringResource(id = R.string.Share), fontSize = 12.sp, color = Color.Black)
         }
 
         Column(
@@ -57,7 +57,7 @@ fun ShareBottom(modifier: Modifier, onShare: (IntSize) -> Unit, onCopy: () -> Un
         ) {
             Image(painter = painterResource(id = R.drawable.ic_inscirption_copy), contentDescription = null)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = stringResource(id = R.string.Copy), fontSize = 12.sp, color = Color.White)
+            Text(text = stringResource(id = R.string.Copy), fontSize = 12.sp, color = Color.Black)
         }
 
         Column(
@@ -70,7 +70,7 @@ fun ShareBottom(modifier: Modifier, onShare: (IntSize) -> Unit, onCopy: () -> Un
         ) {
             Image(painter = painterResource(id = R.drawable.ic_inscription_save), contentDescription = null)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = stringResource(id = R.string.Save), fontSize = 12.sp, color = Color.White)
+            Text(text = stringResource(id = R.string.Save), fontSize = 12.sp, color = Color.Black)
         }
     }
 }

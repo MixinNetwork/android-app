@@ -49,9 +49,9 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
         )
         Row(modifier = Modifier.padding(20.dp)) {
             Column(modifier = Modifier.height(100.dp)) {
-                Text(text = value.name ?: "", fontSize = 18.sp, color = Color.White, maxLines = 2)
+                Text(text = value.name ?: "", fontSize = 18.sp, color = Color.Black, maxLines = 2)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = value.id, fontSize = 12.sp, color = Color(0x66FFFFFF))
+                Text(text = value.id, fontSize = 12.sp, color = Color(0xFFBBBEC3))
                 Spacer(modifier = Modifier.weight(1f))
                 Barcode(
                     inscriptionHash,
@@ -91,9 +91,9 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
             Spacer(modifier = Modifier.height(20.dp))
             Row {
                 Column(modifier = Modifier.height(36.dp)) {
-                    Text(text = "Mixin Collectibles", fontSize = 15.sp, color = Color.White)
+                    Text(text = "Mixin Collectibles", fontSize = 15.sp, color = Color.Black)
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "inscription.mixin.space", fontSize = 12.sp, color = Color(0x66FFFFFF))
+                    Text(text = "inscription.mixin.space", fontSize = 12.sp, color = Color(0xFFBBBEC3))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Image(painter = painterResource(id = R.drawable.ic_collectibles_logo), contentDescription = null)
@@ -117,8 +117,8 @@ private fun DashedDividerPreview() {
 @Composable
 fun DashedDivider(
     thickness: Dp,
-    color: Color = Color(0xFF6E7073),
-    phase: Float = 10.dp.value,
+    color: Color = Color(0xFFBBBEC3),
+    phase: Float = 6.dp.value,
     intervals: FloatArray = floatArrayOf(15.dp.value, 15.dp.value),
     modifier: Modifier
 ) {

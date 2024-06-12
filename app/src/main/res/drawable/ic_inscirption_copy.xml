@@ -7,11 +7,11 @@
       android:strokeWidth="1"
       android:pathData="M1,25C1,11.745 11.745,1 25,1C38.255,1 49,11.745 49,25C49,38.255 38.255,49 25,49C11.745,49 1,38.255 1,25Z"
       android:strokeAlpha="0.2"
-      android:fillColor="#ffffff"
+      android:fillColor="#00000000"
       android:fillAlpha="0.12"
-      android:strokeColor="#ffffff"/>
+      android:strokeColor="#000000"/>
   <path
       android:pathData="M18,20C18,18.343 19.343,17 21,17H28C28.552,17 29,16.552 29,16C29,15.448 28.552,15 28,15H21C18.239,15 16,17.239 16,20V30C16,30.552 16.448,31 17,31C17.552,31 18,30.552 18,30V20ZM22,18C20.343,18 19,19.343 19,21V33C19,34.657 20.343,36 22,36H31C32.657,36 34,34.657 34,33V21C34,19.343 32.657,18 31,18H22ZM21,21C21,20.448 21.448,20 22,20H31C31.552,20 32,20.448 32,21V33C32,33.552 31.552,34 31,34H22C21.448,34 21,33.552 21,33V21Z"
-      android:fillColor="#ECECEC"
+      android:fillColor="#000000"
       android:fillType="evenOdd"/>
 </vector>
