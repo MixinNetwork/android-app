@@ -48,7 +48,7 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
             placeholder = R.drawable.ic_inscription_content,
         )
         Row(modifier = Modifier.padding(20.dp)) {
-            Column(modifier = Modifier.height(100.dp)) {
+            Column(modifier = Modifier.height(110.dp)) {
                 Text(text = value.name ?: "", fontSize = 18.sp, color = Color.Black, maxLines = 2)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = value.id, fontSize = 12.sp, color = Color(0xFFBBBEC3))

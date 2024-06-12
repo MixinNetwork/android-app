@@ -128,7 +128,7 @@ class InscriptionActivity : BaseActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         binding = ActivityInscriptionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), dpToPx(6f)).first
+        val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
         binding.compose.setContent {
             InscriptionPage(inscriptionHash, { finish() }, {
                 showBottom()
