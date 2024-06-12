@@ -1,6 +1,7 @@
 import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -36,17 +38,32 @@ import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
-fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value: InscriptionState) {
+fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value: InscriptionState, inScreenshot: Boolean, onClose: () -> Unit) {
     Column(
         modifier = modifier
     ) {
-        CoilImageCompat(
-            model = value.contentURL,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f),
-            placeholder = R.drawable.ic_inscription_content,
-        )
+        Box {
+            CoilImageCompat(
+                model = value.contentURL,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
+                placeholder = R.drawable.ic_inscription_content,
+            )
+            Box(
+                modifier = Modifier
+                    .alpha(if (inScreenshot) 0f else 1f)
+                    .align(Alignment.TopEnd)
+                    .padding(top = 11.dp, end = 9.dp)
+            ) {
+                Image(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clickable { onClose() },
+                    painter = painterResource(id = R.drawable.ic_float_close), contentDescription = null,
+                )
+            }
+        }
         Row(modifier = Modifier.padding(20.dp)) {
             Column(modifier = Modifier.height(110.dp)) {
                 Text(text = value.name ?: "", fontSize = 18.sp, color = Color.Black, maxLines = 2)

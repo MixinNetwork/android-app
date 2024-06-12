@@ -1,6 +1,6 @@
 package one.mixin.android.ui.home.inscription
 
-import ShareCard
+import SharePage
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
@@ -12,33 +12,16 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.View
-import androidx.activity.compose.BackHandler
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,6 +29,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
@@ -64,7 +48,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
-import one.mixin.android.ui.home.inscription.component.ShareBottom
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -114,6 +97,7 @@ class InscriptionActivity : BaseActivity() {
 
     private lateinit var binding: ActivityInscriptionBinding
     private var isShareDialogVisible by mutableStateOf(false)
+    private var inScreenshot by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
@@ -151,74 +135,47 @@ class InscriptionActivity : BaseActivity() {
                 onDispose { liveData.removeObserver(observer) }
             }
             val value = inscription.value
-            val targetSize = remember { mutableStateOf(IntSize.Zero) }
-
-            if (isShareDialogVisible && value != null) {
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xB3000000))
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                            isShareDialogVisible = false
-                        }
-                ) {
-                    BackHandler(isShareDialogVisible) {
-                        isShareDialogVisible = false
-                    }
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(20.dp)
-                            .align(Alignment.Center)
-                    ) {
-                        ShareCard(modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.White)
-                            .wrapContentHeight()
-                            .onGloballyPositioned { coordinates ->
-                                targetSize.value = coordinates.size
-                            }, qrcode = qrcode, inscriptionHash, value
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ShareBottom(modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.White)
-                            .padding(16.dp), onShare = { bottomSize ->
-                            onShare(targetSize.value, bottomSize)
-                        }, onCopy = onCopy, onSave = { bottomSize ->
-                            onSave(targetSize.value, bottomSize)
-                        })
-                    }
-                }
+            AnimatedVisibility(visible = isShareDialogVisible && value != null) {
+                SharePage(qrcode = qrcode, inscriptionHash = inscriptionHash, value = value!!, inScreenshot = inScreenshot, onClose = {
+                    isShareDialogVisible = false
+                }, onCopy = onCopy, onSave = onSave, onShare = onShare)
             }
         }
 
         jobManager.addJobInBackground(SyncInscriptionsJob(listOf(inscriptionHash)))
     }
 
-    val onSave: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
-        isShareDialogVisible = false
-        val bitmap = binding.overflow.drawToBitmap()
-        val dir = getPublicDownloadPath()
-        dir.mkdirs()
-        val file = File(dir, "$inscriptionHash.png")
-        saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
-        toast(R.string.Save_success)
+    private val onSave: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
+        lifecycleScope.launch {
+            inScreenshot = true
+            delay(100)
+            val bitmap = binding.overflow.drawToBitmap()
+            val dir = getPublicDownloadPath()
+            dir.mkdirs()
+            val file = File(dir, "$inscriptionHash.png")
+            saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
+            isShareDialogVisible = false
+            toast(R.string.Save_success)
+            inScreenshot = false
+        }
     }
 
-    val onShare: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
-        isShareDialogVisible = false
-        val bitmap = binding.overflow.drawToBitmap()
-        val file = File(cacheDir, "$inscriptionHash.png")
-        saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
-
-        val uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", file)
-
-        val share = Intent()
-        share.action = Intent.ACTION_SEND
-        share.type = "image/png"
-        share.putExtra(Intent.EXTRA_STREAM, uri)
-        startActivity(Intent.createChooser(share, getString(R.string.Share)))
+    private val onShare: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
+        lifecycleScope.launch {
+            inScreenshot = true
+            delay(100)
+            val bitmap = binding.overflow.drawToBitmap()
+            val file = File(cacheDir, "$inscriptionHash.png")
+            saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
+            isShareDialogVisible = false
+            val uri = FileProvider.getUriForFile(this@InscriptionActivity, BuildConfig.APPLICATION_ID + ".provider", file)
+            val share = Intent()
+            share.action = Intent.ACTION_SEND
+            share.type = "image/png"
+            share.putExtra(Intent.EXTRA_STREAM, uri)
+            startActivity(Intent.createChooser(share, getString(R.string.Share)))
+            inScreenshot = false
+        }
     }
 
     private val onCopy: () -> Unit = {
