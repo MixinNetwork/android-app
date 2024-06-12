@@ -910,6 +910,9 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun findAssetItemByCollectionHash(assetId: String): TokenItem? =
+            tokenRepository.findAssetItemByCollectionHash(assetId)
+
         suspend fun findInscriptionCollectionByHash(hash: String): InscriptionCollection? =
             withContext(Dispatchers.IO) {
                 tokenRepository.findInscriptionCollectionByHash(hash)
@@ -928,6 +931,12 @@ class BottomSheetViewModel
         suspend fun refreshAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
                 tokenRepository.findOrSyncAsset(assetId)
+            }
+        }
+
+        suspend fun refreshAssetByInscription(collectionHash: String, instantiationHash: String): TokenItem? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.findOrSyncAssetByInscription(collectionHash, instantiationHash)
             }
         }
 
