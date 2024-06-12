@@ -98,8 +98,8 @@ interface RouteService {
     suspend fun web3Quote(
         @Query("inputMint") inputMint: String,
         @Query("outputMint") outputMint: String,
-        @Query("amount") amount: String,
-        @Query("slippageBps") slippageBps: Int,
+        @Query("amount") amount: Long,
+        @Query("slippage") slippage: Int,
     ): MixinResponse<QuoteResponse>
 
     @POST("web3/swap")

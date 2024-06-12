@@ -86,7 +86,7 @@ class SwapFragment : BaseFragment() {
     private var inputText = mutableStateOf("")
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
-    private var slippageBps: Int by mutableIntStateOf(0)
+    private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private val web3tokens by lazy {
         requireArguments().getParcelableArrayListCompat("TOKENS", Web3Token::class.java)!!
@@ -101,9 +101,9 @@ class SwapFragment : BaseFragment() {
     @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        slippageBps = defaultSharedPreferences.getInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
-        if (slippageBps > DefaultSlippage) {
-            slippageBps = DefaultSlippage
+        slippage = defaultSharedPreferences.getInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
+        if (slippage > DefaultSlippage) {
+            slippage = DefaultSlippage
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
 
@@ -166,7 +166,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippageBps, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -185,9 +185,9 @@ class SwapFragment : BaseFragment() {
                                 Timber.e("input $input")
                                 textInputFlow.value = input
                             }, {
-                                SwapSlippageBottomSheetDialogFragment.newInstance(slippageBps)
+                                SwapSlippageBottomSheetDialogFragment.newInstance(slippage)
                                     .setOnSlippage { bps ->
-                                        slippageBps = bps
+                                        slippage = bps
                                         defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
                                         refreshQuote(inputText.value)
                                     }
@@ -203,11 +203,16 @@ class SwapFragment : BaseFragment() {
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
+                                    val inputMint = fromToken?.address ?: return@launch
+                                    val outputMint = toToken?.address ?: return@launch
+                                    val amount = fromToken?.toLongAmount(qr.inAmount) ?: return@launch
+                                    if (amount <= 0L) return@launch
+
                                     quoteJob?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
-                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
+                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, inputMint, amount, outputMint, qr.slippage, qr.source, qr.jupiterQuoteResponse)) },
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
@@ -220,7 +225,7 @@ class SwapFragment : BaseFragment() {
                                                 return@handleMixinResponse false
                                             },
                                         ) ?: return@launch
-                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction, priorityLevel = PriorityLevel.High)
+                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, priorityLevel = PriorityLevel.High)
                                     JsSigner.useSolana()
                                     isLoading = false
                                     showBrowserBottomSheetDialogFragment(
@@ -389,7 +394,7 @@ class SwapFragment : BaseFragment() {
 
         isLoading = true
         quoteResp = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), slippageBps) },
+            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage) },
             successBlock = {
                 return@handleMixinResponse it.data
             },
@@ -406,7 +411,7 @@ class SwapFragment : BaseFragment() {
             } else {
                 outValue.divide(inValue, RoundingMode.CEILING).toFloat()
             }
-        slippageBps = quoteResp?.slippageBps ?: 0
+        slippage = quoteResp?.slippage ?: 0
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
 
