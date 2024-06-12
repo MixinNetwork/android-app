@@ -250,7 +250,7 @@ fun BrowserPage(
                     )
                 } else {
                     FeeInfo(
-                        amount = "$fee ${asset?.symbol}",
+                        amount = "$fee ${asset?.symbol ?: ""}",
                         fee = fee.multiply(asset.priceUSD()),
                     )
                 }
