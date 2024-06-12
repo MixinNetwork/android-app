@@ -47,7 +47,10 @@ import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.home.web3.swap.parseJupiterError
+import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
+import one.mixin.android.ui.home.web3.error.ProgramErrorHandler
+import one.mixin.android.ui.home.web3.error.RaydiumErrorHandler
+import one.mixin.android.ui.home.web3.error.SolanaErrorHandler
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
@@ -111,6 +114,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun getTheme() = R.style.AppTheme_Dialog
 
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
+
+    private val solanaErrorHandler = SolanaErrorHandler()
 
     private val signMessage: JsSignMessage by lazy { requireArguments().getParcelableCompat(ARGS_MESSAGE, JsSignMessage::class.java)!! }
     private val url: String? by lazy { requireArguments().getString(ARGS_URL) }
@@ -372,7 +377,11 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         Timber.e(e)
         val msg =
             if (e is RpcException) {
-                parseJupiterError(e.rawResponse)?.toString(requireContext())
+                solanaErrorHandler.reset()
+                    .addHandler(JupiterErrorHandler(e.rawResponse))
+                    .addHandler(RaydiumErrorHandler(e.rawResponse))
+                    .addHandler(ProgramErrorHandler(e.rawResponse))
+                    .start(requireContext())
             } else {
                 null
             }
