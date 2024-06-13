@@ -1,9 +1,9 @@
 buildscript {
 
     ext {
-        ext.fragmentVersion = '1.7.1'
+        ext.fragmentVersion = '1.8.0'
         ext.activity_version = '1.9.0'
-        ext.lifecycleVersion = '2.8.1'
+        ext.lifecycleVersion = '2.8.2'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.0'
         ext.coilVersion = '2.6.0'
@@ -27,7 +27,7 @@ buildscript {
         ext.sharetargetVersion = '1.2.0'
         ext.coordinatorVersion = '1.2.0'
         ext.espressoVersion = '3.5.1'
-        ext.cameraxVersion = '1.4.0-beta01'
+        ext.cameraxVersion = '1.4.0-beta02'
         ext.glideVersion = '4.16.0'
         ext.timberVersion = '5.0.1'
         ext.okhttpVersion = '4.12.0'
@@ -105,7 +105,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20240303'
-        ext.composeVersion = '1.7.0-beta02'
+        ext.composeVersion = '1.7.0-beta03'
         ext.accompanistVersion = '0.34.0'
         ext.web3jVersion = '4.8.7-android'
 

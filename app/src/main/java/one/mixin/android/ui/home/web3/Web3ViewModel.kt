@@ -289,13 +289,4 @@ class Web3ViewModel
             }
 
         suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
-
-        suspend fun getPriorityFee(tx: String, priorityLevel: PriorityLevel): PriorityFeeResponse? {
-            return handleMixinResponse(
-                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx, priorityLevel)) },
-                successBlock = {
-                    it.data
-                },
-            )
-        }
     }

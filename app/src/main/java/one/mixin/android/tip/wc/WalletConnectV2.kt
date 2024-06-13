@@ -389,7 +389,7 @@ object WalletConnectV2 : WalletConnect() {
                 }
                 Method.SolanaSignTransaction.name -> {
                     val transaction = gson.fromJson<WcSolanaTransaction>(request.request.params)
-                    val tx = org.sol4k.VersionedTransaction.from(transaction.transaction)
+                    val tx = VersionedTransaction.from(transaction.transaction)
                     WCSignData.V2SignData(request.request.id, tx, request, solanaFee = tx.calcFee())
                 }
                 Method.SolanaSignMessage.name -> {

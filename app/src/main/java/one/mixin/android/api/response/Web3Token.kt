@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
-import one.mixin.android.api.response.web3.PriorityFeeResponse
+import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.base64Encode
@@ -22,8 +22,6 @@ import org.sol4k.Transaction
 import org.sol4k.VersionedTransaction
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
 import org.sol4k.instruction.Instruction
-import org.sol4k.instruction.SetComputeUnitLimitInstruction
-import org.sol4k.instruction.SetComputeUnitPriceInstruction
 import org.sol4k.instruction.SplTransferInstruction
 import org.sol4k.instruction.TransferInstruction
 import org.sol4k.lamportToSol
@@ -175,7 +173,6 @@ suspend fun Web3Token.buildTransaction(
     fromAddress: String,
     toAddress: String,
     v: String,
-    estimatePriorityFee: (suspend (String) -> PriorityFeeResponse?)? = null,
 ): JsSignMessage {
     if (chainName.equals("solana", true)) {
         JsSigner.useSolana()
@@ -232,27 +229,9 @@ suspend fun Web3Token.buildTransaction(
                 instructions,
                 sender,
             )
-        var tx = transaction.serialize().base64Encode()
-
-        val priorityFeeResponse = estimatePriorityFee?.invoke(tx)
-        if (priorityFeeResponse != null && priorityFeeResponse.unitPrice > 0) {
-            val newInstructions = mutableListOf<Instruction>()
-            newInstructions.add(
-                SetComputeUnitLimitInstruction(
-                    units = priorityFeeResponse.unitLimit,
-                ),
-            )
-            newInstructions.add(
-                SetComputeUnitPriceInstruction(
-                    microLamports = priorityFeeResponse.unitPrice,
-                ),
-            )
-            newInstructions.addAll(instructions)
-            val newTransaction = Transaction(toAddress, newInstructions, sender)
-            tx = newTransaction.serialize().base64Encode()
-        }
-
-        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx)
+        transaction.addPlaceholderSignature()
+        val tx = transaction.serialize().base64Encode()
+        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, priorityLevel = PriorityLevel.Medium)
     } else {
         JsSigner.useEvm()
         val transaction =
