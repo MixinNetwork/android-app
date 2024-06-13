@@ -550,7 +550,7 @@ class BottomSheetViewModel
                 // Workaround with only the case of a single transfer
                 val receiverId = receiverIds.first()
                 val user = tokenRepository.findUser(receiverId)
-                if (user != null && !user.notMessengerUser()) {
+                if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
                     val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
                     initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
                     Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage $conversationId")

@@ -269,7 +269,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check Large
                 val transferBiometricItem = t as TransferBiometricItem
                 val tips = mutableListOf<String>()
-                if (!isStrangerTransferDisable() && transferBiometricItem.users.size == 1 && transferBiometricItem.users.first().relationship != UserRelationship.FRIEND.name) {
+                if (!isStrangerTransferDisable() && transferBiometricItem.users.size == 1 && transferBiometricItem.users.first().relationship !in listOf(UserRelationship.FRIEND.name, UserRelationship.ME.name)) {
                     tips.add(getString(R.string.unfamiliar_person_reminder, transferBiometricItem.users.first().fullName, transferBiometricItem.users.first().identityNumber))
                 }
                 if (!isDuplicateTransferDisable() && transferBiometricItem.trace != null) {

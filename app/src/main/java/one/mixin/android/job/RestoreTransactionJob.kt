@@ -10,6 +10,7 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.ConversationCategory
@@ -122,7 +123,7 @@ class RestoreTransactionJob : BaseJob(
         inscriptionHash: String?,
     ) {
         val user = userDao.findUser(opponentId)
-        if (user != null && !user.notMessengerUser()) {
+        if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
             val conversationId = generateConversationId(data.userId, opponentId)
             initConversation(conversationId, data.userId, opponentId)
             val category =
