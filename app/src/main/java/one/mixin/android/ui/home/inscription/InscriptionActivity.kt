@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
@@ -155,7 +156,8 @@ class InscriptionActivity : BaseActivity() {
             val file = File(dir, "$inscriptionHash.png")
             saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
             isShareDialogVisible = false
-            toast(R.string.Save_success)
+            MediaScannerConnection.scanFile(this@InscriptionActivity, arrayOf(file.toString()), null, null)
+            toast(getString(R.string.Save_to, dir.path))
             inScreenshot = false
         }
     }
