@@ -29,7 +29,7 @@ object Constants {
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
         const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
-        const val INSCRIPTION = "https://mixin.space/inscriptions/"
+        const val INSCRIPTION = "https://inscription.mixin.space/collectibles/"
     }
 
     object Tip {
