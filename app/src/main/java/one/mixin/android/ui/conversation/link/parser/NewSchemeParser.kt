@@ -150,6 +150,24 @@ class NewSchemeParser(
         val inscriptionHash = urlQueryParser.inscription ?: throw ParserError(FAILURE)
         val inscription = checkInscription(inscriptionHash) ?: throw ParserError(FAILURE)
         val assetId = urlQueryParser.asset
+
+        val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: throw ParserError(FAILURE)
+        val releaseAmount =
+            if (urlQueryParser.amount != null) {
+                val amount = BigDecimal(urlQueryParser.amount)
+                val unit = BigDecimal(inscriptionCollection.unit)
+                if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
+                if (amount == unit) null else{
+                    // specify asset for release inscription
+                    if (assetId == null) throw ParserError(FAILURE)
+                    urlQueryParser.amount
+                }
+            } else {
+                null
+            }
+        if (releaseAmount != null && userId != Session.getAccountId()) throw ParserError(FAILURE)
+        val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
+        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.inscription_not_found))
         val token = if (assetId != null) {
             checkToken(assetId)
         } else {
@@ -158,19 +176,6 @@ class NewSchemeParser(
         if (token.collectionHash != inscription.collectionHash) {
             throw ParserError(FAILURE)
         }
-        val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: throw ParserError(FAILURE)
-        val releaseAmount =
-            if (urlQueryParser.amount != null) {
-                val amount = BigDecimal(urlQueryParser.amount)
-                val unit = BigDecimal(inscriptionCollection.unit)
-                if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
-                if (amount == unit) null else urlQueryParser.amount
-            } else {
-                null
-            }
-        if (releaseAmount != null && userId != Session.getAccountId()) throw ParserError(FAILURE)
-        val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
-        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.inscription_not_found))
         val nftBiometricItem =
             NftBiometricItem(
                 asset = token,
