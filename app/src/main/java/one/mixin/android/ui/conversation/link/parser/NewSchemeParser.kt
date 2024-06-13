@@ -54,18 +54,20 @@ class NewSchemeParser(
             val asset = urlQueryParser.asset
             val amount = urlQueryParser.amount
             val traceId = urlQueryParser.trace ?: UUID.randomUUID().toString()
-            if (asset != null && (amount != null || urlQueryParser.inscription != null)) {
+            if ((asset != null && amount != null) || urlQueryParser.inscription != null) {
                 val status = getPaymentStatus(traceId) ?: return Result.failure(ParserError(FAILURE))
                 if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
-                val token: TokenItem = checkToken(asset) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
-
+                val token: TokenItem?
                 if (urlQueryParser.inscription == null) {
+                    token = checkToken(asset!!) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
                     val tokensExtra = linkViewModel.findTokensExtra(asset)
                     if (tokensExtra == null) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
                     } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
                     }
+                } else {
+                    token = null
                 }
 
                 if (payType == PayType.Uuid) {
@@ -145,25 +147,35 @@ class NewSchemeParser(
         userId: String,
         traceId: String,
     ): NftBiometricItem {
-        val token = checkToken(urlQueryParser.asset!!) ?: throw ParserError(FAILURE)
         val inscriptionHash = urlQueryParser.inscription ?: throw ParserError(FAILURE)
         val inscription = checkInscription(inscriptionHash) ?: throw ParserError(FAILURE)
-        if (token.collectionHash != inscription.collectionHash) {
-            throw ParserError(FAILURE)
-        }
+        val assetId = urlQueryParser.asset
+
         val inscriptionCollection = checkInscriptionCollection(inscription.collectionHash) ?: throw ParserError(FAILURE)
         val releaseAmount =
             if (urlQueryParser.amount != null) {
                 val amount = BigDecimal(urlQueryParser.amount)
                 val unit = BigDecimal(inscriptionCollection.unit)
                 if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
-                if (amount == unit) null else urlQueryParser.amount
+                if (amount == unit) null else{
+                    // specify asset for release inscription
+                    if (assetId == null) throw ParserError(FAILURE)
+                    urlQueryParser.amount
+                }
             } else {
                 null
             }
         if (releaseAmount != null && userId != Session.getAccountId()) throw ParserError(FAILURE)
         val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
         val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.inscription_not_found))
+        val token = if (assetId != null) {
+            checkToken(assetId)
+        } else {
+            checkTokenByCollectionHash(inscription.collectionHash, inscription.inscriptionHash)
+        } ?: throw ParserError(FAILURE)
+        if (token.collectionHash != inscription.collectionHash) {
+            throw ParserError(FAILURE)
+        }
         val nftBiometricItem =
             NftBiometricItem(
                 asset = token,
@@ -322,6 +334,17 @@ class NewSchemeParser(
             linkViewModel.refreshAsset(asset.chainId)
         }
         return linkViewModel.findAssetItemById(assetId)
+    }
+
+    private suspend fun checkTokenByCollectionHash(collectionHash: String, instantiationHash: String): TokenItem? {
+        var asset = linkViewModel.findAssetItemByCollectionHash(collectionHash)
+        if (asset == null) {
+            asset = linkViewModel.refreshAssetByInscription(collectionHash, instantiationHash)
+        }
+        if (asset != null && asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
+            linkViewModel.refreshAsset(asset.chainId)
+        }
+        return linkViewModel.findAssetItemByCollectionHash(collectionHash)
     }
 
     private suspend fun checkInscription(hash: String): InscriptionItem? {

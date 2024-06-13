@@ -133,6 +133,9 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     suspend fun findAssetItemById(assetId: String): TokenItem?
 
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.collection_hash = :collectionHash")
+    suspend fun findAssetItemByCollectionHash(collectionHash: String): TokenItem?
+
     @Query("SELECT t.asset_id FROM tokens t LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.balance > 0")
     suspend fun findAllAssetIdSuspend(): List<String>
 

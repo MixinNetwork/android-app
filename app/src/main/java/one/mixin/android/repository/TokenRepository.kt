@@ -165,6 +165,24 @@ class TokenRepository
             return assetItem
         }
 
+        suspend fun findOrSyncAssetByInscription(
+            collectionHash: String, instantiationHash: String
+        ): TokenItem? {
+            var assetItem = tokenDao.findAssetItemByCollectionHash(collectionHash)
+            val output = outputDao.findOutputByHash(instantiationHash) ?: return null
+            if (assetItem == null) {
+                assetItem = syncAssetByKernel(output.asset)
+            }
+            if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+                val chain = syncAsset(assetItem.chainId)
+                assetItem.chainIconUrl = chain?.chainIconUrl
+                assetItem.chainSymbol = chain?.chainSymbol
+                assetItem.chainName = chain?.chainName
+                assetItem.chainPriceUsd = chain?.chainPriceUsd
+            }
+            return assetItem
+        }
+
         suspend fun syncDepositEntry(chainId: String): Pair<DepositEntry?, Int> {
             var code = 200
             val depositEntry =
@@ -246,6 +264,37 @@ class TokenRepository
             }
 
             return tokenDao.findAssetItemById(assetId)
+        }
+
+        suspend fun syncAssetByKernel(kernelAssetId: String): TokenItem? {
+            val asset: Token =
+                handleMixinResponse(
+                    invokeNetwork = {
+                        tokenService.getAssetByIdSuspend(kernelAssetId)
+                    },
+                    successBlock = { resp ->
+                        resp.data?.let { a ->
+                            insert(a)
+                            a
+                        }
+                    },
+                ) ?: return null
+
+            val exists = chainDao.checkExistsById(asset.chainId)
+            if (exists == null) {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        tokenService.getChainById(asset.chainId)
+                    },
+                    successBlock = { resp ->
+                        resp.data?.let { c ->
+                            chainDao.upsertSuspend(c)
+                        }
+                    },
+                )
+            }
+
+            return tokenDao.findTokenItemByAsset(kernelAssetId)
         }
 
         private suspend fun simpleAsset(id: String) = tokenDao.simpleAsset(id)
@@ -532,6 +581,8 @@ class TokenRepository
         }
 
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
+
+        suspend fun findAssetItemByCollectionHash(collectionHash: String) = tokenDao.findAssetItemByCollectionHash(collectionHash)
 
         suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
 
