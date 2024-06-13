@@ -205,14 +205,12 @@ class SwapFragment : BaseFragment() {
                                     val qr = quoteResp ?: return@launch
                                     val inputMint = fromToken?.address ?: return@launch
                                     val outputMint = toToken?.address ?: return@launch
-                                    val amount = fromToken?.toLongAmount(qr.inAmount) ?: return@launch
-                                    if (amount <= 0L) return@launch
 
                                     quoteJob?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
-                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, inputMint, amount, outputMint, qr.slippage, qr.source, qr.jupiterQuoteResponse)) },
+                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, inputMint, qr.inAmount.toLong(), outputMint, qr.slippage, qr.source, qr.jupiterQuoteResponse)) },
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
