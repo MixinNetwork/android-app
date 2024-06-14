@@ -49,6 +49,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
+import one.mixin.android.ui.home.web3.components.SolanaTransactionNoPreview
 import one.mixin.android.ui.home.web3.components.TokenTransactionPreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -230,6 +231,8 @@ fun BrowserPage(
                     }
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
+                } else if (chain == Chain.Solana) {
+                    SolanaTransactionNoPreview(asset = asset)
                 } else {
                     TransactionPreview(
                         balance =
@@ -274,9 +277,9 @@ fun BrowserPage(
                         Box(modifier = Modifier.height(20.dp))
                         CircularProgressIndicator(
                             modifier =
-                                Modifier
-                                    .size(40.dp)
-                                    .align(Alignment.CenterHorizontally),
+                            Modifier
+                                .size(40.dp)
+                                .align(Alignment.CenterHorizontally),
                             color = MixinAppTheme.colors.accent,
                         )
                         Box(modifier = Modifier.height(20.dp))
@@ -284,11 +287,11 @@ fun BrowserPage(
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(
                         modifier =
-                            Modifier
-                                .align(Alignment.BottomCenter)
-                                .background(MixinAppTheme.colors.background)
-                                .padding(20.dp)
-                                .fillMaxWidth(),
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .background(MixinAppTheme.colors.background)
+                            .padding(20.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         Button(

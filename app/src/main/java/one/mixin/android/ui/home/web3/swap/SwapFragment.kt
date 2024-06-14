@@ -233,7 +233,6 @@ class SwapFragment : BaseFragment() {
                                     showBrowserBottomSheetDialogFragment(
                                         requireActivity(),
                                         signMessage,
-                                        amount = qr.inAmount,
                                         onTxhash = { hash, serializedTx ->
                                             lifecycleScope.launch {
                                                 txhash = hash

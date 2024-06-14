@@ -102,10 +102,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 },
             )
             putString(ARGS_TITLE, title)
-            putString(ARGS_AMOUNT, amount)
-            putParcelable(ARGS_TOKEN, token)
-            putParcelable(ARGS_CHAIN_TOKEN, chainToken)
-            putString(ARGS_TO_ADDRESS, toAddress)
+            amount?.let { putString(ARGS_AMOUNT, it) }
+            token?.let { putParcelable(ARGS_TOKEN, it) }
+            chainToken?.let { putParcelable(ARGS_CHAIN_TOKEN, it) }
+            toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
         }
     }
 
@@ -271,16 +271,16 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 val txWithPriorityFee = updateTxPriorityFee(this, signMessage.priorityLevel)
                                 solanaTx = txWithPriorityFee
                             }
-                        if (token == null) {
-                            val tokenBalanceChange = tx.calcBalanceChange()
-                            val mintAddress = tokenBalanceChange.mint
-                            if (mintAddress.isBlank()) {
-                                asset = viewModel.refreshAsset(Chain.Solana.assetId)
-                                return@onEach
-                            }
-                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
-                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
-                        }
+//                        if (token == null) {
+//                            val tokenBalanceChange = tx.calcBalanceChange()
+//                            val mintAddress = tokenBalanceChange.mint
+//                            if (mintAddress.isBlank()) {
+//                                asset = viewModel.refreshAsset(Chain.Solana.assetId)
+//                                return@onEach
+//                            }
+//                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
+//                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
+//                        }
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
                     }
