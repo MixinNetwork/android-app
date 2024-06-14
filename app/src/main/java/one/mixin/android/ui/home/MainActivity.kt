@@ -38,10 +38,9 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -883,7 +882,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private val channel = Channel<Int>(Channel.CONFLATED)
-    @OptIn(FlowPreview::class)
+
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
@@ -898,7 +897,7 @@ class MainActivity : BlazeBaseActivity() {
         lifecycleScope.launch {
             channel
                 .receiveAsFlow()
-                .debounce(300)
+                .distinctUntilChanged()
                 .collect { itemId ->
                     handleNavigationItemSelected(itemId)
                 }
