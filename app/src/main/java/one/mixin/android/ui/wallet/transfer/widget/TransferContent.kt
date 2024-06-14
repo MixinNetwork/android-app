@@ -165,7 +165,7 @@ class TransferContent : LinearLayout {
             amount.isVisible = false
             address.isVisible = false
             name.isVisible = true
-            name.setContent(R.string.Collectible, "${nftBiometricItem.inscriptionCollection.name} #${nftBiometricItem.inscriptionItem.sequence}", amountAs(nftBiometricItem.amount, nftBiometricItem.asset!!))
+            name.setContent(R.string.Collectible, "${nftBiometricItem.inscriptionCollection.name} #${nftBiometricItem.inscriptionItem.sequence}")
             if (nftBiometricItem.release) {
                 receive.isVisible = false
                 sender.isVisible = false
