@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.request.web3.SwapRequest
@@ -39,16 +40,19 @@ import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
@@ -315,6 +319,19 @@ class SwapFragment : BaseFragment() {
                 if (it.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
                     refreshTokens()
+                } else if (it.errorCode == ErrorHandler.OLD_VERSION) {
+                    alertDialogBuilder()
+                        .setTitle(R.string.Update_Mixin)
+                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                        .setNegativeButton(R.string.Later) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setPositiveButton(R.string.Update) { dialog, _ ->
+                            requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setCancelable(false)
+                        .create().show()
                 }
                 return@handleMixinResponse true
             },
