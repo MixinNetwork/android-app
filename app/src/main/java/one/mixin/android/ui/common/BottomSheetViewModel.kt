@@ -550,7 +550,7 @@ class BottomSheetViewModel
                 // Workaround with only the case of a single transfer
                 val receiverId = receiverIds.first()
                 val user = tokenRepository.findUser(receiverId)
-                if (user != null && !user.notMessengerUser()) {
+                if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
                     val conversationId = generateConversationId(transactionRsp.data!!.first().userId, receiverId)
                     initConversation(conversationId, transactionRsp.data!!.first().userId, receiverId)
                     Timber.e("Kernel Transaction($traceId): innerTransaction insertSnapshotMessage $conversationId")
@@ -910,6 +910,9 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun findAssetItemByCollectionHash(assetId: String): TokenItem? =
+            tokenRepository.findAssetItemByCollectionHash(assetId)
+
         suspend fun findInscriptionCollectionByHash(hash: String): InscriptionCollection? =
             withContext(Dispatchers.IO) {
                 tokenRepository.findInscriptionCollectionByHash(hash)
@@ -928,6 +931,12 @@ class BottomSheetViewModel
         suspend fun refreshAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
                 tokenRepository.findOrSyncAsset(assetId)
+            }
+        }
+
+        suspend fun refreshAssetByInscription(collectionHash: String, instantiationHash: String): TokenItem? {
+            return withContext(Dispatchers.IO) {
+                tokenRepository.findOrSyncAssetByInscription(collectionHash, instantiationHash)
             }
         }
 
