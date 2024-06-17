@@ -1,5 +1,6 @@
 package one.mixin.android.api.service
 
+import one.mixin.android.BuildConfig
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
@@ -92,14 +93,16 @@ interface RouteService {
     ): MixinResponse<ProfileResponse>
 
     @GET("web3/tokens")
-    suspend fun web3Tokens(): MixinResponse<List<SwapToken>>
+    suspend fun web3Tokens(
+        @Query("version") version: String = BuildConfig.VERSION_NAME,
+    ): MixinResponse<List<SwapToken>>
 
     @GET("web3/quote")
     suspend fun web3Quote(
         @Query("inputMint") inputMint: String,
         @Query("outputMint") outputMint: String,
-        @Query("amount") amount: String,
-        @Query("slippageBps") slippageBps: Int,
+        @Query("amount") amount: Long,
+        @Query("slippage") slippage: Int,
     ): MixinResponse<QuoteResponse>
 
     @POST("web3/swap")

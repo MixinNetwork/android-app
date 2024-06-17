@@ -63,7 +63,7 @@ fun SwapTokenPage(
                         .fillMaxWidth(),
             ) {
                 CoilImage(
-                    model = token.logoURI,
+                    model = token.icon,
                     modifier =
                         Modifier
                             .size(45.dp)

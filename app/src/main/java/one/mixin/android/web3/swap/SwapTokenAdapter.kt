@@ -64,7 +64,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             root.setOnClickListener {
                 onClickListener?.invoke(token, false)
             }
-            avatar.bg.loadImage(token.logoURI, R.drawable.ic_avatar_place_holder)
+            avatar.bg.loadImage(token.icon, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chain.chainLogoURI, R.drawable.ic_avatar_place_holder)
             nameTv.text = token.name
             balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"

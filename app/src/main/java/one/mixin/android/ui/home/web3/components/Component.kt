@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,11 +56,11 @@ fun TransactionPreview(
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(MixinAppTheme.colors.background)
-                .padding(horizontal = 20.dp),
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
@@ -93,9 +94,9 @@ fun TransactionPreview(
             CoilImage(
                 model = asset?.iconUrl,
                 modifier =
-                    Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
         }
@@ -115,11 +116,11 @@ fun TokenTransactionPreview(
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(MixinAppTheme.colors.background)
-                .padding(horizontal = 20.dp),
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Box(modifier = Modifier.height(16.dp))
@@ -153,9 +154,9 @@ fun TokenTransactionPreview(
             CoilImage(
                 model = token.iconUrl,
                 modifier =
-                    Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
         }
@@ -165,6 +166,53 @@ fun TokenTransactionPreview(
             fontSize = 12.sp,
         )
         Box(modifier = Modifier.height(10.dp))
+    }
+}
+
+@Composable
+fun SolanaTransactionNoPreview(
+    asset: Token?,
+) {
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Box(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(id = R.string.Balance_Change),
+            color = MixinAppTheme.colors.textSubtitle,
+            fontSize = 14.sp,
+        )
+        Box(modifier = Modifier.height(8.dp))
+        Row(
+            modifier =
+            Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = stringResource(id = R.string.preview_unavailable),
+                color = MixinAppTheme.colors.textPrimary,
+                fontFamily = FontFamily(Font(R.font.mixin_font)),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.W600
+            )
+            Box(modifier = Modifier.weight(1f))
+            CoilImage(
+                model = asset?.iconUrl,
+                modifier =
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+                placeholder = R.drawable.ic_avatar_place_holder,
+            )
+        }
     }
 }
 
@@ -183,12 +231,12 @@ fun MessagePreview(
         Box(modifier = Modifier.height(4.dp))
         Box(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(0.dp, 128.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MixinAppTheme.colors.backgroundWindow)
-                    .clickable { onPreviewMessage(content) },
+            Modifier
+                .fillMaxWidth()
+                .heightIn(0.dp, 128.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MixinAppTheme.colors.backgroundWindow)
+                .clickable { onPreviewMessage(content) },
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -366,4 +414,10 @@ fun TransferBottomPreview() {
         ActionBottom(modifier = Modifier, stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {}, {})
         ActionBottom(modifier = Modifier, stringResource(id = R.string.Discard), stringResource(id = R.string.Send), {}, {})
     }
+}
+
+@Preview
+@Composable
+fun SolanaTransactionNoPreviewPreview() {
+    SolanaTransactionNoPreview(asset = null)
 }
