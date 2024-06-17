@@ -418,12 +418,13 @@ private fun Hint(hint: Hint) {
 fun FeeInfo(
     amount: String,
     fee: BigDecimal,
+    gasPrice: String? = null,
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
     ) {
         Text(
             text = stringResource(id = R.string.network_fee).uppercase(),
@@ -438,7 +439,7 @@ fun FeeInfo(
         ) {
             Column {
                 Text(
-                    text = amount,
+                    text = amount + if (gasPrice != null) " ($gasPrice Gwei)" else "",
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
                 )
