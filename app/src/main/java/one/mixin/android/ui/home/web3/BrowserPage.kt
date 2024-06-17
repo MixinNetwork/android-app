@@ -46,6 +46,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.displayGas
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
@@ -255,6 +256,7 @@ fun BrowserPage(
                     FeeInfo(
                         amount = "$fee ${asset?.symbol ?: ""}",
                         fee = fee.multiply(asset.priceUSD()),
+                        gasPrice = tipGas?.displayGas()?.toPlainString(),
                     )
                 }
                 if (url != null && title != null) {

@@ -4,6 +4,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.math.RoundingMode
 
 data class TipGas(
     val assetId: String,
@@ -39,4 +40,8 @@ data class TipGas(
 
 fun TipGas.displayValue(): BigDecimal? {
     return Convert.fromWei(gasPrice.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
+}
+
+fun TipGas.displayGas(): BigDecimal? {
+    return Convert.fromWei(gasPrice.run { BigDecimal(this) }, Convert.Unit.GWEI).setScale(2, RoundingMode.UP)
 }
