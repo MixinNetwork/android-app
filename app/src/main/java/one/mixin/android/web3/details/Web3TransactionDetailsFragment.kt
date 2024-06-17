@@ -19,6 +19,7 @@ import one.mixin.android.api.response.isSolana
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
@@ -27,6 +28,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.send.InputAddressFragment
@@ -38,6 +40,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_TOKEN = "args_token"
+        const val ARGS_TOKENS = "args_tokens"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
 
@@ -45,11 +48,18 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             address: String,
             web3Token: Web3Token,
             chainToken: Web3Token?,
+            tokens: List<Web3Token>? = null
         ) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putParcelable(ARGS_TOKEN, web3Token)
                 putParcelable(ARGS_CHAIN_TOKEN, chainToken)
+                putParcelableArrayList(ARGS_TOKENS, arrayListOf<Web3Token>().apply {
+                    add(web3Token)
+                    tokens?.let {
+                        addAll(tokens.filter { it != web3Token })
+                    }
+                })
             }
     }
 
@@ -65,6 +75,11 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     private val address: String by lazy {
         requireNotNull(requireArguments().getString(ARGS_ADDRESS))
     }
+
+    private val web3tokens by lazy {
+        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3Token::class.java)!!
+    }
+
     private val token: Web3Token by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)!!
     }
@@ -83,6 +98,10 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
                     R.id.receive -> {
                         navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                    }
+
+                    R.id.swap -> {
+                        navTo(SwapFragment.newInstance(web3tokens), SwapFragment.TAG)
                     }
 
                     R.id.more -> {

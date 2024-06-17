@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
@@ -27,8 +28,20 @@ class Web3TokenHeader : ConstraintLayout {
         _binding.receive.setOnClickListener {
             onClickAction?.invoke(it.id)
         }
+        _binding.swap.setOnClickListener {
+            onClickAction?.invoke(it.id)
+        }
         _binding.more.setOnClickListener {
             onClickAction?.invoke(it.id)
+        }
+    }
+
+    fun enableSwap() {
+        _binding.apply {
+            (more.layoutParams as LayoutParams).apply {
+                startToEnd = R.id.swap
+            }
+            swap.isVisible = true
         }
     }
 
