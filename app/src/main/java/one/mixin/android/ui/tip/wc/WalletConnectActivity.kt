@@ -6,12 +6,15 @@ import android.os.Bundle
 import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
+import one.mixin.android.tip.wc.internal.WCFinishEvent
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import timber.log.Timber
@@ -43,6 +46,11 @@ class WalletConnectActivity : BaseActivity() {
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        RxBus.publish(WCFinishEvent(nowInUtc()))
     }
 
     private fun handleIntent(intent: Intent) {

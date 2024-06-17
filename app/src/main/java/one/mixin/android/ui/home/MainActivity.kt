@@ -35,8 +35,10 @@ import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -120,6 +122,7 @@ import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.internal.WCFinishEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -170,6 +173,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -307,28 +311,46 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
             }
+
+        val controlSubject = BehaviorSubject.createDefault(true)
         RxBus.listen(WCEvent::class.java)
-            .autoDispose(destroyScope)
-            .subscribe { e ->
-                lifecycleScope.launch {
-                    if (e is WCEvent.V2) {
-                        if (e.requestType != WalletConnect.RequestType.Connect) {
-                            val type = e.chainType ?: TYPE_ETH
-                            if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
-                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            } else {
-                                WalletConnectActivity.show(this@MainActivity, e)
+            .concatMap { e ->
+                controlSubject.filter { it }
+                    .take(1)
+                    .flatMap {
+                        Observable.fromCallable {
+                            lifecycleScope.launch {
+                                if (e is WCEvent.V2) {
+                                    if (e.requestType != WalletConnect.RequestType.Connect) {
+                                        val type = e.chainType ?: TYPE_ETH
+                                        if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
+                                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                                        } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                                        } else {
+                                            WalletConnectActivity.show(this@MainActivity, e)
+                                        }
+                                    } else {
+                                        WalletConnectActivity.show(this@MainActivity, e)
+                                    }
+                                } else {
+                                    WalletConnectActivity.show(this@MainActivity, e)
+                                }
                             }
-                        } else {
-                            WalletConnectActivity.show(this@MainActivity, e)
+                            controlSubject.onNext(false)
                         }
-                    } else {
-                        WalletConnectActivity.show(this@MainActivity, e)
                     }
-                }
             }
+            .autoDispose(destroyScope)
+            .subscribe()
+
+        RxBus.listen(WCFinishEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { finishEvent ->
+                Timber.e("WC finish: ${finishEvent.nowInUtc}")
+                controlSubject.onNext(true)
+            }
+        
         RxBus.listen(WCErrorEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe {
