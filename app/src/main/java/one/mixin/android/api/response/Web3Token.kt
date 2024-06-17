@@ -75,7 +75,7 @@ fun Web3Token.toSwapToken(): SwapToken {
         decimals = decimals,
         name = name,
         symbol = symbol,
-        logoURI = iconUrl,
+        icon = iconUrl,
         chain =
             SwapChain(
                 decimals = 0,

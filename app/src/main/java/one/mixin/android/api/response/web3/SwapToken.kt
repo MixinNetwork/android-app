@@ -8,13 +8,14 @@ import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import java.math.BigDecimal
 import java.math.RoundingMode
 
+@Suppress("EqualsOrHashCode")
 @Parcelize
 data class SwapToken(
     @SerializedName("address") val address: String,
     @SerializedName("decimals") val decimals: Int,
     @SerializedName("name") val name: String,
     @SerializedName("symbol") val symbol: String,
-    @SerializedName("logoURI") val logoURI: String,
+    @SerializedName("icon") val icon: String,
     @SerializedName("chain") val chain: SwapChain,
     var price: String? = null,
     var balance: String? = null,

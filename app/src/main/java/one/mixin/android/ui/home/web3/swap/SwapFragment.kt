@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.request.web3.SwapRequest
@@ -39,16 +40,19 @@ import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
@@ -86,7 +90,7 @@ class SwapFragment : BaseFragment() {
     private var inputText = mutableStateOf("")
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
-    private var slippageBps: Int by mutableIntStateOf(0)
+    private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private val web3tokens by lazy {
         requireArguments().getParcelableArrayListCompat("TOKENS", Web3Token::class.java)!!
@@ -101,9 +105,9 @@ class SwapFragment : BaseFragment() {
     @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        slippageBps = defaultSharedPreferences.getInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
-        if (slippageBps > DefaultSlippage) {
-            slippageBps = DefaultSlippage
+        slippage = defaultSharedPreferences.getInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
+        if (slippage > DefaultSlippage) {
+            slippage = DefaultSlippage
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
 
@@ -166,7 +170,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippageBps, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -185,9 +189,9 @@ class SwapFragment : BaseFragment() {
                                 Timber.e("input $input")
                                 textInputFlow.value = input
                             }, {
-                                SwapSlippageBottomSheetDialogFragment.newInstance(slippageBps)
+                                SwapSlippageBottomSheetDialogFragment.newInstance(slippage)
                                     .setOnSlippage { bps ->
-                                        slippageBps = bps
+                                        slippage = bps
                                         defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
                                         refreshQuote(inputText.value)
                                     }
@@ -203,11 +207,14 @@ class SwapFragment : BaseFragment() {
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
+                                    val inputMint = fromToken?.address ?: return@launch
+                                    val outputMint = toToken?.address ?: return@launch
+
                                     quoteJob?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
-                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, qr)) },
+                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, inputMint, qr.inAmount.toLong(), outputMint, qr.slippage, qr.source, qr.jupiterQuoteResponse)) },
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
@@ -220,13 +227,12 @@ class SwapFragment : BaseFragment() {
                                                 return@handleMixinResponse false
                                             },
                                         ) ?: return@launch
-                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.swapTransaction, priorityLevel = PriorityLevel.High)
+                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, priorityLevel = PriorityLevel.High)
                                     JsSigner.useSolana()
                                     isLoading = false
                                     showBrowserBottomSheetDialogFragment(
                                         requireActivity(),
                                         signMessage,
-                                        amount = qr.inAmount,
                                         onTxhash = { hash, serializedTx ->
                                             lifecycleScope.launch {
                                                 txhash = hash
@@ -312,6 +318,19 @@ class SwapFragment : BaseFragment() {
                 if (it.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
                     refreshTokens()
+                } else if (it.errorCode == ErrorHandler.OLD_VERSION) {
+                    alertDialogBuilder()
+                        .setTitle(R.string.Update_Mixin)
+                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                        .setNegativeButton(R.string.Later) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setPositiveButton(R.string.Update) { dialog, _ ->
+                            requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setCancelable(false)
+                        .create().show()
                 }
                 return@handleMixinResponse true
             },
@@ -389,7 +408,7 @@ class SwapFragment : BaseFragment() {
 
         isLoading = true
         quoteResp = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount.toString(), slippageBps) },
+            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage) },
             successBlock = {
                 return@handleMixinResponse it.data
             },
@@ -406,7 +425,7 @@ class SwapFragment : BaseFragment() {
             } else {
                 outValue.divide(inValue, RoundingMode.CEILING).toFloat()
             }
-        slippageBps = quoteResp?.slippageBps ?: 0
+        slippage = quoteResp?.slippage ?: 0
         outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
     }
 

@@ -183,7 +183,7 @@ private fun Left(
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
         CoilImage(
-            model = token?.logoURI ?: "",
+            model = token?.icon ?: "",
             placeholder = R.drawable.ic_avatar_place_holder,
             modifier = Modifier.size(32.dp).clip(CircleShape),
         )

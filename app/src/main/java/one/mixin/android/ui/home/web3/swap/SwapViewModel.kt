@@ -29,15 +29,13 @@ class SwapViewModel
         suspend fun web3Quote(
             inputMint: String,
             outputMint: String,
-            amount: String,
-            slippageBps: Int,
-        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippageBps)
+            amount: Long,
+            slippage: Int,
+        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
         ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
-
-        suspend fun getSwapToken(address: String) = assetRepository.getSwapToken(address)
 
         suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)
 
