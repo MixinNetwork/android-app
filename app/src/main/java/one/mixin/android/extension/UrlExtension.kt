@@ -26,6 +26,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -157,6 +158,15 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
+    } else if(isConversationScheme()) {
+        checkConversation(context, scope) {
+            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
+                LinkBottomSheetDialogFragment.newInstance(this)
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            } else {
+                extraAction()
+            }
+        }
     } else {
         if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
@@ -231,11 +241,37 @@ fun String.checkUserOrApp(
     }
 }
 
+fun String.checkConversation(
+    context: Context,
+    scope: CoroutineScope,
+    elseAction: () -> Unit
+) {
+    val uri = Uri.parse(this)
+    val segments = uri.pathSegments
+    if (segments.isEmpty()) return
+    scope.launch {
+        val db = MixinDatabase.getDatabase(context)
+        val conversationDao = db.conversationDao()
+        val conversationId = segments[0]
+        if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
+            val conversation = conversationDao.getConversationByIdSuspend(conversationId)
+            if (conversation != null) {
+                ConversationActivity.show(context, conversation.conversationId)
+                return@launch
+            }
+        }
+        elseAction.invoke()
+    }
+}
+
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
 
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true)
+
+private fun String.isConversationScheme() =
+    startsWith(Constants.Scheme.CONVERSATIONS, true)
 
 private fun String.isAppScheme() =
     startsWith(Constants.Scheme.APPS, true) ||
