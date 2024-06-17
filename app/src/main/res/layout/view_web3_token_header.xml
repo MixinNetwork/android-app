@@ -111,6 +111,31 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/swap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:layout_marginStart="36dp"
+        app:layout_constraintStart_toEndOf="@id/receive"
+        app:layout_constraintTop_toTopOf="@id/receive"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foreground="@drawable/mixin_ripple_25"
+            android:src="@drawable/ic_web3_swap" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/Swap"
+            android:textColor="?attr/text_primary" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

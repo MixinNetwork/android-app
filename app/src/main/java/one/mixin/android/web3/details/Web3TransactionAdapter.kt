@@ -9,6 +9,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.api.response.isSolana
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -53,7 +54,11 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
         viewType: Int,
     ): RecyclerView.ViewHolder {
         return if (viewType == 0) {
-            Web3HeaderHolder(ItemWeb3TokenHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            Web3HeaderHolder(ItemWeb3TokenHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
+                if (token.isSolana()) {
+                    enableSwap()
+                }
+            }
         } else {
             Web3TransactionHolder(ItemWeb3TransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
@@ -295,5 +300,9 @@ class Web3HeaderHolder(val binding: ItemWeb3TokenHeaderBinding) : RecyclerView.V
     ) {
         binding.header.setToken(token)
         binding.header.setOnClickAction(onClickListener)
+    }
+
+    fun enableSwap() {
+        binding.header.enableSwap()
     }
 }
