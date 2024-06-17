@@ -121,6 +121,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.WCFinishEvent
 import one.mixin.android.ui.common.BaseFragment
@@ -337,7 +338,8 @@ class MainActivity : BlazeBaseActivity() {
                                     WalletConnectActivity.show(this@MainActivity, e)
                                 }
                             }
-                            controlSubject.onNext(false)
+                            // Intercept only SessionRequest
+                            controlSubject.onNext(!(e is WCEvent.V2 && e.requestType == RequestType.SessionRequest))
                         }
                     }
             }
