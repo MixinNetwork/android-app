@@ -63,6 +63,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -916,9 +917,9 @@ class TokenRepository
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
-        fun collectibles(): LiveData<List<SafeCollectible>> = outputDao.collectibles()
+        fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = outputDao.collectibles(sortOrder.name)
 
-        fun collections(): LiveData<List<SafeCollection>> = outputDao.collections()
+        fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 

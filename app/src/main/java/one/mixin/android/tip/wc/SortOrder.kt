@@ -1,6 +1,6 @@
 package one.mixin.android.tip.wc
 
-enum class SortMenu {
+enum class SortOrder {
     Recent,
     Alphabetical
 }

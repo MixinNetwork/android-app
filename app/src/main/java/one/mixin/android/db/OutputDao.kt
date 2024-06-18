@@ -65,22 +65,29 @@ interface OutputDao : BaseDao<Output> {
         LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         LEFT JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
+        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' 
+        ORDER BY CASE 
+            WHEN :orderBy = 'Recent' THEN o.sequence
+            WHEN :orderBy = 'Alphabetical' THEN ic.name
+        END ASC
         """,
     )
-    fun collectibles(): LiveData<List<SafeCollectible>>
+    fun collectibles(orderBy: String): LiveData<List<SafeCollectible>>
 
     @Query(
         """
-        SELECT ic.collection_hash, ic.name, ic.icon_url, count(ii.inscription_hash) AS inscription_count
+        SELECT ic.collection_hash, ic.name, ic.icon_url, count(i.inscription_hash) AS inscription_count
         FROM inscription_collections ic
-        INNER JOIN inscription_items ii ON ic.collection_hash = ii.collection_hash
-        INNER JOIN outputs o ON ii.inscription_hash = o.inscription_hash
+        INNER JOIN inscription_items i ON ic.collection_hash = i.collection_hash
+        INNER JOIN outputs o ON i.inscription_hash = o.inscription_hash
         WHERE o.state = 'unspent'
-        GROUP BY ic.collection_hash
+        ORDER BY CASE 
+            WHEN :orderBy = 'Recent' THEN o.sequence
+            WHEN :orderBy = 'Alphabetical' THEN ic.name
+        END ASC
         """,
     )
-    fun collections(): LiveData<List<SafeCollection>>
+    fun collections(orderBy: String): LiveData<List<SafeCollection>>
 
     // Get the latest inscription, inscription UTXO cannot be separated
     @Query(

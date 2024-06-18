@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.ListPopupWindow
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
@@ -21,9 +20,8 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
-import one.mixin.android.tip.wc.SortMenu
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.MainActivity
@@ -114,7 +112,7 @@ class CollectiblesFragment : BaseFragment() {
             collectiblesRv.layoutManager = GridLayoutManager(requireContext(), 2)
             collectiblesRv.adapter = collectiblesAdapter
 
-            web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+            web3ViewModel.collectibles(SortOrder.Recent).observe(this@CollectiblesFragment.viewLifecycleOwner) {
                 binding.collectiblesVa.displayedChild =
                     if (it.isEmpty()) {
                         1
@@ -136,71 +134,38 @@ class CollectiblesFragment : BaseFragment() {
     }
 
     private fun bindData() {
-        if (sortType == SortMenu.Recent){
-            when (id) {
-                R.id.radio_collectibles -> {
-                    binding.collectiblesRv.adapter = collectiblesAdapter
-                    web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                        binding.collectiblesVa.displayedChild =
-                            if (it.isEmpty()) {
-                                1
-                            } else {
-                                0
-                            }
-                        collectiblesAdapter.list = it
-                    }
+        when (type) {
+            R.id.radio_collectibles -> {
+                binding.collectiblesRv.adapter = collectiblesAdapter
+                web3ViewModel.collectibles(sortOrder).observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                    binding.collectiblesVa.displayedChild =
+                        if (it.isEmpty()) {
+                            1
+                        } else {
+                            0
+                        }
+                    collectiblesAdapter.list = it
                 }
-
-                R.id.radio_collection -> {
-                    binding.collectiblesRv.adapter = collectionAdapter
-                    web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                        binding.collectiblesVa.displayedChild =
-                            if (it.isEmpty()) {
-                                1
-                            } else {
-                                0
-                            }
-                        collectionAdapter.list = it
-                    }
-                }
-
-                else -> {}
             }
-        } else {
-            // todo order sql
-            when (id) {
-                R.id.radio_collectibles -> {
-                    binding.collectiblesRv.adapter = collectiblesAdapter
-                    web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                        binding.collectiblesVa.displayedChild =
-                            if (it.isEmpty()) {
-                                1
-                            } else {
-                                0
-                            }
-                        collectiblesAdapter.list = it
-                    }
-                }
 
-                R.id.radio_collection -> {
-                    binding.collectiblesRv.adapter = collectionAdapter
-                    web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                        binding.collectiblesVa.displayedChild =
-                            if (it.isEmpty()) {
-                                1
-                            } else {
-                                0
-                            }
-                        collectionAdapter.list = it
-                    }
+            R.id.radio_collection -> {
+                binding.collectiblesRv.adapter = collectionAdapter
+                web3ViewModel.collections(sortOrder).observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                    binding.collectiblesVa.displayedChild =
+                        if (it.isEmpty()) {
+                            1
+                        } else {
+                            0
+                        }
+                    collectionAdapter.list = it
                 }
-
-                else -> {}
             }
+
+            else -> {}
         }
     }
 
-    private var sortType = SortMenu.Recent
+    private var sortOrder = SortOrder.Recent
         set(value) {
             if (field != value) {
                 field = value
@@ -217,8 +182,8 @@ class CollectiblesFragment : BaseFragment() {
 
     private val sortMenu by lazy {
         val menuItems = listOf(
-            SortMenuData(SortMenu.Recent, R.drawable.ic_recent, R.string.Recent),
-            SortMenuData(SortMenu.Alphabetical, R.drawable.ic_alphabetical,  R.string.Alphabetical),
+            SortMenuData(SortOrder.Recent, R.drawable.ic_recent, R.string.Recent),
+            SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical,  R.string.Alphabetical),
         )
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.dropSort
@@ -226,10 +191,10 @@ class CollectiblesFragment : BaseFragment() {
             setOnItemClickListener { _, _, position, _ ->
                 val selectedItem = menuItems[position]
                 binding.dropTv.setText(selectedItem.title)
-                sortType = if (position == 0) {
-                    SortMenu.Recent
+                sortOrder = if (position == 0) {
+                    SortOrder.Recent
                 } else {
-                    SortMenu.Alphabetical
+                    SortOrder.Alphabetical
                 }
                 dismiss()
             }

@@ -24,6 +24,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
@@ -158,9 +159,9 @@ class Web3ViewModel
                 tokenRepository.syncAsset(assetId)
             }
 
-        fun collectibles(): LiveData<List<SafeCollectible>> = tokenRepository.collectibles()
+        fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = tokenRepository.collectibles(sortOrder)
 
-        fun collections(): LiveData<List<SafeCollection>> = tokenRepository.collections()
+        fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = tokenRepository.collections(sortOrder)
 
         fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
 
