@@ -9,6 +9,6 @@ data class SwapChain(
     @SerializedName("decimals") val decimals: Int,
     @SerializedName("name") val name: String,
     @SerializedName("symbol") val symbol: String,
-    @SerializedName("logoURI") val chainLogoURI: String,
+    @SerializedName("icon") val icon: String,
     var price: String? = null,
 ) : Parcelable
