@@ -2,12 +2,19 @@ package one.mixin.android.ui.home.web3
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.web3.PriorityFeeRequest
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.PaymentStatus
@@ -18,6 +25,7 @@ import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.WalletConnect
@@ -28,6 +36,7 @@ import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.ParticipantSession
@@ -55,6 +64,7 @@ import javax.inject.Inject
 class Web3ViewModel
     @Inject
     internal constructor(
+        private val accountRepository: AccountRepository,
         private val userRepository: UserRepository,
         private val assetRepository: AssetRepository,
         private val tokenRepository: TokenRepository,
@@ -289,4 +299,12 @@ class Web3ViewModel
             }
 
         suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
+
+        fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+            accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+        fun insertUser(user: User) =
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.upsert(user)
+            }
     }

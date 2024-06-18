@@ -69,7 +69,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 fun InscriptionPage(
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: () -> Unit,
+    onMoreAction: (String?, Boolean) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -102,7 +102,7 @@ private fun InscriptionPageImp(
     inscription: InscriptionState,
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: () -> Unit,
+    onMoreAction: (String?, Boolean) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -148,7 +148,7 @@ private fun InscriptionPageImp(
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = onMoreAction) {
+                IconButton(onClick = { onMoreAction(inscription.contentURL, inscription.state == "unspent") }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_home_more),
                         contentDescription = null,

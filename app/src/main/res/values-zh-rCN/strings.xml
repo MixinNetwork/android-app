@@ -1531,4 +1531,5 @@
     <string name="inscription_release_hint">分解收藏品可以立刻获得相应的代币，代币可转账、交易或重新铸造收藏品。</string>
     <string name="inscription_not_found">藏品不存在</string>
     <string name="Token">代币</string>
+    <string name="Set_as_avatar">设置为头像</string>
 </resources>

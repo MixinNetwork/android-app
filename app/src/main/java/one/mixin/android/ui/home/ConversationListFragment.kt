@@ -91,6 +91,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.User
 import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
@@ -357,6 +358,15 @@ class ConversationListFragment : LinkFragment() {
                     selectCircle(null, null)
                 }
             }
+        RxBus.listen(User::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { u ->
+                if (Session.getAccountId() == u.userId) {
+                    binding.searchBar.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                }
+            }
+
         initSearch()
     }
 
