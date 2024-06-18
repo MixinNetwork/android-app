@@ -15,7 +15,7 @@ class JsSignMessage(
     val type: Int,
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
-    val priorityLevel: PriorityLevel = PriorityLevel.Medium,
+    val priorityLevel: PriorityLevel = PriorityLevel.Keep,
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0

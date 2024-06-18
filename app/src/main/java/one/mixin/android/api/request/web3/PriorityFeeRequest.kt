@@ -9,5 +9,5 @@ data class PriorityFeeRequest(
 )
 
 enum class PriorityLevel {
-    High, Medium,
+    Keep, High, Medium,
 }
