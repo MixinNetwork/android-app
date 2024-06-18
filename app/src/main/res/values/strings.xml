@@ -1568,4 +1568,5 @@
     <string name="inscription_release_hint">Releasing the inscription will immediately provide the corresponding tokens, which can be transferred, traded, or used to mint new inscriptions.</string>
     <string name="inscription_not_found">Inscription does not exist</string>
     <string name="Token">Token</string>
+    <string name="Set_as_avatar">Set as Avatar</string>
 </resources>

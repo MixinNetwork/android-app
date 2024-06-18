@@ -2,16 +2,20 @@ package one.mixin.android.ui.home.inscription
 
 import SharePage
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
@@ -23,39 +27,60 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntSize
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.net.toUri
 import androidx.core.view.drawToBitmap
+import androidx.core.view.isVisible
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import coil.imageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import com.uber.autodispose.autoDispose
+import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
 import one.mixin.android.databinding.ViewInscriptionMenuBinding
+import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.MAX_PHOTO_SIZE
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.TYPE_BIOGRAPHY
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.TYPE_PHOTO
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -115,8 +140,8 @@ class InscriptionActivity : BaseActivity() {
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
         binding.compose.setContent {
-            InscriptionPage(inscriptionHash, { finish() }, {
-                showBottom()
+            InscriptionPage(inscriptionHash, { finish() }, { url, ownership ->
+                showBottom(url, ownership)
             }, onSendAction, { isShareDialogVisible = true })
         }
         binding.overflow.setContent {
@@ -217,11 +242,18 @@ class InscriptionActivity : BaseActivity() {
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     @SuppressLint("InflateParams")
-    private fun showBottom() {
+    private fun showBottom(url:String?, ownership: Boolean) {
         val builder = BottomSheet.Builder(this)
         _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
+        bottomBinding.setAvatarTv.isVisible = ownership
+        bottomBinding.setAvatarTv.setOnClickListener {
+            lifecycleScope.launch {
+                setAvatar(url)
+                bottomSheet.dismiss()
+            }
+        }
         bottomBinding.cancelTv.setOnClickListener {
             bottomSheet.dismiss()
         }
@@ -236,6 +268,86 @@ class InscriptionActivity : BaseActivity() {
         }
 
         bottomSheet.show()
+    }
+
+    private val imageUri: Uri by lazy {
+        Uri.fromFile(this.getOtherPath().createImageTemp())
+    }
+
+    private suspend fun setAvatar(url:String?){
+        if (url == null) {
+            toast(R.string.Please_wait_a_bit)
+            return
+        }
+        val request =
+            ImageRequest.Builder(applicationContext)
+                .data(url)
+                .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
+                .build()
+
+        val result = applicationContext.imageLoader.execute(request)
+        if (result !is SuccessResult) {
+            toast(R.string.Try_Again)
+            return
+        }
+        val f = applicationContext.imageLoader.diskCache?.openSnapshot(url)?.data?.toFile()
+        if (f == null) {
+            toast(R.string.Try_Again)
+            return
+        }
+        val options = UCrop.Options()
+        options.setToolbarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
+        options.setStatusBarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
+        options.setToolbarWidgetColor(Color.WHITE)
+        options.setHideBottomControls(true)
+        UCrop.of(f.toUri(), imageUri)
+            .withOptions(options)
+            .withAspectRatio(1f, 1f)
+            .withMaxResultSize(
+                MAX_PHOTO_SIZE,
+                MAX_PHOTO_SIZE,
+            )
+            .start(this, UCrop.REQUEST_CROP)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            if (data != null) {
+                val resultUri = UCrop.getOutput(data)
+                val bitmap = resultUri?.getCapturedImage(this.contentResolver)
+                update(Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP))
+            }
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            if (data != null) {
+                val cropError = UCrop.getError(data)
+                toast(cropError.toString())
+            }
+        }
+    }
+
+    private fun update(
+        content: String,
+    ) {
+        val accountUpdateRequest = AccountUpdateRequest(null, content)
+        web3ViewModel.update(accountUpdateRequest)
+            .autoDispose(stopScope).subscribe(
+                { r: MixinResponse<Account> ->
+                    if (!r.isSuccess) {
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                        return@subscribe
+                    } else {
+                        toast(R.string.Success)
+                    }
+                    r.data?.let { data ->
+                        Session.storeAccount(data)
+                        web3ViewModel.insertUser(data.toUser())
+                    }
+                },
+                { t: Throwable ->
+                    ErrorHandler.handleError(t)
+                },
+            )
     }
 
     private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
