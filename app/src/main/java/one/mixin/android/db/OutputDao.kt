@@ -7,7 +7,8 @@ import androidx.room.Query
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 
 @Dao
 interface OutputDao : BaseDao<Output> {
@@ -67,7 +68,19 @@ interface OutputDao : BaseDao<Output> {
         WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
         """,
     )
-    fun inscriptions(): LiveData<List<SafeInscription>>
+    fun collectibles(): LiveData<List<SafeCollectible>>
+
+    @Query(
+        """
+        SELECT ic.collection_hash, ic.name, ic.icon_url, count(ii.inscription_hash) AS inscription_count
+        FROM inscription_collections ic
+        INNER JOIN inscription_items ii ON ic.collection_hash = ii.collection_hash
+        INNER JOIN outputs o ON ii.inscription_hash = o.inscription_hash
+        WHERE o.state = 'unspent'
+        GROUP BY ic.collection_hash
+        """,
+    )
+    fun collections(): LiveData<List<SafeCollection>>
 
     // Get the latest inscription, inscription UTXO cannot be separated
     @Query(

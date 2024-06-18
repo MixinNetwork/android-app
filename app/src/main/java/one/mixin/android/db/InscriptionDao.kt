@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 
 @Dao
 interface InscriptionDao : BaseDao<InscriptionItem> {
@@ -16,7 +16,7 @@ interface InscriptionDao : BaseDao<InscriptionItem> {
     suspend fun getInscriptionCollectionIds(hash: List<String>): List<String>
 
     @Query("SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM inscription_items i LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash LEFT JOIN tokens t on t.collection_hash = i.collection_hash WHERE inscription_hash = :hash AND ic.collection_hash IS NOT NULL")
-    fun inscriptionByHash(hash: String): LiveData<SafeInscription?>
+    fun inscriptionByHash(hash: String): LiveData<SafeCollectible?>
 
     @Query("SELECT * FROM inscription_items WHERE inscription_hash = :hash")
     fun findInscriptionByHash(hash: String): InscriptionItem?

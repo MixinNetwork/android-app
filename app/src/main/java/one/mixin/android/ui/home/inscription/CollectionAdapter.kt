@@ -9,10 +9,10 @@ import one.mixin.android.databinding.ItemInscriptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 
-class CollectiblesAdapter(val callback: (SafeCollectible) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
-    var list: List<SafeCollectible> = emptyList()
+class CollectionAdapter(val callback: (SafeCollection) -> Unit) : RecyclerView.Adapter<CollectionHolder>() {
+    var list: List<SafeCollection> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
@@ -22,35 +22,35 @@ class CollectiblesAdapter(val callback: (SafeCollectible) -> Unit) : RecyclerVie
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
-    ): InscriptionHolder {
-        return InscriptionHolder(ItemInscriptionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    ): CollectionHolder {
+        return CollectionHolder(ItemInscriptionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun getItemCount(): Int = list.size
 
     override fun onBindViewHolder(
-        holder: InscriptionHolder,
+        holder: CollectionHolder,
         position: Int,
     ) {
         holder.bind(list[position], callback)
     }
 }
 
-class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewHolder(binding.root) {
+class CollectionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewHolder(binding.root) {
     init {
         binding.inscriptionIv.roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
     }
 
     @SuppressLint("SetTextI18n")
     fun bind(
-        inscriptionItem: SafeCollectible,
-        callback: (SafeCollectible) -> Unit,
+        inscriptionItem: SafeCollection,
+        callback: (SafeCollection) -> Unit,
     ) {
         binding.apply {
             root.setOnClickListener { callback.invoke(inscriptionItem) }
-            inscriptionIv.loadImage(data = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
+            inscriptionIv.loadImage(data = inscriptionItem.iconURL, holder = R.drawable.ic_default_inscription)
             title.text = inscriptionItem.name
-            subTitle.text = "#${inscriptionItem.sequence}"
+            subTitle.text = "${inscriptionItem.inscriptionCount}"
         }
     }
 }

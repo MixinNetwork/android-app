@@ -84,7 +84,8 @@ import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -915,14 +916,16 @@ class TokenRepository
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
-        fun inscriptions(): LiveData<List<SafeInscription>> = outputDao.inscriptions()
+        fun collectibles(): LiveData<List<SafeCollectible>> = outputDao.collectibles()
+
+        fun collections(): LiveData<List<SafeCollection>> = outputDao.collections()
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 
         suspend fun fuzzyInscription(
             escapedQuery: String,
             cancellationSignal: CancellationSignal,
-        ): List<SafeInscription> {
+        ): List<SafeCollectible> {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }
 

@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCollectiblesBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.dp
@@ -47,6 +48,12 @@ class CollectiblesFragment : BaseFragment() {
     private val collectiblesAdapter by lazy {
         CollectiblesAdapter {
             InscriptionActivity.show(requireContext(), it.inscriptionHash)
+        }
+    }
+
+    private val collectionAdapter by lazy {
+        CollectionAdapter {
+            // Todo
         }
     }
 
@@ -91,19 +98,51 @@ class CollectiblesFragment : BaseFragment() {
             settingIb.setOnClickListener {
                 SettingActivity.show(requireContext(), compose = false)
             }
+            radioCollectibles.isChecked = true
             collectiblesRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true))
 
             collectiblesRv.layoutManager = GridLayoutManager(requireContext(), 2)
             collectiblesRv.adapter = collectiblesAdapter
-        }
-        web3ViewModel.inscriptions().observe(this.viewLifecycleOwner) {
-            binding.collectiblesVa.displayedChild =
-                if (it.isEmpty()) {
-                    1
-                } else {
-                    0
+
+            web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                binding.collectiblesVa.displayedChild =
+                    if (it.isEmpty()) {
+                        1
+                    } else {
+                        0
+                    }
+                collectiblesAdapter.list = it
+            }
+
+            radioGroupCollectibles.setOnCheckedChangeListener { _, id ->
+                when (id) {
+                    R.id.radio_collectibles -> {
+                        collectiblesRv.adapter = collectiblesAdapter
+                        web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                            binding.collectiblesVa.displayedChild =
+                                if (it.isEmpty()) {
+                                    1
+                                } else {
+                                    0
+                                }
+                            collectiblesAdapter.list = it
+                        }
+                    }
+                    R.id.radio_collection -> {
+                        collectiblesRv.adapter = collectionAdapter
+                        web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                            binding.collectiblesVa.displayedChild =
+                                if (it.isEmpty()) {
+                                    1
+                                } else {
+                                    0
+                                }
+                            collectionAdapter.list = it
+                        }
+                    }
+                    else -> {}
                 }
-            collectiblesAdapter.list = it
+            }
         }
     }
 }
