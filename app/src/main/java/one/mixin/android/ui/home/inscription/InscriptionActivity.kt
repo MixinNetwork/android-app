@@ -48,6 +48,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
@@ -341,7 +342,9 @@ class InscriptionActivity : BaseActivity() {
                     }
                     r.data?.let { data ->
                         Session.storeAccount(data)
-                        web3ViewModel.insertUser(data.toUser())
+                        val u = data.toUser()
+                        RxBus.publish(u)
+                        web3ViewModel.insertUser(u)
                     }
                 },
                 { t: Throwable ->
