@@ -2,10 +2,14 @@ package one.mixin.android.ui.home.inscription
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
@@ -13,12 +17,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCollectiblesBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
+import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
@@ -113,6 +122,10 @@ class CollectiblesFragment : BaseFragment() {
                     }
                 collectiblesAdapter.list = it
             }
+            dropSort.setOnClickListener {
+                binding.sortArrow.animate().rotation(-180f).setDuration(200).start()
+                sortMenu.show()
+            }
 
             radioGroupCollectibles.setOnCheckedChangeListener { _, id ->
                 when (id) {
@@ -128,6 +141,7 @@ class CollectiblesFragment : BaseFragment() {
                             collectiblesAdapter.list = it
                         }
                     }
+
                     R.id.radio_collection -> {
                         collectiblesRv.adapter = collectionAdapter
                         web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
@@ -140,8 +154,37 @@ class CollectiblesFragment : BaseFragment() {
                             collectionAdapter.list = it
                         }
                     }
+
                     else -> {}
                 }
+            }
+        }
+    }
+
+    private val sortMenu by lazy {
+        val menuItems = listOf(
+            SortMenuData(1, R.drawable.ic_recent, R.string.Recent),
+            SortMenuData(2, R.drawable.ic_alphabetical,  R.string.Alphabetical),
+            SortMenuData(3, R.drawable.ic_floor_price, R.string.Floor_Price)
+        )
+        ListPopupWindow(requireContext()).apply {
+            anchorView = binding.dropSort
+            setAdapter(SortMenuAdapter(requireContext(), menuItems))
+            setOnItemClickListener { _, _, position, _ ->
+                val selectedItem = menuItems[position]
+                binding.dropTv.setText(selectedItem.title)
+                // Todo
+                dismiss()
+            }
+            width = requireContext().dpToPx(250f)
+            height = ListPopupWindow.WRAP_CONTENT
+            isModal = true
+            setBackgroundDrawable(ColorDrawable(requireContext().colorAttr(R.attr.bg_white)))
+            setDropDownGravity(Gravity.END)
+            horizontalOffset = requireContext().dpToPx(2f)
+            verticalOffset = requireContext().dpToPx(10f)
+            setOnDismissListener {
+                binding.sortArrow.animate().rotation(0f).setDuration(200).start()
             }
         }
     }

@@ -1569,4 +1569,7 @@
     <string name="inscription_not_found">Inscription does not exist</string>
     <string name="Token">Token</string>
     <string name="Set_as_avatar">Set as Avatar</string>
+    <string name="Recent">Recent</string>
+    <string name="Alphabetical">Alphabetical</string>
+    <string name="Floor_Price">Floor Price</string>
 </resources>
