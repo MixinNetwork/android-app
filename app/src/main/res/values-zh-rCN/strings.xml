@@ -1532,4 +1532,7 @@
     <string name="inscription_not_found">藏品不存在</string>
     <string name="Token">代币</string>
     <string name="Set_as_avatar">设置为头像</string>
+    <string name="Recent">最近</string>
+    <string name="Alphabetical">按字母顺序</string>
+    <string name="Floor_Price">最低价格</string>
 </resources>

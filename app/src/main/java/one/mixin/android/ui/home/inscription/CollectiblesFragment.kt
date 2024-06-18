@@ -165,7 +165,6 @@ class CollectiblesFragment : BaseFragment() {
         val menuItems = listOf(
             SortMenuData(1, R.drawable.ic_recent, R.string.Recent),
             SortMenuData(2, R.drawable.ic_alphabetical,  R.string.Alphabetical),
-            SortMenuData(3, R.drawable.ic_floor_price, R.string.Floor_Price)
         )
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.dropSort
