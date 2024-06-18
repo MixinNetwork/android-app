@@ -23,6 +23,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
+import one.mixin.android.tip.wc.SortMenu
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.MainActivity
@@ -128,43 +129,96 @@ class CollectiblesFragment : BaseFragment() {
             }
 
             radioGroupCollectibles.setOnCheckedChangeListener { _, id ->
-                when (id) {
-                    R.id.radio_collectibles -> {
-                        collectiblesRv.adapter = collectiblesAdapter
-                        web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                            binding.collectiblesVa.displayedChild =
-                                if (it.isEmpty()) {
-                                    1
-                                } else {
-                                    0
-                                }
-                            collectiblesAdapter.list = it
-                        }
-                    }
+                type = id
+            }
+        }
+        bindData()
+    }
 
-                    R.id.radio_collection -> {
-                        collectiblesRv.adapter = collectionAdapter
-                        web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                            binding.collectiblesVa.displayedChild =
-                                if (it.isEmpty()) {
-                                    1
-                                } else {
-                                    0
-                                }
-                            collectionAdapter.list = it
-                        }
+    private fun bindData() {
+        if (sortType == SortMenu.Recent){
+            when (id) {
+                R.id.radio_collectibles -> {
+                    binding.collectiblesRv.adapter = collectiblesAdapter
+                    web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                        binding.collectiblesVa.displayedChild =
+                            if (it.isEmpty()) {
+                                1
+                            } else {
+                                0
+                            }
+                        collectiblesAdapter.list = it
                     }
-
-                    else -> {}
                 }
+
+                R.id.radio_collection -> {
+                    binding.collectiblesRv.adapter = collectionAdapter
+                    web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                        binding.collectiblesVa.displayedChild =
+                            if (it.isEmpty()) {
+                                1
+                            } else {
+                                0
+                            }
+                        collectionAdapter.list = it
+                    }
+                }
+
+                else -> {}
+            }
+        } else {
+            // todo order sql
+            when (id) {
+                R.id.radio_collectibles -> {
+                    binding.collectiblesRv.adapter = collectiblesAdapter
+                    web3ViewModel.collectibles().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                        binding.collectiblesVa.displayedChild =
+                            if (it.isEmpty()) {
+                                1
+                            } else {
+                                0
+                            }
+                        collectiblesAdapter.list = it
+                    }
+                }
+
+                R.id.radio_collection -> {
+                    binding.collectiblesRv.adapter = collectionAdapter
+                    web3ViewModel.collections().observe(this@CollectiblesFragment.viewLifecycleOwner) {
+                        binding.collectiblesVa.displayedChild =
+                            if (it.isEmpty()) {
+                                1
+                            } else {
+                                0
+                            }
+                        collectionAdapter.list = it
+                    }
+                }
+
+                else -> {}
             }
         }
     }
 
+    private var sortType = SortMenu.Recent
+        set(value) {
+            if (field != value) {
+                field = value
+                bindData()
+            }
+        }
+    private var type = R.id.radio_collectibles
+        set(value) {
+            if (field != value) {
+                field = value
+                bindData()
+            }
+        }
+
     private val sortMenu by lazy {
         val menuItems = listOf(
-            SortMenuData(1, R.drawable.ic_recent, R.string.Recent),
-            SortMenuData(2, R.drawable.ic_alphabetical,  R.string.Alphabetical),
+            SortMenuData(SortMenu.Recent, R.drawable.ic_recent, R.string.Recent),
+            SortMenuData(SortMenu.Alphabetical, R.drawable.ic_alphabetical,  R.string.Alphabetical),
         )
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.dropSort
@@ -172,7 +226,11 @@ class CollectiblesFragment : BaseFragment() {
             setOnItemClickListener { _, _, position, _ ->
                 val selectedItem = menuItems[position]
                 binding.dropTv.setText(selectedItem.title)
-                // Todo
+                sortType = if (position == 0) {
+                    SortMenu.Recent
+                } else {
+                    SortMenu.Alphabetical
+                }
                 dismiss()
             }
             width = requireContext().dpToPx(250f)

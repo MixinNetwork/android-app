@@ -15,7 +15,7 @@ class SortMenuAdapter(private val context: Context, private val items: List<Sort
 
     override fun getItem(position: Int): SortMenuData = items[position]
 
-    override fun getItemId(position: Int): Long = items[position].id.toLong()
+    override fun getItemId(position: Int): Long = items[position].menu.ordinal.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.menu_sort, parent, false)
