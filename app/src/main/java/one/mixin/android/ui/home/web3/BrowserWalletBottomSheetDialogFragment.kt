@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.calcSolBalanceChange
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
@@ -342,7 +341,15 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransaction, priorityLevel: PriorityLevel): VersionedTransaction {
-        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), priorityLevel)
+        var level = priorityLevel
+        // if keep-level tx has no priority fee, set a high-level for usage
+        if (priorityLevel == PriorityLevel.Keep) {
+            if (tx.calcFee() != BigDecimal.ZERO) {
+                return tx
+            }
+            level = PriorityLevel.High
+        }
+        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), level)
         if (priorityFeeResp != null && priorityFeeResp.unitPrice > 0) {
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)
         }
