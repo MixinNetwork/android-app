@@ -15,9 +15,8 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
-import org.sol4k.Connection
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
-import org.sol4k.RpcUrl
 import org.sol4k.Transaction
 import org.sol4k.VersionedTransaction
 import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
@@ -179,7 +178,7 @@ suspend fun Web3Token.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        val conn = Connection(RpcUrl.MAINNNET)
+        val conn = getSolanaRpc()
         if (isSolToken()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))

@@ -28,9 +28,8 @@ import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
-import org.sol4k.Connection
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Keypair
-import org.sol4k.RpcUrl
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
 import org.web3j.crypto.Credentials
@@ -435,8 +434,7 @@ object WalletConnectV2 : WalletConnect() {
             val holder = Keypair.fromSecretKey(priv)
             // use latest blockhash should not break other signatures
             if (signMessage.signatures.size <= 1) {
-                val conn = Connection(RpcUrl.MAINNNET)
-                val blockhash = conn.getLatestBlockhash(Commitment.CONFIRMED)
+                val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
                 signMessage.message.recentBlockhash = blockhash
             }
             signMessage.sign(holder)
