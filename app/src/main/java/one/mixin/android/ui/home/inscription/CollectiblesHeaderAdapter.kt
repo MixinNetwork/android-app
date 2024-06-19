@@ -66,7 +66,8 @@ class CollectiblesHeaderHolder(val binding: ItemInscriptionHeaderBinding) : Recy
                 transformations(CoilRoundedHexagonTransformation())
             }
             nameTv.text = collection.name
-            nTv.text = "${collection.inscriptionCount} collected"
+            countTv.text = root.context.getString(R.string.Collection_collected, collection.inscriptionCount)
+            descriptionTv.text = collection.description
         }
     }
 }

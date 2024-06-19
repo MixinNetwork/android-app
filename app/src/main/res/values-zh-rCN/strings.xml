@@ -1535,4 +1535,5 @@
     <string name="Recent">最近</string>
     <string name="Alphabetical">按字母顺序</string>
     <string name="Floor_Price">最低价格</string>
+    <string name="Collection_collected">已收藏 %1$d 件</string>
 </resources>
