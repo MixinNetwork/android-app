@@ -167,7 +167,7 @@ class NewSchemeParser(
             }
         if (releaseAmount != null && userId != Session.getAccountId()) throw ParserError(FAILURE)
         val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
-        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.inscription_not_found))
+        val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.collectible_not_found))
         val token = if (assetId != null) {
             checkToken(assetId)
         } else {
