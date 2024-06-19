@@ -41,6 +41,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Connection
 import org.sol4k.PublicKey
 import org.sol4k.RpcUrl
@@ -252,7 +253,7 @@ class Web3ViewModel
         private suspend fun getSolMinimumBalanceForRentExemption(address: PublicKey): BigDecimal =
             withContext(Dispatchers.IO) {
                 try {
-                    val conn = Connection(RpcUrl.MAINNNET)
+                    val conn = getSolanaRpc()
                     val accountInfo = conn.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
                     val mb = conn.getMinimumBalanceForRentExemption(accountInfo.space)
                     return@withContext lamportToSol(BigDecimal(mb))
@@ -294,8 +295,7 @@ class Web3ViewModel
 
         suspend fun isBlockhashValid(blockhash: String): Boolean =
             withContext(Dispatchers.IO) {
-                val conn = Connection(RpcUrl.MAINNNET)
-                return@withContext conn.isBlockhashValid(blockhash, Commitment.PROCESSED)
+                return@withContext getSolanaRpc().isBlockhashValid(blockhash, Commitment.PROCESSED)
             }
 
         suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
