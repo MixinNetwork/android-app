@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 55,
-    "identityHash": "d49662df256e74e631ab65212bd6e073",
+    "identityHash": "b8e0941924dd1cea81af79be98638aac",
     "entities": [
       {
         "tableName": "users",
@@ -2951,7 +2951,7 @@
       },
       {
         "tableName": "inscription_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`inscription_hash` TEXT NOT NULL, `collection_hash` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `content_type` TEXT NOT NULL, `content_url` TEXT NOT NULL, `occupied_by` TEXT, `occupied_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`inscription_hash`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`inscription_hash` TEXT NOT NULL, `collection_hash` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `content_type` TEXT NOT NULL, `content_url` TEXT NOT NULL, `occupied_by` TEXT, `occupied_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `owner` TEXT, `traits` TEXT, PRIMARY KEY(`inscription_hash`))",
         "fields": [
           {
             "fieldPath": "inscriptionHash",
@@ -3006,6 +3006,18 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "owner",
+            "columnName": "owner",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "traits",
+            "columnName": "traits",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -3021,7 +3033,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd49662df256e74e631ab65212bd6e073')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b8e0941924dd1cea81af79be98638aac')"
     ]
   }
 }

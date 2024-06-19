@@ -38,4 +38,10 @@ data class InscriptionItem(
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String,
+    @ColumnInfo(name = "owner")
+    @SerializedName("owner")
+    val owner: String?,
+    @ColumnInfo(name = "traits")
+    @SerializedName("traits")
+    val traits: String?,
 ) : Parcelable
