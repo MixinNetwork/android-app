@@ -76,7 +76,7 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT ic.collection_hash, ic.name, ic.icon_url, count(i.inscription_hash) AS inscription_count
+        SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, count(i.inscription_hash) AS inscription_count 
         FROM inscription_collections ic
         INNER JOIN inscription_items i ON ic.collection_hash = i.collection_hash
         INNER JOIN outputs o ON i.inscription_hash = o.inscription_hash

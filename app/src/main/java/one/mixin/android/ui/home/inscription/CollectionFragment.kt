@@ -10,27 +10,29 @@ import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentCollectionBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
-import one.mixin.android.ui.home.inscription.CollectionActivity.Companion.ARGS_HASH
+import one.mixin.android.ui.home.inscription.CollectionActivity.Companion.ARGS_COLLECTION
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.vo.safe.SafeCollection
 
 @AndroidEntryPoint
 class CollectionFragment : BaseFragment() {
     companion object {
         const val TAG = "CollectionFragment"
 
-        fun newInstance(collectionHash: String) = CollectionFragment().apply {
+        fun newInstance(collection: SafeCollection) = CollectionFragment().apply {
             withArgs {
-                putString(ARGS_HASH, collectionHash)
+                putParcelable(ARGS_COLLECTION, collection)
             }
         }
     }
 
-    private val hash by lazy {
-        requireNotNull(requireArguments().getString(ARGS_HASH))
+    private val safeCollection by lazy {
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_COLLECTION, SafeCollection::class.java))
     }
 
     private val padding: Int by lazy {
@@ -44,7 +46,7 @@ class CollectionFragment : BaseFragment() {
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val collectiblesAdapter by lazy {
-        CollectiblesAdapter {
+        CollectiblesHeaderAdapter(safeCollection) {
             InscriptionActivity.show(requireContext(), it.inscriptionHash)
         }
     }
@@ -68,9 +70,15 @@ class CollectionFragment : BaseFragment() {
             root.setOnClickListener {
                 // do nothing
             }
-            collectiblesRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true))
+            collectiblesRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true, skip = true))
 
-            collectiblesRv.layoutManager = GridLayoutManager(requireContext(), 2)
+            val lm = GridLayoutManager(requireContext(), 2)
+            lm.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    return if (position == 0) 2 else 1
+                }
+            }
+            collectiblesRv.layoutManager = lm
             collectiblesRv.adapter = collectiblesAdapter
             web3ViewModel.collectibles(SortOrder.Recent).observe(this@CollectionFragment.viewLifecycleOwner) {
                 binding.collectiblesVa.displayedChild =

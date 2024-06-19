@@ -8,6 +8,7 @@ class StickerSpacingItemDecoration(
     private val spanCount: Int,
     private val spacing: Int,
     private val includeEdge: Boolean,
+    private val skip:Boolean = false
 ) :
     RecyclerView.ItemDecoration() {
     override fun getItemOffsets(
@@ -16,7 +17,15 @@ class StickerSpacingItemDecoration(
         parent: RecyclerView,
         state: RecyclerView.State,
     ) {
-        val position = parent.getChildAdapterPosition(view)
+        val p = parent.getChildAdapterPosition(view)
+        if (skip && p == 0) {
+            return
+        }
+        val position = if (skip) {
+            p - 1
+        } else {
+            p
+        }
         val column = position % spanCount
 
         if (includeEdge) {

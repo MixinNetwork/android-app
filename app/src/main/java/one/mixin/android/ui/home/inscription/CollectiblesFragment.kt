@@ -61,7 +61,7 @@ class CollectiblesFragment : BaseFragment() {
 
     private val collectionAdapter by lazy {
         CollectionAdapter {
-            CollectionActivity.show(requireContext(), it.collectionHash)
+            CollectionActivity.show(requireContext(), it)
         }
     }
 
