@@ -6,7 +6,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
@@ -283,8 +285,7 @@ object JsSigner {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
         if (tx.signatures.size <= 1) {
-            val conn = Connection(RpcUrl.MAINNNET)
-            val blockhash = conn.getLatestBlockhash(Commitment.CONFIRMED)
+            val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
             tx.message.recentBlockhash = blockhash
         }
         tx.sign(holder)
@@ -292,8 +293,7 @@ object JsSigner {
     }
 
     fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
-        val conn = Connection(RpcUrl.MAINNNET)
-        return conn.sendTransaction(tx.serialize())
+        return getSolanaRpc().sendTransaction(tx.serialize())
     }
 
     fun solanaSignIn(
@@ -326,3 +326,7 @@ object JsSigner {
         currentChain = Chain.Ethereum
     }
 }
+
+fun getSolanaRpc(): Connection =
+    Connection(MixinApplication.appContext.defaultSharedPreferences.getString(Chain.Solana.chainId, null) ?: RpcUrl.MAINNNET.value)
+
