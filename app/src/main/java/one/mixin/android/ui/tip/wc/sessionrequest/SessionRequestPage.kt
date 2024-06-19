@@ -259,8 +259,8 @@ fun SessionRequestPage(
                     }
                 }
                 Box(modifier = Modifier.height(20.dp))
-
-                val fee = tipGas?.displayValue() ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                // todo
+                val fee = tipGas?.displayValue(null) ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
