@@ -77,9 +77,9 @@ interface OutputDao : BaseDao<Output> {
     @Query(
         """
         SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, count(i.inscription_hash) AS inscription_count 
-        FROM inscription_collections ic
-        INNER JOIN inscription_items i ON ic.collection_hash = i.collection_hash
-        INNER JOIN outputs o ON i.inscription_hash = o.inscription_hash
+        FROM outputs o
+        INNER JOIN inscription_items i ON i.inscription_hash = o.inscription_hash
+        INNER JOIN inscription_collections ic ON ic.collection_hash = i.collection_hash
         WHERE o.state = 'unspent'
         ORDER BY CASE 
             WHEN :orderBy = 'Recent' THEN o.sequence
