@@ -155,6 +155,7 @@ open class ErrorHandler {
         const val CARD_HOLDER_NAME = 10608
         const val EXPIRED_SESSION = 10609
         const val INCONSISTENT_COUNTRY = 10610
+        const val INVALID_SWAP = 10611
 
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
@@ -239,6 +240,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.INCONSISTENT_COUNTRY -> {
             getString(R.string.error_inconsistent_country)
+        }
+        ErrorHandler.INVALID_SWAP -> {
+            getString(R.string.error_invalid_swap)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)
