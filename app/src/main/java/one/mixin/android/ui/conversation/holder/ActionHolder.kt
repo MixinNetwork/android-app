@@ -80,6 +80,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
                 button.text = b.label
                 binding.chatLayout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
+                (button.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = dp1
                 button.topPadding = dp8
                 button.bottomPadding = dp8
                 button.leftPadding = dp12
