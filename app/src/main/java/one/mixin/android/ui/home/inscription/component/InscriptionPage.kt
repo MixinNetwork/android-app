@@ -285,7 +285,7 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(20.dp))
                                         Box(Modifier.fillMaxWidth()) {
                                             Column {
-                                                Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
+                                                Text(text = stringResource(id = R.string.Token).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                                                 Box(modifier = Modifier.height(8.dp))
                                                 Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
                                                 Box(modifier = Modifier.height(5.dp))
