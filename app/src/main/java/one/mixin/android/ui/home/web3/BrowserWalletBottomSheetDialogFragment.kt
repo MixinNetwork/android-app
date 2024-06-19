@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.calcSolBalanceChange
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute

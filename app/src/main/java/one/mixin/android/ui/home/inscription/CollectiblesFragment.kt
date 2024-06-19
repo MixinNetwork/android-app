@@ -61,7 +61,7 @@ class CollectiblesFragment : BaseFragment() {
 
     private val collectionAdapter by lazy {
         CollectionAdapter {
-            // Todo
+            CollectionActivity.show(requireContext(), it.collectionHash)
         }
     }
 

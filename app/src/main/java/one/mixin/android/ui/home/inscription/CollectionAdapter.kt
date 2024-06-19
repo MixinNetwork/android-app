@@ -43,14 +43,14 @@ class CollectionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewH
 
     @SuppressLint("SetTextI18n")
     fun bind(
-        inscriptionItem: SafeCollection,
+        inscriptionCollection: SafeCollection,
         callback: (SafeCollection) -> Unit,
     ) {
         binding.apply {
-            root.setOnClickListener { callback.invoke(inscriptionItem) }
-            inscriptionIv.loadImage(data = inscriptionItem.iconURL, holder = R.drawable.ic_default_inscription)
-            title.text = inscriptionItem.name
-            subTitle.text = "${inscriptionItem.inscriptionCount}"
+            root.setOnClickListener { callback.invoke(inscriptionCollection) }
+            inscriptionIv.loadImage(data = inscriptionCollection.iconURL, holder = R.drawable.ic_default_inscription)
+            title.text = inscriptionCollection.name
+            subTitle.text = "${inscriptionCollection.inscriptionCount}"
         }
     }
 }

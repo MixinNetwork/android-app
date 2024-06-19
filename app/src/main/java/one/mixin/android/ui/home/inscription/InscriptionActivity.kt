@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntSize
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
@@ -68,8 +67,6 @@ import one.mixin.android.job.SyncInscriptionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.MAX_PHOTO_SIZE
-import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.TYPE_BIOGRAPHY
-import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.TYPE_PHOTO
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -81,7 +78,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -136,7 +132,7 @@ class InscriptionActivity : BaseActivity() {
                 ::callbackSend,
             )
         SystemUIManager.lightUI(window, false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.statusBarColor = Color.TRANSPARENT
         binding = ActivityInscriptionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
