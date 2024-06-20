@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import coil.load
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemInscriptionBinding
 import one.mixin.android.databinding.ItemInscriptionHeaderBinding
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
@@ -61,10 +59,7 @@ class CollectiblesHeaderHolder(val binding: ItemInscriptionHeaderBinding) : Recy
         collection: SafeCollection
     ) {
         binding.apply {
-            inscriptionIv.load(collection.iconURL) {
-                placeholder(R.drawable.ic_avatar_place_holder)
-                transformations(CoilRoundedHexagonTransformation())
-            }
+            inscriptionIv.loadImage(collection.iconURL, R.drawable.ic_avatar_place_holder, transformation = CoilRoundedHexagonTransformation())
             nameTv.text = collection.name
             countTv.text = root.context.getString(R.string.Collection_collected, collection.inscriptionCount)
             descriptionTv.text = collection.description
