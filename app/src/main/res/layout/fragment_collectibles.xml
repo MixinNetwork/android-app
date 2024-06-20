@@ -89,13 +89,13 @@
                 android:checked="true"
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp"
-                android:paddingStart="10dp"
-                android:paddingEnd="6dp" />
+                android:paddingStart="8dp"
+                android:paddingEnd="4dp" />
 
             <View
                 android:background="?attr/nft_border"
                 android:layout_width="1dp"
-                android:layout_height="18dp"
+                android:layout_height="16dp"
                 android:layout_gravity="center_vertical" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -107,24 +107,22 @@
                 android:drawableStart="@drawable/selector_inscription_collection"
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp"
-                android:paddingStart="6dp"
-                android:paddingEnd="10dp" />
+                android:paddingStart="4dp"
+                android:paddingEnd="8dp" />
 
         </RadioGroup>
 
         <LinearLayout
             android:id="@+id/drop_sort"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
             android:orientation="horizontal"
             android:background="@drawable/bg_inscription_drop"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="16dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
             android:paddingStart="14dp"
-            android:paddingEnd="10dp"
+            android:paddingEnd="14dp"
             android:gravity="center_vertical">
 
             <TextView
@@ -138,7 +136,7 @@
 
             <ImageView
                 android:id="@+id/sort_arrow"
-                android:src="@drawable/ic_keyboard_arrow_down"
+                android:src="@drawable/ic_sort_arrow_down"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 

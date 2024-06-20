@@ -14,13 +14,17 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCollectiblesBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putInt
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
@@ -107,21 +111,16 @@ class CollectiblesFragment : BaseFragment() {
             settingIb.setOnClickListener {
                 SettingActivity.show(requireContext(), compose = false)
             }
-            radioCollectibles.isChecked = true
+            if (type == R.id.radio_collectibles) {
+                radioCollectibles.isChecked = true
+            } else {
+                radioCollection.isChecked = true
+            }
             collectiblesRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true))
 
             collectiblesRv.layoutManager = GridLayoutManager(requireContext(), 2)
             collectiblesRv.adapter = collectiblesAdapter
 
-            web3ViewModel.collectibles(SortOrder.Recent).observe(this@CollectiblesFragment.viewLifecycleOwner) {
-                binding.collectiblesVa.displayedChild =
-                    if (it.isEmpty()) {
-                        1
-                    } else {
-                        0
-                    }
-                collectiblesAdapter.list = it
-            }
             dropSort.setOnClickListener {
                 binding.sortArrow.animate().rotation(-180f).setDuration(200).start()
                 sortMenu.show()
@@ -135,6 +134,7 @@ class CollectiblesFragment : BaseFragment() {
     }
 
     private fun bindData() {
+        binding.dropTv.setText(if (sortOrder == SortOrder.Recent) R.string.Recent else R.string.Alphabetical)
         when (type) {
             R.id.radio_collectibles -> {
                 binding.collectiblesRv.adapter = collectiblesAdapter
@@ -166,17 +166,20 @@ class CollectiblesFragment : BaseFragment() {
         }
     }
 
-    private var sortOrder = SortOrder.Recent
+    private var sortOrder = SortOrder.fromInt(MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_INSCRIPTION_ORDER, SortOrder.Recent.value))
         set(value) {
             if (field != value) {
                 field = value
+                defaultSharedPreferences.putInt(Constants.Account.PREF_INSCRIPTION_ORDER, value.value)
                 bindData()
             }
         }
-    private var type = R.id.radio_collectibles
+
+    private var type = MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_INSCRIPTION_TYPE, R.id.radio_collectibles)
         set(value) {
             if (field != value) {
                 field = value
+                defaultSharedPreferences.putInt(Constants.Account.PREF_INSCRIPTION_TYPE, value)
                 bindData()
             }
         }
@@ -190,8 +193,6 @@ class CollectiblesFragment : BaseFragment() {
             anchorView = binding.dropSort
             setAdapter(SortMenuAdapter(requireContext(), menuItems))
             setOnItemClickListener { _, _, position, _ ->
-                val selectedItem = menuItems[position]
-                binding.dropTv.setText(selectedItem.title)
                 sortOrder = if (position == 0) {
                     SortOrder.Recent
                 } else {

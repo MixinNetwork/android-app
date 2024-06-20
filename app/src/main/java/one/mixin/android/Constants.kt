@@ -77,6 +77,8 @@ object Constants {
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
+        const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
+        const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
