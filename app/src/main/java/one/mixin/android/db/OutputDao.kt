@@ -83,11 +83,24 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
+        SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o 
+        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        LEFT JOIN tokens t on t.collection_hash = i.collection_hash
+        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' AND ic.collection_hash = :collectionHash
+        ORDER BY o.sequence ASC
+        """,
+    )
+    fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>>
+
+    @Query(
+        """
         SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, count(i.inscription_hash) AS inscription_count 
         FROM outputs o
         INNER JOIN inscription_items i ON i.inscription_hash = o.inscription_hash
         INNER JOIN inscription_collections ic ON ic.collection_hash = i.collection_hash
         WHERE o.state = 'unspent'
+        GROUP BY ic.collection_hash 
         ORDER BY CASE 
             WHEN :orderBy = 'Recent' THEN o.sequence
             WHEN :orderBy = 'Alphabetical' THEN ic.name

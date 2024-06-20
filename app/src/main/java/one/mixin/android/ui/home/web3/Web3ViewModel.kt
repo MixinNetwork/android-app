@@ -162,6 +162,8 @@ class Web3ViewModel
 
         fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = tokenRepository.collectibles(sortOrder)
 
+        fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = tokenRepository.collectiblesByHash(collectionHash)
+
         fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = tokenRepository.collections(sortOrder)
 
         fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)

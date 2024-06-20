@@ -919,6 +919,8 @@ class TokenRepository
 
         fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = outputDao.collectibles(sortOrder.name)
 
+        fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = outputDao.collectiblesByHash(collectionHash)
+
         fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)

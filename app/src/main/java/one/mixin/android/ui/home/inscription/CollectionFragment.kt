@@ -83,7 +83,7 @@ class CollectionFragment : BaseFragment() {
             }
             collectiblesRv.layoutManager = lm
             collectiblesRv.adapter = collectiblesAdapter
-            web3ViewModel.collectibles(SortOrder.Recent).observe(this@CollectionFragment.viewLifecycleOwner) {
+            web3ViewModel.collectiblesByHash(safeCollection.collectionHash).observe(this@CollectionFragment.viewLifecycleOwner) {
                 binding.collectiblesVa.displayedChild =
                     if (it.isEmpty()) {
                         1
