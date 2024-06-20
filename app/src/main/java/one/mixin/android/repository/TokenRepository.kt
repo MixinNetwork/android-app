@@ -765,7 +765,7 @@ class TokenRepository
             limit: Int,
             asset: String,
             inscriptionHash: String? = null,
-        ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findUnspentOutputsByAsset(limit, asset)
+        ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findDeterminedOutputsByAsset(limit, asset)
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
 
