@@ -3,10 +3,10 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.widget.FrameLayout
-import coil.load
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeSnapshBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -33,14 +33,9 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (messageItem.assetCollectionHash.isNullOrEmpty()) {
-            binding.billIv.load(messageItem.assetIcon) {
-                placeholder(R.drawable.ic_avatar_place_holder)
-            }
+            binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
         } else {
-            binding.billIv.load(messageItem.assetIcon) {
-                placeholder(R.drawable.ic_avatar_place_holder)
-                transformations(CoilRoundedHexagonTransformation())
-            }
+            binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder, transformation = CoilRoundedHexagonTransformation())
         }
         val amount = messageItem.snapshotAmount
         if (!amount.isNullOrBlank()) {

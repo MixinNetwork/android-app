@@ -16,7 +16,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import coil.load
 import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -29,6 +28,7 @@ import one.mixin.android.databinding.FragmentPreviewVideoBinding
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
@@ -161,7 +161,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
                     action?.invoke(uri, -1f, -1f)
                     dismiss()
                 }
-                binding.dialogIv.load(uri)
+                binding.dialogIv.loadImage(uri)
             }
         }
     }
