@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.uber.autodispose.autoDispose
@@ -201,7 +202,7 @@ class CollectiblesFragment : BaseFragment() {
             width = requireContext().dpToPx(250f)
             height = ListPopupWindow.WRAP_CONTENT
             isModal = true
-            setBackgroundDrawable(ColorDrawable(requireContext().colorAttr(R.attr.bg_white)))
+            setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
             setDropDownGravity(Gravity.END)
             horizontalOffset = requireContext().dpToPx(2f)
             verticalOffset = requireContext().dpToPx(10f)
