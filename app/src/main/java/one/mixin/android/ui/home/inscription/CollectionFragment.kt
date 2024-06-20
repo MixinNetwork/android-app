@@ -70,6 +70,9 @@ class CollectionFragment : BaseFragment() {
             root.setOnClickListener {
                 // do nothing
             }
+            titleView.leftIb.setOnClickListener {
+                requireActivity().finish()
+            }
             collectiblesRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true, skip = true))
 
             val lm = GridLayoutManager(requireContext(), 2)
