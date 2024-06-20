@@ -73,10 +73,13 @@ interface OutputDao : BaseDao<Output> {
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         LEFT JOIN tokens t on t.collection_hash = i.collection_hash
         WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' 
-        ORDER BY CASE 
-            WHEN :orderBy = 'Recent' THEN o.sequence
-            WHEN :orderBy = 'Alphabetical' THEN ic.name
-        END ASC
+        ORDER BY 
+            CASE 
+                WHEN :orderBy = 'Recent' THEN o.sequence 
+            END DESC,
+            CASE 
+                WHEN :orderBy = 'Alphabetical' THEN ic.name 
+            END ASC
         """,
     )
     fun collectibles(orderBy: String): LiveData<List<SafeCollectible>>
@@ -101,10 +104,13 @@ interface OutputDao : BaseDao<Output> {
         INNER JOIN inscription_collections ic ON ic.collection_hash = i.collection_hash
         WHERE o.state = 'unspent'
         GROUP BY ic.collection_hash 
-        ORDER BY CASE 
-            WHEN :orderBy = 'Recent' THEN o.sequence
-            WHEN :orderBy = 'Alphabetical' THEN ic.name
-        END ASC
+         ORDER BY 
+            CASE 
+                WHEN :orderBy = 'Recent' THEN o.sequence 
+            END DESC,
+            CASE 
+                WHEN :orderBy = 'Alphabetical' THEN ic.name 
+            END ASC
         """,
     )
     fun collections(orderBy: String): LiveData<List<SafeCollection>>
