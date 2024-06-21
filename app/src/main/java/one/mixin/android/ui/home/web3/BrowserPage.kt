@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
@@ -50,7 +51,7 @@ import one.mixin.android.tip.wc.internal.displayGas
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
-import one.mixin.android.ui.home.web3.components.SolanaTransactionNoPreview
+import one.mixin.android.ui.home.web3.components.SolanaParsedTxPreview
 import one.mixin.android.ui.home.web3.components.TokenTransactionPreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -77,6 +78,7 @@ fun BrowserPage(
     step: WalletConnectBottomSheetDialogFragment.Step,
     tipGas: TipGas?,
     solanaFee: BigDecimal?,
+    parsedTx: ParsedTx?,
     asset: Token?,
     transaction: WCEthereumTransaction?,
     data: String?,
@@ -230,10 +232,10 @@ fun BrowserPage(
                     MessagePreview(content = data ?: "") {
                         onPreviewMessage.invoke(it)
                     }
+                } else if (chain == Chain.Solana) {
+                    SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset)
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
-                } else if (chain == Chain.Solana) {
-                    SolanaTransactionNoPreview(asset = asset)
                 } else {
                     TransactionPreview(
                         balance =
@@ -245,7 +247,7 @@ fun BrowserPage(
                         asset,
                     )
                 }
-                Box(modifier = Modifier.height(20.dp))
+                Box(modifier = Modifier.height(10.dp))
                 val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(

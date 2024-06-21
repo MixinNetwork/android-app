@@ -63,7 +63,25 @@ class Web3Token(
     val assetKey: String,
     @SerializedName("decimals")
     val decimals: Int,
-) : Parcelable
+) : Parcelable {
+    fun toLongAmount(amount: String): Long {
+        val a =
+            try {
+                BigDecimal(amount)
+            } catch (e: Exception) {
+                return 0
+            }
+        return a.multiply(BigDecimal.TEN.pow(decimals)).toLong()
+    }
+
+    fun toStringAmount(amount: Long): String {
+        return realAmount(amount).stripTrailingZeros().toPlainString()
+    }
+
+    fun realAmount(amount: Long): BigDecimal {
+        return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+    }
+}
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
 const val wrappedSolTokenAssetKey = "So11111111111111111111111111111111111111112"
