@@ -26,8 +26,15 @@ import one.mixin.android.ui.home.web3.components.InscriptionState
 
 @Composable
 fun SharePage(
-    qrcode: Bitmap, inscriptionHash: String, value: InscriptionState, inScreenshot: Boolean,
-    onClose: () -> Unit, onCopy: () -> Unit, onSave: (size: IntSize, bottomSize: IntSize) -> Unit, onShare: (size: IntSize, bottomSize: IntSize) -> Unit) {
+    qrcode: Bitmap,
+    inscriptionHash: String,
+    value: InscriptionState,
+    inScreenshot: Boolean,
+    onClose: () -> Unit,
+    onCopy: () -> Unit,
+    onSave: (size: IntSize, bottomSize: IntSize) -> Unit,
+    onShare: (size: IntSize, bottomSize: IntSize) -> Unit
+) {
     val targetSize = remember { mutableStateOf(IntSize.Zero) }
     Box(
         modifier = Modifier

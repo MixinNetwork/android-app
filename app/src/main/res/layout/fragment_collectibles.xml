@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
@@ -64,6 +64,86 @@
             tools:ignore="ContentDescription" />
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_marginTop="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioGroup
+            android:id="@+id/radio_group_collectibles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="start"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_inscription_radio"
+            android:padding="1dp">
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_collectibles"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@null"
+                android:background="@drawable/ripple_half_circle_left"
+                android:drawableStart="@drawable/selector_inscription_collectibles"
+                android:checked="true"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="4dp" />
+
+            <View
+                android:background="?attr/nft_border"
+                android:layout_width="1dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_collection"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@null"
+                android:background="@drawable/ripple_half_circle_right"
+                android:drawableStart="@drawable/selector_inscription_collection"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="8dp" />
+
+        </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/drop_sort"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_inscription_drop"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/drop_tv"
+                android:textColor="#4B7CDD"
+                android:text="@string/Recent"
+                android:textSize="14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp" />
+
+            <ImageView
+                android:id="@+id/sort_arrow"
+                android:src="@drawable/ic_sort_arrow_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
     <ViewAnimator
         android:id="@+id/collectibles_va"
         android:layout_width="match_parent"
@@ -77,7 +157,8 @@
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             tools:listitem="@layout/item_inscription"
-            tools:itemCount="5"/>
+            tools:itemCount="5"
+            tools:spanCount="2" />
 
         <LinearLayout
             android:layout_width="wrap_content"

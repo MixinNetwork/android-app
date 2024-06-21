@@ -17,7 +17,7 @@ import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
@@ -59,7 +59,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         }
         val safeInscription =
             try {
-                GsonHelper.customGson.fromJson(messageItem.content, SafeInscription::class.java)
+                GsonHelper.customGson.fromJson(messageItem.content, SafeCollectible::class.java)
             } catch (e: Exception) {
                 null
             }

@@ -7,12 +7,20 @@ import androidx.room.Query
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 
 @Dao
 interface OutputDao : BaseDao<Output> {
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(
+        limit: Int,
+        asset: String,
+    ): List<Output>
+
+    // Determine the UTXO  can spend
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') AND sequence > 0 ORDER BY sequence ASC LIMIT :limit")
+    suspend fun findDeterminedOutputsByAsset(
         limit: Int,
         asset: String,
     ): List<Output>
@@ -64,10 +72,48 @@ interface OutputDao : BaseDao<Output> {
         LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         LEFT JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' ORDER BY o.sequence ASC
+        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' 
+        ORDER BY 
+            CASE 
+                WHEN :orderBy = 'Recent' THEN o.sequence 
+            END DESC,
+            CASE 
+                WHEN :orderBy = 'Alphabetical' THEN ic.name 
+            END ASC
         """,
     )
-    fun inscriptions(): LiveData<List<SafeInscription>>
+    fun collectibles(orderBy: String): LiveData<List<SafeCollectible>>
+
+    @Query(
+        """
+        SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o 
+        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        LEFT JOIN tokens t on t.collection_hash = i.collection_hash
+        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' AND ic.collection_hash = :collectionHash
+        ORDER BY o.sequence ASC
+        """,
+    )
+    fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>>
+
+    @Query(
+        """
+        SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, count(i.inscription_hash) AS inscription_count 
+        FROM outputs o
+        INNER JOIN inscription_items i ON i.inscription_hash = o.inscription_hash
+        INNER JOIN inscription_collections ic ON ic.collection_hash = i.collection_hash
+        WHERE o.state = 'unspent'
+        GROUP BY ic.collection_hash 
+         ORDER BY 
+            CASE 
+                WHEN :orderBy = 'Recent' THEN o.sequence 
+            END DESC,
+            CASE 
+                WHEN :orderBy = 'Alphabetical' THEN ic.name 
+            END ASC
+        """,
+    )
+    fun collections(orderBy: String): LiveData<List<SafeCollection>>
 
     // Get the latest inscription, inscription UTXO cannot be separated
     @Query(

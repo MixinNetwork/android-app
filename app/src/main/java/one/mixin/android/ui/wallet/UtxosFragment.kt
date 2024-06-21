@@ -211,6 +211,7 @@ class UtxosFragment : BaseFragment() {
         alertDialogBuilder()
             .setTitle(R.string.app_name)
             .setMessage(error)
+            .setCancelable(false)
             .setPositiveButton(R.string.Retry) { dialog, _ ->
                 lifecycleScope.launch(
                     CoroutineExceptionHandler { _, throwable ->
@@ -246,7 +247,9 @@ class UtxosFragment : BaseFragment() {
             val resp = walletViewModel.getOutputs(members, 1, sequence, syncOutputLimit, asset = kernelAssetId, state = "unspent")
             if (!resp.isSuccess || resp.data.isNullOrEmpty()) {
                 Timber.d("$TAG getOutputs ${resp.isSuccess}, ${resp.data.isNullOrEmpty()}")
-                showError(resp.errorDescription)
+                withContext(Dispatchers.Main) {
+                    showError(resp.errorDescription)
+                }
                 return@withContext
             }
             val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })

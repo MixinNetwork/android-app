@@ -39,8 +39,8 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.nftRelease -> {
-                    title.setText(R.string.inscription_releasing)
-                    subTitle.setText(R.string.inscription_releasing_description)
+                    title.setText(R.string.collectible_releasing)
+                    subTitle.setText(R.string.collectible_releasing_description)
                 }
 
                 TransferType.addressTransfer -> {
@@ -91,7 +91,7 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.nftRelease -> {
-                    title.setText(R.string.inscription_release_failed)
+                    title.setText(R.string.collectible_release_failed)
                 }
 
                 TransferType.addressTransfer -> {
@@ -133,8 +133,8 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.nftRelease -> {
-                    title.setText(R.string.inscription_release_success)
-                    subTitle.setText(R.string.inscription_released_description)
+                    title.setText(R.string.collectible_release_success)
+                    subTitle.setText(R.string.collectible_released_description)
                 }
 
                 TransferType.addressTransfer -> {
@@ -199,8 +199,8 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.nftRelease -> {
-                    title.setText(R.string.inscription_release_confirmation)
-                    subTitle.setText(R.string.inscription_release_hint)
+                    title.setText(R.string.collectible_release_confirmation)
+                    subTitle.setText(R.string.collectible_release_hint)
                 }
 
                 TransferType.addressTransfer -> {

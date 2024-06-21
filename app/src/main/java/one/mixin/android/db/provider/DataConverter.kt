@@ -17,7 +17,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.WithdrawalMemoPossibility
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.Callable
 
@@ -1268,8 +1268,8 @@ fun callableSafeInscription(
     db: MixinDatabase,
     statement: RoomSQLiteQuery,
     cancellationSignal: CancellationSignal,
-): Callable<List<SafeInscription>> {
-    return Callable<List<SafeInscription>> {
+): Callable<List<SafeCollectible>> {
+    return Callable<List<SafeCollectible>> {
         val cursor = query(db, statement, false, cancellationSignal)
         try {
             val cursorIndexOfCollectionHash = 0
@@ -1279,9 +1279,9 @@ fun callableSafeInscription(
             val cursorIndexOfContentURL = 4
             val cursorIndexOfName = 6
             val cursorIndexOfIconURL = 7
-            val result: MutableList<SafeInscription> = ArrayList(cursor.count)
+            val result: MutableList<SafeCollectible> = ArrayList(cursor.count)
             while (cursor.moveToNext()) {
-                val item: SafeInscription
+                val item: SafeCollectible
                 val tmpCollectionHash: String = cursor.getString(cursorIndexOfCollectionHash)
                 val tmpInscriptionHash: String = cursor.getString(cursorIndexOfInscriptionHash)
                 val tmpSequence: Long = cursor.getLong(cursorIndexOfSequence)
@@ -1289,7 +1289,7 @@ fun callableSafeInscription(
                 val tmpContentURL: String = cursor.getString(cursorIndexOfContentURL)
                 val tmpName: String = cursor.getString(cursorIndexOfName)
                 val tmpIconURL: String = cursor.getString(cursorIndexOfIconURL)
-                item = SafeInscription(tmpCollectionHash, tmpInscriptionHash, tmpSequence, tmpName, tmpContentType, tmpContentURL, tmpIconURL)
+                item = SafeCollectible(tmpCollectionHash, tmpInscriptionHash, tmpSequence, tmpName, tmpContentType, tmpContentURL, tmpIconURL)
                 result.add(item)
             }
             return@Callable result
