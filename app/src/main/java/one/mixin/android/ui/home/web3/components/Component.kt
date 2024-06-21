@@ -197,7 +197,8 @@ fun SolanaParsedTxPreview(
             horizontalAlignment = Alignment.Start,
         ) {
             BalanceChangeHead()
-            if (parsedTx?.tokens == null) {
+            // is refreshing parsedTx or tokens
+            if (parsedTx?.instructions == null || (parsedTx.balanceChanges != null && parsedTx.tokens == null)) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(32.dp),
                     color = MixinAppTheme.colors.accent,
