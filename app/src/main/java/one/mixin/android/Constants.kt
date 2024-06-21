@@ -266,6 +266,7 @@ object Constants {
     }
 
     const val DEVICE_ID = "device_id"
+    const val APP_VERSION = "app_version"
 
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = (1000 * 60 * 60 * 24).toLong()
