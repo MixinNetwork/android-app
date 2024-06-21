@@ -6,10 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemInscriptionBinding
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.safe.SafeCollectible
+import timber.log.Timber
 
 class CollectiblesAdapter(val callback: (SafeCollectible) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
     var list: List<SafeCollectible> = emptyList()
@@ -48,7 +50,13 @@ class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.View
     ) {
         binding.apply {
             root.setOnClickListener { callback.invoke(inscriptionItem) }
-            inscriptionIv.loadImage(data = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
+            Timber.e("${inscriptionItem.contentType} ${inscriptionItem.contentType.startsWith("text",true)} ${inscriptionItem.contentURL}")
+            if (inscriptionItem.contentType.startsWith("text",true)){
+                inscriptionIv.clear()
+                inscriptionIv.setImageResource(R.drawable.bg_inscription_mao)
+            } else {
+                inscriptionIv.loadImage(data = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
+            }
             title.text = inscriptionItem.name
             subTitle.text = "#${inscriptionItem.sequence}"
         }
