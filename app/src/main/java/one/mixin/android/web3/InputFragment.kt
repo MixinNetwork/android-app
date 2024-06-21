@@ -256,7 +256,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             TransferBottomSheetDialogFragment.newInstance(withdrawBiometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                     override fun onDismiss(success: Boolean) {
-                                        if (viewDestroyed()) return
+                                        if (isAdded) return
                                         if (success) {
                                             parentFragmentManager.apply {
                                                 findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
