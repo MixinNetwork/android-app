@@ -148,7 +148,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             bottomSheet.setCallback(
                 object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
-                        if (success && !viewDestroyed()) {
+                        if (success && this@AddressAddFragment.isAdded) {
                             view.navigateUp()
                         }
                     }
