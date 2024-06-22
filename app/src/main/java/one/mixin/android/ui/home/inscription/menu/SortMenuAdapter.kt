@@ -7,9 +7,13 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isInvisible
 import one.mixin.android.R
+import one.mixin.android.databinding.MenuSortBinding
 
 class SortMenuAdapter(private val context: Context, private val items: List<SortMenuData>) : BaseAdapter() {
+
+    var checkPosition: Int = 1
 
     override fun getCount(): Int = items.size
 
@@ -18,15 +22,14 @@ class SortMenuAdapter(private val context: Context, private val items: List<Sort
     override fun getItemId(position: Int): Long = items[position].menu.ordinal.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.menu_sort, parent, false)
+        val binding = MenuSortBinding.bind(convertView ?: LayoutInflater.from(context).inflate(R.layout.menu_sort, parent, false))
         val item = getItem(position)
 
-        val icon = view.findViewById<ImageView>(R.id.icon)
-        val title = view.findViewById<TextView>(R.id.title)
+        binding.iv.isInvisible = checkPosition != position
 
-        icon.setImageResource(item.iconResId)
-        title.setText(item.title)
+        binding.icon.setImageResource(item.iconResId)
+        binding.title.setText(item.title)
 
-        return view
+        return binding.root
     }
 }
