@@ -7,7 +7,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.SyncInscriptionCollectionJob
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.vo.safe.SafeCollection

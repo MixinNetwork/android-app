@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.inscription
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -25,7 +24,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
