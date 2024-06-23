@@ -12,7 +12,6 @@ import one.mixin.android.databinding.FragmentCollectionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.inscription.CollectionActivity.Companion.ARGS_COLLECTION

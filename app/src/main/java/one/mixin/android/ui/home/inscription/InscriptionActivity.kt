@@ -137,8 +137,8 @@ class InscriptionActivity : BaseActivity() {
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
         binding.compose.setContent {
-            InscriptionPage(inscriptionHash, { finish() }, { url, ownership ->
-                showBottom(url, ownership)
+            InscriptionPage(inscriptionHash, { finish() }, { url, contentType ->
+                showBottom(url, contentType)
             }, onSendAction, { isShareDialogVisible = true })
         }
         binding.overflow.setContent {
@@ -239,12 +239,12 @@ class InscriptionActivity : BaseActivity() {
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     @SuppressLint("InflateParams")
-    private fun showBottom(url:String?, ownership: Boolean) {
+    private fun showBottom(url:String?, contentType: String?) {
         val builder = BottomSheet.Builder(this)
         _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
-        bottomBinding.setAvatarTv.isVisible = ownership
+        bottomBinding.setAvatarTv.isVisible = contentType?.startsWith("image", true) == true
         bottomBinding.setAvatarTv.setOnClickListener {
             lifecycleScope.launch {
                 setAvatar(url)

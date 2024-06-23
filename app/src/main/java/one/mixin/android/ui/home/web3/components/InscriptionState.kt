@@ -22,6 +22,8 @@ class InscriptionState(
     val iconUrl: String?,
     @ColumnInfo(name = "content_url")
     val contentURL: String?,
+    @ColumnInfo(name = "content_type")
+    val contentType: String?,
 ) {
     val id: String
         get() {
