@@ -4,11 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemInscriptionBinding
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.safe.SafeCollection
 
 class CollectionAdapter(val callback: (SafeCollection) -> Unit) : RecyclerView.Adapter<CollectionHolder>() {
@@ -37,9 +33,7 @@ class CollectionAdapter(val callback: (SafeCollection) -> Unit) : RecyclerView.A
 }
 
 class CollectionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewHolder(binding.root) {
-    init {
-        binding.inscriptionIv.roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
-    }
+
 
     @SuppressLint("SetTextI18n")
     fun bind(
@@ -48,7 +42,7 @@ class CollectionHolder(val binding: ItemInscriptionBinding) : RecyclerView.ViewH
     ) {
         binding.apply {
             root.setOnClickListener { callback.invoke(inscriptionCollection) }
-            inscriptionIv.loadImage(data = inscriptionCollection.iconURL, holder = R.drawable.ic_default_inscription)
+            inscription.render(inscriptionCollection)
             title.text = inscriptionCollection.name
             subTitle.text = "${inscriptionCollection.inscriptionCount}"
         }

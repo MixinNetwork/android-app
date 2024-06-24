@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.components
 
 import androidx.room.ColumnInfo
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
