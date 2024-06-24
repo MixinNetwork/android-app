@@ -66,11 +66,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         if (safeInscription != null) {
             binding.chatTitleTv.text = safeInscription.name
             binding.chatNumberTv.text = "#${safeInscription.sequence}"
-            if (safeInscription.contentType.startsWith("text", true)) {
-                binding.chatInscriptionIv.setImageResource(R.drawable.bg_inscription_mao)
-            } else {
-                binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
-            }
+            binding.chatInscriptionIv.render(safeInscription)
             binding.chatInscriptionIcon.loadImage(safeInscription.iconURL, R.drawable.ic_inscription_icon, transformation = CoilRoundedHexagonTransformation())
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
         }

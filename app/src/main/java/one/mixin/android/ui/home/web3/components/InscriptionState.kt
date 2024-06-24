@@ -1,9 +1,9 @@
 package one.mixin.android.ui.home.web3.components
 
 import androidx.room.ColumnInfo
+import java.math.BigDecimal
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
-import java.math.BigDecimal
 
 class InscriptionState(
     @ColumnInfo(name = "name")
@@ -25,7 +25,7 @@ class InscriptionState(
     @ColumnInfo(name = "content_type")
     val contentType: String?
 ) {
-    val isText:Boolean
+    val isText: Boolean
         get() = contentType?.startsWith("text", true) == true
 
     val id: String

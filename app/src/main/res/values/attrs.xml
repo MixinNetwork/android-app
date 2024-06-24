@@ -250,6 +250,7 @@
     </declare-styleable>
     <declare-styleable name="InscriptionView">
         <attr name="iconSize" format="dimension"/>
+        <attr name="iconRound" format="boolean"/>
         <attr name="textMarginHorizon" format="dimension"/>
         <attr name="textMarginVertical" format="dimension"/>
         <attr name="textMinTextSize" format="integer"/>

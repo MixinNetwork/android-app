@@ -76,17 +76,22 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="1.5dp">
 
-            <ImageView
+            <one.mixin.android.widget.InscriptionView
                 android:id="@+id/chat_inscription_iv"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_default_inscription"
                 android:layout_width="112dp"
                 android:layout_height="112dp"
                 android:layout_gravity="center"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:textGranularity="1"
+                app:textMinTextSize="12"
+                app:textMaxTextSize="16"
+                app:textMarginHorizon="8dp"
+                app:textMarginVertical="4dp"
+                app:textMaxLines="2"
+                app:iconRound="false"/>
 
             <one.mixin.android.widget.BarcodeView
                 android:id="@+id/chat_barcode"
