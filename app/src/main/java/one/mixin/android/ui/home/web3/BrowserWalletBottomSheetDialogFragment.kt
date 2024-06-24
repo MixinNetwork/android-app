@@ -62,6 +62,7 @@ import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
@@ -161,6 +162,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     tipGas,
                     solanaTx?.calcFee(),
                     parsedTx,
+                    signMessage.solanaTxSource,
                     asset,
                     signMessage.wcEthereumTransaction,
                     solanaSignInInput?.toMessage() ?: signMessage.reviewData,
@@ -270,7 +272,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx =
                             solanaTx ?: VersionedTransaction.from(signMessage.data ?: "").apply {
-                                val txWithPriorityFee = updateTxPriorityFee(this, signMessage.priorityLevel)
+                                val txWithPriorityFee = updateTxPriorityFee(this, signMessage.solanaTxSource)
                                 solanaTx = txWithPriorityFee
                             }
                         if (parsedTx == null) {
@@ -346,14 +348,20 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         onDismissAction?.invoke()
     }
 
-    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, priorityLevel: PriorityLevel): VersionedTransaction {
-        var level = priorityLevel
-        // if keep-level tx has no priority fee, set a high-level for usage
-        if (priorityLevel == PriorityLevel.Keep) {
-            if (tx.calcFee() != BigDecimal.ZERO) {
-                return tx
+    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
+        val level = when(solanaTxSource) {
+            SolanaTxSource.InnerTransfer -> {
+                PriorityLevel.Medium
             }
-            level = PriorityLevel.High
+            SolanaTxSource.InnerSwap -> {
+                PriorityLevel.High
+            }
+            else -> {
+                if (tx.calcFee() != BigDecimal.ZERO) {
+                    return tx
+                }
+                PriorityLevel.High
+            }
         }
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), level)
         if (priorityFeeResp != null && priorityFeeResp.unitPrice > 0) {

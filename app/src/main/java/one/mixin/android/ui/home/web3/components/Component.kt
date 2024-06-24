@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.isSolana
 import one.mixin.android.api.response.web3.BalanceChange
 import one.mixin.android.api.response.web3.Item
 import one.mixin.android.api.response.web3.ParsedInstruction
@@ -63,6 +62,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.js.SolanaTxSource
 import java.math.BigDecimal
 
 private val gradientColors = listOf(Cyan, Color(0xFF0066FF), Color(0xFF800080))
@@ -185,6 +185,7 @@ fun TokenTransactionPreview(
 fun SolanaParsedTxPreview(
     asset: Token?,
     parsedTx: ParsedTx?,
+    solanaTxSource: SolanaTxSource,
 ) {
     if (parsedTx?.tokens == null || parsedTx.balanceChanges == null) {
         Column(
@@ -251,34 +252,36 @@ fun SolanaParsedTxPreview(
             BalanceChangeItem(token, bc)
             Box(modifier = Modifier.height(10.dp))
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    viewDetails.value = !viewDetails.value
-                },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_play_arrow),
-                modifier =
-                Modifier
-                    .size(24.dp, 24.dp)
-                    .rotate(rotation),
-                contentDescription = null,
-                tint = MixinAppTheme.colors.accent,
-            )
-            Text(
-                modifier = Modifier.padding(start = 4.dp),
-                text = stringResource(id = R.string.View_details),
-                color = MixinAppTheme.colors.accent,
-                fontFamily = FontFamily(Font(R.font.mixin_font)),
-                fontSize = 14.sp,
-            )
-        }
-        if (viewDetails.value) {
-            Box(modifier = Modifier.height(10.dp))
-            Instructions(parsedTx.instructions)
+        if (!solanaTxSource.isInnerTx()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        viewDetails.value = !viewDetails.value
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_play_arrow),
+                    modifier =
+                    Modifier
+                        .size(24.dp, 24.dp)
+                        .rotate(rotation),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.accent,
+                )
+                Text(
+                    modifier = Modifier.padding(start = 4.dp),
+                    text = stringResource(id = R.string.View_details),
+                    color = MixinAppTheme.colors.accent,
+                    fontFamily = FontFamily(Font(R.font.mixin_font)),
+                    fontSize = 14.sp,
+                )
+            }
+            if (viewDetails.value) {
+                Box(modifier = Modifier.height(10.dp))
+                Instructions(parsedTx.instructions)
+            }
         }
     }
 }
@@ -637,5 +640,5 @@ fun SolanaParsedTxPreviewPreview() {
     val tokensData = """[{"id":"So11111111111111111111111111111111111111112","fungible_id":"","name":"Wrapped SOL","symbol":"SOL","icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","chain_id":"solana","chain_name":"Solana","chain_icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","balance":"0","price":"131.23961288579045","change_absolute":"-5.5895303","change_percent":"-4.085043702224179","decimals":9,"asset_key":"So11111111111111111111111111111111111111112","associated_account":""},{"id":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","fungible_id":"","name":"USD Coin","symbol":"USDC","icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png","chain_id":"solana","chain_name":"Solana","chain_icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","balance":"0","price":"0.9999952","change_absolute":"-0.00004657","change_percent":"-0.004655805573562128","decimals":6,"asset_key":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","associated_account":""}]"""
     val tokens = GsonHelper.customGson.fromJson(tokensData, Array<Web3Token>::class.java)
     parsedTx.tokens = tokens.associateBy { it.assetKey }
-    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null)
+    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
 }

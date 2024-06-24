@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
-import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.base64Encode
@@ -15,6 +14,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
 import org.sol4k.Transaction
@@ -248,7 +248,7 @@ suspend fun Web3Token.buildTransaction(
             )
         transaction.addPlaceholderSignature()
         val tx = transaction.serialize().base64Encode()
-        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, priorityLevel = PriorityLevel.Medium)
+        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else {
         JsSigner.useEvm()
         val transaction =
