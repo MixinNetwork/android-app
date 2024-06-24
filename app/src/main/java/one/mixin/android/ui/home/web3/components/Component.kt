@@ -250,7 +250,7 @@ fun SolanaParsedTxPreview(
         BalanceChangeHead()
         parsedTx.balanceChanges.forEach { bc ->
             val token = parsedTx.tokens?.get(bc.address) ?: return
-            BalanceChangeItem(token, bc, solanaTxSource)
+            BalanceChangeItem(token, bc)
             Box(modifier = Modifier.height(10.dp))
         }
         if (!solanaTxSource.isInnerTx()) {
@@ -390,7 +390,6 @@ fun Warning(
 private fun BalanceChangeItem(
     token: Web3Token,
     balanceChange: BalanceChange,
-    solanaTxSource: SolanaTxSource,
 ) {
     Row(
         modifier =
@@ -407,7 +406,7 @@ private fun BalanceChangeItem(
         )
         Box(modifier = Modifier.width(12.dp))
         Text(
-            text = if (solanaTxSource == SolanaTxSource.InnerTransfer && balanceChange.address == wrappedSolTokenAssetKey) "Solana" else token.name,
+            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else token.name,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.W600
@@ -625,7 +624,7 @@ fun TransferBottomPreview() {
 @Composable
 fun BalanceChangePreview() {
     val token = Web3Token(fungibleId = "", name = "Solana", symbol = "SOL", chainId = "solana", chainName = "Solana", chainIconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", balance = "0.01605982", price = "132.9102434930042", changeAbsolute = "-0.030625", changePercent = "-0.023036555963245636", decimals = 9, assetKey = "asset_key", iconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png")
-    BalanceChangeItem(token = token, balanceChange = BalanceChange("So11111111111111111111111111111111111111112", -10000000), solanaTxSource = SolanaTxSource.Web)
+    BalanceChangeItem(token = token, balanceChange = BalanceChange("So11111111111111111111111111111111111111112", -10000000))
 }
 
 @Preview
