@@ -1573,4 +1573,5 @@
     <string name="Alphabetical">Alphabetical</string>
     <string name="Floor_Price">Floor Price</string>
     <string name="Collection_collected">%1$d collected</string>
+    <string name="Content_type">Content type</string>
 </resources>

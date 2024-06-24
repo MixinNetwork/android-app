@@ -122,9 +122,9 @@ private fun InscriptionPageImp(
             },
     ) {
         if (inscription.isText) {
-            BlurImage(R.drawable.ic_text_inscription)
+            BlurBackground(R.drawable.ic_text_inscription)
         } else {
-            BlurImage(inscription.contentURL)
+            BlurBackground(inscription.contentURL)
         }
 
         Column(
@@ -346,6 +346,11 @@ private fun InscriptionPageImp(
                                             )
                                         }
 
+                                        Box(modifier = Modifier.height(20.dp))
+                                        Text(text = stringResource(id = R.string.Content_type).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+                                        Box(modifier = Modifier.height(8.dp))
+                                        Text(text = inscription.contentType ?: "", fontSize = 16.sp, color = Color.White)
+
                                         Box(modifier = Modifier.height(70.dp))
                                     }
                                 }
@@ -400,7 +405,7 @@ private fun InscriptionPageImp(
 }
 
 @Composable
-private fun BlurImage(url: String?) {
+private fun BlurBackground(url: String?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         CoilImage(
             model = url,
@@ -408,7 +413,7 @@ private fun BlurImage(url: String?) {
             Modifier
                 .fillMaxHeight()
                 .graphicsLayer {
-                    alpha = 0.5f
+                    alpha = 0.2f
                 }
                 .blur(30.dp),
             placeholder = R.drawable.ic_inscription_content,
@@ -431,7 +436,7 @@ private fun BlurImage(url: String?) {
 }
 
 @Composable
-private fun BlurImage(@DrawableRes drawable: Int) {
+private fun BlurBackground(@DrawableRes drawable: Int) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         CoilImage(
             model = "",
@@ -439,9 +444,9 @@ private fun BlurImage(@DrawableRes drawable: Int) {
             Modifier
                 .fillMaxHeight()
                 .graphicsLayer {
-                    alpha = 0.5f
+                    alpha = 0.2f
                 }
-                .blur(30.dp),
+                .blur(80.dp),
             placeholder = drawable,
             contentScale = ContentScale.Crop,
         )
