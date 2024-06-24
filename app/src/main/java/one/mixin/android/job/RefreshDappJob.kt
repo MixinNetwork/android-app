@@ -3,6 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -75,7 +76,7 @@ class RefreshDappJob : BaseJob(
                 WEB3_BOT_USER_ID,
             )
         if (key != null) {
-            Session.web3PublicKey = key
+            MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
         } else {
             val sessionResponse = userService.fetchSessionsSuspend(listOf(WEB3_BOT_USER_ID))
             if (sessionResponse.isSuccess) {
@@ -91,7 +92,7 @@ class RefreshDappJob : BaseJob(
                         publicKey = sessionData.publicKey,
                     ),
                 )
-                Session.web3PublicKey = sessionData.publicKey
+                MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
             } else {
                 throw MixinResponseException(
                     sessionResponse.errorCode,
