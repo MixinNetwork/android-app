@@ -40,10 +40,11 @@ class BarcodeView : View {
 
     private var colors = mutableListOf<Int>()
 
-    fun setData(hash: String) {
+    fun setData(hash: String?) {
+        colors.clear()
+        if (hash == null) return
         val bytes = hash.hexStringToByteArray()
         val data = hash + bytes.sha3Sum256().slice(IntRange(0, 3)).toByteArray().bytesToHex()
-        colors.clear()
         data.chunked(6).forEach { colorString ->
             val color = (colorString.toLong(16) or 0x00000000ff000000L).toInt()
             colors.add(color)
