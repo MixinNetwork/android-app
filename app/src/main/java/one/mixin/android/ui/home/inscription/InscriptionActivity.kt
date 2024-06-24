@@ -268,12 +268,12 @@ class InscriptionActivity : BaseActivity() {
         }
 
         bottomBinding.viewOnMarketplace.setOnClickListener {
-            WebActivity.show(this@InscriptionActivity, url = "$INSCRIPTION$inscriptionHash", conversationId = null)
+            WebActivity.show(this@InscriptionActivity, url = "$MARKETPLACE$inscriptionHash", conversationId = null)
             bottomSheet.dismiss()
         }
 
         bottomBinding.viewOnExplorer.setOnClickListener {
-            WebActivity.show(this@InscriptionActivity, url = "$MARKETPLACE$inscriptionHash", conversationId = null)
+            WebActivity.show(this@InscriptionActivity, url = "$INSCRIPTION$inscriptionHash", conversationId = null)
             bottomSheet.dismiss()
         }
 
