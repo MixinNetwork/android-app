@@ -10,10 +10,10 @@ import android.view.LayoutInflater
 import android.widget.RelativeLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
-import coil.load
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferContentBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
@@ -49,10 +49,7 @@ class TransferContentItem : RelativeLayout {
             footer.text = foot
             tokenIv.isVisible = token != null
             token?.let { t ->
-                tokenIv.load(t.iconUrl) {
-                    placeholder(R.drawable.ic_avatar_place_holder)
-                    if (t.collectionHash != null) transformations(CoilRoundedHexagonTransformation())
-                }
+                tokenIv.loadImage(t.iconUrl, R.drawable.ic_avatar_place_holder, transformation = if (t.collectionHash != null) CoilRoundedHexagonTransformation() else null)
             }
         }
     }

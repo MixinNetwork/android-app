@@ -37,7 +37,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -113,7 +113,7 @@ class SearchViewModel
         suspend fun fuzzyInscription(
             cancellationSignal: CancellationSignal,
             query: String?,
-        ): List<SafeInscription>? {
+        ): List<SafeCollectible>? {
             return if (query.isNullOrBlank()) {
                 null
             } else {

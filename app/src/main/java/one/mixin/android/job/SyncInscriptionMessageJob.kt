@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import timber.log.Timber
 
 class SyncInscriptionMessageJob(val conversationId: String, val messageId: String, val hash: String?, val snapshotId: String?) : BaseJob(
@@ -46,7 +46,7 @@ class SyncInscriptionMessageJob(val conversationId: String, val messageId: Strin
         inscriptionCollection ?: return
         messageDao.updateMessageContent(
             GsonHelper.customGson.toJson(
-                SafeInscription(
+                SafeCollectible(
                     inscriptionCollection.collectionHash,
                     inscription.inscriptionHash,
                     inscription.sequence,

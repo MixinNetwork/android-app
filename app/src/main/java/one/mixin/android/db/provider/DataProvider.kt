@@ -22,7 +22,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 
 @SuppressLint("RestrictedApi")
@@ -299,7 +299,7 @@ class DataProvider {
             keyword: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<SafeInscription> {
+        ): List<SafeCollectible> {
             val _sql = """
             SELECT `i`.`collection_hash`, `i`.`inscription_hash`, `i`.`sequence`, `i`.`content_type`, `i`.`content_url`, `ic`.`collection_hash`, `ic`.`name`, `ic`.`icon_url` FROM outputs o 
             LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash

@@ -33,25 +33,26 @@ class RefreshDappJob : BaseJob(
                 val gson = GsonHelper.customGson
                 val chainDapp = response.data!!
                 chainDapp.forEach {
+                    val rpc = it.rpcUrls.firstOrNull() ?: it.rpc
                     when (it.chainId) {
                         Chain.Ethereum.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Ethereum.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Ethereum.chainId, it.rpc)
+                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Ethereum.chainId, rpc)
                         }
 
                         Chain.BinanceSmartChain.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.BinanceSmartChain.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.BinanceSmartChain.chainId, it.rpc)
+                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.BinanceSmartChain.chainId, rpc)
                         }
 
                         Chain.Polygon.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Polygon.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Polygon.chainId, it.rpc)
+                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Polygon.chainId, rpc)
                         }
 
                         Chain.Solana.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Solana.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Solana.chainId, it.rpc)
+                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Solana.chainId, rpc)
                         }
                     }
                 }
