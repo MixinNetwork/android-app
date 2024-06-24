@@ -21,7 +21,10 @@
         app:textMaxTextSize="16"
         app:textMarginHorizon="8dp"
         app:textMarginVertical="4dp"
-        app:textMaxLines="2"/>
+        app:textMaxLines="2"
+        app:iconRound="top"
+        app:iconRoundSize="8dp"
+        app:iconSize="50dp" />
 
     <LinearLayout
         android:layout_width="match_parent"

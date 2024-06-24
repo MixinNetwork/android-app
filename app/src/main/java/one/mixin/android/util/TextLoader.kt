@@ -29,7 +29,8 @@ class TextLoader(context: Context) {
             .build()
     }
 
-    suspend fun getData(url: String): String? {
+    suspend fun getData(url: String?): String? {
+        url ?: return ""
         return withContext(Dispatchers.IO) {
             try {
                 val request = Request.Builder().url(url).build()
@@ -51,7 +52,7 @@ private val textLoader by lazy {
     TextLoader(MixinApplication.appContext)
 }
 
-fun TextView.load(url: String) {
+fun TextView.load(url: String?) {
     CoroutineScope(Dispatchers.Main).launch {
         text = textLoader.getData(url)
     }

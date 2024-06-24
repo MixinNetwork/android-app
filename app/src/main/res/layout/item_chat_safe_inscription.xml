@@ -91,7 +91,9 @@
                 app:textMarginHorizon="8dp"
                 app:textMarginVertical="4dp"
                 app:textMaxLines="2"
-                app:iconRound="false"/>
+                app:iconSize="40dp"
+                app:iconRound="start"
+                app:iconRoundSize="6dp" />
 
             <one.mixin.android.widget.BarcodeView
                 android:id="@+id/chat_barcode"

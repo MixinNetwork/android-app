@@ -57,11 +57,20 @@
                             android:layout_height="match_parent"
                             tools:ignore="ContentDescription" />
 
-                        <ImageView
-                            android:id="@+id/icon_iv"
+                        <one.mixin.android.widget.InscriptionView
+                            android:id="@+id/inscription"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            tools:ignore="ContentDescription" />
+                            app:textGranularity="1"
+                            app:textMinTextSize="4"
+                            app:textMaxTextSize="10"
+                            app:textMarginHorizon="2dp"
+                            app:textMarginVertical="0.5dp"
+                            app:textMaxLines="1"
+                            app:iconRound="all"
+                            app:iconRoundSize="8dp"
+                            app:iconSize="32dp" />
+
                     </ViewAnimator>
 
                     <TextView
