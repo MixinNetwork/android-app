@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.inscription
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -123,6 +122,9 @@ class CollectiblesFragment : BaseFragment() {
 
             dropSort.setOnClickListener {
                 binding.sortArrow.animate().rotation(-180f).setDuration(200).start()
+                menuAdapter.checkPosition = if (sortOrder == SortOrder.Alphabetical) 1 else 0
+                menuAdapter.notifyDataSetChanged()
+                onMenuShow()
                 sortMenu.show()
             }
 
@@ -131,6 +133,16 @@ class CollectiblesFragment : BaseFragment() {
             }
         }
         bindData()
+    }
+
+    private val onMenuDismiss = {
+        binding.dropSort.setBackgroundResource(R.drawable.bg_inscription_radio)
+        binding.dropTv.setTextColor(requireContext().colorAttr(R.attr.text_primary))
+    }
+
+    private val onMenuShow = {
+        binding.dropSort.setBackgroundResource(R.drawable.bg_inscription_drop)
+        binding.dropTv.setTextColor(0xFF4B7CDD.toInt())
     }
 
     private fun bindData() {
@@ -166,7 +178,7 @@ class CollectiblesFragment : BaseFragment() {
         }
     }
 
-    private var sortOrder = SortOrder.fromInt(MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_INSCRIPTION_ORDER, SortOrder.Recent.value))
+    private var sortOrder = SortOrder.fromInt(MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_INSCRIPTION_ORDER, SortOrder.Alphabetical.value))
         set(value) {
             if (field != value) {
                 field = value
@@ -185,13 +197,9 @@ class CollectiblesFragment : BaseFragment() {
         }
 
     private val sortMenu by lazy {
-        val menuItems = listOf(
-            SortMenuData(SortOrder.Recent, R.drawable.ic_recent, R.string.Recent),
-            SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical,  R.string.Alphabetical),
-        )
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.dropSort
-            setAdapter(SortMenuAdapter(requireContext(), menuItems))
+            setAdapter(menuAdapter)
             setOnItemClickListener { _, _, position, _ ->
                 sortOrder = if (position == 0) {
                     SortOrder.Recent
@@ -208,8 +216,17 @@ class CollectiblesFragment : BaseFragment() {
             horizontalOffset = requireContext().dpToPx(2f)
             verticalOffset = requireContext().dpToPx(10f)
             setOnDismissListener {
+                onMenuDismiss()
                 binding.sortArrow.animate().rotation(0f).setDuration(200).start()
             }
         }
+    }
+
+    private val menuAdapter: SortMenuAdapter by lazy {
+        val menuItems = listOf(
+            SortMenuData(SortOrder.Recent, R.drawable.ic_recent, R.string.Recent),
+            SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical, R.string.Alphabetical),
+        )
+        SortMenuAdapter(requireContext(), menuItems)
     }
 }
