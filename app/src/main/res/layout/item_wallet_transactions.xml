@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <one.mixin.android.widget.ConfirmationBgView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bg"
     android:layout_width="match_parent"
     android:layout_height="62dp"
@@ -58,12 +59,21 @@
         android:layout_marginEnd="@dimen/margin20"
         android:layout_alignBaseline="@id/value" />
 
-    <ImageView
+    <one.mixin.android.widget.InscriptionView
         android:id="@+id/symbol_iv"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/margin20" />
+        android:layout_marginEnd="@dimen/margin20"
+        app:textGranularity="1"
+        app:textMinTextSize="2"
+        app:textMaxTextSize="6"
+        app:textMarginHorizon="2dp"
+        app:textMarginVertical="0dp"
+        app:textMaxLines="1"
+        app:iconRound="all"
+        app:iconRoundSize="12dp"
+        app:iconSize="18dp" />
 
 </one.mixin.android.widget.ConfirmationBgView>

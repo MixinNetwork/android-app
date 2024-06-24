@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.inscription.component
 
-import TextLoaderComposable
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.activity.OnBackPressedCallback
@@ -65,6 +64,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.util.TextLoaderComposable
 import one.mixin.android.widget.BlurTransformation
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 

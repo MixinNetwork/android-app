@@ -12,7 +12,6 @@ import android.view.View
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
-import load
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewInscriptionBinding
 import one.mixin.android.extension.clearRound
@@ -20,6 +19,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.util.load
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
