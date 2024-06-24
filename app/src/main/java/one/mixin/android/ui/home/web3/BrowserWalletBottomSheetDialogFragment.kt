@@ -249,7 +249,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val gasLimit = viewModel.ethGasLimit(chain, transaction.toTransaction()) ?: return@onEach
                     val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
                     tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
-                    insufficientGas = checkGas(token, chainToken, tipGas, signMessage.wcEthereumTransaction?.value)
+                    insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
@@ -361,12 +361,13 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3Token?,
         tipGas: TipGas?,
         value: String?,
+        maxFeePerGas: String?
     ): Boolean {
         return if (web3Token != null) {
             if (chainToken == null) {
                 true
             } else if (tipGas != null) {
-                val maxGas = tipGas.displayValue() ?: BigDecimal.ZERO
+                val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
                 if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
                     Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
                 } else {

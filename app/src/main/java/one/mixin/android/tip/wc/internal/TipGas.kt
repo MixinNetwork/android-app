@@ -38,10 +38,14 @@ data class TipGas(
     }
 }
 
-fun TipGas.displayValue(): BigDecimal? {
-    return Convert.fromWei(gasPrice.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
+fun TipGas.displayValue(maxFee: String?): BigDecimal? {
+    val maxFeePerGas = maxFee?.let { Numeric.toBigInt(it) } ?: BigInteger.ZERO
+    val gas = maxFeePerGas(maxFeePerGas)
+    return Convert.fromWei(gas.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
 }
 
-fun TipGas.displayGas(): BigDecimal? {
-    return Convert.fromWei(gasPrice.run { BigDecimal(this) }, Convert.Unit.GWEI).setScale(2, RoundingMode.UP)
+fun TipGas.displayGas(maxFee: String?): BigDecimal? {
+    val maxFeePerGas = maxFee?.let { Numeric.toBigInt(it) } ?: BigInteger.ZERO
+    val gas = maxFeePerGas(maxFeePerGas)
+    return Convert.fromWei(gas.run { BigDecimal(this) }, Convert.Unit.GWEI).setScale(2, RoundingMode.UP)
 }

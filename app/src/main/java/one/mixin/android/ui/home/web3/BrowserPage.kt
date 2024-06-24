@@ -246,7 +246,7 @@ fun BrowserPage(
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
-                val fee = tipGas?.displayValue() ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
@@ -256,7 +256,7 @@ fun BrowserPage(
                     FeeInfo(
                         amount = "$fee ${asset?.symbol ?: ""}",
                         fee = fee.multiply(asset.priceUSD()),
-                        gasPrice = tipGas?.displayGas()?.toPlainString(),
+                        gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
                     )
                 }
                 if (url != null && title != null) {
