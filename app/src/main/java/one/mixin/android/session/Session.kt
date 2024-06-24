@@ -51,9 +51,6 @@ object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     const val PREF_SESSION = "pref_session"
 
-    var routePublicKey: String? = null
-    var web3PublicKey: String? = null
-
     private var self: Account? = null
 
     private var seed: String? = null

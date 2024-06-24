@@ -69,6 +69,12 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
             binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
             binding.chatInscriptionIcon.loadImage(safeInscription.iconURL, R.drawable.ic_inscription_icon, transformation = CoilRoundedHexagonTransformation())
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
+        } else {
+            binding.chatTitleTv.text = ""
+            binding.chatNumberTv.text = ""
+            binding.chatInscriptionIv.setImageResource(R.drawable.ic_default_inscription)
+            binding.chatInscriptionIcon.setImageResource(R.drawable.ic_inscription_icon)
+            binding.chatBarcode.setData("")
         }
 
         binding.chatTime.load(
