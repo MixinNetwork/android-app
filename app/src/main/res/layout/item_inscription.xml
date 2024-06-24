@@ -20,7 +20,7 @@
         app:textMinTextSize="12"
         app:textMaxTextSize="16"
         app:textMarginHorizon="8dp"
-        app:textMarginVertical="8dp"
+        app:textMarginVertical="4dp"
         app:textMaxLines="2"/>
 
     <LinearLayout

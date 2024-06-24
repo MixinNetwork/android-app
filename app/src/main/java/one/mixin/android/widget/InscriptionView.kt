@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.marginStart
 import androidx.core.view.marginTop
 import androidx.core.widget.TextViewCompat
+import load
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewInscriptionBinding
 import one.mixin.android.extension.clear
@@ -76,11 +77,10 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
             lp.width = 50.dp
             lp.height = 50.dp
             binding.icon.layoutParams = lp
-            binding.root.setBackgroundColor(Color.parseColor("#99000000"))
-            binding.icon.clear()
+            binding.root.setBackgroundResource(R.drawable.bg_text_inscirption)
             binding.icon.setImageResource(R.drawable.ic_inscription_mao)
             binding.textView.isVisible = true
-            binding.textView.text = inscriptionItem.contentURL
+            binding.textView.load(inscriptionItem.contentURL)
         } else {
             val lp = binding.icon.layoutParams
             lp.width = LayoutParams.MATCH_PARENT
