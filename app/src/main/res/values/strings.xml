@@ -1573,4 +1573,7 @@
     <string name="Alphabetical">Alphabetical</string>
     <string name="Floor_Price">Floor Price</string>
     <string name="Collection_collected">%1$d collected</string>
+    <string name="Set_to_Downloads">Save to Downloads</string>
+    <string name="View_on_Marketplace">View on Marketplace</string>
+    <string name="View_on_Explorer">View on Explorer</string>
 </resources>
