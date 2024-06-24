@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PriorityFeeRequest
@@ -15,6 +16,7 @@ import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -31,6 +33,7 @@ class BrowserWalletBottomSheetViewModel
     @Inject
     internal constructor(
         private val assetRepo: TokenRepository,
+        private val userRepo: UserRepository,
         private val web3Service: Web3Service,
         private val tip: Tip,
     ) : ViewModel() {
@@ -117,9 +120,23 @@ class BrowserWalletBottomSheetViewModel
         }
 
         suspend fun parseWeb3Tx(tx: String): ParsedTx? {
-            return handleMixinResponse(
+            var meet401 = false
+            val parsedTx = handleMixinResponse(
                 invokeNetwork = { assetRepo.parseWeb3Tx(ParseTxRequest(tx)) },
-                successBlock = { it.data }
+                successBlock = { it.data },
+                failureBlock = {
+                    if (it.errorCode == 401) {
+                        meet401 = true
+                        return@handleMixinResponse true
+                    }
+                    return@handleMixinResponse false
+                }
             )
+            if (parsedTx == null && meet401) {
+                userRepo.getBotPublicKey(ROUTE_BOT_USER_ID)
+                return parseWeb3Tx(tx)
+            } else {
+                return parsedTx
+            }
         }
     }
