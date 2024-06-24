@@ -91,7 +91,7 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = iconSize
                 icon.layoutParams = lp
                 background.setBackgroundResource(R.drawable.bg_text_inscirption)
-                icon.setImageResource(R.drawable.ic_inscription_mao)
+                icon.setImageResource(R.drawable.ic_text_inscription)
                 textView.isVisible = true
                 textView.load(inscriptionItem.contentURL)
             } else {
@@ -129,7 +129,7 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = iconSize
                 icon.layoutParams = lp
                 background.setBackgroundResource(R.drawable.bg_text_inscirption)
-                icon.setImageResource(R.drawable.ic_inscription_mao)
+                icon.setImageResource(R.drawable.ic_text_inscription)
                 textView.isVisible = true
                 textView.load(snapshot.contentUrl)
             } else {
