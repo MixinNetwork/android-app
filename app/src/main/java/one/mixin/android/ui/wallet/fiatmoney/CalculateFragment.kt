@@ -18,8 +18,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
@@ -668,7 +670,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         botId,
                     )
                 if (!key.isNullOrEmpty()) {
-                    Session.routePublicKey = key
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
                 } else {
                     val sessionResponse =
                         fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
@@ -685,7 +687,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 publicKey = sessionData.publicKey,
                             ),
                         )
-                        Session.routePublicKey = sessionData.publicKey
+                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
                     } else {
                         throw MixinResponseException(
                             sessionResponse.errorCode,
