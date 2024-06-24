@@ -229,7 +229,7 @@ class TransferContent : LinearLayout {
             amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!))
             receive.isVisible = true
 
-            receive.setContent(R.plurals.Receiver_title, receiver, null, userClick)
+            receive.setContent(R.plurals.Receiver_title, receiver, safeMultisigsBiometricItem.receiverThreshold, userClick)
             sender.isVisible = true
             sender.setContent(R.plurals.Sender_title, senders, safeMultisigsBiometricItem.sendersThreshold, userClick)
             total.isVisible = true
