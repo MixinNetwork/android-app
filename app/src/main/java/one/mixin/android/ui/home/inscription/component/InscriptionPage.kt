@@ -413,7 +413,7 @@ private fun BlurBackground(url: String?) {
             Modifier
                 .fillMaxHeight()
                 .graphicsLayer {
-                    alpha = 0.2f
+                    alpha = 0.3f
                 }
                 .blur(30.dp),
             placeholder = R.drawable.ic_inscription_content,
@@ -444,7 +444,7 @@ private fun BlurBackground(@DrawableRes drawable: Int) {
             Modifier
                 .fillMaxHeight()
                 .graphicsLayer {
-                    alpha = 0.2f
+                    alpha = 0.3f
                 }
                 .blur(80.dp),
             placeholder = drawable,
