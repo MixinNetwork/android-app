@@ -1,14 +1,33 @@
 package one.mixin.android.web3.js
 
 import android.util.LruCache
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.evmChainList
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.decodeBase58
+import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
+import org.sol4k.Connection
+import org.sol4k.Keypair
+import org.sol4k.RpcUrl
+import org.sol4k.SignInAccount
+import org.sol4k.SignInInput
+import org.sol4k.SignInOutput
+import org.sol4k.api.Commitment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -22,8 +41,14 @@ import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.util.concurrent.TimeUnit
 
 object JsSigner {
+    sealed class JsSignerNetwork(val name: String) {
+        data object Ethereum : JsSignerNetwork("ethereum")
+
+        data object Solana : JsSignerNetwork("solana")
+    }
 
     private const val TAG = "JsSigner"
 
@@ -32,7 +57,7 @@ object JsSigner {
     private fun getWeb3j(chain: Chain): Web3j {
         val exists = web3jPool[chain]
         return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcUrl))
+            val web3j = Web3j.build(HttpService(chain.rpcUrl, buildOkHttpClient()))
             web3jPool.put(chain, web3j)
             web3j
         } else {
@@ -40,37 +65,83 @@ object JsSigner {
         }
     }
 
+    private fun buildOkHttpClient(): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        if (BuildConfig.DEBUG) {
+            builder.addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                },
+            )
+        }
+        return builder.build()
+    }
+
+    lateinit var evmAddress: String
+        private set
+    lateinit var solanaAddress: String
+        private set
+
     lateinit var address: String
         private set
 
-    fun updateAddress(address: String) {
+    fun updateAddress(
+        network: String,
+        address: String,
+    ) {
+        if (network == JsSignerNetwork.Solana.name) {
+            solanaAddress = address
+        } else {
+            evmAddress = address
+        }
         JsSigner.address = address
     }
+
+    fun useEvm() {
+        address = evmAddress
+        if (!evmChainList.contains(currentChain)) {
+            currentChain = Chain.Ethereum
+        }
+        currentNetwork = JsSignerNetwork.Ethereum.name
+    }
+
+    fun useSolana() {
+        address = solanaAddress
+        currentChain = Chain.Solana
+        currentNetwork = JsSignerNetwork.Solana.name
+    }
+
     var currentChain: Chain = Chain.Ethereum
         private set
 
-    // now only ETH
-    var currentNetwork = "ethereum"
+    // now only ETH and SOL
+    var currentNetwork = JsSignerNetwork.Ethereum.name
 
     suspend fun init() {
-        address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+        evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+        solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+        address = evmAddress
     }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {
+        currentNetwork = JsSignerNetwork.Ethereum.name
         return when (switchChain.chainId) {
-            Chain.Ethereum.hexReference-> {
+            Chain.Ethereum.hexReference -> {
                 currentChain = Chain.Ethereum
                 Result.success(Chain.Ethereum.name)
             }
-            Chain.Base.hexReference-> {
+            Chain.Base.hexReference -> {
                 currentChain = Chain.Base
                 Result.success(Chain.Base.name)
             }
-            Chain.Arbitrum.hexReference-> {
+            Chain.Arbitrum.hexReference -> {
                 currentChain = Chain.Arbitrum
                 Result.success(Chain.Arbitrum.name)
             }
-            Chain.Optimism.hexReference-> {
+            Chain.Optimism.hexReference -> {
                 currentChain = Chain.Optimism
                 Result.success(Chain.Optimism.name)
             }
@@ -86,6 +157,11 @@ object JsSigner {
                 currentChain = Chain.Avalanche
                 Result.success(Chain.Avalanche.name)
             }
+            Chain.Solana.hexReference -> {
+                currentChain = Chain.Solana
+                currentNetwork = JsSignerNetwork.Solana.name
+                Result.success(Chain.Solana.name)
+            }
             else -> {
                 Result.failure(IllegalArgumentException("No support"))
             }
@@ -94,7 +170,7 @@ object JsSigner {
 
     fun sendTransaction(
         signedTransactionData: String,
-        chain: Chain?
+        chain: Chain?,
     ): String? {
         val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
         if (tx.hasError()) {
@@ -111,7 +187,7 @@ object JsSigner {
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
-        chain: Chain?
+        chain: Chain?,
     ): String {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
@@ -131,22 +207,23 @@ object JsSigner {
             "$TAG dapp gas: ${transaction.gas?.let { Numeric.toBigInt(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.toBigInt(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }} maxPriorityFeePerGas: ${
                 transaction.maxPriorityFeePerGas?.let {
                     Numeric.toBigInt(
-                        it
+                        it,
                     )
                 }
-            } "
+            } ",
         )
         Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
-        val rawTransaction = RawTransaction.createTransaction(
-            (chain ?: currentChain).chainReference.toLong(),
-            nonce,
-            gasLimit,
-            transaction.to,
-            v,
-            transaction.data ?: "",
-            maxPriorityFeePerGas,
-            maxFeePerGas,
-        )
+        val rawTransaction =
+            RawTransaction.createTransaction(
+                (chain ?: currentChain).chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data ?: "",
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
@@ -155,6 +232,18 @@ object JsSigner {
     }
 
     fun signMessage(
+        priv: ByteArray,
+        message: String,
+        type: Int,
+    ): String {
+        return if (currentChain == Chain.Solana) {
+            signSolanaMessage(priv, message)
+        } else {
+            signEthMessage(priv, message, type)
+        }
+    }
+
+    private fun signEthMessage(
         priv: ByteArray,
         message: String,
         type: Int,
@@ -174,6 +263,55 @@ object JsSigner {
         return Numeric.toHexString(b)
     }
 
+    private fun signSolanaMessage(
+        priv: ByteArray,
+        message: String,
+    ): String {
+        val holder = Keypair.fromSecretKey(priv)
+        val m =
+            try {
+                message.decodeBase58()
+            } catch (e: Exception) {
+                message.removePrefix("0x").hexStringToByteArray()
+            }
+        val sig = holder.sign(m)
+        return sig.toHex()
+    }
+
+    fun signSolanaTransaction(
+        priv: ByteArray,
+        tx: org.sol4k.VersionedTransaction,
+    ): org.sol4k.VersionedTransaction {
+        val holder = Keypair.fromSecretKey(priv)
+        // use latest blockhash should not break other signatures
+        if (tx.signatures.size <= 1) {
+            val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
+            tx.message.recentBlockhash = blockhash
+        }
+        tx.sign(holder)
+        return tx
+    }
+
+    fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
+        return getSolanaRpc().sendTransaction(tx.serialize())
+    }
+
+    fun solanaSignIn(
+        priv: ByteArray,
+        signInInput: SignInInput,
+    ): String {
+        val signInMessage = signInInput.toMessage().toByteArray()
+        val holder = Keypair.fromSecretKey(priv)
+        val sig = holder.sign(signInMessage)
+        val signInOutput =
+            SignInOutput(
+                account = SignInAccount(holder.publicKey.toBase58()),
+                signedMessage = signInMessage.encodeToBase58String(),
+                signature = sig.encodeToBase58String(),
+            )
+        return GsonHelper.customGson.toJson(signInOutput).toHex()
+    }
+
     private fun throwError(
         error: Response.Error,
         msgAction: ((String) -> Unit)? = null,
@@ -188,3 +326,7 @@ object JsSigner {
         currentChain = Chain.Ethereum
     }
 }
+
+fun getSolanaRpc(): Connection =
+    Connection(MixinApplication.appContext.defaultSharedPreferences.getString(Chain.Solana.chainId, null) ?: RpcUrl.MAINNNET.value)
+

@@ -1,14 +1,22 @@
 package one.mixin.android.api.service
 
+import one.mixin.android.BuildConfig
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -85,4 +93,42 @@ interface RouteService {
     suspend fun profile(
         @Query("version") version: String,
     ): MixinResponse<ProfileResponse>
+
+    @GET("web3/tokens")
+    suspend fun web3Tokens(
+        @Query("version") version: String = BuildConfig.VERSION_NAME,
+    ): MixinResponse<List<SwapToken>>
+
+    @GET("web3/quote")
+    suspend fun web3Quote(
+        @Query("inputMint") inputMint: String,
+        @Query("outputMint") outputMint: String,
+        @Query("amount") amount: Long,
+        @Query("slippage") slippage: Int,
+    ): MixinResponse<QuoteResponse>
+
+    @POST("web3/swap")
+    suspend fun web3Swap(
+        @Body swapRequest: SwapRequest,
+    ): MixinResponse<SwapResponse>
+
+    @GET("web3/transactions/{txhash}")
+    suspend fun getWeb3Tx(
+        @Path("txhash") txhash: String,
+    ): MixinResponse<Tx>
+
+    @POST("web3/transactions/parse")
+    suspend fun parseWeb3Tx(
+        @Body parseTxRequest: ParseTxRequest,
+    ): MixinResponse<ParsedTx>
+
+    @GET("web3/tokens/{address}")
+    suspend fun getSwapToken(
+        @Path("address") address: String,
+    ): MixinResponse<SwapToken?>
+
+    @GET("web3/tokens/search/{query}")
+    suspend fun searchTokens(
+        @Path("query") query: String,
+    ): MixinResponse<List<SwapToken>>
 }

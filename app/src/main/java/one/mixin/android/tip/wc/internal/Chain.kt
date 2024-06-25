@@ -32,8 +32,6 @@ sealed class Chain(
 
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
-
-
     val chainId: String
         get() {
             return "$chainNamespace:$chainReference"
@@ -46,8 +44,7 @@ sealed class Chain(
 }
 
 internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
-
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -123,18 +120,21 @@ val walletConnectChainIdMap =
         Chain.Avalanche.symbol to Constants.ChainId.Avalanche,
     )
 
-fun getSupportedNamespaces(chain: Chain, address: String): Map<String, Wallet.Model.Namespace.Session> {
-    return when (chain) {
-        is Chain.Solana -> {
+fun getSupportedNamespaces(
+    chain: Chain,
+    address: String,
+): Map<String, Wallet.Model.Namespace.Session> {
+    return when {
+        chain == Chain.Solana -> {
             getSolanaNamespaces(address)
         }
 
-        is Chain.Polygon, is Chain.Ethereum, is Chain.BinanceSmartChain -> {
+        evmChainList.contains(chain) -> {
             getEvmNamespaces(address)
         }
 
         else -> {
-            throw IllegalArgumentException("No support")
+            throw IllegalArgumentException("Not supported chain ${chain.name}")
         }
     }
 }
@@ -149,7 +149,7 @@ private fun getEvmNamespaces(address: String): Map<String, Wallet.Model.Namespac
                 methods = evmSupportedMethods,
                 events = listOf("connect", "disconnect", "chainChanged", "accountsChanged", "message"),
                 accounts = accounts,
-            )
+            ),
     )
 }
 
@@ -161,6 +161,6 @@ private fun getSolanaNamespaces(address: String): Map<String, Wallet.Model.Names
                 methods = solanaSupporedMethods,
                 events = listOf(""),
                 accounts = listOf("solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:$address"),
-            )
+            ),
     )
 }

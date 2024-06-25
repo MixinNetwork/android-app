@@ -9,7 +9,7 @@ import android.widget.ImageView
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.forEachReversedWithIndex
-import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadImageCompat
 
 class FloatingAvatarsView : ViewGroup {
     companion object {
@@ -157,7 +157,7 @@ class FloatingAvatarsView : ViewGroup {
                         borderColor = this@FloatingAvatarsView.borderColor
                     }
                 addView(circleView)
-                circleView.loadImage(t, R.drawable.ic_link_place_holder, true)
+                circleView.loadImageCompat(t, R.drawable.ic_link_place_holder)
             }
     }
 }

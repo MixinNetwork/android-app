@@ -4,7 +4,6 @@ import android.Manifest
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
@@ -16,10 +15,6 @@ import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import com.google.mlkit.vision.common.InputImage
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -207,7 +202,11 @@ class EditFragment : VisionFragment() {
                 setBg()
             } else {
                 binding.previewIv.scaleType = ImageView.ScaleType.CENTER_CROP
-                binding.previewIv.loadImage(path, requestListener = glideRequestListener)
+                binding.previewIv.loadImage(path, onSuccess = { _, _ ->
+                    setBg()
+                }, onError = { _, _ ->
+                    setBg()
+                })
             }
         }
         binding.downloadIv.isVisible = !fromGallery
@@ -325,30 +324,6 @@ class EditFragment : VisionFragment() {
                 if (viewDestroyed()) return
 
                 binding.previewVideoTexture.setTransform(matrix)
-            }
-        }
-
-    private val glideRequestListener =
-        object : RequestListener<Drawable?> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable?>,
-                isFirstResource: Boolean,
-            ): Boolean {
-                setBg()
-                return false
-            }
-
-            override fun onResourceReady(
-                resource: Drawable,
-                model: Any,
-                target: Target<Drawable?>?,
-                dataSource: DataSource,
-                isFirstResource: Boolean,
-            ): Boolean {
-                setBg()
-                return false
             }
         }
 }

@@ -40,7 +40,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -490,8 +489,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         binding.assetName.text = asset.name
         binding.assetDesc.text = asset.balance.numberFormat()
         binding.descEnd.text = asset.symbol
-        binding.assetAvatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.assetAvatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.assetAvatar.loadToken(asset)
 
         if (!binding.transferMemo.isFocused) {
             operateKeyboard(true)

@@ -6,7 +6,6 @@ import com.walletconnect.web3.wallet.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.api.service.TipService
 import one.mixin.android.repository.TokenRepository
@@ -16,6 +15,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Connection
 import org.sol4k.RpcUrl
 import org.web3j.exceptions.MessageDecodingException
@@ -56,12 +56,15 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        private fun convertToGasLimit(estimate: EthEstimateGas, defaultLimit: BigInteger?): BigInteger? {
+        private fun convertToGasLimit(
+            estimate: EthEstimateGas,
+            defaultLimit: BigInteger?,
+        ): BigInteger? {
             return if (estimate.hasError()) {
-                if (estimate.error.code === -32000) //out of gas
-                {
-                    defaultLimit
-                } else {
+                if (estimate.error.code === -32000) // out of gas
+                    {
+                        defaultLimit
+                    } else {
                     BigInteger.ZERO
                 }
             } else if (estimate.amountUsed.compareTo(BigInteger.ZERO) > 0) {
@@ -73,27 +76,32 @@ class WalletConnectBottomSheetViewModel
             }
         }
 
-        suspend fun ethGasPrice(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethGasPrice(chain)?.run {
-                try {
-                    this.gasPrice
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethGasPrice(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethGasPrice(chain)?.run {
+                    try {
+                        this.gasPrice
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        suspend fun ethMaxPriorityFeePerGas(chain: Chain) = withContext(Dispatchers.IO) {
-            WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
-                try {
-                    this.maxPriorityFeePerGas
-                } catch (e: MessageDecodingException) {
-                    result?.run { Numeric.toBigInt(this) }
+        suspend fun ethMaxPriorityFeePerGas(chain: Chain) =
+            withContext(Dispatchers.IO) {
+                WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
+                    try {
+                        this.maxPriorityFeePerGas
+                    } catch (e: MessageDecodingException) {
+                        result?.run { Numeric.toBigInt(this) }
+                    }
                 }
             }
-        }
 
-        fun parseV2SignData(address: String, sessionRequest: Wallet.Model.SessionRequest): WalletConnect.WCSignData.V2SignData<*>? {
+        fun parseV2SignData(
+            address: String,
+            sessionRequest: Wallet.Model.SessionRequest,
+        ): WalletConnect.WCSignData.V2SignData<*>? {
             return WalletConnectV2.parseSessionRequest(address, sessionRequest)
         }
 
@@ -110,11 +118,12 @@ class WalletConnectBottomSheetViewModel
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         fun sendTransaction(
-            transaction: org.sol4k.Transaction
+            transaction: org.sol4k.VersionedTransaction,
+            sessionRequest: Wallet.Model.SessionRequest,
         ): String? {
-            val connection = Connection(RpcUrl.MAINNNET)
-            val signature: String = connection.sendTransaction(transaction)
+            val signature: String = getSolanaRpc().sendTransaction(transaction.serialize())
             Timber.d("signature $signature")
+            WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
             return null
         }
 

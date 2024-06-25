@@ -7,7 +7,6 @@ import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -17,15 +16,11 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnPreDraw
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.supportsS
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
@@ -82,33 +77,15 @@ class AvatarActivity : BaseActivity() {
                 binding.rootView.background = BitmapDrawable(resources, it.blurBitmap(25))
             })
         }
-        Glide.with(this).asBitmap().load(url).listener(
-            object : RequestListener<Bitmap> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Bitmap>,
-                    isFirstResource: Boolean,
-                ): Boolean {
-                    return false
-                }
 
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    model: Any,
-                    target: Target<Bitmap>?,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean,
-                ): Boolean {
-                    binding.avatar.doOnPreDraw {
-                        val avatarTransform = AvatarTransform(resource).apply { addTarget(binding.avatar) }
-                        window.sharedElementEnterTransition = avatarTransform
-                        startPostponedEnterTransition()
-                    }
-                    return false
-                }
-            },
-        ).into(binding.avatar)
+        binding.avatar.loadImage(url, onSuccess = { _, result ->
+            binding.avatar.doOnPreDraw {
+                val bitmap = (result.drawable as BitmapDrawable).bitmap
+                val avatarTransform = AvatarTransform(bitmap).apply { addTarget(binding.avatar) }
+                window.sharedElementEnterTransition = avatarTransform
+                startPostponedEnterTransition()
+            }
+        })
 
         binding.rootView.setOnClickListener { finish() }
     }

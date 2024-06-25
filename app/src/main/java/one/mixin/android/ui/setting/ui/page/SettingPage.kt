@@ -21,6 +21,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.compose.MixinBackButton
+import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -29,10 +33,6 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.SettingViewModel
-import one.mixin.android.ui.setting.ui.compose.MixinBackButton
-import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
-import one.mixin.android.ui.setting.ui.compose.SettingTile
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
 fun SettingPage() {

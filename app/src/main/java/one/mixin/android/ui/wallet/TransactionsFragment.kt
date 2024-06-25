@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -16,37 +17,28 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.inflate
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
@@ -315,9 +307,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                     groupInfoMemberTitleSort.setOnClickListener {
                         showFiltersSheet()
                     }
-                    topRl.setOnClickListener {
-                        AssetKeyBottomSheetDialogFragment.newInstance(asset)
-                            .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
+                    if (asset.collectionHash.isNullOrEmpty()) {
+                        topRl.setOnClickListener {
+                            AssetKeyBottomSheetDialogFragment.newInstance(asset)
+                                .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
+                        }
                     }
                     updateHeader(asset)
                     sendReceiveView.send.setOnClickListener {
@@ -401,10 +395,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                         } catch (ignored: NumberFormatException) {
                             "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
                         }
-                    ViewBadgeCircleImageBinding.bind(avatar).apply {
-                        bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                        badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                    }
+                    avatar.loadToken(asset)
+                    contractIv.isInvisible = !asset.collectionHash.isNullOrEmpty()
                     avatar.setOnClickListener(
                         object : DebugClickListener() {
                             override fun onDebugClick() {

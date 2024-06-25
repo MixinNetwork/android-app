@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -119,25 +118,29 @@ class ExploreFragment : BaseFragment() {
             favoriteRv.adapter = adapter
             favoriteRv.addItemDecoration(SegmentationItemDecoration())
 
-            if (defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 0) {
-                exploreVa.displayedChild = 0
-                radioFavorite.isChecked = true
-                radioEth.isChecked = false
-                radioSolana.isChecked = false
-            } else if (defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 2) == 0) {
-                exploreVa.displayedChild = 2
-                radioFavorite.isChecked = false
-                radioEth.isChecked = false
-                radioSolana.isChecked = true
-                navigate(solanaFragment, SolanaFragment.TAG)
-            } else {
-                exploreVa.displayedChild = 1
-                radioFavorite.isChecked = false
-                radioEth.isChecked = true
-                radioSolana.isChecked = false
-                navigate(ethereumFragment, EthereumFragment.TAG)
+            val exploreSelect = defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0)
+            when (exploreSelect) {
+                0 -> {
+                    exploreVa.displayedChild = 0
+                    radioFavorite.isChecked = true
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = false
+                }
+                2 -> {
+                    exploreVa.displayedChild = 1
+                    radioFavorite.isChecked = false
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = true
+                    navigate(solanaFragment, SolanaFragment.TAG)
+                }
+                else -> {
+                    exploreVa.displayedChild = 1
+                    radioFavorite.isChecked = false
+                    radioEth.isChecked = true
+                    radioSolana.isChecked = false
+                    navigate(ethereumFragment, EthereumFragment.TAG)
+                }
             }
-            radioSolana.isVisible = false
 
             radioGroupExplore.setOnCheckedChangeListener { _, checkedId ->
                 when (checkedId) {
@@ -157,7 +160,6 @@ class ExploreFragment : BaseFragment() {
                         exploreVa.displayedChild = 1
                         navigate(solanaFragment, SolanaFragment.TAG)
                     }
-
                 }
             }
 
@@ -306,9 +308,7 @@ class ExploreFragment : BaseFragment() {
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 activity?.finish()
@@ -418,7 +418,10 @@ class ExploreFragment : BaseFragment() {
             }
         }
 
-        private fun getItem(type: Int, position: Int): BotInterface? {
+        private fun getItem(
+            type: Int,
+            position: Int,
+        ): BotInterface? {
             return if (type == TYPE_INTERNAL) {
                 InternalBots[position]
             } else if (type == TYPE_FAVORITE) {
@@ -463,7 +466,7 @@ class ExploreFragment : BaseFragment() {
     class FavoriteEditHolder(itemBinding: ItemFavoriteEditBinding) : RecyclerView.ViewHolder(itemBinding.root)
 
     class FavoriteTitleHolder(val itemBinding: ItemFavoriteTitleBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun setText(res:Int) {
+        fun setText(res: Int) {
             itemBinding.title.setText(res)
         }
     }

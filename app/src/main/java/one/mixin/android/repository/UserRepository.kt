@@ -6,7 +6,13 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.service.CircleService
@@ -24,7 +30,9 @@ import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
+import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -36,6 +44,7 @@ import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -351,5 +360,52 @@ class UserRepository
                     }
                 },
             )
+        }
+
+        @Suppress("KotlinConstantConditions")
+        suspend fun getBotPublicKey(botId: String) {
+            if (botId != ROUTE_BOT_USER_ID && botId != WEB3_BOT_USER_ID) return
+
+            val key =
+                findBotPublicKey(
+                    generateConversationId(
+                        botId,
+                        Session.getAccountId()!!,
+                    ),
+                    botId,
+                )
+            if (key != null) {
+                if (botId == ROUTE_BOT_USER_ID) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
+                } else if (botId == WEB3_BOT_USER_ID) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
+                }
+            } else {
+                val sessionResponse = fetchSessionsSuspend(listOf(botId))
+                if (sessionResponse.isSuccess) {
+                    val sessionData = requireNotNull(sessionResponse.data)[0]
+                    saveSession(
+                        ParticipantSession(
+                            generateConversationId(
+                                sessionData.userId,
+                                Session.getAccountId()!!,
+                            ),
+                            sessionData.userId,
+                            sessionData.sessionId,
+                            publicKey = sessionData.publicKey,
+                        ),
+                    )
+                    if (botId == ROUTE_BOT_USER_ID) {
+                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
+                    } else if (botId == WEB3_BOT_USER_ID) {
+                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
+                    }
+                } else {
+                    throw MixinResponseException(
+                        sessionResponse.errorCode,
+                        sessionResponse.errorDescription,
+                    )
+                }
+            }
         }
     }

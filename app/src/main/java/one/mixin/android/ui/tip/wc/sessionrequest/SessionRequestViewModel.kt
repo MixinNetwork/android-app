@@ -14,9 +14,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
-import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel

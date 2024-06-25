@@ -91,6 +91,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.User
 import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
@@ -357,6 +358,15 @@ class ConversationListFragment : LinkFragment() {
                     selectCircle(null, null)
                 }
             }
+        RxBus.listen(User::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { u ->
+                if (Session.getAccountId() == u.userId) {
+                    binding.searchBar.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                }
+            }
+
         initSearch()
     }
 
@@ -624,12 +634,12 @@ class ConversationListFragment : LinkFragment() {
         name: String?,
         circleId: String?,
     ) {
-        if (viewDestroyed()) return
-
-        setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
+        if (viewDestroyed()) return
+
         binding.searchBar.hideContainer()
+        setCircleName(name)
         this.circleId = circleId
         observeOtherCircleUnread(circleId)
     }
@@ -856,6 +866,10 @@ class ConversationListFragment : LinkFragment() {
                     }
                     conversationItem.contentType == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> {
                         binding.msgTv.setText(R.string.content_transfer)
+                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
+                    }
+                    conversationItem.contentType == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> {
+                        binding.msgTv.setText(R.string.content_collection)
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                     }
                     conversationItem.isSticker() -> {

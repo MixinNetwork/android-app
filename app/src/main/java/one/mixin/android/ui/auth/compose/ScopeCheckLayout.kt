@@ -16,7 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 
 @Composable

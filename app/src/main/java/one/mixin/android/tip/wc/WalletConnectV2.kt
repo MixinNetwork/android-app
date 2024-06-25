@@ -25,11 +25,13 @@ import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.tip.wc.internal.getSupportedNamespaces
 import one.mixin.android.tip.wc.internal.supportChainList
-import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Keypair
+import org.sol4k.VersionedTransaction
+import org.sol4k.api.Commitment
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -159,22 +161,24 @@ object WalletConnectV2 : WalletConnect() {
                             WCErrorEvent(
                                 WCError(
                                     IllegalArgumentException(
-                                        "Empty namespace"
+                                        "Empty namespace",
                                     ),
                                 ),
                             ),
                         )
                         return
                     }
-                    val requireChain = supportChainList.first {
-                        (namespace).chains?.contains(it.chainId) == true
-                    }
-                    val chainType = when {
-                        requireChain is Chain.Solana -> WalletUnlockBottomSheetDialogFragment.TYPE_SOLANA
-                        requireChain is Chain.BinanceSmartChain -> WalletUnlockBottomSheetDialogFragment.TYPE_BSC
-                        requireChain is Chain.Polygon -> WalletUnlockBottomSheetDialogFragment.TYPE_POLYGON
-                        else -> WalletUnlockBottomSheetDialogFragment.TYPE_ETH
-                    }
+                    val requireChain =
+                        supportChainList.firstOrNull {
+                            (namespace).chains?.contains(it.chainId) == true
+                        }
+                    val chainType =
+                        when {
+                            requireChain is Chain.Solana -> WalletUnlockBottomSheetDialogFragment.TYPE_SOLANA
+                            requireChain is Chain.BinanceSmartChain -> WalletUnlockBottomSheetDialogFragment.TYPE_BSC
+                            requireChain is Chain.Polygon -> WalletUnlockBottomSheetDialogFragment.TYPE_POLYGON
+                            else -> WalletUnlockBottomSheetDialogFragment.TYPE_ETH
+                        }
 
                     if (hasSupportChain) {
                         RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic, chainType))
@@ -245,7 +249,7 @@ object WalletConnectV2 : WalletConnect() {
         return getWeb3j(chain).ethMaxPriorityFeePerGas().send()
     }
 
-    private fun <T>flattenCollections(collection: List<List<T>?>): List<T> {
+    private fun <T> flattenCollections(collection: List<List<T>?>): List<T> {
         val result = mutableListOf<T>()
         for (innerCollection in collection) {
             if (innerCollection == null) continue
@@ -263,24 +267,26 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val requiredNamespaces:Collection<String> = flattenCollections(sessionProposal.requiredNamespaces.values.map { it.chains })
-        val chain = if (requiredNamespaces.isEmpty()) {
-            supportChainList.firstOrNull()
-        } else {
-            supportChainList.find {
-                it.chainId in requiredNamespaces
+        val requiredNamespaces: Collection<String> = flattenCollections(sessionProposal.requiredNamespaces.values.map { it.chains })
+        val chain =
+            if (requiredNamespaces.isEmpty()) {
+                supportChainList.firstOrNull()
+            } else {
+                supportChainList.find {
+                    it.chainId in requiredNamespaces
+                }
             }
-        }
         if (chain == null) {
             Timber.e("$TAG approveSession sessionProposal chain is null")
             return
         }
-        val address = if (chain == Chain.Solana) {
-            Keypair.fromSecretKey(priv).publicKey.toBase58()
-        } else {
-            val pub = ECKeyPair.create(priv).publicKey
-            Keys.toChecksumAddress(Keys.getAddress(pub))
-        }
+        val address =
+            if (chain == Chain.Solana) {
+                Keypair.fromSecretKey(priv).publicKey.toBase58()
+            } else {
+                val pub = ECKeyPair.create(priv).publicKey
+                Keys.toChecksumAddress(Keys.getAddress(pub))
+            }
 
         val supportedNamespaces = getSupportedNamespaces(chain, address)
         Timber.e("$TAG supportedNamespaces $supportedNamespaces")
@@ -326,7 +332,10 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun parseSessionRequest(localAddress:String, request: Wallet.Model.SessionRequest): WCSignData.V2SignData<*>? {
+    fun parseSessionRequest(
+        localAddress: String,
+        request: Wallet.Model.SessionRequest,
+    ): WCSignData.V2SignData<*>? {
         val signData =
             when (request.request.method) {
                 Method.ETHSign.name -> {
@@ -379,7 +388,8 @@ object WalletConnectV2 : WalletConnect() {
                 }
                 Method.SolanaSignTransaction.name -> {
                     val transaction = gson.fromJson<WcSolanaTransaction>(request.request.params)
-                    WCSignData.V2SignData(request.request.id, transaction, request)
+                    val tx = VersionedTransaction.from(transaction.transaction)
+                    WCSignData.V2SignData(request.request.id, tx, request, solanaFee = tx.calcFee())
                 }
                 Method.SolanaSignMessage.name -> {
                     val message = gson.fromJson<WcSolanaMessage>(request.request.params)
@@ -420,17 +430,15 @@ object WalletConnectV2 : WalletConnect() {
                     return ethSignTransaction(priv, chain, sessionRequest, signData, false)
                 }
             }
-        } else if (signMessage is WcSolanaTransaction) {
+        } else if (signMessage is VersionedTransaction) {
             val holder = Keypair.fromSecretKey(priv)
-            val transaction = signMessage.toTransaction()
-            Timber.e("${signMessage.feePayer} address ${holder.publicKey.toBase58()}")
-            transaction.sign(holder)
-
-            // val solana = com.solana.transaction.Transaction.from(signMessage.transaction.decodeBase64())
-            // Timber.e(signMessage.transaction)
-            // Timber.e("isLegacyMessage:${solana.message is LegacyMessage} isVersionedMessage: ${solana.message is VersionedMessage}")
-
-            return transaction
+            // use latest blockhash should not break other signatures
+            if (signMessage.signatures.size <= 1) {
+                val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
+                signMessage.message.recentBlockhash = blockhash
+            }
+            signMessage.sign(holder)
+            return signMessage
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
             val message = signMessage.message.decodeBase58()
@@ -595,20 +603,21 @@ object WalletConnectV2 : WalletConnect() {
         }
 
         val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas
-        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }?: BigInteger.ZERO)
+        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.toBigInt(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
         Timber.e("$TAG dapp gas: ${transaction.gas?.let { Numeric.toBigInt(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.toBigInt(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.toBigInt(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.toBigInt(it) }} ")
         Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
-        val rawTransaction = RawTransaction.createTransaction(
-            chain.chainReference.toLong(),
-            nonce,
-            gasLimit,
-            transaction.to,
-            v,
-            transaction.data ?: "",
-            maxPriorityFeePerGas,
-            maxFeePerGas,
-        )
+        val rawTransaction =
+            RawTransaction.createTransaction(
+                chain.chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data ?: "",
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
 
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
@@ -639,6 +648,14 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG sendTransaction $transactionHash")
             approveRequestInternal(transactionHash, sessionRequest)
         }
+    }
+
+    fun approveSolanaTransaction(
+        signature: String,
+        sessionRequest: Wallet.Model.SessionRequest,
+    ) {
+        val wcSig = WcSignature("", signature)
+        approveRequestInternal(gson.toJson(wcSig), sessionRequest)
     }
 
     private fun waitActionCheckError(action: (CountDownLatch) -> String?) {

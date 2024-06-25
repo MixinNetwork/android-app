@@ -10,8 +10,14 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -367,4 +373,23 @@ class AssetRepository
         suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
+
+        suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = routeService.web3Tokens()
+
+        suspend fun web3Quote(
+            inputMint: String,
+            outputMint: String,
+            amount: Long,
+            slippage: Int,
+        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, slippage)
+
+        suspend fun web3Swap(
+            swapRequest: SwapRequest,
+        ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
+
+        suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
+
+        suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
+
+        suspend fun searchTokens(query: String) = routeService.searchTokens(query)
     }

@@ -23,8 +23,9 @@ class Web3Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transact
     companion object {
         const val TAG = "Web3TransactionFragment"
         const val ARGS_TRANSACTION = "args_transaction"
+
         fun newInstance(
-           transaction: Web3Transaction
+            transaction: Web3Transaction,
         ) = Web3Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
         }
@@ -36,7 +37,6 @@ class Web3Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transact
     private val transaction by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_TRANSACTION, Web3Transaction::class.java))
     }
-
 
     override fun onViewCreated(
         view: View,

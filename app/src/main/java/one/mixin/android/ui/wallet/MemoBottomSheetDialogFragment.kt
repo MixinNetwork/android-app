@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.ClipData
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMemoBottomSheetBinding
@@ -87,9 +86,7 @@ class MemoBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 activity?.finish()

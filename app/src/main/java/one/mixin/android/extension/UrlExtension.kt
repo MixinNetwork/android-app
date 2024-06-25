@@ -26,6 +26,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -79,7 +80,9 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.MIXIN_SCHEME, true) ||
         startsWith(Constants.Scheme.HTTPS_MIXIN_WC, true) ||
         startsWith(Constants.Scheme.MIXIN_WC, true) ||
-        startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true)
+        startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
+        startsWith(Constants.Scheme.HTTPS_TIP_SIGN, true) ||
+        startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true)
     ) {
         true
     } else {
@@ -155,6 +158,15 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
+    } else if(isConversationScheme()) {
+        checkConversation(context, scope) {
+            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
+                LinkBottomSheetDialogFragment.newInstance(this)
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            } else {
+                extraAction()
+            }
+        }
     } else {
         if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
@@ -229,11 +241,46 @@ fun String.checkUserOrApp(
     }
 }
 
+fun String.checkConversation(
+    context: Context,
+    scope: CoroutineScope,
+    elseAction: () -> Unit
+) {
+    val uri = Uri.parse(this)
+    val segments = uri.pathSegments
+    if (segments.isEmpty()) return
+    scope.launch {
+        val db = MixinDatabase.getDatabase(context)
+        val conversationDao = db.conversationDao()
+        val conversationId = segments[0]
+        if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
+            val startParam = uri.getQueryParameter("start")
+            if (startParam != null && !startParam.isValidStartParam()) {
+                elseAction.invoke()
+                return@launch
+            }
+            val conversation = conversationDao.getConversationByIdSuspend(conversationId)
+            if (conversation != null) {
+                ConversationActivity.show(context, conversation.conversationId, startParam = startParam)
+                return@launch
+            }
+        }
+        elseAction.invoke()
+    }
+}
+
+fun String.isValidStartParam(): Boolean {
+    return this.length <= 64
+}
+
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
 
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true)
+
+private fun String.isConversationScheme() =
+    startsWith(Constants.Scheme.CONVERSATIONS, true)
 
 private fun String.isAppScheme() =
     startsWith(Constants.Scheme.APPS, true) ||

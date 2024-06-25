@@ -51,9 +51,6 @@ object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     const val PREF_SESSION = "pref_session"
 
-    var routePublicKey: String? = null
-    var web3PublicKey: String? = null
-
     private var self: Account? = null
 
     private var seed: String? = null
@@ -378,7 +375,10 @@ object Session {
         }
     }
 
-    fun getBotSignature(publicKey:String?, request: Request): Pair<Long, String> {
+    fun getBotSignature(
+        publicKey: String?,
+        request: Request,
+    ): Pair<Long, String> {
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val botPk = publicKey?.base64RawURLDecode() ?: return Pair(0L, "")
         val private = privateKeyToCurve25519(edKeyPair.privateKey)

@@ -8,8 +8,6 @@ import android.view.LayoutInflater
 import android.widget.ViewAnimator
 import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewAvatarBinding
 import one.mixin.android.extension.CodeType
@@ -84,10 +82,7 @@ class AvatarView : ViewAnimator {
     fun setGroup(url: String?) {
         if (!isActivityNotDestroyed()) return
         displayedChild = POS_AVATAR
-        Glide.with(this)
-            .load(url)
-            .apply(RequestOptions().dontAnimate().placeholder(R.drawable.ic_group_place_holder))
-            .into(avatarSimple)
+        avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
     }
 
     fun setNet(padding: Int = context.dpToPx(8f)) {
@@ -123,7 +118,7 @@ class AvatarView : ViewAnimator {
         } catch (e: NumberFormatException) {
         }
         displayedChild =
-            if (url != null && url.isNotEmpty()) {
+            if (!url.isNullOrEmpty()) {
                 avatarSimple.setBackgroundResource(0)
                 avatarSimple.setImageResource(0)
                 avatarSimple.setPadding(0)
@@ -139,20 +134,26 @@ class AvatarView : ViewAnimator {
         avatarSimple.setBackgroundResource(0)
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
-        avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
+        avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
     }
 
     fun renderApp(app: BotInterface) {
-        if (app is ExploreApp) {
-            setInfo(app.name, app.iconUrl, app.appId)
-        } else if (app is App) {
-            setInfo(app.name, app.iconUrl, app.appId)
-        } else if (app is Bot) {
-            displayedChild = POS_AVATAR
-            avatarSimple.setBackgroundResource(0)
-            avatarSimple.setPadding(0)
-            avatarSimple.clear()
-            avatarSimple.setImageResource(app.icon)
+        when (app) {
+            is ExploreApp -> {
+                setInfo(app.name, app.iconUrl, app.appId)
+            }
+
+            is App -> {
+                setInfo(app.name, app.iconUrl, app.appId)
+            }
+
+            is Bot -> {
+                displayedChild = POS_AVATAR
+                avatarSimple.setBackgroundResource(0)
+                avatarSimple.setPadding(0)
+                avatarSimple.clear()
+                avatarSimple.setImageResource(app.icon)
+            }
         }
     }
 

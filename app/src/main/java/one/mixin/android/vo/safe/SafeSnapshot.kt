@@ -73,6 +73,10 @@ data class SafeSnapshot(
     @SerialName("withdrawal")
     @ColumnInfo(name = "withdrawal")
     val withdrawal: SafeWithdrawal?,
+    @SerializedName("inscription_hash")
+    @SerialName("inscription_hash")
+    @ColumnInfo(name = "inscription_hash")
+    val inscriptionHash: String?,
 ) {
     @Ignore
     @SerializedName("deposit_hash")

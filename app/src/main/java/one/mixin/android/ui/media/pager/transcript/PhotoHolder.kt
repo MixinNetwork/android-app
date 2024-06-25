@@ -1,16 +1,10 @@
 package one.mixin.android.ui.media.pager.transcript
 
-import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import one.mixin.android.R
-import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
@@ -31,68 +25,28 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         val photoViewAttacher = imageView.attacher
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
         if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
-            imageView.loadGif(
+            imageView.loadImage(
                 messageItem.absolutePath(),
-                object : RequestListener<Drawable?> {
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable?>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        photoViewAttacher.isZoomable = true
-                        if (needPostTransition) {
-                            ViewCompat.setTransitionName(imageView, "transition")
-                            mediaPagerAdapterListener.onReadyPostTransition(imageView)
-                        }
-                        return false
-                    }
-
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable?>,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        return false
+                onSuccess = { _, _ ->
+                    photoViewAttacher.isZoomable = true
+                    if (needPostTransition) {
+                        ViewCompat.setTransitionName(imageView, "transition")
+                        mediaPagerAdapterListener.onReadyPostTransition(imageView)
                     }
                 },
                 base64Holder = messageItem.thumbImage,
-                overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL,
             )
         } else {
             imageView.loadImage(
                 messageItem.absolutePath(),
-                messageItem.thumbImage,
-                object : RequestListener<Drawable?> {
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable?>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        photoViewAttacher.isZoomable = true
-                        if (needPostTransition) {
-                            ViewCompat.setTransitionName(imageView, "transition")
-                            mediaPagerAdapterListener.onReadyPostTransition(imageView)
-                        }
-                        return false
-                    }
-
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable?>,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        return false
+                base64Holder = messageItem.thumbImage,
+                onSuccess = { _, _ ->
+                    photoViewAttacher.isZoomable = true
+                    if (needPostTransition) {
+                        ViewCompat.setTransitionName(imageView, "transition")
+                        mediaPagerAdapterListener.onReadyPostTransition(imageView)
                     }
                 },
-                overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL,
             )
         }
         if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {

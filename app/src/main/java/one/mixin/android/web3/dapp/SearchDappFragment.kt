@@ -15,7 +15,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentSearchBotsBinding
+import one.mixin.android.databinding.FragmentSearchDappsBinding
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
@@ -23,10 +23,12 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.receive.exploreEvm
+import one.mixin.android.web3.receive.exploreSolana
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
-class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
+class SearchDappFragment : BaseFragment(R.layout.fragment_search_dapps) {
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val searchAdapter: SearchDappAdapter by lazy {
@@ -34,6 +36,8 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
             WebActivity.show(requireContext(), url, null)
         }
     }
+
+    private var chainId: String = Chain.Ethereum.chainId
 
     companion object {
         const val TAG = "SearchDappFragment"
@@ -63,16 +67,42 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
         fuzzySearch(keyword)
     }
 
-    private val binding by viewBinding(FragmentSearchBotsBinding::bind)
+    private val binding by viewBinding(FragmentSearchDappsBinding::bind)
 
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        chainId = if (exploreSolana(requireContext())) {
+            Chain.Solana.chainId
+        } else {
+            Chain.Ethereum.chainId
+        }
         view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
+            }
+        }
+        binding.radioEth.isChecked = exploreEvm(requireContext())
+        binding.radioSolana.isChecked = exploreSolana(requireContext())
+        binding.radioNetwork.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radio_eth -> {
+                    lifecycleScope.launch {
+                        chainId = Chain.Ethereum.chainId
+                        fuzzySearch(binding.searchEt.text.toString())
+                    }
+                }
+
+                R.id.radio_solana -> {
+                    lifecycleScope.launch {
+                        chainId = Chain.Solana.chainId
+                        fuzzySearch(binding.searchEt.text.toString())
+                    }
+                }
+
+                else -> {}
             }
         }
         binding.searchEt.setHint(R.string.search_placeholder_dapp)
@@ -108,16 +138,16 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_bots) {
             if (keyword.isNullOrBlank()) {
                 binding.searchRv.isVisible = true
                 binding.empty.isVisible = false
-                searchAdapter.userList = web3ViewModel.dapps(Chain.Ethereum.chainId)
+                searchAdapter.userList = web3ViewModel.dapps(chainId)
                 searchAdapter.notifyDataSetChanged()
             } else {
                 searchAdapter.clear()
                 val dappList =
-                    web3ViewModel.dapps(Chain.Ethereum.chainId).filter { dapp ->
+                    web3ViewModel.dapps(chainId).filter { dapp ->
                         dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
                     }
                 searchAdapter.userList = dappList
-                if (dappList.isNullOrEmpty()) {
+                if (dappList.isEmpty()) {
                     binding.searchRv.isVisible = false
                     binding.empty.isVisible = true
                 } else {

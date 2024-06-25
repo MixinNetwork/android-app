@@ -26,7 +26,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
@@ -112,8 +111,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
         binding.titleView.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
-        binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.avatar.loadToken(asset)
         binding.saveTv.setOnClickListener {
             if (memoEnabled) {
                 val memo = binding.tagEt.text.toString()
@@ -150,7 +148,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             bottomSheet.setCallback(
                 object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
-                        if (success && !viewDestroyed()) {
+                        if (success && this@AddressAddFragment.isAdded) {
                             view.navigateUp()
                         }
                     }

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/set_avatar_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Set_as_avatar" />
+
+    <TextView
+        android:id="@+id/release_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Release" />
+
+    <TextView
+        android:id="@+id/cancel_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Cancel" />
+
+</LinearLayout>

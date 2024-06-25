@@ -37,6 +37,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -106,6 +107,18 @@ class SearchViewModel
             } else {
                 val escapedQuery = query.trim().escapeSql()
                 userRepository.fuzzySearchBots(escapedQuery, cancellationSignal)
+            }
+        }
+
+        suspend fun fuzzyInscription(
+            cancellationSignal: CancellationSignal,
+            query: String?,
+        ): List<SafeCollectible>? {
+            return if (query.isNullOrBlank()) {
+                null
+            } else {
+                val escapedQuery = query.trim().escapeSql()
+                tokenRepository.fuzzyInscription(escapedQuery, cancellationSignal)
             }
         }
 

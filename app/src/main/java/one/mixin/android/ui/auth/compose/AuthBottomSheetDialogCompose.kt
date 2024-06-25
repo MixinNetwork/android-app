@@ -5,7 +5,6 @@
 
 package one.mixin.android.ui.auth.compose
 
-import GlideImage
 import android.annotation.SuppressLint
 import androidx.collection.ArrayMap
 import androidx.compose.animation.AnimatedContent
@@ -66,7 +65,8 @@ import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
 import one.mixin.android.vo.getScopeGroupName
@@ -126,13 +126,13 @@ fun AuthBottomSheetDialogCompose(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (iconUrl != null) {
-                    GlideImage(
-                        data = iconUrl,
+                    CoilImage(
+                        model = iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
                         modifier =
                             Modifier
                                 .size(16.dp)
                                 .clip(CircleShape),
-                        placeHolderPainter = painterResource(id = R.drawable.ic_avatar_place_holder),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                 }

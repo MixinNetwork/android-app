@@ -10,6 +10,7 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.ConversationCategory
@@ -63,7 +64,7 @@ class RestoreTransactionJob : BaseJob(
                         if (feeTransaction == null) {
                             val data = response.data!!
                             if (transaction.receiverId.isNotBlank()) {
-                                insertSnapshotMessage(data, transaction.receiverId)
+                                insertSnapshotMessage(data, transaction.receiverId, transaction.inscriptionHash)
                             }
                         }
                     } else if (response.errorCode == 404) {
@@ -88,7 +89,7 @@ class RestoreTransactionJob : BaseJob(
                             }
                             Timber.e("Restore Transaction(${transaction.requestId}): db end")
                             if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
-                                insertSnapshotMessage(transactionResponse, transaction.receiverId)
+                                insertSnapshotMessage(transactionResponse, transaction.receiverId, transaction.inscriptionHash)
                             }
                         } else {
                             Timber.e("Restore Transaction(${transaction.requestId}): Post Transaction Error ${transactionRsp.errorDescription}")
@@ -119,13 +120,23 @@ class RestoreTransactionJob : BaseJob(
     private fun insertSnapshotMessage(
         data: TransactionResponse,
         opponentId: String,
+        inscriptionHash: String?,
     ) {
         val user = userDao.findUser(opponentId)
-        if (user != null && !user.notMessengerUser()) {
+        if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
             val conversationId = generateConversationId(data.userId, opponentId)
             initConversation(conversationId, data.userId, opponentId)
-            val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
+            val category =
+                if (inscriptionHash != null) {
+                    MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                } else {
+                    MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                }
+            val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
             appDatabase.insertMessage(message)
+            if (inscriptionHash != null) {
+                jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, data.getSnapshotId))
+            }
             MessageFlow.insert(message.conversationId, message.messageId)
         }
     }

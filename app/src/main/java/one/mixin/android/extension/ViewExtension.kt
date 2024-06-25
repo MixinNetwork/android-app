@@ -17,6 +17,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewOutlineProvider
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
@@ -267,6 +268,35 @@ fun View.roundTopOrBottom(
     this.clipToOutline = true
 }
 
+fun View.roundLeftOrRight(
+    radius: Float,
+    left: Boolean,
+    right: Boolean,
+) {
+    this.outlineProvider =
+        object : ViewOutlineProvider() {
+            override fun getOutline(
+                view: View,
+                outline: Outline,
+            ) {
+                val l =
+                    if (!left) {
+                        -radius.toInt()
+                    } else {
+                        0
+                    }
+                val r =
+                    if (!right) {
+                        (width + radius).toInt()
+                    } else {
+                        width
+                    }
+                outline.setRoundRect(l, 0, r, height, radius)
+            }
+        }
+    this.clipToOutline = true
+}
+
 fun View.circularReveal() {
     val centerX = width / 2
     val centerY: Int = height / 2
@@ -468,7 +498,7 @@ var View.backgroundResource: Int
     get() = error("Property does not have a getter")
     set(v) = setBackgroundResource(v)
 
-var ViewGroup.MarginLayoutParams.margin: Int
+var MarginLayoutParams.margin: Int
     @Deprecated("Property does not have a getter")
     get() = error("Property does not have a getter")
     set(v) {

@@ -29,6 +29,7 @@ object Constants {
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
         const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
+        const val INSCRIPTION = "https://inscription.mixin.space/collectibles/"
     }
 
     object Tip {
@@ -75,6 +76,11 @@ object Constants {
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
+        const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
+        const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
+        const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
+        const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
+        const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -83,6 +89,7 @@ object Constants {
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT = "pref_migration_transcript_attachment"
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
+            const val PREF_MIGRATION_INSCRIPTION = "pref_migration_inscription"
         }
 
         object ChainAddress {
@@ -109,6 +116,7 @@ object Constants {
         const val MIXIN_PAY = "mixin://mixin.one/pay/"
         const val MIXIN_MULTISIGS = "mixin://mixin.one/multisigs"
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
+        const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
 
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
@@ -116,6 +124,7 @@ object Constants {
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
+        const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
 
         // web3
         const val HTTPS_MIXIN_WC = "https://mixin.one/wc"
@@ -131,7 +140,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 53
+        const val CURRENT_VERSION = 55
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -178,6 +187,7 @@ object Constants {
     }
 
     val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
+
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
         const val BITCOIN_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
@@ -260,6 +270,7 @@ object Constants {
     }
 
     const val DEVICE_ID = "device_id"
+    const val APP_VERSION = "app_version"
 
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = (1000 * 60 * 60 * 24).toLong()
@@ -327,7 +338,7 @@ object Constants {
     const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
     const val MIXIN_DATA_USER_NAME = "Mixin Data"
 
-    const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" //NFTs typically require more gas
+    const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
     const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
 

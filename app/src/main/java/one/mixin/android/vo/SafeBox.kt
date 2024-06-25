@@ -9,7 +9,7 @@ import one.mixin.android.session.Session
 @Serializable
 data class SafeBox(
     val cards: List<Card>,
-    val name: String = Session.getAccountId()!!,
+    val name: String = Session.getAccountId() ?: "",
 )
 
 @Serializable

@@ -14,7 +14,6 @@ import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.text.style.BackgroundColorSpan
-import androidx.core.net.toUri
 import androidx.media3.common.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -247,6 +246,11 @@ inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
 }
 
+inline fun String.isAppUrl(): Boolean {
+    val pattern = Regex("^.+:/.+$|^.+://.+$")
+    return pattern.matches(this)
+}
+
 inline fun <reified T> Gson.fromJson(json: JsonElement) =
     try {
         this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
@@ -319,7 +323,7 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(length:Int = 50): String {
+fun String.formatPublicKey(length: Int = 50): String {
     if (this.length <= length) return this
     return substring(0, 8) + "..." + substring(length - 6, length)
 }
@@ -739,7 +743,7 @@ fun String.isValidHex(): Boolean {
     return matches("[0-9a-fA-F]+".toRegex())
 }
 
-fun BigDecimal.currencyFormat():String {
+fun BigDecimal.currencyFormat(): String {
     return if (this < BigDecimal("0.01")) {
         "< $0.01"
     } else {

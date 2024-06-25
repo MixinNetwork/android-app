@@ -21,7 +21,7 @@ import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getVideoPath
-import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.session.Session
@@ -109,7 +109,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     setIcon(R.drawable.ic_type_recall)
                 }
                 quoteMessageItem.type.endsWith("_IMAGE") -> {
-                    binding.replyIv.loadImageCenterCrop(
+                    binding.replyIv.loadImage(
                         absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
                         R.drawable.image_holder,
                     )
@@ -123,7 +123,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         16.dp
                 }
                 quoteMessageItem.type.endsWith("_VIDEO") -> {
-                    binding.replyIv.loadImageCenterCrop(
+                    binding.replyIv.loadImage(
                         absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
                         R.drawable.image_holder,
                     )
@@ -137,7 +137,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         16.dp
                 }
                 quoteMessageItem.type.endsWith("_LIVE") -> {
-                    binding.replyIv.loadImageCenterCrop(
+                    binding.replyIv.loadImage(
                         quoteMessageItem.thumbUrl,
                         R.drawable.image_holder,
                     )
@@ -213,7 +213,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 quoteMessageItem.type.endsWith("_STICKER") -> {
                     binding.replyContentTv.setText(R.string.Sticker)
                     setIcon(R.drawable.ic_type_stiker)
-                    binding.replyIv.loadImageCenterCrop(
+                    binding.replyIv.loadImage(
                         quoteMessageItem.assetUrl,
                         R.drawable.image_holder,
                     )

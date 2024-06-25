@@ -147,6 +147,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -300,6 +301,7 @@ class ConversationFragment() :
         const val MESSAGE_ID = "initial_position_message_id"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
+        private const val START_PARAM = "start_param"
 
         fun putBundle(
             conversationId: String?,
@@ -307,6 +309,7 @@ class ConversationFragment() :
             keyword: String?,
             messageId: String? = null,
             transcriptData: TranscriptData? = null,
+            startParam: String? = null
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -317,6 +320,7 @@ class ConversationFragment() :
                 putString(RECIPIENT_ID, recipientId)
                 putString(MESSAGE_ID, messageId)
                 putParcelable(TRANSCRIPT_DATA, transcriptData)
+                startParam?.let { putString(START_PARAM, startParam) }
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -691,6 +695,26 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onInscriptionClick(
+                conversationId: String,
+                messageId: String,
+                assetId: String?,
+                inscriptionHash: String?,
+                snapshotId: String?,
+            ) {
+                if (inscriptionHash == null) {
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, messageId, null, snapshotId))
+                }
+                activity?.addFragment(
+                    this@ConversationFragment,
+                    TransactionFragment.newInstance(
+                        assetId = assetId,
+                        snapshotId = snapshotId,
+                    ),
+                    TransactionFragment.TAG,
+                )
             }
 
             override fun onUrlLongClick(url: String) {
@@ -1920,6 +1944,11 @@ class ConversationFragment() :
             // The first time the load
             chatRoomHelper.markMessageRead(conversationId)
             chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+
+            requireArguments().getString(START_PARAM, null)?.let { st ->
+                sendTextMessage(st)
+            }
+
             MessageFlow.collect({ event ->
                 event.conversationId == ANY_ID || event.conversationId == conversationId
             }, { event ->
@@ -1973,7 +2002,6 @@ class ConversationFragment() :
                     }
                 }
             })
-
             messageAdapter.hasBottomView =
                 recipient?.relationship == UserRelationship.STRANGER.name &&
                 chatViewModel.isSilence(
@@ -2614,7 +2642,7 @@ class ConversationFragment() :
                                 )
                                     .add(
                                         R.id.container,
-                                        FriendsFragment.newInstance(conversationId).apply {
+                                        FriendsFragment.newInstance().apply {
                                             setOnFriendClick {
                                                 sendContactMessage(it.userId)
                                                 parentFragmentManager.popBackStackImmediate()
@@ -2729,6 +2757,8 @@ class ConversationFragment() :
             messageLayoutManager.scroll()
         } else {
             lifecycleScope.launch {
+                if (!::messageAdapter.isInitialized) return@launch
+
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
                 messageLayoutManager.scroll()

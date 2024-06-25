@@ -12,7 +12,6 @@ import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.gson.JsonSyntaxException
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -325,9 +324,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
             parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
+                realFragmentCount++
             }
             if (realFragmentCount <= 0) {
                 activity?.finish()

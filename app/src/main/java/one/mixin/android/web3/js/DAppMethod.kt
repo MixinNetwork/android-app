@@ -10,7 +10,10 @@ enum class DAppMethod {
     WATCHASSET,
     ADDETHEREUMCHAIN,
     SWITCHETHEREUMCHAIN,
-    UNKNOWN;
+    SIGNRAWTRANSACTION, // solana sign tx
+    SINGIN, // solana sign-in
+    UNKNOWN,
+    ;
 
     companion object {
         fun fromValue(value: String): DAppMethod {
@@ -26,6 +29,8 @@ enum class DAppMethod {
                 "addEthereumChain" -> ADDETHEREUMCHAIN
                 "switchChain" -> SWITCHETHEREUMCHAIN
                 "switchEthereumChain" -> SWITCHETHEREUMCHAIN
+                "signRawTransaction" -> SIGNRAWTRANSACTION
+                "signIn" -> SINGIN
                 else -> UNKNOWN
             }
         }

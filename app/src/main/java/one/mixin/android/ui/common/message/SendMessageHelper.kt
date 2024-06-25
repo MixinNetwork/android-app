@@ -317,10 +317,22 @@ class SendMessageHelper
                 )
             val message =
                 createAttachmentMessage(
-                    UUID.randomUUID().toString(), conversationId, sender.userId, category,
-                    null, attachment.filename, attachment.uri.toString(),
-                    attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-                    null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
+                    UUID.randomUUID().toString(),
+                    conversationId,
+                    sender.userId,
+                    category,
+                    null,
+                    attachment.filename,
+                    attachment.uri.toString(),
+                    attachment.mimeType,
+                    attachment.fileSize,
+                    nowInUtc(),
+                    null,
+                    null,
+                    MediaStatus.PENDING,
+                    MessageStatus.SENDING.name,
+                    replyMessage?.messageId,
+                    replyMessage?.toQuoteMessageItem(),
                 )
             jobManager.addJobInBackground(ConvertDataJob(message))
         }
@@ -343,9 +355,22 @@ class SendMessageHelper
                 )
             val message =
                 createAudioMessage(
-                    messageId, conversationId, sender.userId, null, category,
-                    file.length(), file.name, duration.toString(), nowInUtc(), waveForm, null, null,
-                    MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
+                    messageId,
+                    conversationId,
+                    sender.userId,
+                    null,
+                    category,
+                    file.length(),
+                    file.name,
+                    duration.toString(),
+                    nowInUtc(),
+                    waveForm,
+                    null,
+                    null,
+                    MediaStatus.PENDING,
+                    MessageStatus.SENDING.name,
+                    replyMessage?.messageId,
+                    replyMessage?.toQuoteMessageItem(),
                 )
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }
@@ -396,8 +421,17 @@ class SendMessageHelper
             val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
             val message =
                 createContactMessage(
-                    UUID.randomUUID().toString(), conversationId, sender.userId, category, encoded, shareUserId,
-                    MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem(),
+                    UUID.randomUUID().toString(),
+                    conversationId,
+                    sender.userId,
+                    category,
+                    encoded,
+                    shareUserId,
+                    MessageStatus.SENDING.name,
+                    nowInUtc(),
+                    shareUserFullName,
+                    replyMessage?.messageId,
+                    replyMessage?.toQuoteMessageItem(),
                 )
             jobManager.addJobInBackground(SendMessageJob(message))
         }
@@ -573,8 +607,16 @@ class SendMessageHelper
                 )
             jobManager.addJobInBackground(
                 SendGiphyJob(
-                    conversationId, senderId, image.url, image.width, image.height, image.size.toLong(),
-                    category, UUID.randomUUID().toString(), previewUrl, nowInUtc(),
+                    conversationId,
+                    senderId,
+                    image.url,
+                    image.width,
+                    image.height,
+                    image.size.toLong(),
+                    category,
+                    UUID.randomUUID().toString(),
+                    previewUrl,
+                    nowInUtc(),
                 ),
             )
         }

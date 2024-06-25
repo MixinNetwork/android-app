@@ -25,7 +25,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
+import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun SearchTextField(

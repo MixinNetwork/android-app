@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
@@ -37,9 +36,11 @@ class TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
         }
     private var onClickListener: ((TokenItem) -> Unit)? = null
+
     fun setOnClickListener(onClickListener: (TokenItem) -> Unit) {
         this.onClickListener = onClickListener
     }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -55,7 +56,6 @@ class TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-
         (holder as TokenHolder).bind(tokens[position])
         holder.itemView.setOnClickListener {
             onClickListener?.invoke(tokens[position])
@@ -67,8 +67,7 @@ class TokenHolder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(b
     @SuppressLint("SetTextI18n")
     fun bind(token: TokenItem) {
         binding.apply {
-            avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-            avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            avatar.loadToken(token)
             balance.text =
                 try {
                     if (token.balance.numberFormat().toFloat() == 0f) {

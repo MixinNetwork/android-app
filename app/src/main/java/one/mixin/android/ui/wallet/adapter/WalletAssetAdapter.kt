@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
@@ -121,8 +120,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
             }
             binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.backRightTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
-            binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.loadToken(asset)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
             debugLongClick(
                 holder.itemView,

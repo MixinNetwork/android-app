@@ -38,12 +38,17 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
@@ -91,6 +96,7 @@ import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
 import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
+import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -131,6 +137,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -164,6 +171,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -306,11 +314,15 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 lifecycleScope.launch {
                     if (e is WCEvent.V2) {
-                        val type = e.chainType ?: TYPE_ETH
-                        if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                        } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                            WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                        if (e.requestType != WalletConnect.RequestType.Connect) {
+                            val type = e.chainType ?: TYPE_ETH
+                            if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            } else {
+                                WalletConnectActivity.show(this@MainActivity, e)
+                            }
                         } else {
                             WalletConnectActivity.show(this@MainActivity, e)
                         }
@@ -389,6 +401,7 @@ class MainActivity : BlazeBaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             checkRoot()
             checkStorage()
+            checkVersion()
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
@@ -447,6 +460,10 @@ class MainActivity : BlazeBaseActivity() {
 
             PropertyHelper.checkCleanupQuoteContent {
                 jobManager.addJobInBackground(CleanupQuoteContentJob(-1L))
+            }
+
+            PropertyHelper.checkInscriptionMigrated {
+                jobManager.addJobInBackground(InscriptionMigrationJob())
             }
 
             jobManager.addJobInBackground(RefreshContactJob())
@@ -633,6 +650,17 @@ class MainActivity : BlazeBaseActivity() {
                 {
                 },
             )
+        }
+    }
+
+    private fun checkVersion(){
+        val saveVersion = defaultSharedPreferences.getInt(APP_VERSION, -1)
+        if (saveVersion != BuildConfig.VERSION_CODE) {
+            if (saveVersion != -1) {
+                Timber.e("Old Version: $saveVersion")
+            }
+            Timber.e("Current Version: Mixin${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})")
+            defaultSharedPreferences.putInt(APP_VERSION, BuildConfig.VERSION_CODE)
         }
     }
 
@@ -863,34 +891,56 @@ class MainActivity : BlazeBaseActivity() {
         ExploreFragment()
     }
 
+    private val collectiblesFragment by lazy {
+        CollectiblesFragment()
+    }
+
+    private val channel = Channel<Int>(Channel.CONFLATED)
+
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
             bottomNav.setOnItemSelectedListener {
-                when (it.itemId) {
-                    R.id.nav_chat -> {
-                        navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-                        true
-                    }
-
-                    R.id.nav_wallet -> {
-                        openWallet()
-                        conversationListFragment.hideCircles()
-                        true
-                    }
-
-                    R.id.nav_explore -> {
-                        navigationController.navigate(NavigationController.Explore, exploreFragment)
-                        conversationListFragment.hideCircles()
-                        true
-                    }
-
-                    else -> {
-                        conversationListFragment.hideCircles()
-                        false
-                    }
+                lifecycleScope.launch {
+                    channel.send(it.itemId)
                 }
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_explore, R.id.nav_collectibles)
+            }
+        }
+        lifecycleScope.launch {
+            channel
+                .receiveAsFlow()
+                .distinctUntilChanged()
+                .collect { itemId ->
+                    handleNavigationItemSelected(itemId)
+                }
+        }
+    }
+
+    private fun handleNavigationItemSelected(itemId: Int) {
+        when (itemId) {
+            R.id.nav_chat -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            }
+
+            R.id.nav_wallet -> {
+                openWallet()
+                conversationListFragment.hideCircles()
+            }
+
+            R.id.nav_collectibles -> {
+                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+                conversationListFragment.hideCircles()
+            }
+
+            R.id.nav_explore -> {
+                navigationController.navigate(NavigationController.Explore, exploreFragment)
+                conversationListFragment.hideCircles()
+            }
+
+            else -> {
+                conversationListFragment.hideCircles()
             }
         }
     }

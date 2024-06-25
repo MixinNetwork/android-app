@@ -7,6 +7,8 @@ import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.safe.PendingDeposit
@@ -101,4 +103,14 @@ interface TokenService {
     suspend fun getChainById(
         @Path("id") id: String,
     ): MixinResponse<Chain>
+
+    @GET("safe/inscriptions/collections/{id}")
+    suspend fun getInscriptionCollection(
+        @Path("id") id: String,
+    ): MixinResponse<InscriptionCollection>
+
+    @GET("safe/inscriptions/items/{id}")
+    suspend fun getInscriptionItem(
+        @Path("id") id: String,
+    ): MixinResponse<InscriptionItem>
 }

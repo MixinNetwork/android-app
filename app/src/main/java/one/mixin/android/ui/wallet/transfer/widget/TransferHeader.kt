@@ -8,9 +8,12 @@ import android.widget.LinearLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
 
 class TransferHeader : LinearLayout {
@@ -21,17 +24,23 @@ class TransferHeader : LinearLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         orientation = VERTICAL
         _binding = ViewTransferHeaderBinding.inflate(LayoutInflater.from(context), this)
+        _binding.nftIcon.round(12.dp)
         gravity = Gravity.CENTER_HORIZONTAL
     }
 
     fun progress(type: TransferType) {
         _binding.apply {
-            icon.displayedChild = 2
+            icon.displayedChild = 3
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
             when (type) {
-                TransferType.transfer -> {
+                TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Sending_Transfer_Request)
                     subTitle.setText(R.string.transfer_sending_description)
+                }
+
+                TransferType.nftRelease -> {
+                    title.setText(R.string.collectible_releasing)
+                    subTitle.setText(R.string.collectible_releasing_description)
                 }
 
                 TransferType.addressTransfer -> {
@@ -72,13 +81,17 @@ class TransferHeader : LinearLayout {
         errorMessage: String?,
     ) {
         _binding.apply {
-            icon.displayedChild = 1
+            icon.displayedChild = 2
             statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
             subTitle.text = errorMessage
             subTitle.textColorResource = R.color.text_color_error_tip
             when (type) {
-                TransferType.transfer -> {
+                TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Transfer_Failed)
+                }
+
+                TransferType.nftRelease -> {
+                    title.setText(R.string.collectible_release_failed)
                 }
 
                 TransferType.addressTransfer -> {
@@ -110,13 +123,18 @@ class TransferHeader : LinearLayout {
 
     fun success(type: TransferType) {
         _binding.apply {
-            icon.displayedChild = 1
+            icon.displayedChild = 2
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
             statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
             when (type) {
-                TransferType.transfer -> {
+                TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Transfer_Success)
                     subTitle.setText(R.string.transfer_sent_description)
+                }
+
+                TransferType.nftRelease -> {
+                    title.setText(R.string.collectible_release_success)
+                    subTitle.setText(R.string.collectible_released_description)
                 }
 
                 TransferType.addressTransfer -> {
@@ -154,14 +172,35 @@ class TransferHeader : LinearLayout {
 
     fun awaiting(
         type: TransferType,
+        inscriptionItem: InscriptionItem,
         asset: TokenItem,
     ) {
         _binding.apply {
-            icon.displayedChild = 0
+            nftIcon.loadImage(inscriptionItem.contentURL, R.drawable.ic_default_inscription)
+        }
+        awaiting(type, asset)
+    }
+
+    fun awaiting(
+        type: TransferType,
+        asset: TokenItem,
+    ) {
+        _binding.apply {
+            icon.displayedChild =
+                if (type == TransferType.nft || type == TransferType.nftRelease) {
+                    1
+                } else {
+                    0
+                }
             when (type) {
-                TransferType.transfer -> {
+                TransferType.transfer, TransferType.nft -> {
                     title.setText(R.string.Transfer_confirmation)
                     subTitle.setText(R.string.review_transfer_hint)
+                }
+
+                TransferType.nftRelease -> {
+                    title.setText(R.string.collectible_release_confirmation)
+                    subTitle.setText(R.string.collectible_release_hint)
                 }
 
                 TransferType.addressTransfer -> {
@@ -195,8 +234,7 @@ class TransferHeader : LinearLayout {
                 }
             }
             subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
-            assetIcon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            assetIcon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.loadToken(asset)
         }
     }
 }

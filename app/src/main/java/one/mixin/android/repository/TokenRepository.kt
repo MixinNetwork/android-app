@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
-import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -30,9 +29,11 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
+import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -43,6 +44,8 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.InscriptionCollectionDao
+import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
@@ -61,12 +64,16 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncInscriptionMessageJob
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
@@ -80,6 +87,8 @@ import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -118,6 +127,8 @@ class TokenRepository
         private val rawTransactionDao: RawTransactionDao,
         private val outputDao: OutputDao,
         private val userDao: UserDao,
+        private val inscriptionDao: InscriptionDao,
+        private val inscriptionCollectionDao: InscriptionCollectionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -147,6 +158,24 @@ class TokenRepository
             var assetItem = tokenDao.findAssetItemById(assetId)
             if (assetItem == null) {
                 assetItem = syncAsset(assetId)
+            }
+            if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+                val chain = syncAsset(assetItem.chainId)
+                assetItem.chainIconUrl = chain?.chainIconUrl
+                assetItem.chainSymbol = chain?.chainSymbol
+                assetItem.chainName = chain?.chainName
+                assetItem.chainPriceUsd = chain?.chainPriceUsd
+            }
+            return assetItem
+        }
+
+        suspend fun findOrSyncAssetByInscription(
+            collectionHash: String, instantiationHash: String
+        ): TokenItem? {
+            var assetItem = tokenDao.findAssetItemByCollectionHash(collectionHash)
+            val output = outputDao.findOutputByHash(instantiationHash) ?: return null
+            if (assetItem == null) {
+                assetItem = syncAssetByKernel(output.asset)
             }
             if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
                 val chain = syncAsset(assetItem.chainId)
@@ -239,6 +268,37 @@ class TokenRepository
             }
 
             return tokenDao.findAssetItemById(assetId)
+        }
+
+        suspend fun syncAssetByKernel(kernelAssetId: String): TokenItem? {
+            val asset: Token =
+                handleMixinResponse(
+                    invokeNetwork = {
+                        tokenService.getAssetByIdSuspend(kernelAssetId)
+                    },
+                    successBlock = { resp ->
+                        resp.data?.let { a ->
+                            insert(a)
+                            a
+                        }
+                    },
+                ) ?: return null
+
+            val exists = chainDao.checkExistsById(asset.chainId)
+            if (exists == null) {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        tokenService.getChainById(asset.chainId)
+                    },
+                    successBlock = { resp ->
+                        resp.data?.let { c ->
+                            chainDao.upsertSuspend(c)
+                        }
+                    },
+                )
+            }
+
+            return tokenDao.findTokenItemByAsset(kernelAssetId)
         }
 
         private suspend fun simpleAsset(id: String) = tokenDao.simpleAsset(id)
@@ -368,7 +428,7 @@ class TokenRepository
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
 
-        suspend fun web3TokenItems(): List<TokenItem> = tokenDao.web3TokenItems(Web3ChainIds)
+        suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
         suspend fun fuzzySearchToken(
             query: String,
@@ -525,6 +585,8 @@ class TokenRepository
         }
 
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
+
+        suspend fun findAssetItemByCollectionHash(collectionHash: String) = tokenDao.findAssetItemByCollectionHash(collectionHash)
 
         suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
 
@@ -704,7 +766,27 @@ class TokenRepository
         suspend fun findOutputs(
             limit: Int,
             asset: String,
-        ) = outputDao.findUnspentOutputsByAsset(limit, asset)
+            inscriptionHash: String? = null,
+            ignoreZero: Boolean = false,
+        ) = if (inscriptionHash != null) {
+            outputDao.findUnspentInscriptionByAssetHash(limit, asset, inscriptionHash)
+        } else {
+            if (ignoreZero) {
+                outputDao.findDeterminedOutputsByAsset(limit, asset)
+            } else {
+                outputDao.findUnspentOutputsByAsset(limit, asset)
+            }
+        }
+
+        suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
+
+        suspend fun findOutputByHash(inscriptionHash: String) = outputDao.findOutputByHash(inscriptionHash)
+
+        fun findInscriptionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionByHash(inscriptionHash)
+
+        fun findInscriptionCollectionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionCollectionByHash(inscriptionHash)
+
+        suspend fun findTokenItemByAsset(kernelAssetId: String) = tokenDao.findTokenItemByAsset(kernelAssetId)
 
         fun insertOutput(output: Output) = outputDao.insert(output)
 
@@ -741,11 +823,21 @@ class TokenRepository
         fun insertSnapshotMessage(
             data: TransactionResponse,
             conversationId: String,
+            inscriptionHash: String?,
         ) {
             val snapshotId = data.getSnapshotId
             if (conversationId != "") {
-                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, MessageCategory.SYSTEM_SAFE_SNAPSHOT.name, "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
+                val category =
+                    if (inscriptionHash != null) {
+                        MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
+                    } else {
+                        MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
+                    }
+                val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
                 appDatabase.insertMessage(message)
+                if (inscriptionHash != null) {
+                    jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, snapshotId))
+                }
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
@@ -761,8 +853,9 @@ class TokenRepository
             memo: String?,
             type: SafeSnapshotType,
             withdrawal: SafeWithdrawal? = null,
+            reference: String? = null,
         ) {
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
             safeSnapshotDao.insert(snapshot)
         }
 
@@ -834,4 +927,43 @@ class TokenRepository
             orderId: String,
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
+
+        fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = outputDao.collectibles(sortOrder.name)
+
+        fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = outputDao.collectiblesByHash(collectionHash)
+
+        fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
+
+        fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
+
+        suspend fun fuzzyInscription(
+            escapedQuery: String,
+            cancellationSignal: CancellationSignal,
+        ): List<SafeCollectible> {
+            return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
+        }
+
+        fun inscriptionStateByHash(hash: String) = outputDao.inscriptionStateByHash(hash)
+
+        suspend fun getInscriptionItem(hash: String): InscriptionItem? {
+            val response = tokenService.getInscriptionItem(hash)
+            if (response.isSuccess) {
+                inscriptionDao.insert(response.data!!)
+                return response.data!!
+            } else {
+                return null
+            }
+        }
+
+        suspend fun getInscriptionCollection(hash: String): InscriptionCollection? {
+            val response = tokenService.getInscriptionCollection(hash)
+            if (response.isSuccess) {
+                inscriptionCollectionDao.insert(response.data!!)
+                return response.data!!
+            } else {
+                return null
+            }
+        }
+
+        suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
     }

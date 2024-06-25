@@ -13,13 +13,13 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerBinding
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadGif
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
@@ -160,14 +160,16 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     width = size - 20.dp
                     height = (width * (3f / 4)).toInt()
                 }
-                Glide.with(item).clear(item)
+                item.clear()
+                item.scaleType = ImageView.ScaleType.CENTER
                 item.setImageDrawable(AppCompatResources.getDrawable(ctx, R.drawable.ic_gif_search))
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
                 val images = data!![position - 1].images
                 val previewImage = images.fixed_width_downsampled
                 val sendImage = images.fixed_width
-                item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+                item.scaleType = ImageView.ScaleType.CENTER_CROP
+                item.loadImage(previewImage.url, R.drawable.ic_giphy_place_holder)
                 item.setOnClickListener { listener?.onItemClick(position, sendImage, previewImage.url) }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size

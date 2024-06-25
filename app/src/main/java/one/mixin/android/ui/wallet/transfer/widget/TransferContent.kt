@@ -14,6 +14,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
@@ -42,6 +43,10 @@ class TransferContent : LinearLayout {
         when (transferItem) {
             is TransferBiometricItem -> {
                 renderTransfer(transferItem, userClick)
+            }
+
+            is NftBiometricItem -> {
+                renderTransferNft(transferItem, userClick)
             }
 
             is AddressTransferBiometricItem -> {
@@ -149,6 +154,41 @@ class TransferContent : LinearLayout {
 
             val tokenItem = transferBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderTransferNft(
+        nftBiometricItem: NftBiometricItem,
+        userClick: (User) -> Unit,
+    ) {
+        _binding.apply {
+            amount.isVisible = false
+            address.isVisible = false
+            name.isVisible = true
+            name.setContent(R.string.Collectible, "${nftBiometricItem.inscriptionCollection.name} #${nftBiometricItem.inscriptionItem.sequence}")
+            if (nftBiometricItem.release) {
+                receive.isVisible = false
+                sender.isVisible = false
+                token.isVisible = true
+                token.setContent(R.string.Token, "${nftBiometricItem.amount} ${nftBiometricItem.asset?.symbol}", amountAs(nftBiometricItem.amount, nftBiometricItem.asset!!), nftBiometricItem.asset)
+                networkFee.isVisible = true
+                networkFee.setContent(R.string.Fee, "0")
+            } else {
+                receive.isVisible = true
+                sender.isVisible = true
+                sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+                receive.setContent(R.plurals.Receiver_title, nftBiometricItem.receivers, null, userClick)
+            }
+
+            total.isVisible = false
+            total.setContent(R.string.Total, "${nftBiometricItem.amount} ${nftBiometricItem.asset?.symbol}", amountAs(nftBiometricItem.amount, nftBiometricItem.asset!!))
+
+            if (!nftBiometricItem.memo.isNullOrBlank()) {
+                memo.isVisible = true
+                memo.setContent(R.string.Memo, nftBiometricItem.memo ?: "")
+            }
+
+            network.isVisible = false
         }
     }
 

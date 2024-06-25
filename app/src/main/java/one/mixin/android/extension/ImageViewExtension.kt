@@ -1,164 +1,111 @@
 package one.mixin.android.extension
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
+import coil.dispose
+import coil.load
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import coil.transform.Transformation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
-import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
 
-fun ImageView.loadImage(uri: String?) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).into(this)
+fun ImageView.loadImage(
+    data: String?,
+    @DrawableRes holder: Int? = null,
+    base64Holder: String? = null,
+    onSuccess: (
+        (
+            request: ImageRequest,
+            result: SuccessResult,
+        ) -> Unit
+    )? = null,
+    onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
+    transformation: Transformation? = null,
+) {
+    this.load(data) {
+        if (base64Holder != null) {
+            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+        } else if (holder != null) {
+            placeholder(holder)
+            error(holder)
+        }
+        allowHardware(false)
+        if (transformation != null) transformations(transformation)
+        onSuccess?.let {
+            listener(
+                onSuccess = onSuccess,
+                onError = onError ?: { _, _ -> },
+            )
+        }
+    }
 }
 
-fun ImageView.loadImage(uri: Uri?) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).into(this)
+fun ImageView.loadImageCompat(
+    data: String?,
+    @DrawableRes holder: Int? = null,
+    base64Holder: String? = null,
+    onSuccess: (
+        (
+        request: ImageRequest,
+        result: SuccessResult,
+    ) -> Unit
+    )? = null,
+    onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
+    transformation: Transformation? = null,
+) {
+    this.load(data) {
+        if (base64Holder != null) {
+            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+        } else if (holder != null) {
+            placeholder(holder)
+            error(holder)
+        }
+        allowHardware(false)
+        bitmapConfig(Bitmap.Config.ARGB_8888)
+        if (transformation != null) transformations(transformation)
+        onSuccess?.let {
+            listener(
+                onSuccess = onSuccess,
+                onError = onError ?: { _, _ -> },
+            )
+        }
+    }
 }
 
 fun ImageView.loadImage(
-    uri: String?,
-    @DrawableRes holder: Int,
-    useAppContext: Boolean = false,
+    uri: Uri?,
+    @DrawableRes holder: Int? = null,
+    base64Holder: String? = null,
 ) {
-    if (useAppContext) {
-        Glide.with(MixinApplication.appContext).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
-    } else {
-        if (!isActivityNotDestroyed()) return
-        Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
+    this.load(uri) {
+        if (base64Holder != null) {
+            placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
+        } else if (holder != null) {
+            placeholder(holder)
+            error(holder)
+        }
+        allowHardware(false)
     }
 }
 
 fun ImageView.clear() {
+    this.dispose()
     Glide.with(this).clear(this)
-}
-
-fun ImageView.loadImage(
-    uri: String?,
-    width: Int,
-    height: Int,
-) {
-    if (!isActivityNotDestroyed()) return
-    val multi = MultiTransformation(CropTransformation(width, height))
-    Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
-}
-
-fun ImageView.loadImageCenterCrop(
-    uri: String?,
-    holder: String? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().dontAnimate().dontTransform().centerCrop().run {
-                return@run if (holder != null) {
-                    placeholder(holder.toDrawable(this@loadImageCenterCrop.width, this@loadImageCenterCrop.height))
-                } else {
-                    this
-                }
-            },
-        ).into(this)
-}
-
-fun ImageView.loadImageCenterCrop(
-    uri: String?,
-    @DrawableRes holder: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().dontAnimate().dontTransform().centerCrop().run {
-                return@run if (holder != null) {
-                    this.placeholder(holder)
-                } else {
-                    this
-                }
-            },
-        ).into(this)
-}
-
-fun ImageView.loadImageCenterCrop(
-    uri: Uri?,
-    @DrawableRes holder: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().dontAnimate().dontTransform().centerCrop().run {
-                return@run if (holder != null) {
-                    this.placeholder(holder)
-                } else {
-                    this
-                }
-            },
-        ).into(this)
-}
-
-fun ImageView.loadImage(
-    uri: String?,
-    base64Holder: String? = null,
-    requestListener: RequestListener<Drawable?>? = null,
-    overrideWidth: Int? = null,
-    overrideHeight: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    var requestOptions = RequestOptions().dontTransform()
-    if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
-    }
-    if (overrideWidth != null && overrideHeight != null) {
-        requestOptions = requestOptions.override(overrideWidth, overrideHeight)
-    }
-    if (requestListener != null) {
-        Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
-            .into(this)
-    } else {
-        Glide.with(this).load(uri).apply(requestOptions).into(this)
-    }
-}
-
-fun ImageView.loadGif(
-    uri: String?,
-    requestListener: RequestListener<Drawable?>? = null,
-    centerCrop: Boolean? = null,
-    @DrawableRes holder: Int? = null,
-    base64Holder: String? = null,
-    overrideWidth: Int? = null,
-    overrideHeight: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    var requestOptions = RequestOptions().dontTransform()
-    if (centerCrop != null) {
-        requestOptions = requestOptions.centerCrop()
-    }
-    if (holder != null) {
-        requestOptions = requestOptions.placeholder(holder)
-    }
-    if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
-    }
-    if (overrideWidth != null && overrideHeight != null) {
-        requestOptions = requestOptions.override(overrideWidth, overrideHeight)
-    }
-    if (requestListener != null) {
-        Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
-            .into(this)
-    } else {
-        Glide.with(this).load(uri).apply(requestOptions).into(this)
-    }
 }
 
 fun ImageView.loadGifMark(
@@ -409,10 +356,11 @@ fun RLottieImageView.loadSticker(
         when (imgType) {
             "JSON" ->
                 loadLottie(it, cacheKey)
-            "GIF" -> {
-                loadGif(url)
+
+            else -> {
+                clear()
+                loadImage(url, null, null)
             }
-            else -> loadImage(url)
         }
     }
 }
@@ -429,40 +377,6 @@ fun RLottieImageView.loadLottie(
                 .signature(StringSignature(cacheKey)),
         )
         .into(this)
-}
-
-@Suppress("unused")
-fun ImageView.loadBase64(
-    uri: ByteArray?,
-    width: Int,
-    height: Int,
-    mark: Int,
-) {
-    if (!isActivityNotDestroyed()) return
-    val multi = MultiTransformation(CropTransformation(width, height))
-    Glide.with(this).load(uri)
-        .apply(
-            RequestOptions().centerCrop()
-                .transform(multi).signature(StringSignature("$uri$mark"))
-                .dontAnimate(),
-        ).into(this)
-}
-
-fun ImageView.loadCircleImage(
-    uri: String?,
-    @DrawableRes holder: Int? = null,
-) {
-    if (!isActivityNotDestroyed()) return
-    if (uri.isNullOrBlank()) {
-        if (holder != null) {
-            setImageResource(holder)
-        }
-    } else if (holder == null) {
-        Glide.with(this).load(uri).apply(RequestOptions().circleCrop()).into(this)
-    } else {
-        Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder).circleCrop())
-            .into(this)
-    }
 }
 
 fun ImageView.loadRoundImage(

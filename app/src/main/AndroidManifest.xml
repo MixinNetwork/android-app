@@ -143,6 +143,11 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:name=".ui.home.inscription.CollectionActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
             android:name=".ui.conversation.ConversationActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
@@ -328,6 +333,21 @@
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Music" />
+
+        <activity
+            android:name=".ui.home.inscription.InscriptionActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.Transparent" />
+
+        <activity
+            android:name=".ui.home.inscription.InscriptionSendActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

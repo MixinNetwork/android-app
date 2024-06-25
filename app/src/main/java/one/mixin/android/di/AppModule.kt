@@ -38,6 +38,8 @@ import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.Constants.RouteConfig.WEB3_URL
@@ -77,6 +79,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -133,7 +136,7 @@ object AppModule {
 
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
-    private val API_UA =
+    val API_UA =
         (
             "Mixin/" + "${BuildConfig.VERSION_NAME}" +
                 " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + "${BuildConfig.VERSION_CODE}" + "; " + LOCALE + ")"
@@ -483,6 +486,7 @@ object AppModule {
     fun provideRouteService(
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
+        @ApplicationContext appContext: Context,
     ): RouteService {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -499,7 +503,7 @@ object AppModule {
                         .addHeader("Accept-Language", Locale.getDefault().language)
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getBotSignature(Session.routePublicKey, sourceRequest)
+                    val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null), sourceRequest)
                     if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
                         b.addHeader(mrAccessTimestamp, ts.toString())
                         b.addHeader(mrAccessSign, signature)
@@ -526,6 +530,7 @@ object AppModule {
     fun provideWeb3Service(
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
+        @ApplicationContext appContext: Context,
     ): Web3Service {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -542,7 +547,7 @@ object AppModule {
                         .addHeader("Accept-Language", Locale.getDefault().language)
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getBotSignature(Session.web3PublicKey, sourceRequest)
+                    val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_WEB3_BOT_PK, null), sourceRequest)
                     b.addHeader(mwAccessTimestamp, ts.toString())
                     b.addHeader(mwAccessSign, signature)
                     val request = b.build()

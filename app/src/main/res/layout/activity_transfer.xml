@@ -50,18 +50,21 @@
                 android:id="@+id/transfer_tips1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/text_primary"
                 android:text="@string/transfer_tips1" />
 
             <TextView
                 android:id="@+id/transfer_tips2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/text_primary"
                 android:text="@string/transfer_tips2" />
 
             <TextView
                 android:id="@+id/transfer_tips3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/text_primary"
                 android:text="@string/transfer_tips3" />
         </LinearLayout>
 

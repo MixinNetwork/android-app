@@ -12,6 +12,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : BaseViewHolder(binding.root) {
     init {
@@ -31,7 +32,11 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
         this.onItemListener = onItemListener
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
-        binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
+        if (messageItem.assetCollectionHash.isNullOrEmpty()) {
+            binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
+        } else {
+            binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder, transformation = CoilRoundedHexagonTransformation())
+        }
         val amount = messageItem.snapshotAmount
         if (!amount.isNullOrBlank()) {
             binding.billTv.text =

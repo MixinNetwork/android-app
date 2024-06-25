@@ -7,7 +7,6 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
 import org.web3j.utils.Numeric
-import timber.log.Timber
 
 @Parcelize
 class JsSignMessage(
@@ -15,19 +14,25 @@ class JsSignMessage(
     val type: Int,
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
+    val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
         const val TYPE_PERSONAL_MESSAGE = 1
         const val TYPE_MESSAGE = 2
         const val TYPE_TRANSACTION = 3
+        const val TYPE_RAW_TRANSACTION = 4
+        const val TYPE_SIGN_IN = 5
+
+        fun isSignMessage(type: Int): Boolean =
+            type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
     }
 
     val reviewData: String?
         get() {
             val data = this.data ?: return null
             try {
-                if (type == TYPE_PERSONAL_MESSAGE) {
+                if (type == TYPE_PERSONAL_MESSAGE || type == TYPE_MESSAGE) {
                     return String(Numeric.cleanHexPrefix(data).hexStringToByteArray())
                 } else if (type == TYPE_TYPED_MESSAGE) {
                     val listType = object : TypeToken<List<String>>() {}.type
@@ -44,4 +49,10 @@ class JsSignMessage(
             }
             return data
         }
+}
+
+enum class SolanaTxSource {
+    InnerTransfer, InnerSwap, Web, Link, WalletConnect;
+
+    fun isInnerTx() = this == InnerTransfer || this == InnerSwap
 }

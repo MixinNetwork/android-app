@@ -2,7 +2,7 @@ package one.mixin.android.ui.sticker
 
 import android.app.Dialog
 import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
@@ -15,16 +15,12 @@ import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
+import coil.imageLoader
+import coil.request.ImageRequest
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
@@ -53,8 +49,6 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.lang.Integer.max
 import java.lang.Integer.min
-import java.nio.ByteBuffer
-import java.util.concurrent.TimeUnit
 
 @Suppress("BlockingMethodInNonBlockingContext")
 @AndroidEntryPoint
@@ -132,12 +126,10 @@ class StickerAddFragment : BaseFragment() {
             val w =
                 withContext(Dispatchers.IO) {
                     try {
-                        val byteArray =
-                            Glide.with(MixinApplication.appContext)
-                                .`as`(ByteArray::class.java)
-                                .load(url)
-                                .submit()
-                                .get(10, TimeUnit.SECONDS)
+                        val loader = requireContext().imageLoader
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
+                        val result = loader.execute(request).drawable as BitmapDrawable? ?: return@withContext 0
+                        val byteArray = result.bitmap.toBytes()
                         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
                         if (bitmap.width < dp100) {
                             dp100
@@ -202,30 +194,13 @@ class StickerAddFragment : BaseFragment() {
             } else {
                 stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
             }
-            Glide.with(requireContext()).load(r.data?.assetUrl).listener(
-                object : RequestListener<Drawable> {
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>,
-                        isFirstResource: Boolean,
-                    ): Boolean {
+            val loader = requireContext().imageLoader
+            val request =
+                ImageRequest.Builder(requireContext()).data(r.data?.assetUrl).size(r.data!!.assetWidth, r.data!!.assetHeight)
+                    .listener { _, _ ->
                         handleBack(R.string.Add_success)
-                        return true
-                    }
-
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        model: Any,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource,
-                        isFirstResource: Boolean,
-                    ): Boolean {
-                        handleBack(R.string.Add_success)
-                        return true
-                    }
-                },
-            ).submit(r.data!!.assetWidth, r.data!!.assetHeight)
+                    }.build()
+            loader.execute(request)
         }
 
     private suspend fun getStickerAddRequest(
@@ -233,6 +208,7 @@ class StickerAddFragment : BaseFragment() {
         uri: Uri,
     ): StickerAddRequest? =
         withContext(Dispatchers.IO) {
+            val loader = requireContext().imageLoader
             return@withContext if (mimeType == MimeType.GIF.toString()) {
                 val path = uri.getFilePath(requireContext())
                 if (path == null) {
@@ -249,39 +225,26 @@ class StickerAddFragment : BaseFragment() {
 
                 val byteArray =
                     if (mimeType == MimeType.GIF.toString()) {
-                        val gifDrawable =
-                            Glide.with(MixinApplication.appContext)
-                                .asGif()
-                                .load(url)
-                                .submit()
-                                .get(10, TimeUnit.SECONDS)
-                        val w = gifDrawable.intrinsicWidth
-                        val h = gifDrawable.intrinsicHeight
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
+                        val result = loader.execute(request).drawable ?: return@withContext null
+                        val w = result.intrinsicWidth
+                        val h = result.intrinsicHeight
                         if (min(w, h) >= MIN_SIZE && max(w, h) <= MAX_SIZE) {
-                            val buffer = gifDrawable.buffer
-                            val bytes = ByteArray(buffer.capacity())
-                            (buffer.duplicate().clear() as ByteBuffer).get(bytes)
-                            bytes
+                            loader.diskCache?.openSnapshot(url)?.data?.toFile()?.toByteArray() ?: return@withContext null
                         } else {
                             handleBack(R.string.sticker_add_invalid_size)
                             return@withContext null
                         }
                     } else {
-                        Glide.with(MixinApplication.appContext)
-                            .asFile()
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS).toByteArray()
+                        val request = ImageRequest.Builder(requireContext()).data(url).build()
+                        loader.execute(request)
+                        loader.diskCache?.openSnapshot(url)?.data?.toFile()?.toByteArray() ?: return@withContext null
                     }
 
                 StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
             } else {
-                var bitmap =
-                    Glide.with(MixinApplication.appContext)
-                        .asBitmap()
-                        .load(url)
-                        .submit()
-                        .get(10, TimeUnit.SECONDS)
+                val request = ImageRequest.Builder(requireContext()).data(url).build()
+                var bitmap = (loader.execute(request).drawable as BitmapDrawable?)?.bitmap ?: return@withContext null
 
                 val ratio = bitmap.width / bitmap.height.toFloat()
                 if (ratio in RATIO_MIN_MAX..RATIO_MAX_MIN) {

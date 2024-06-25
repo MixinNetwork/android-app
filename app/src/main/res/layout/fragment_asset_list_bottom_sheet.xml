@@ -61,14 +61,47 @@
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="64dp"
-            android:visibility="invisible"/>
+            android:visibility="invisible" />
     </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/radio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/search_view"
+        android:background="?attr/bg_white"
+        android:visibility="gone">
+
+        <RadioGroup
+            android:id="@+id/radio_group_explore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="12dp">
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_solana"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Solana"
+                android:checked="true"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+        </RadioGroup>
+    </LinearLayout>
 
     <ViewAnimator
         android:id="@+id/rv_va"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/search_view">
+        android:layout_below="@id/radio">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/asset_rv"
@@ -104,7 +137,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/bg_white" >
+            android:background="?attr/bg_white">
 
             <TextView
                 android:layout_width="wrap_content"

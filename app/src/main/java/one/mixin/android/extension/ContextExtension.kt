@@ -60,7 +60,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.database.getStringOrNull
-import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -725,13 +724,30 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, bitrate,
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                resultWidth,
+                resultHeight,
+                thumbnail,
+                fileName,
+                bitrate,
             )
         } else {
             VideoEditedInfo(
-                path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
-                fileName, 0, false,
+                path,
+                duration,
+                rotation,
+                mediaWith,
+                mediaHeight,
+                mediaWith,
+                mediaHeight,
+                thumbnail,
+                fileName,
+                0,
+                false,
             )
         }
     } catch (e: Exception) {

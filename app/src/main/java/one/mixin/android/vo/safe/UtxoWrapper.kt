@@ -19,6 +19,14 @@ data class UtxoWrapper(val outputs: List<Output>) {
         outputs.first().sequence
     }
 
+    val inscriptionHash by lazy {
+        if (outputs.size == 1) {
+            outputs.first().inscriptionHash
+        } else {
+            null
+        }
+    }
+
     private fun generateKeys(): List<List<String>> {
         return outputs.map { it.keys }
     }

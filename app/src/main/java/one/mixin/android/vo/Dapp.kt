@@ -12,5 +12,5 @@ class Dapp(
     @SerializedName("icon_url")
     val iconUrl: String,
     @SerializedName("category")
-    val category: String
+    val category: String,
 )

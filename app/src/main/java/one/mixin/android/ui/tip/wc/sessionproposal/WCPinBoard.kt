@@ -68,14 +68,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.compose.booleanValueAsState
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.setting.ui.compose.booleanValueAsState
-import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.util.BiometricUtil
 
@@ -108,10 +108,18 @@ fun WCPinBoard(
             }
         } else {
             listOf(
-                "1", "2", "3",
-                "4", "5", "6",
-                "7", "8", "9",
-                "", "0", "<<",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "",
+                "0",
+                "<<",
             )
         }
     var size by remember { mutableStateOf(IntSize.Zero) }

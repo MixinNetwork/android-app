@@ -5,12 +5,12 @@ import android.os.Parcelable
 import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.util.needsSpaceBetweenWords
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
@@ -34,7 +34,7 @@ data class Web3Transaction(
     @SerializedName("app_metadata")
     val appMetadata: AppMetadata?,
     @SerializedName("created_at")
-    val createdAt: String
+    val createdAt: String,
 ) : Parcelable {
     val icon: String?
         get() {
@@ -68,10 +68,9 @@ data class Web3Transaction(
                 }
 
                 else -> {
-                    fee.iconUrl
+                    return fee.iconUrl
                 }
             }
-            return null
         }
 
     val badge: String?
@@ -81,32 +80,106 @@ data class Web3Transaction(
             }
         }
 
-    val title: String
-        get() {
-            return when (operationType) {
-                Web3TransactionType.Send.value -> {
-                    if (sender == receiver) {
-                        MixinApplication.appContext.getString(R.string.Receive)
+    fun title(context: Context): String {
+        return when (operationType) {
+            Web3TransactionType.Send.value -> {
+                if (sender == receiver) {
+                    context.getString(R.string.web3_receive)
+                } else {
+                    context.getString(R.string.web3_send)
+                }
+            }
+
+            Web3TransactionType.Receive.value -> {
+                context.getString(R.string.web3_receive)
+            }
+
+            Web3TransactionType.Withdraw.value -> {
+                context.getString(R.string.web3_withdraw)
+            }
+
+            Web3TransactionType.Trade.value -> {
+                context.getString(R.string.web3_trade)
+            }
+
+            Web3TransactionType.Approve.value -> {
+                context.getString(R.string.web3_approve)
+            }
+
+            Web3TransactionType.Borrow.value -> {
+                context.getString(R.string.web3_borrow)
+            }
+
+            Web3TransactionType.Burn.value -> {
+                context.getString(R.string.web3_burn)
+            }
+
+            Web3TransactionType.Cancel.value -> {
+                context.getString(R.string.web3_cancel)
+            }
+
+            Web3TransactionType.Claim.value -> {
+                context.getString(R.string.web3_claim)
+            }
+
+            Web3TransactionType.Deploy.value -> {
+                context.getString(R.string.web3_deploy)
+            }
+
+            Web3TransactionType.Deposit.value -> {
+                context.getString(R.string.web3_deposit)
+            }
+
+            Web3TransactionType.Execute.value -> {
+                context.getString(R.string.web3_execute)
+            }
+
+            Web3TransactionType.Mint.value -> {
+                context.getString(R.string.web3_mint)
+            }
+
+            Web3TransactionType.Repay.value -> {
+                context.getString(R.string.web3_repay)
+            }
+
+            Web3TransactionType.Stake.value -> {
+                context.getString(R.string.web3_stake)
+            }
+
+            Web3TransactionType.Unstake.value -> {
+                context.getString(R.string.web3_unstake)
+            }
+
+            Web3TransactionType.NftMint.value -> {
+                context.getString(R.string.web3_nft_mint)
+            }
+
+            Web3TransactionType.NftTransfer.value -> {
+                context.getString(R.string.web3_nft_transfer)
+            }
+
+            Web3TransactionType.NftBurn.value -> {
+                context.getString(R.string.web3_nft_burn)
+            }
+
+            else ->
+                operationType.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                }
+        }.run {
+            if (status == Web3TransactionStatus.Failed.value) {
+                "$this${
+                    if (needsSpaceBetweenWords()) {
+                        " "
                     } else {
-                        MixinApplication.appContext.getString(R.string.Send_transfer)
+                        ""
                     }
-                }
-
-                Web3TransactionType.Receive.value -> {
-                    MixinApplication.appContext.getString(R.string.Receive)
-                }
-
-                Web3TransactionType.Withdraw.value -> {
-                    MixinApplication.appContext.getString(R.string.Withdrawal)
-                }
-
-                Web3TransactionType.Trade.value ->{
-                    MixinApplication.appContext.getString(R.string.Trade)
-                }
-
-                else -> operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                }${context.getString(R.string.Failed)}"
+            } else {
+                this
             }
         }
+    }
 
     val subTitle: String
         get() {

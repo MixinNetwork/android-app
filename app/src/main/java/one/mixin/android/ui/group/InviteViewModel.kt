@@ -20,10 +20,8 @@ class InviteViewModel
         private val conversationService: ConversationService,
         private val conversationRepository: ConversationRepository,
     ) : ViewModel() {
-        fun rotate(conversationId: String): Observable<MixinResponse<ConversationResponse>> =
+        suspend fun rotate(conversationId: String): MixinResponse<ConversationResponse> =
             conversationService.rotate(conversationId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
 
         fun findConversation(conversationId: String): Observable<MixinResponse<ConversationResponse>> =
             conversationService.findConversation(conversationId)

@@ -148,8 +148,15 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                         item.phoneNumbers.mapTo(mutableList) {
                             User(
                                 "",
-                                "", "contact", "", item.displayName,
-                                "", it, false, "", null,
+                                "",
+                                "contact",
+                                "",
+                                item.displayName,
+                                "",
+                                it,
+                                false,
+                                "",
+                                null,
                             )
                         }
                     }
