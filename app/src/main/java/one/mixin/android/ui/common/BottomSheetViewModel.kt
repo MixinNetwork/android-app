@@ -594,7 +594,7 @@ class BottomSheetViewModel
             inscriptionHash: String? = null,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
-            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash, true)
 
             if (candidateOutputs.isEmpty()) {
                 throw EmptyUtxoException
@@ -636,12 +636,19 @@ class BottomSheetViewModel
 
             val selectedOutputs = mutableListOf<Output>()
             var totalSelectedAmount = BigDecimal.ZERO
-
+            var refresh = false
             candidateOutputs.forEach { output ->
+                if (output.sequence == 0L) {
+                    refresh = true
+                }
                 val outputAmount = BigDecimal(output.amount)
                 selectedOutputs.add(output)
                 totalSelectedAmount += outputAmount
                 if (totalSelectedAmount >= desiredAmount) {
+                    if (refresh) {
+                        // Refresh when there is an undetermined UTXO
+                        jobManager.addJobInBackground(SyncOutputJob())
+                    }
                     return null
                 }
             }
@@ -651,6 +658,8 @@ class BottomSheetViewModel
             }
 
             if (totalSelectedAmount < desiredAmount) {
+                // Refresh when balance is insufficient
+                jobManager.addJobInBackground(SyncOutputJob())
                 return null
             }
 
