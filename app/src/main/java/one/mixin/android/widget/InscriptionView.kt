@@ -57,6 +57,7 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
             textMarginVertical = attrArray.getDimension(R.styleable.InscriptionView_textMarginVertical, 0f).toInt()
 
             binding.textView.apply {
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, textMaxTextSize.toFloat())
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     setAutoSizeTextTypeWithDefaults(TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
                     setAutoSizeTextTypeUniformWithConfiguration(textMinTextSize, textMaxTextSize, 1, TypedValue.COMPLEX_UNIT_SP)

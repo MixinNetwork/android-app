@@ -74,6 +74,6 @@
         app:textMaxLines="1"
         app:iconRound="all"
         app:iconRoundSize="12dp"
-        app:iconSize="18dp" />
+        app:iconSize="22dp" />
 
 </one.mixin.android.widget.ConfirmationBgView>
