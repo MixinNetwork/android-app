@@ -1116,10 +1116,6 @@ class ConversationFragment() :
         bindPinMessage()
         checkPeerIfNeeded()
         checkTranscript()
-
-        requireArguments().getString(START_PARAM, null)?.let { st ->
-            view.post { sendTextMessage(st) }
-        }
     }
 
     private var paused = false
@@ -1948,6 +1944,11 @@ class ConversationFragment() :
             // The first time the load
             chatRoomHelper.markMessageRead(conversationId)
             chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
+
+            requireArguments().getString(START_PARAM, null)?.let { st ->
+                sendTextMessage(st)
+            }
+
             MessageFlow.collect({ event ->
                 event.conversationId == ANY_ID || event.conversationId == conversationId
             }, { event ->
@@ -2001,7 +2002,6 @@ class ConversationFragment() :
                     }
                 }
             })
-
             messageAdapter.hasBottomView =
                 recipient?.relationship == UserRelationship.STRANGER.name &&
                 chatViewModel.isSilence(
@@ -2757,6 +2757,8 @@ class ConversationFragment() :
             messageLayoutManager.scroll()
         } else {
             lifecycleScope.launch {
+                if (!::messageAdapter.isInitialized) return@launch
+
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
                 messageLayoutManager.scroll()
