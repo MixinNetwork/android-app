@@ -77,7 +77,7 @@ buildscript {
         ext.mapboxSdkVersion= '10.10.0'
 
         ext.junitVersion = '4.13.2'
-        ext.testCoreVersion = '1.5.0'
+        ext.testCoreVersion = '1.6.0'
         ext.mockitoVersion = '5.12.0'
         ext.androidxJunitVersion = '1.1.5'
         ext.leakcanaryVerison = '2.14'
