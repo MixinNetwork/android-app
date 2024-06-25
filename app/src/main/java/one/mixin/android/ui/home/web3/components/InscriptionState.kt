@@ -23,7 +23,9 @@ class InscriptionState(
     @ColumnInfo(name = "content_url")
     val contentURL: String?,
     @ColumnInfo(name = "content_type")
-    val contentType: String?
+    val contentType: String?,
+    @ColumnInfo(name = "traits")
+    val traits: String?
 ) {
     val isText: Boolean
         get() = contentType?.startsWith("text", true) == true

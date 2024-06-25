@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.inscription
 
-import SharePage
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
@@ -69,6 +68,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.MAX_PHOTO_SIZE
 import one.mixin.android.ui.home.inscription.InscriptionSendActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.home.inscription.component.InscriptionPage
+import one.mixin.android.ui.home.inscription.component.SharePage
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
