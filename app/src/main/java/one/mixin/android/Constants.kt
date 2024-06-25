@@ -79,6 +79,8 @@ object Constants {
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
+        const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
+        const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"

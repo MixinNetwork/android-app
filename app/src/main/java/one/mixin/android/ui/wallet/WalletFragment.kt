@@ -30,8 +30,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.RouteConfig.GOOGLE_PAY
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
@@ -50,6 +53,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -145,7 +149,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         botId,
                     )
                 if (!key.isNullOrEmpty()) {
-                    Session.routePublicKey = key
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
                 } else {
                     val sessionResponse =
                         walletViewModel.fetchSessionsSuspend(listOf(botId))
@@ -162,7 +166,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 publicKey = sessionData.publicKey,
                             ),
                         )
-                        Session.routePublicKey = sessionData.publicKey
+                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
                     } else {
                         throw MixinResponseException(
                             sessionResponse.errorCode,

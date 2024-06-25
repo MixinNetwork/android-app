@@ -31,6 +31,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
+import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
@@ -61,6 +62,7 @@ import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
@@ -135,7 +137,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
-    private var solanaTx: org.sol4k.VersionedTransaction? by mutableStateOf(null)
+    private var solanaTx: VersionedTransaction? by mutableStateOf(null)
+    private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
 
     override fun onCreateView(
@@ -158,6 +161,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step,
                     tipGas,
                     solanaTx?.calcFee(),
+                    parsedTx,
+                    signMessage.solanaTxSource,
                     asset,
                     signMessage.wcEthereumTransaction,
                     solanaSignInInput?.toMessage() ?: signMessage.reviewData,
@@ -267,19 +272,22 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx =
                             solanaTx ?: VersionedTransaction.from(signMessage.data ?: "").apply {
-                                val txWithPriorityFee = updateTxPriorityFee(this, signMessage.priorityLevel)
+                                val txWithPriorityFee = updateTxPriorityFee(this, signMessage.solanaTxSource)
                                 solanaTx = txWithPriorityFee
                             }
-//                        if (token == null) {
-//                            val tokenBalanceChange = tx.calcBalanceChange()
-//                            val mintAddress = tokenBalanceChange.mint
-//                            if (mintAddress.isBlank()) {
-//                                asset = viewModel.refreshAsset(Chain.Solana.assetId)
-//                                return@onEach
-//                            }
-//                            token = viewModel.web3Tokens(listOf(mintAddress)).firstOrNull()
-//                            amount = token?.calcSolBalanceChange(tokenBalanceChange)
-//                        }
+                        if (parsedTx == null) {
+                            parsedTx = viewModel.parseWeb3Tx(tx.serialize().base64Encode())
+                        }
+                        val ptx = parsedTx
+                        if (ptx != null && ptx.tokens == null) {
+                            ptx.balanceChanges?.map { it.address }?.let { bc ->
+                                val tokens = viewModel.web3Tokens(bc)
+                                if (tokens.isNotEmpty()) {
+                                    ptx.tokens = tokens.associateBy { it.assetKey }
+                                    parsedTx = ptx
+                                }
+                            }
+                        }
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
                     }
@@ -340,14 +348,20 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         onDismissAction?.invoke()
     }
 
-    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, priorityLevel: PriorityLevel): VersionedTransaction {
-        var level = priorityLevel
-        // if keep-level tx has no priority fee, set a high-level for usage
-        if (priorityLevel == PriorityLevel.Keep) {
-            if (tx.calcFee() != BigDecimal.ZERO) {
-                return tx
+    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
+        val level = when(solanaTxSource) {
+            SolanaTxSource.InnerTransfer -> {
+                PriorityLevel.Medium
             }
-            level = PriorityLevel.High
+            SolanaTxSource.InnerSwap -> {
+                PriorityLevel.High
+            }
+            else -> {
+                if (tx.calcFee() != BigDecimal.ZERO) {
+                    return tx
+                }
+                PriorityLevel.High
+            }
         }
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), level)
         if (priorityFeeResp != null && priorityFeeResp.unitPrice > 0) {

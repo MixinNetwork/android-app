@@ -31,7 +31,6 @@ import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
@@ -55,6 +54,7 @@ import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -227,7 +227,7 @@ class SwapFragment : BaseFragment() {
                                                 return@handleMixinResponse false
                                             },
                                         ) ?: return@launch
-                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, priorityLevel = PriorityLevel.High)
+                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)
                                     JsSigner.useSolana()
                                     isLoading = false
                                     showBrowserBottomSheetDialogFragment(

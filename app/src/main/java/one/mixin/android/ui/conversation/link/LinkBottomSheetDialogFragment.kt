@@ -100,6 +100,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -886,7 +887,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
             return true
         }
-        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data)
+        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
         BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
             .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
