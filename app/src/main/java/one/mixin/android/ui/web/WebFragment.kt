@@ -158,6 +158,7 @@ import one.mixin.android.web3.js.DAppMethod
 import one.mixin.android.web3.js.JsInjectorClient
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.SwitchChain
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
@@ -1887,7 +1888,7 @@ class WebFragment : BaseFragment() {
             callbackId: Long,
             raw: String,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web))
         }
 
         private fun signMessage(

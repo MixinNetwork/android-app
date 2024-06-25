@@ -357,11 +357,10 @@ fun RLottieImageView.loadSticker(
             "JSON" ->
                 loadLottie(it, cacheKey)
 
-            "GIF" -> {
+            else -> {
+                clear()
                 loadImage(url, null, null)
             }
-
-            else -> loadImage(url, null, null)
         }
     }
 }

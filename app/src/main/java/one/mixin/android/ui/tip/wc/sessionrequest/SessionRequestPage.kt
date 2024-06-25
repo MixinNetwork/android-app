@@ -48,6 +48,7 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.displayGas
 import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
@@ -103,17 +104,17 @@ fun SessionRequestPage(
     MixinAppTheme {
         Column(
             modifier =
-                Modifier
-                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .background(MixinAppTheme.colors.background),
+            Modifier
+                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(MixinAppTheme.colors.background),
         ) {
             Column(
                 modifier =
-                    Modifier
-                        .verticalScroll(rememberScrollState())
-                        .weight(weight = 1f, fill = false),
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .weight(weight = 1f, fill = false),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(modifier = Modifier.height(50.dp))
@@ -147,9 +148,9 @@ fun SessionRequestPage(
                         CoilImage(
                             sessionRequestUI.peerUI.icon,
                             modifier =
-                                Modifier
-                                    .size(70.dp)
-                                    .clip(CircleShape),
+                            Modifier
+                                .size(70.dp)
+                                .clip(CircleShape),
                             placeholder = R.drawable.ic_avatar_place_holder,
                         )
                 }
@@ -226,10 +227,10 @@ fun SessionRequestPage(
                 Box(modifier = Modifier.height(20.dp))
                 Box(
                     modifier =
-                        Modifier
-                            .height(10.dp)
-                            .fillMaxWidth()
-                            .background(MixinAppTheme.colors.backgroundWindow),
+                    Modifier
+                        .height(10.dp)
+                        .fillMaxWidth()
+                        .background(MixinAppTheme.colors.backgroundWindow),
                 )
                 when (sessionRequestUI.data) {
                     is WCEthereumTransaction -> {
@@ -259,8 +260,13 @@ fun SessionRequestPage(
                     }
                 }
                 Box(modifier = Modifier.height(20.dp))
-
-                val fee = tipGas?.displayValue() ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue(
+                    if (sessionRequestUI.data is WCEthereumTransaction) {
+                        sessionRequestUI.data.maxFeePerGas
+                    } else {
+                        null
+                    }
+                ) ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
@@ -270,6 +276,13 @@ fun SessionRequestPage(
                     FeeInfo(
                         amount = "$fee ${asset?.symbol}",
                         fee = fee.multiply(asset.priceUSD()),
+                        gasPrice = tipGas?.displayGas(
+                            if (sessionRequestUI.data is WCEthereumTransaction) {
+                                sessionRequestUI.data.maxFeePerGas
+                            } else {
+                                null
+                            }
+                        )?.toPlainString(),
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
@@ -293,11 +306,11 @@ fun SessionRequestPage(
                 if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(
                         modifier =
-                            Modifier
-                                .align(Alignment.BottomCenter)
-                                .background(MixinAppTheme.colors.background)
-                                .padding(20.dp)
-                                .fillMaxWidth(),
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .background(MixinAppTheme.colors.background)
+                            .padding(20.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
                         Button(
@@ -318,9 +331,9 @@ fun SessionRequestPage(
                             Box(modifier = Modifier.height(20.dp))
                             CircularProgressIndicator(
                                 modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .align(Alignment.CenterHorizontally),
+                                Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.CenterHorizontally),
                                 color = MixinAppTheme.colors.accent,
                             )
                         }
@@ -351,12 +364,12 @@ private enum class Hint {
 private fun Hint(hint: Hint) {
     Row(
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(horizontal = 8.dp),
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
@@ -369,9 +382,9 @@ private fun Hint(hint: Hint) {
                     },
                 ),
             modifier =
-                Modifier
-                    .size(40.dp, 40.dp)
-                    .padding(horizontal = 8.dp),
+            Modifier
+                .size(40.dp, 40.dp)
+                .padding(horizontal = 8.dp),
             contentDescription = null,
         )
         Box(modifier = Modifier.width(8.dp))

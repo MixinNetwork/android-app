@@ -17,7 +17,7 @@ import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
@@ -59,7 +59,7 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         }
         val safeInscription =
             try {
-                GsonHelper.customGson.fromJson(messageItem.content, SafeInscription::class.java)
+                GsonHelper.customGson.fromJson(messageItem.content, SafeCollectible::class.java)
             } catch (e: Exception) {
                 null
             }
@@ -69,6 +69,12 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
             binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
             binding.chatInscriptionIcon.loadImage(safeInscription.iconURL, R.drawable.ic_inscription_icon, transformation = CoilRoundedHexagonTransformation())
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
+        } else {
+            binding.chatTitleTv.text = ""
+            binding.chatNumberTv.text = ""
+            binding.chatInscriptionIv.setImageResource(R.drawable.ic_default_inscription)
+            binding.chatInscriptionIcon.setImageResource(R.drawable.ic_inscription_icon)
+            binding.chatBarcode.setData("")
         }
 
         binding.chatTime.load(

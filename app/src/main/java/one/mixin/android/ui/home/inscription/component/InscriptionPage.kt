@@ -69,7 +69,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 fun InscriptionPage(
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: (String?, Boolean) -> Unit,
+    onMoreAction: (String?, String?) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -102,7 +102,7 @@ private fun InscriptionPageImp(
     inscription: InscriptionState,
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: (String?, Boolean) -> Unit,
+    onMoreAction: (String?, String?) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -148,12 +148,14 @@ private fun InscriptionPageImp(
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = { onMoreAction(inscription.contentURL, inscription.state == "unspent") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_home_more),
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
+                if (inscription.state == "unspent") {
+                    IconButton(onClick = { onMoreAction(inscription.contentURL, inscription.contentType) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_home_more),
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                    }
                 }
             }
             SharedTransitionLayout {
@@ -285,7 +287,7 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(20.dp))
                                         Box(Modifier.fillMaxWidth()) {
                                             Column {
-                                                Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
+                                                Text(text = stringResource(id = R.string.Token).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                                                 Box(modifier = Modifier.height(8.dp))
                                                 Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
                                                 Box(modifier = Modifier.height(5.dp))

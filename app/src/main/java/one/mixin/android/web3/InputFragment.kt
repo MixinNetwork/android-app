@@ -38,6 +38,8 @@ import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
@@ -251,11 +253,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             val address = Address("", "address", assetId, toAddress, "Web3 Address", nowInUtc(), "0", fee.amount!!, null, null, fee.assetId)
                             val networkFee = NetworkFee(feeItem, fee.amount)
                             val withdrawBiometricItem = WithdrawBiometricItem(address, networkFee, null, UUID.randomUUID().toString(), asset, amount, null, PaymentStatus.pending.name, null)
-                            TransferFragment.newInstance(withdrawBiometricItem).apply {
-                                callback =
-                                    object : TransferFragment.Callback {
-                                        override fun onSuccess() {
-                                            if (viewDestroyed()) return
+                            TransferBottomSheetDialogFragment.newInstance(withdrawBiometricItem).apply {
+                                setCallback(object : TransferBottomSheetDialogFragment.Callback() {
+                                    override fun onDismiss(success: Boolean) {
+                                        if (success) {
                                             parentFragmentManager.apply {
                                                 findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
                                                     beginTransaction().remove(it).commit()
@@ -266,7 +267,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                             }
                                         }
                                     }
-                            }.show(parentFragmentManager, TransferFragment.TAG)
+                                })
+
+                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                         }
                     } else { // from web3
                         val token = requireNotNull(token)

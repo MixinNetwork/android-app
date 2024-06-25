@@ -9,10 +9,10 @@ import one.mixin.android.databinding.ItemInscriptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 
-class CollectiblesAdapter(val callback: (SafeInscription) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
-    var list: List<SafeInscription> = emptyList()
+class CollectiblesAdapter(val callback: (SafeCollectible) -> Unit) : RecyclerView.Adapter<InscriptionHolder>() {
+    var list: List<SafeCollectible> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
@@ -43,8 +43,8 @@ class InscriptionHolder(val binding: ItemInscriptionBinding) : RecyclerView.View
 
     @SuppressLint("SetTextI18n")
     fun bind(
-        inscriptionItem: SafeInscription,
-        callback: (SafeInscription) -> Unit,
+        inscriptionItem: SafeCollectible,
+        callback: (SafeCollectible) -> Unit,
     ) {
         binding.apply {
             root.setOnClickListener { callback.invoke(inscriptionItem) }

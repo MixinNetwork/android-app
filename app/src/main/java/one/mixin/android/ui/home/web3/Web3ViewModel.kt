@@ -13,21 +13,18 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.api.request.web3.PriorityFeeRequest
-import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.response.isSolToken
-import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
@@ -41,7 +38,8 @@ import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Connection
@@ -162,7 +160,11 @@ class Web3ViewModel
                 tokenRepository.syncAsset(assetId)
             }
 
-        fun inscriptions(): LiveData<List<SafeInscription>> = tokenRepository.inscriptions()
+        fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = tokenRepository.collectibles(sortOrder)
+
+        fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = tokenRepository.collectiblesByHash(collectionHash)
+
+        fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = tokenRepository.collections(sortOrder)
 
         fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
 

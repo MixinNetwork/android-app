@@ -47,6 +47,7 @@ import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -100,6 +101,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.SolanaTxSource
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -724,6 +726,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 return
             }
             val userId = uri.getQueryParameter("user")
+            val startParam = uri.getQueryParameter("start")
+            if (startParam != null && !startParam.isValidStartParam()) {
+                showError()
+                return
+            }
             lifecycleScope.launch(errorHandler) {
                 if (userId != null) {
                     val user = oldLinkViewModel.refreshUser(userId)
@@ -735,14 +742,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             showError()
                         }
                         else -> {
-                            ConversationActivity.show(requireContext(), conversationId, userId)
+                            ConversationActivity.show(requireContext(), conversationId, userId, startParam = startParam)
                             dismiss()
                         }
                     }
                 } else {
                     val conversation = oldLinkViewModel.getAndSyncConversation(conversationId)
                     if (conversation != null) {
-                        ConversationActivity.show(requireContext(), conversation.conversationId)
+                        ConversationActivity.show(requireContext(), conversation.conversationId, startParam = startParam)
                         dismiss()
                     } else {
                         showError(R.string.Conversation_not_found)
@@ -886,7 +893,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
             return true
         }
-        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data)
+        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
         BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
             .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)

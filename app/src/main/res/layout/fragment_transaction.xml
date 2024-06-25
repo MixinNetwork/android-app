@@ -172,7 +172,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/inscription_Hash" />
+                        android:text="@string/Collectible_Hash" />
 
                     <TextView
                         android:id="@+id/inscription_hash_tv"

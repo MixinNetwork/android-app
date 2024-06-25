@@ -15,8 +15,10 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
@@ -27,11 +29,13 @@ import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.SolanaRefreshEvent
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
@@ -180,7 +184,7 @@ class SolanaFragment : BaseFragment() {
     }
 
     private suspend fun checkPublicKey() {
-        if (Session.web3PublicKey != null) return
+        if (MixinApplication.appContext.defaultSharedPreferences.getString(PREF_WEB3_BOT_PK, null) != null) return
         val key =
             web3ViewModel.findBotPublicKey(
                 generateConversationId(
@@ -190,7 +194,7 @@ class SolanaFragment : BaseFragment() {
                 WEB3_BOT_USER_ID,
             )
         if (!key.isNullOrEmpty()) {
-            Session.web3PublicKey = key
+            MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
         } else {
             val sessionResponse =
                 web3ViewModel.fetchSessionsSuspend(listOf(WEB3_BOT_USER_ID))
@@ -207,7 +211,7 @@ class SolanaFragment : BaseFragment() {
                         publicKey = sessionData.publicKey,
                     ),
                 )
-                Session.web3PublicKey = sessionData.publicKey
+                MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
             } else {
                 throw MixinResponseException(
                     sessionResponse.errorCode,
