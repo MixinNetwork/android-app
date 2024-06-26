@@ -357,7 +357,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 PriorityLevel.High
             }
             else -> {
-                if (tx.calcFee() != BigDecimal.ZERO) {
+                if (tx.calcPriorityFee() != BigDecimal.ZERO) {
                     return tx
                 }
                 PriorityLevel.High
