@@ -42,9 +42,7 @@ import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.getSolanaRpc
-import org.sol4k.Connection
 import org.sol4k.PublicKey
-import org.sol4k.RpcUrl
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
 import org.sol4k.lamportToSol

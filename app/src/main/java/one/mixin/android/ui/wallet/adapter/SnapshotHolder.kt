@@ -28,10 +28,6 @@ import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
 
-    init {
-        binding.symbolIv.round(12.dp)
-    }
-
     open fun bind(
         snapshot: SnapshotItem,
         listener: OnSnapshotListener?,
@@ -129,7 +125,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             binding.symbolTv.isVisible = false
             (binding.value.layoutParams as RelativeLayout.LayoutParams).addRule(RelativeLayout.START_OF, R.id.symbol_iv)
             (binding.value.layoutParams as RelativeLayout.LayoutParams).marginEnd = 8.dp
-            binding.symbolIv.loadImage(snapshot.contentUrl, R.drawable.ic_default_inscription)
+            binding.symbolIv.render(snapshot)
         }
 
         itemView.setOnClickListener {

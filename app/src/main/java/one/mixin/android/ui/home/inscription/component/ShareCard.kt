@@ -1,3 +1,5 @@
+package one.mixin.android.ui.home.inscription.component
+
 import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
