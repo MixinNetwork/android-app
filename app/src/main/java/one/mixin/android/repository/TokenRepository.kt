@@ -29,9 +29,11 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
+import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -63,6 +65,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -84,7 +87,8 @@ import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
+import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -763,7 +767,16 @@ class TokenRepository
             limit: Int,
             asset: String,
             inscriptionHash: String? = null,
-        ) = if (inscriptionHash != null) outputDao.findUnspentOutputsByAsset(limit, asset, inscriptionHash) else outputDao.findUnspentOutputsByAsset(limit, asset)
+            ignoreZero: Boolean = false,
+        ) = if (inscriptionHash != null) {
+            outputDao.findUnspentInscriptionByAssetHash(limit, asset, inscriptionHash)
+        } else {
+            if (ignoreZero) {
+                outputDao.findDeterminedOutputsByAsset(limit, asset)
+            } else {
+                outputDao.findUnspentOutputsByAsset(limit, asset)
+            }
+        }
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
 
@@ -915,14 +928,20 @@ class TokenRepository
             price: String,
         ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
-        fun inscriptions(): LiveData<List<SafeInscription>> = outputDao.inscriptions()
+        fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = outputDao.collectibles(sortOrder.name)
+
+        fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = outputDao.collectiblesByHash(collectionHash)
+
+        fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
+
+        fun collectionByHash(hash: String): LiveData<SafeCollection?> = outputDao.collectionByHash(hash)
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 
         suspend fun fuzzyInscription(
             escapedQuery: String,
             cancellationSignal: CancellationSignal,
-        ): List<SafeInscription> {
+        ): List<SafeCollectible> {
             return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
         }
 
@@ -947,4 +966,6 @@ class TokenRepository
                 return null
             }
         }
+
+        suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
     }

@@ -288,8 +288,7 @@ interface TransactionInterface {
                 avatar
             } else {
                 avatarVa.displayedChild = 1
-                iconIv.round(20)
-                iconIv.loadImage(snapshot.contentUrl, R.drawable.ic_default_inscription)
+                inscription.render(snapshot)
             }
             if (!snapshot.inscriptionHash.isNullOrEmpty()) {
                 inscriptionHashLayout.isVisible = true

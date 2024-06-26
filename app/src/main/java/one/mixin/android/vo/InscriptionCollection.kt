@@ -35,4 +35,7 @@ data class InscriptionCollection(
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String,
+    @ColumnInfo(name = "description")
+    @SerializedName("description")
+    val description: String?,
 ) : Parcelable

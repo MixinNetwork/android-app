@@ -30,8 +30,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.tickerFlow
-import org.sol4k.Connection
-import org.sol4k.RpcUrl
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
 import timber.log.Timber
@@ -96,7 +95,7 @@ class TransactionStateFragment : BaseFragment() {
     }
 
     private var refreshTxJob: Job? = null
-    private val conn = Connection(RpcUrl.MAINNNET)
+    private val conn = getSolanaRpc()
 
     private fun refreshTx() {
         val txhash = tx.signatures[0]

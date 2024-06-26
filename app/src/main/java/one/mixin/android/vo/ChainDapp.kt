@@ -5,6 +5,10 @@ import com.google.gson.annotations.SerializedName
 class ChainDapp(
     @SerializedName("chain_id")
     val chainId: String,
-    val rpc: String,
+    @SerializedName("rpc_urls")
+    val rpcUrls: List<String>,
     val dapps: List<Dapp>,
+
+    @Deprecated("use rpcUrls")
+    val rpc: String,
 )

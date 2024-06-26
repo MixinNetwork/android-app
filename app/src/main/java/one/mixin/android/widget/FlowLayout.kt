@@ -169,6 +169,7 @@ open class FlowLayout
                     RIGHT -> left = width - currentLineWidth + paddingLeft
                 }
 
+                var marginBottom = 0
                 for (j in lineViews.indices) {
                     val child = lineViews[j]
                     if (child.visibility == View.GONE) {
@@ -193,8 +194,9 @@ open class FlowLayout
                     child.layout(lc, tc, rc, bc)
 
                     left += (child.measuredWidth + lp.leftMargin + lp.rightMargin)
+                    marginBottom = max(marginBottom, lp.bottomMargin)
                 }
-                top += lineHeight
+                top += lineHeight + marginBottom
             }
         }
 

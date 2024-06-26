@@ -137,6 +137,7 @@ class ConversationActivity : BlazeBaseActivity() {
             messageId: String? = null,
             keyword: String? = null,
             transcriptData: TranscriptData? = null,
+            startParam: String? = null,
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -148,6 +149,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         keyword,
                         messageId,
                         transcriptData,
+                        startParam,
                     ),
                 )
             }.run {

@@ -456,6 +456,15 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `inscription_items` (`inscription_hash` TEXT NOT NULL, `collection_hash` TEXT NOT NULL, `sequence` INTEGER NOT NULL, `content_type` TEXT NOT NULL, `content_url` TEXT NOT NULL, `occupied_by` TEXT, `occupied_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`inscription_hash`))")
                 }
             }
+
+        val MIGRATION_54_55: Migration =
+            object : Migration(54, 55) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `inscription_items` ADD COLUMN `traits` TEXT")
+                    db.execSQL("ALTER TABLE `inscription_items` ADD COLUMN `owner` TEXT")
+                    db.execSQL("ALTER TABLE `inscription_collections` ADD COLUMN `description` TEXT")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

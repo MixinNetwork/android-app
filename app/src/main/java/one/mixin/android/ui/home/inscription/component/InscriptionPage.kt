@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -61,6 +64,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.inscription.compose.Barcode
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.util.TextLoaderComposable
 import one.mixin.android.widget.BlurTransformation
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
@@ -69,7 +73,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 fun InscriptionPage(
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: () -> Unit,
+    onMoreAction: (String?, String?) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -102,7 +106,7 @@ private fun InscriptionPageImp(
     inscription: InscriptionState,
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: () -> Unit,
+    onMoreAction: (String?, String?) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -117,13 +121,17 @@ private fun InscriptionPageImp(
                 expend = false
             },
     ) {
-        BlurImage(inscription.contentURL)
+        if (inscription.isText) {
+            BlurBackground(R.drawable.ic_text_inscription)
+        } else {
+            BlurBackground(inscription.contentURL)
+        }
 
         Column(
             modifier =
-                Modifier
-                    .statusBarsPadding()
-                    .navigationBarsPadding(),
+            Modifier
+                .statusBarsPadding()
+                .navigationBarsPadding(),
         ) {
             Row {
                 // Align to image
@@ -148,12 +156,14 @@ private fun InscriptionPageImp(
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = onMoreAction) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_home_more),
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
+                if (inscription.state == "unspent") {
+                    IconButton(onClick = { onMoreAction(inscription.contentURL, inscription.contentType) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_home_more),
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                    }
                 }
             }
             SharedTransitionLayout {
@@ -165,22 +175,49 @@ private fun InscriptionPageImp(
                         with(this@AnimatedContent) {
                             Column(
                                 modifier =
-                                    Modifier
-                                        .verticalScroll(scrollState)
-                                        .padding(horizontal = 20.dp)
-                                        .fillMaxSize(),
+                                Modifier
+                                    .verticalScroll(scrollState)
+                                    .padding(horizontal = 20.dp)
+                                    .fillMaxSize(),
                             ) {
                                 Box(modifier = Modifier.height(20.dp))
 
                                 Box(
                                     modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(1f),
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f),
                                 ) {
-                                    CoilImage(
-                                        model = inscription.contentURL,
-                                        modifier =
+                                    if (inscription.isText) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.bg_text_inscirption),
+                                                contentDescription = null,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                            Column(
+                                                modifier = Modifier.padding(30.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.Center
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.ic_text_inscription),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(100.dp)
+                                                )
+                                                Spacer(modifier = Modifier.height(10.dp))
+                                                TextLoaderComposable(inscription.contentURL)
+                                            }
+                                        }
+                                    } else {
+                                        CoilImage(
+                                            model = inscription.contentURL,
+                                            modifier =
                                             Modifier
                                                 .sharedElement(
                                                     rememberSharedContentState(key = "image"),
@@ -192,8 +229,9 @@ private fun InscriptionPageImp(
                                                     expend = !expend
                                                 }
                                                 .clip(RoundedCornerShape(8.dp)),
-                                        placeholder = R.drawable.ic_inscription_content,
-                                    )
+                                            placeholder = R.drawable.ic_inscription_content,
+                                        )
+                                    }
                                 }
                                 if (!expend) {
                                     Column(modifier = Modifier.padding(horizontal = 8.dp)) {
@@ -263,9 +301,9 @@ private fun InscriptionPageImp(
                                         Barcode(
                                             inscriptionHash,
                                             modifier =
-                                                Modifier
-                                                    .width(128.dp)
-                                                    .height(24.dp),
+                                            Modifier
+                                                .width(128.dp)
+                                                .height(24.dp),
                                         )
                                         Box(modifier = Modifier.height(4.dp))
                                         SelectionContainer {
@@ -285,7 +323,7 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(20.dp))
                                         Box(Modifier.fillMaxWidth()) {
                                             Column {
-                                                Text(text = stringResource(id = R.string.NFT_TOKEN), fontSize = 16.sp, color = Color(0xFF999999))
+                                                Text(text = stringResource(id = R.string.Token).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                                                 Box(modifier = Modifier.height(8.dp))
                                                 Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
                                                 Box(modifier = Modifier.height(5.dp))
@@ -299,15 +337,21 @@ private fun InscriptionPageImp(
                                                         .transformations(CoilRoundedHexagonTransformation())
                                                         .build(),
                                                 modifier =
-                                                    Modifier
-                                                        .align(Alignment.CenterEnd)
-                                                        .width(20.dp)
-                                                        .height(20.dp)
-                                                        .clip(RoundedCornerShape(4.dp)),
+                                                Modifier
+                                                    .align(Alignment.CenterEnd)
+                                                    .width(20.dp)
+                                                    .height(20.dp)
+                                                    .clip(RoundedCornerShape(4.dp)),
                                                 placeholder = R.drawable.ic_inscription_icon,
                                             )
                                         }
 
+                                        Box(modifier = Modifier.height(20.dp))
+                                        Text(text = stringResource(id = R.string.Content_type).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+                                        Box(modifier = Modifier.height(8.dp))
+                                        Text(text = inscription.contentType ?: "", fontSize = 16.sp, color = Color.White)
+
+                                        TraitsRow(inscription.traits)
                                         Box(modifier = Modifier.height(70.dp))
                                     }
                                 }
@@ -331,25 +375,25 @@ private fun InscriptionPageImp(
                         }
                         Box(
                             modifier =
-                                Modifier
-                                    .fillMaxSize()
-                                    .fillMaxHeight(),
+                            Modifier
+                                .fillMaxSize()
+                                .fillMaxHeight(),
                         ) {
                             with(this@AnimatedContent) {
                                 CoilImage(
                                     model = inscription.contentURL,
                                     modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .sharedElement(
-                                                rememberSharedContentState(key = "image"),
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                            )
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                                                expend = !expend
-                                            },
+                                    Modifier
+                                        .align(Alignment.Center)
+                                        .sharedElement(
+                                            rememberSharedContentState(key = "image"),
+                                            animatedVisibilityScope = this@AnimatedContent,
+                                        )
+                                        .fillMaxWidth()
+                                        .fillMaxHeight()
+                                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                            expend = !expend
+                                        },
                                     placeholder = R.drawable.ic_inscription_content,
                                 )
                             }
@@ -362,17 +406,17 @@ private fun InscriptionPageImp(
 }
 
 @Composable
-private fun BlurImage(url: String?) {
+private fun BlurBackground(url: String?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         CoilImage(
             model = url,
             modifier =
-                Modifier
-                    .fillMaxHeight()
-                    .graphicsLayer {
-                        alpha = 0.5f
-                    }
-                    .blur(30.dp),
+            Modifier
+                .fillMaxHeight()
+                .graphicsLayer {
+                    alpha = 0.3f
+                }
+                .blur(30.dp),
             placeholder = R.drawable.ic_inscription_content,
             contentScale = ContentScale.Crop,
         )
@@ -387,6 +431,37 @@ private fun BlurImage(url: String?) {
                 Modifier
                     .fillMaxHeight(),
             placeholder = R.drawable.ic_inscription_content,
+            contentScale = ContentScale.Crop,
+        )
+    }
+}
+
+@Composable
+private fun BlurBackground(@DrawableRes drawable: Int) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        CoilImage(
+            model = "",
+            modifier =
+            Modifier
+                .fillMaxHeight()
+                .graphicsLayer {
+                    alpha = 0.3f
+                }
+                .blur(80.dp),
+            placeholder = drawable,
+            contentScale = ContentScale.Crop,
+        )
+    } else {
+        CoilImage(
+            model =
+            ImageRequest.Builder(LocalContext.current)
+                .data("")
+                .transformations(BlurTransformation(LocalContext.current))
+                .build(),
+            modifier =
+            Modifier
+                .fillMaxHeight(),
+            placeholder = drawable,
             contentScale = ContentScale.Crop,
         )
     }

@@ -48,6 +48,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -423,6 +424,7 @@ class MainActivity : BlazeBaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             checkRoot()
             checkStorage()
+            checkVersion()
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
@@ -671,6 +673,17 @@ class MainActivity : BlazeBaseActivity() {
                 {
                 },
             )
+        }
+    }
+
+    private fun checkVersion(){
+        val saveVersion = defaultSharedPreferences.getInt(APP_VERSION, -1)
+        if (saveVersion != BuildConfig.VERSION_CODE) {
+            if (saveVersion != -1) {
+                Timber.e("Old Version: $saveVersion")
+            }
+            Timber.e("Current Version: Mixin${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})")
+            defaultSharedPreferences.putInt(APP_VERSION, BuildConfig.VERSION_CODE)
         }
     }
 

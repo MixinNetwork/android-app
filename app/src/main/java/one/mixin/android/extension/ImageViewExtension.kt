@@ -43,8 +43,8 @@ fun ImageView.loadImage(
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
-            allowHardware(false)
         }
+        allowHardware(false)
         if (transformation != null) transformations(transformation)
         onSuccess?.let {
             listener(
@@ -98,8 +98,8 @@ fun ImageView.loadImage(
         } else if (holder != null) {
             placeholder(holder)
             error(holder)
-            allowHardware(false)
         }
+        allowHardware(false)
     }
 }
 
@@ -357,11 +357,10 @@ fun RLottieImageView.loadSticker(
             "JSON" ->
                 loadLottie(it, cacheKey)
 
-            "GIF" -> {
+            else -> {
+                clear()
                 loadImage(url, null, null)
             }
-
-            else -> loadImage(url, null, null)
         }
     }
 }

@@ -254,14 +254,23 @@ fun String.checkConversation(
         val conversationDao = db.conversationDao()
         val conversationId = segments[0]
         if (!conversationId.isNullOrBlank() && conversationId.isUUID()) { // Judge in advance before displaying the interface
+            val startParam = uri.getQueryParameter("start")
+            if (startParam != null && !startParam.isValidStartParam()) {
+                elseAction.invoke()
+                return@launch
+            }
             val conversation = conversationDao.getConversationByIdSuspend(conversationId)
             if (conversation != null) {
-                ConversationActivity.show(context, conversation.conversationId)
+                ConversationActivity.show(context, conversation.conversationId, startParam = startParam)
                 return@launch
             }
         }
         elseAction.invoke()
     }
+}
+
+fun String.isValidStartParam(): Boolean {
+    return this.length <= 64
 }
 
 fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }

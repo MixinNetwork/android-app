@@ -58,6 +58,7 @@ class MaterialSearchView : FrameLayout {
     private var binding: ViewMaterialSearchBinding =
         ViewMaterialSearchBinding.inflate(LayoutInflater.from(context), this, true)
     val actionVa get() = binding.actionVa
+    val avatar get() = binding.avatar
     val logo get() = binding.logo
     val dot get() = binding.dot
     val scan get() = binding.scanIb

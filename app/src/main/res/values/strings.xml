@@ -58,7 +58,7 @@
     <string name="alert_key_contact_text_message">sent you a message</string>
     <string name="alert_key_contact_transcript_message">sent you an transcript</string>
     <string name="alert_key_contact_transfer_message">sent you a transfer</string>
-    <string name="alert_key_contact_collectible_message">sent you an inscription</string>
+    <string name="alert_key_contact_collectible_message">sent you an collectible</string>
     <string name="alert_key_contact_video_message">sent you a video</string>
     <string name="alert_key_group_audio_invite_message">%1$s invites you to a voice call</string>
     <string name="alert_key_group_audio_message">%1$s sent an audio</string>
@@ -438,6 +438,7 @@
     <string name="error_card_holder_name_not_same">ERROR 10608: Card anomaly, please try correct card later</string>
     <string name="error_expired_session">ERROR 10609: Session expired</string>
     <string name="error_inconsistent_country">ERROR 10610: Inconsistent country</string>
+    <string name="error_invalid_swap">ERROR 10611: Invalid swap</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -874,7 +875,7 @@
     <string name="search_hint">assets, contacts and messages</string>
     <string name="SEARCH_MESSAGES">SEARCH MESSAGES</string>
     <string name="search_placeholder_asset">Name, Symbol</string>
-    <string name="search_placeholder_inscription">Search name</string>
+    <string name="search_placeholder_collectible">Search name</string>
     <string name="search_placeholder_number">Search Mixin ID or phone number: </string>
     <plurals name="search_related_message">
         <item quantity="one">%1$d related message</item>
@@ -1508,9 +1509,8 @@
     <string name="HASH">HASH</string>
     <string name="ID" translatable="false">ID</string>
     <string name="Collection">Collection</string>
-    <string name="NFT_TOKEN">NFT TOKEN</string>
     <string name="Collectible">Collectible</string>
-    <string name="inscription_Hash">Inscription Hash</string>
+    <string name="Collectible_Hash">Collectible Hash</string>
     <string name="Swap">Swap</string>
     <string name="Swapping">Swapping</string>
     <string name="Pay">Pay</string>
@@ -1559,13 +1559,21 @@
     <string name="web3_nft_burn">NFT burn</string>
     <string name="web3_unknown">Unknown</string>
     <string name="Release">Release</string>
-    <string name="inscription_releasing">Releasing</string>
-    <string name="inscription_releasing_description">The inscription is being released, please wait!</string>
-    <string name="inscription_release_success">Release Successful</string>
-    <string name="inscription_release_failed">Release Failed</string>
-    <string name="inscription_released_description">The inscription was released successfully. Click to view the tokens.</string>
-    <string name="inscription_release_confirmation">Release Inscription</string>
-    <string name="inscription_release_hint">Releasing the inscription will immediately provide the corresponding tokens, which can be transferred, traded, or used to mint new inscriptions.</string>
-    <string name="inscription_not_found">Inscription does not exist</string>
+    <string name="collectible_releasing">Releasing</string>
+    <string name="collectible_releasing_description">The Collectible is being released, please wait!</string>
+    <string name="collectible_release_success">Release Successful</string>
+    <string name="collectible_release_failed">Release Failed</string>
+    <string name="collectible_released_description">The Collectible was released successfully. Click to view the tokens.</string>
+    <string name="collectible_release_confirmation">Release Collectible</string>
+    <string name="collectible_release_hint">Releasing the collectible will immediately provide the corresponding tokens, which can be transferred, traded, or used to mint new collectibles.</string>
+    <string name="collectible_not_found">Collectible does not exist</string>
     <string name="Token">Token</string>
+    <string name="Set_as_avatar">Set as Avatar</string>
+    <string name="Recent">Recent</string>
+    <string name="Alphabetical">Alphabetical</string>
+    <string name="Floor_Price">Floor Price</string>
+    <string name="Collection_collected">%1$d collected</string>
+    <string name="Content_type">Content type</string>
+    <string name="View_details">View details</string>
+    <string name="Traits">Traits</string>
 </resources>

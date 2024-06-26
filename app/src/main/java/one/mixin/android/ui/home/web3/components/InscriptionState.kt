@@ -1,9 +1,9 @@
 package one.mixin.android.ui.home.web3.components
 
 import androidx.room.ColumnInfo
+import java.math.BigDecimal
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
-import java.math.BigDecimal
 
 class InscriptionState(
     @ColumnInfo(name = "name")
@@ -22,7 +22,14 @@ class InscriptionState(
     val iconUrl: String?,
     @ColumnInfo(name = "content_url")
     val contentURL: String?,
+    @ColumnInfo(name = "content_type")
+    val contentType: String?,
+    @ColumnInfo(name = "traits")
+    val traits: String?
 ) {
+    val isText: Boolean
+        get() = contentType?.startsWith("text", true) == true
+
     val id: String
         get() {
             return if (sequence != null) {
@@ -31,6 +38,7 @@ class InscriptionState(
                 ""
             }
         }
+
     val valueAs: String
         get() {
             val value =

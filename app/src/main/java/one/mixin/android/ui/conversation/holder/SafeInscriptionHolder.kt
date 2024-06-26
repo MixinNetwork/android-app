@@ -5,11 +5,11 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import coil.load
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -17,13 +17,10 @@ import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.safe.SafeInscription
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
-    init {
-        binding.chatInscriptionIv.roundLeftOrRight(20f, true, false)
-    }
 
     @SuppressLint("SetTextI18n")
     fun bind(
@@ -59,21 +56,22 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         }
         val safeInscription =
             try {
-                GsonHelper.customGson.fromJson(messageItem.content, SafeInscription::class.java)
+                GsonHelper.customGson.fromJson(messageItem.content, SafeCollectible::class.java)
             } catch (e: Exception) {
                 null
             }
         if (safeInscription != null) {
             binding.chatTitleTv.text = safeInscription.name
             binding.chatNumberTv.text = "#${safeInscription.sequence}"
-            binding.chatInscriptionIv.load(safeInscription.contentURL) {
-                placeholder(R.drawable.ic_default_inscription)
-            }
-            binding.chatInscriptionIcon.load(safeInscription.iconURL) {
-                placeholder(R.drawable.ic_inscription_icon)
-                transformations(CoilRoundedHexagonTransformation())
-            }
+            binding.chatInscriptionIv.render(safeInscription)
+            binding.chatInscriptionIcon.loadImage(safeInscription.iconURL, R.drawable.ic_inscription_icon, transformation = CoilRoundedHexagonTransformation())
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
+        } else {
+            binding.chatTitleTv.text = ""
+            binding.chatNumberTv.text = ""
+            binding.chatInscriptionIv.render(null)
+            binding.chatInscriptionIcon.setImageResource(R.drawable.ic_inscription_icon)
+            binding.chatBarcode.setData("")
         }
 
         binding.chatTime.load(

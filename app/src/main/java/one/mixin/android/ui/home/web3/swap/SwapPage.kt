@@ -251,7 +251,7 @@ fun InputArea(
                 Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
                 Spacer(modifier = Modifier.width(4.dp))
                 CoilImage(
-                    model = token?.chain?.chainLogoURI ?: "",
+                    model = token?.chain?.icon ?: "",
                     modifier =
                         Modifier
                             .size(14.dp)
