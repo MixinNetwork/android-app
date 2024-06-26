@@ -18,6 +18,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -92,12 +93,14 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -880,6 +883,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (action.isNullOrBlank() || !action.equals("signRawTransaction", true)) {
             return false
         }
+        val requestId = uri.getQueryParameter("request_id")
         val data =
             try {
                 raw.base64RawURLDecode().base64Encode()
@@ -896,6 +900,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
         BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
+            .setOnTxhash { sig, _ ->
+                val cid = MixinApplication.conversationId
+                val self = Session.getAccount()?.toUser()
+                Timber.d("$TAG requestId $requestId, cid $cid, sig $sig")
+                if (requestId != null && cid != null && self != null) {
+                    val linkSigData = GsonHelper.customGson.toJson(LinkSigData(requestId, sig))
+                    linkViewModel.sendTextMessage(cid, self, linkSigData.base64Encode())
+                }
+            }
             .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         return true
     }
@@ -1138,4 +1151,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         }
+
+    class LinkSigData(
+        @SerializedName("request_id")
+        val requestId: String,
+        val signature: String,
+    )
 }
