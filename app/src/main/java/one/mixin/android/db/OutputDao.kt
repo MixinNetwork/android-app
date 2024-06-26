@@ -115,6 +115,19 @@ interface OutputDao : BaseDao<Output> {
     )
     fun collections(orderBy: String): LiveData<List<SafeCollection>>
 
+
+    @Query(
+        """
+        SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, COUNT(CASE WHEN o.state = 'unspent' THEN o.inscription_hash END) AS inscription_count
+        FROM inscription_collections ic 
+        INNER JOIN inscription_items i ON ic.collection_hash = i.collection_hash
+        LEFT JOIN outputs o ON o.inscription_hash = i.inscription_hash
+        WHERE  ic.collection_hash = :hash 
+        """,
+    )
+    fun collectionByHash(hash: String): LiveData<SafeCollection?>
+
+
     // Get the latest inscription, inscription UTXO cannot be separated
     @Query(
         """

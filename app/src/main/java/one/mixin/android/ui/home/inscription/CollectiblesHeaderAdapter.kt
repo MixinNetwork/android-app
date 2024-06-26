@@ -12,7 +12,14 @@ import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
-class CollectiblesHeaderAdapter(val collection: SafeCollection, val callback: (SafeCollectible) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class CollectiblesHeaderAdapter(val c: SafeCollection, val callback: (SafeCollectible) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    var collection: SafeCollection = c
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
     var list: List<SafeCollectible> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {

@@ -166,6 +166,8 @@ class Web3ViewModel
 
         fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = tokenRepository.collections(sortOrder)
 
+        fun collectionByHash(hash: String): LiveData<SafeCollection?> = tokenRepository.collectionByHash(hash)
+
         fun inscriptionByHash(hash: String) = tokenRepository.inscriptionByHash(hash)
 
         suspend fun buildNftTransaction(
