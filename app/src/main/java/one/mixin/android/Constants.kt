@@ -29,7 +29,7 @@ object Constants {
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
         const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
-        const val INSCRIPTION = "https://inscription.mixin.space/collectibles/"
+        const val INSCRIPTION = "https://mixin.one/inscriptions/"
     }
 
     object Tip {
@@ -120,6 +120,7 @@ object Constants {
 
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
+        const val HTTPS_INSCRIPTION = "https://mixin.one/inscriptions"
         const val HTTPS_APPS = "https://mixin.one/apps"
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
@@ -140,7 +141,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 55
+        const val CURRENT_VERSION = 56
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

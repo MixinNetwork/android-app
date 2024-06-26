@@ -1322,4 +1322,8 @@ class BottomSheetViewModel
         ) {
             messenger.sendTextMessage(viewModelScope, conversationId, sender, content, EncryptCategory.PLAIN)
         }
+
+        suspend fun refreshInscription(inscriptionHash: String): String? = withContext(Dispatchers.IO) {
+            return@withContext tokenRepository.refreshInscription(inscriptionHash)
+        }
     }

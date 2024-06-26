@@ -11,13 +11,13 @@ class InscriptionState(
     @ColumnInfo(name = "sequence")
     val sequence: Long?,
     @ColumnInfo(name = "amount")
-    val amount: String,
+    val amount: String?,
     @ColumnInfo(name = "symbol")
     val symbol: String?,
     @ColumnInfo(name = "price_usd")
     val priceUsd: String?,
     @ColumnInfo(name = "state")
-    val state: String,
+    val state: String?,
     @ColumnInfo(name = "icon_url")
     val iconUrl: String?,
     @ColumnInfo(name = "content_url")

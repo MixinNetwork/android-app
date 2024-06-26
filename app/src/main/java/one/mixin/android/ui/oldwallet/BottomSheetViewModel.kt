@@ -30,6 +30,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
@@ -51,6 +52,7 @@ class BottomSheetViewModel
         private val jobManager: MixinJobManager,
         private val userRepository: UserRepository,
         private val assetRepository: AssetRepository,
+        private val tokenRepository: TokenRepository,
         private val conversationRepo: ConversationRepository,
         private val pinCipher: PinCipher,
     ) : ViewModel() {
