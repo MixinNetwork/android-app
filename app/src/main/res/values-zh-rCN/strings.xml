@@ -1565,4 +1565,7 @@
     <string name="swap_failed">闪兑失败</string>
     <string name="swap_inner_desc">该签名请求来自 Mixin Messenger。</string>
     <string name="swap_message_success">您的闪兑交易已发送至网络，将很快交易被处理。</string>
+    <string name="Stake">质押</string>
+    <string name="Stake_SOL">质押 SOL</string>
+    <string name="Choose_a_validator">请选择一个节点</string>
 </resources>

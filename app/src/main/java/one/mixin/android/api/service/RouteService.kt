@@ -9,12 +9,14 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.StakeResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
@@ -139,4 +141,9 @@ interface RouteService {
     suspend fun searchTokens(
         @Path("query") query: String,
     ): MixinResponse<List<SwapToken>>
+
+    @POST("web3/stake/sol")
+    suspend fun stakeSol(
+        @Body stakeRequest: StakeRequest,
+    ): MixinResponse<StakeResponse>
 }
