@@ -934,6 +934,8 @@ class TokenRepository
 
         fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
 
+        fun collectionByHash(hash: String): LiveData<SafeCollection?> = outputDao.collectionByHash(hash)
+
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 
         suspend fun fuzzyInscription(
