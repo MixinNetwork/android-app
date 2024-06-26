@@ -63,6 +63,11 @@ class VersionedTransaction(
 
     fun calcFee(): BigDecimal {
         val sigFee = lamportToSol(BigDecimal(5000 * max(signatures.size, 1)))
+        val priorityFee = calcPriorityFee()
+        return sigFee.add(priorityFee).setScale(9, RoundingMode.CEILING)
+    }
+
+    fun calcPriorityFee(): BigDecimal {
         val accounts = message.accounts
         val data = mutableListOf<ByteArray>()
         for (i in message.instructions) {
@@ -71,8 +76,7 @@ class VersionedTransaction(
             }
             data.add(i.data)
         }
-        val msgFee = computeBudget(data)
-        return sigFee.add(msgFee).setScale(9, RoundingMode.CEILING)
+       return computeBudget(data)
     }
 
     // TODO uncertainty logic
