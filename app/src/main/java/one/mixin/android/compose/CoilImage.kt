@@ -17,7 +17,7 @@ import coil.request.ImageRequest
 @Composable
 fun CoilImage(
     model: String?,
-    placeholder: Int,
+    placeholder: Int?,
     modifier: Modifier,
     contentScale: ContentScale = ContentScale.Fit,
 ) {
@@ -25,8 +25,8 @@ fun CoilImage(
         modifier = modifier,
         model = model,
         contentDescription = null,
-        placeholder = painterResource(id = placeholder),
-        error = painterResource(id = placeholder),
+        placeholder = placeholder?.let { painterResource(id = placeholder) },
+        error = placeholder?.let { painterResource(id = placeholder) },
         contentScale = contentScale,
     )
 }

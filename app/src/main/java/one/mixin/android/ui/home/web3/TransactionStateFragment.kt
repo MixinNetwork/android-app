@@ -31,8 +31,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.js.getSolanaRpc
-import org.sol4k.Connection
-import org.sol4k.RpcUrl
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
 import timber.log.Timber

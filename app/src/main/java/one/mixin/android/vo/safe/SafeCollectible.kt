@@ -11,4 +11,9 @@ class SafeCollectible(
     @ColumnInfo(name = "content_type") @SerializedName("content_type") val contentType: String,
     @ColumnInfo(name = "content_url") @SerializedName("content_url") val contentURL: String,
     @ColumnInfo(name = "icon_url") @SerializedName("icon_url") val iconURL: String?,
-)
+) {
+    val isText: Boolean
+        get() {
+            return contentType.startsWith("text", true)
+        }
+}

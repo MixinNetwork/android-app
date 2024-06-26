@@ -7,8 +7,8 @@
     android:focusable="true"
     android:background="@drawable/bg_inscription">
 
-    <ImageView
-        android:id="@+id/inscription_iv"
+    <one.mixin.android.widget.InscriptionView
+        android:id="@+id/inscription"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_gravity="center"
@@ -16,9 +16,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintDimensionRatio="1:1"
-        android:contentDescription="@null"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_default_inscription" />
+        app:textGranularity="1"
+        app:textMinTextSize="12"
+        app:textMaxTextSize="16"
+        app:textMarginHorizon="8dp"
+        app:textMarginVertical="4dp"
+        app:textMaxLines="2"
+        app:iconRound="top"
+        app:iconRoundSize="8dp"
+        app:iconSize="50dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,7 +32,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/inscription_iv"
+        app:layout_constraintTop_toBottomOf="@id/inscription"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView

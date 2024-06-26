@@ -1,3 +1,5 @@
+package one.mixin.android.ui.home.inscription.component
+
 import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -21,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import one.mixin.android.ui.home.inscription.component.ShareBottom
 import one.mixin.android.ui.home.web3.components.InscriptionState
 
 @Composable

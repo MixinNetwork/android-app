@@ -21,9 +21,6 @@ import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseViewHolder(binding.root) {
-    init {
-        binding.chatInscriptionIv.roundLeftOrRight(20f, true, false)
-    }
 
     @SuppressLint("SetTextI18n")
     fun bind(
@@ -66,13 +63,13 @@ class SafeInscriptionHolder(val binding: ItemChatSafeInscriptionBinding) : BaseV
         if (safeInscription != null) {
             binding.chatTitleTv.text = safeInscription.name
             binding.chatNumberTv.text = "#${safeInscription.sequence}"
-            binding.chatInscriptionIv.loadImage(safeInscription.contentURL, R.drawable.ic_default_inscription)
+            binding.chatInscriptionIv.render(safeInscription)
             binding.chatInscriptionIcon.loadImage(safeInscription.iconURL, R.drawable.ic_inscription_icon, transformation = CoilRoundedHexagonTransformation())
             binding.chatBarcode.setData(safeInscription.inscriptionHash)
         } else {
             binding.chatTitleTv.text = ""
             binding.chatNumberTv.text = ""
-            binding.chatInscriptionIv.setImageResource(R.drawable.ic_default_inscription)
+            binding.chatInscriptionIv.render(null)
             binding.chatInscriptionIcon.setImageResource(R.drawable.ic_inscription_icon)
             binding.chatBarcode.setData("")
         }

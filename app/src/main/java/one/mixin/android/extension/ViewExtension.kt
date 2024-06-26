@@ -239,6 +239,11 @@ fun View.round(radius: Int) {
     round(radius.toFloat())
 }
 
+fun View.clearRound() {
+    this.outlineProvider = null
+    this.clipToOutline = false
+}
+
 fun View.roundTopOrBottom(
     radius: Float,
     top: Boolean,

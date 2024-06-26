@@ -248,4 +248,20 @@
         <attr name="reusable"
             format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="InscriptionView">
+        <attr name="iconSize" format="dimension"/>
+        <attr name="iconRoundSize" format="dimension"/>
+        <attr name="iconRound" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="all" value="1"/>
+            <enum name="top" value="2"/>
+            <enum name="start" value="3"/>
+        </attr>
+        <attr name="textMarginHorizon" format="dimension"/>
+        <attr name="textMarginVertical" format="dimension"/>
+        <attr name="textMinTextSize" format="integer"/>
+        <attr name="textMaxTextSize" format="integer"/>
+        <attr name="textGranularity" format="integer"/>
+        <attr name="textMaxLines" format="integer"/>
+    </declare-styleable>
 </resources>
