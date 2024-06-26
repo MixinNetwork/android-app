@@ -63,6 +63,7 @@ import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
+import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
@@ -75,6 +76,7 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.Participant
@@ -119,6 +121,7 @@ class BottomSheetViewModel
         private val pinCipher: PinCipher,
         private val tip: Tip,
         private val utxoService: UtxoService,
+        private val messenger: SendMessageHelper,
     ) : ViewModel() {
         suspend fun searchCode(code: String) =
             withContext(Dispatchers.IO) {
@@ -1311,4 +1314,12 @@ class BottomSheetViewModel
         suspend fun getScheme(id: String) = accountRepository.getScheme(id)
 
         suspend fun findTokensExtra(asset: String) = tokenRepository.findTokensExtra(asset)
+
+        fun sendTextMessage(
+            conversationId: String,
+            sender: User,
+            content: String,
+        ) {
+            messenger.sendTextMessage(viewModelScope, conversationId, sender, content, EncryptCategory.PLAIN)
+        }
     }

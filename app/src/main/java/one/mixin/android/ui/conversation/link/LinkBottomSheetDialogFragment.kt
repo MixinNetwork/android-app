@@ -100,6 +100,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -901,10 +902,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .setOnDismiss { dismiss() }
             .setOnTxhash { sig, _ ->
                 val cid = MixinApplication.conversationId
+                val self = Session.getAccount()?.toUser()
                 Timber.d("$TAG requestId $requestId, cid $cid, sig $sig")
-                if (requestId != null && cid != null) {
+                if (requestId != null && cid != null && self != null) {
                     val linkSigData = GsonHelper.customGson.toJson(LinkSigData(requestId, sig))
-                    ConversationActivity.show(requireContext(), cid, startParam = linkSigData.base64Encode())
+                    linkViewModel.sendTextMessage(cid, self, linkSigData.base64Encode())
                 }
             }
             .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
