@@ -137,6 +137,10 @@ object JsSigner {
                 currentChain = Chain.Base
                 Result.success(Chain.Base.name)
             }
+            Chain.Blast.hexReference -> {
+                currentChain = Chain.Blast
+                Result.success(Chain.Blast.name)
+            }
             Chain.Arbitrum.hexReference -> {
                 currentChain = Chain.Arbitrum
                 Result.success(Chain.Arbitrum.name)
