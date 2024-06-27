@@ -8,7 +8,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -25,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -62,9 +60,9 @@ import coil.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.inscription.compose.Barcode
+import one.mixin.android.inscription.compose.TextInscription
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
-import one.mixin.android.util.TextLoaderComposable
 import one.mixin.android.widget.BlurTransformation
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
@@ -187,31 +185,7 @@ private fun InscriptionPageImp(
                                         .aspectRatio(1f),
                                 ) {
                                     if (inscription.isText) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = R.drawable.bg_text_inscirption),
-                                                contentDescription = null,
-                                                modifier = Modifier.fillMaxSize()
-                                            )
-                                            Column(
-                                                modifier = Modifier.padding(30.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center
-                                            ) {
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.ic_text_inscription),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(100.dp)
-                                                )
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                TextLoaderComposable(inscription.contentURL)
-                                            }
-                                        }
+                                        TextInscription(inscription.contentURL)
                                     } else {
                                         CoilImage(
                                             model = inscription.contentURL,

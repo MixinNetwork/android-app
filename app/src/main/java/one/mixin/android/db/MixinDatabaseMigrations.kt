@@ -465,6 +465,13 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("ALTER TABLE `inscription_collections` ADD COLUMN `description` TEXT")
                 }
             }
+
+        val MIGRATION_55_56: Migration =
+            object : Migration(55, 56) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `inscription_collections` ADD COLUMN `kernel_asset_id` TEXT")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

@@ -53,6 +53,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -74,6 +75,7 @@ import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
@@ -410,6 +412,20 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     return@launch
                 }
                 parseUrl(scheme.target)
+            }
+        } else if (url.startsWith(Scheme.HTTPS_INSCRIPTION, true)) {
+            val segments = Uri.parse(url).pathSegments
+            if (segments.isEmpty()) return
+            lifecycleScope.launch(errorHandler) {
+                val inscriptionHash = segments.last()
+                val hash = linkViewModel.refreshInscription(inscriptionHash)
+                if (hash != null) {
+                    jobManager.addJobInBackground(SyncOutputJob())
+                    InscriptionActivity.show(requireContext(), hash)
+                    dismiss()
+                } else {
+                    showError()
+                }
             }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments

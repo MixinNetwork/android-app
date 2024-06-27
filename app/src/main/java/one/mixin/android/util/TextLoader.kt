@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -124,7 +125,7 @@ fun AutoSizeTextView(
         Text(
             text = text,
             color = color,
-            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
                 val textWidth = layoutCoordinates.size.width
                 val textHeight = layoutCoordinates.size.height

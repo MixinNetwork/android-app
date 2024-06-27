@@ -65,6 +65,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.PAY, true) ||
         startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true) ||
+        startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) ||
         startsWith(Constants.Scheme.DEVICE, true) ||
         startsWith(Constants.Scheme.SEND, true) ||
         startsWith(Constants.Scheme.ADDRESS, true) ||
@@ -102,7 +103,7 @@ fun String.isMixinUrl(): Boolean {
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else {
-            startsWith(Constants.Scheme.HTTPS_ADDRESS, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true)
         }
     }
 }
@@ -278,6 +279,8 @@ fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { start
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true)
+
+private fun String.isInscriptionScheme() = startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true)
 
 private fun String.isConversationScheme() =
     startsWith(Constants.Scheme.CONVERSATIONS, true)
