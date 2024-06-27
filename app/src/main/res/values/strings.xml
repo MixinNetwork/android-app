@@ -1603,5 +1603,11 @@
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
     <string name="Stake">Stake</string>
     <string name="Stake_SOL">Stake SOL</string>
-    <string name="Choose_a_validator">Choose a validator</string>
+    <string name="Choose_a_Validator">Choose a Validator</string>
+    <string name="Start_Staking">Start Staking</string>
+    <string name="stake_choose_amount">Choose how much SOL you\'d like to stake with this validator.</string>
+    <string name="Validator">Validator</string>
+    <string name="Estimated_APY">Estimated APY</string>
+    <string name="Commission">Commission</string>
+    <string name="Total_Stake">Total Stake</string>
 </resources>

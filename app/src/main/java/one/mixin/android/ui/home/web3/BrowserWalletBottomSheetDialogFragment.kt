@@ -354,7 +354,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
         val level = when(solanaTxSource) {
-            SolanaTxSource.InnerTransfer -> {
+            SolanaTxSource.InnerTransfer, SolanaTxSource.InnerStake -> {
                 PriorityLevel.Medium
             }
             SolanaTxSource.InnerSwap -> {

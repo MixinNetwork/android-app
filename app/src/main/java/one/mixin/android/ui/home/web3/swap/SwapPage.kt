@@ -58,7 +58,6 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.tip.wc.compose.Loading
 import java.math.BigDecimal
 
@@ -528,10 +527,10 @@ fun PreviewInputActionMax() {
     InputAction("MAX") {}
 }
 
-/*
+/**
  * @return True if the input was successful, false if the balance is insufficient, or null if the input is invalid.
  */
-private fun checkBalance(
+fun checkBalance(
     inputText: String,
     balance: String?,
 ): Boolean? {

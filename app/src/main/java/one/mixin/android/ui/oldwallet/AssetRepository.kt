@@ -10,6 +10,7 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -391,4 +392,6 @@ class AssetRepository
         suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
 
         suspend fun searchTokens(query: String) = routeService.searchTokens(query)
+
+        suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
     }

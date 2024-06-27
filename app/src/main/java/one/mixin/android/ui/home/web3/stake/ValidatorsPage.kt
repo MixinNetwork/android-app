@@ -10,7 +10,7 @@ fun ValidatorsPage(
     pop: () -> Unit,
 ) {
     PageScaffold(
-        title = stringResource(id = R.string.Choose_a_validator),
+        title = stringResource(id = R.string.Choose_a_Validator),
         verticalScrollable = true,
         pop = pop,
     ) {
