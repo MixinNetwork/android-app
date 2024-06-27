@@ -1539,4 +1539,6 @@
     <string name="Content_type">内容类型</string>
     <string name="View_details">显示详情</string>
     <string name="Traits">特征</string>
+    <string name="View_on_Marketplace">在市场查看</string>
+    <string name="View_on_Explorer">在浏览器中查看</string>
 </resources>

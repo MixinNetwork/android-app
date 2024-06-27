@@ -71,7 +71,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 fun InscriptionPage(
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: (String?, String?) -> Unit,
+    onMoreAction: (InscriptionState) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -104,7 +104,7 @@ private fun InscriptionPageImp(
     inscription: InscriptionState,
     inscriptionHash: String,
     onCloseAction: () -> Unit,
-    onMoreAction: (String?, String?) -> Unit,
+    onMoreAction: (InscriptionState) -> Unit,
     onSendAction: () -> Unit,
     onShareAction: () -> Unit,
 ) {
@@ -154,14 +154,12 @@ private fun InscriptionPageImp(
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                if (inscription.state == "unspent") {
-                    IconButton(onClick = { onMoreAction(inscription.contentURL, inscription.contentType) }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_home_more),
-                            contentDescription = null,
-                            tint = Color.White,
-                        )
-                    }
+                IconButton(onClick = { onMoreAction(inscription) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_home_more),
+                        contentDescription = null,
+                        tint = Color.White,
+                    )
                 }
             }
             SharedTransitionLayout {

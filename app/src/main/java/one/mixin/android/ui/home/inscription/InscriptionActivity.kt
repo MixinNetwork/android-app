@@ -45,12 +45,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
+import one.mixin.android.Constants.HelpLink.MARKETPLACE
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
 import one.mixin.android.databinding.ViewInscriptionMenuBinding
+import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
@@ -72,6 +74,7 @@ import one.mixin.android.ui.home.inscription.component.SharePage
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Account
@@ -137,8 +140,8 @@ class InscriptionActivity : BaseActivity() {
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
         binding.compose.setContent {
-            InscriptionPage(inscriptionHash, { finish() }, { url, contentType ->
-                showBottom(url, contentType)
+            InscriptionPage(inscriptionHash, { finish() }, { inscriptionState ->
+                showBottom(inscriptionState)
             }, onSendAction, { isShareDialogVisible = true })
         }
         binding.overflow.setContent {
@@ -238,22 +241,42 @@ class InscriptionActivity : BaseActivity() {
     private var _bottomBinding: ViewInscriptionMenuBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
-    @SuppressLint("InflateParams")
-    private fun showBottom(url:String?, contentType: String?) {
+    @SuppressLint("InflateParams", "SetTextI18n")
+    private fun showBottom(inscriptionState: InscriptionState) {
         val builder = BottomSheet.Builder(this)
         _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
-        bottomBinding.setAvatarTv.isVisible = contentType?.startsWith("image", true) == true
+        val isOwner = inscriptionState.state == "unspent"
+        val isImage = inscriptionState.contentType?.startsWith("image", true) == true
+        bottomBinding.setAvatarTv.isVisible = isOwner && isImage
+        bottomBinding.saveTv.isVisible = isOwner && isImage
+        bottomBinding.releaseTv.isVisible = isOwner
+        bottomBinding.title.text = inscriptionState.name
+        bottomBinding.subTitle.text = "#${inscriptionState.sequence}"
         bottomBinding.setAvatarTv.setOnClickListener {
             lifecycleScope.launch {
-                setAvatar(url)
+                setAvatar(inscriptionState.contentURL)
                 bottomSheet.dismiss()
             }
         }
-        bottomBinding.cancelTv.setOnClickListener {
+        bottomBinding.saveTv.setOnClickListener {
+            lifecycleScope.launch {
+                saveInscription("${inscriptionState.name}#${inscriptionState.sequence}",inscriptionState.contentURL)
+                bottomSheet.dismiss()
+            }
+        }
+
+        bottomBinding.viewOnMarketplace.setOnClickListener {
+            WebActivity.show(this@InscriptionActivity, url = "$MARKETPLACE$inscriptionHash", conversationId = null)
             bottomSheet.dismiss()
         }
+
+        bottomBinding.viewOnExplorer.setOnClickListener {
+            WebActivity.show(this@InscriptionActivity, url = "$INSCRIPTION$inscriptionHash", conversationId = null)
+            bottomSheet.dismiss()
+        }
+
         bottomBinding.releaseTv.setOnClickListener {
             lifecycleScope.launch {
                 val self = Session.getAccount()?.toUser() ?: return@launch
@@ -261,6 +284,10 @@ class InscriptionActivity : BaseActivity() {
                 TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).show(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
             }
 
+            bottomSheet.dismiss()
+        }
+
+        bottomBinding.cancelTv.setOnClickListener {
             bottomSheet.dismiss()
         }
 
@@ -305,6 +332,35 @@ class InscriptionActivity : BaseActivity() {
                 MAX_PHOTO_SIZE,
             )
             .start(this, UCrop.REQUEST_CROP)
+    }
+
+    private suspend fun saveInscription(name: String, url: String?) {
+        if (url == null) {
+            toast(R.string.Please_wait_a_bit)
+            return
+        }
+        val request =
+            ImageRequest.Builder(applicationContext)
+                .data(url)
+                .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
+                .build()
+
+        val result = applicationContext.imageLoader.execute(request)
+        if (result !is SuccessResult) {
+            toast(R.string.Try_Again)
+            return
+        }
+        val f = applicationContext.imageLoader.diskCache?.openSnapshot(url)?.data?.toFile()
+        if (f == null) {
+            toast(R.string.Try_Again)
+            return
+        }
+        val dir = getPublicDownloadPath()
+        dir.mkdirs()
+        val file = File(dir, "$name.png")
+        f.copy(file)
+        MediaScannerConnection.scanFile(this@InscriptionActivity, arrayOf(file.toString()), null, null)
+        toast(getString(R.string.Save_to, dir.path))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
