@@ -42,7 +42,7 @@ class GroupFragment : BaseFragment() {
         const val ARGS_FROM = "args_from"
         const val ARGS_ALREADY_USERS = "args_already_users"
 
-        const val MAX_USER = 256
+        const val MAX_USER = 1024
 
         fun newInstance(
             from: Int? = 0,
