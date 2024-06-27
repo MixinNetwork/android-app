@@ -108,7 +108,8 @@ class TransactionStateFragment : BaseFragment() {
                     try {
                         withContext(Dispatchers.IO) {
                             try {
-                                conn.sendTransaction(tx.serialize())
+                                val hash = conn.sendTransaction(tx.serialize())
+                                Timber.d("sendTransaction $hash")
                             } catch (ignored: Exception) {
                                 Timber.d("loop sendTransaction ${ignored.stackTraceToString()}")
                             }
