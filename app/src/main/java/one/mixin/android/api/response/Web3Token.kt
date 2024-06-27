@@ -110,6 +110,7 @@ fun Web3Token.getChainFromName(): Chain {
     return when {
         chainName.equals("ethereum", true) -> Chain.Ethereum
         chainName.equals("base", true) -> Chain.Base
+        chainName.equals("blast", true) -> Chain.Blast
         chainName.equals("arbitrum", true) -> Chain.Arbitrum
         chainName.equals("optimism", true) -> Chain.Optimism
         chainName.equals("polygon", true) -> Chain.Polygon
