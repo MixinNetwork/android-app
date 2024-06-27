@@ -10,6 +10,7 @@ class InscriptionState(
     val name: String?,
     @ColumnInfo(name = "sequence")
     val sequence: Long?,
+    // Note: The value of 'amount' might not be accurate as it is not calculated using the backend.
     @ColumnInfo(name = "amount")
     val amount: String?,
     @ColumnInfo(name = "symbol")
