@@ -30,6 +30,7 @@ object Constants {
         const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
         const val INSCRIPTION = "https://inscription.mixin.space/collectibles/"
+        const val MARKETPLACE = "https://rune.fan/items/"
     }
 
     object Tip {
