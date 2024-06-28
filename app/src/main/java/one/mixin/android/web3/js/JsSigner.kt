@@ -297,7 +297,9 @@ object JsSigner {
     }
 
     fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
-        return getSolanaRpc().sendTransaction(tx.serialize())
+        val hash = getSolanaRpc().sendTransaction(tx.serialize())
+        Timber.d("sendTransaction $hash")
+        return hash
     }
 
     fun solanaSignIn(
