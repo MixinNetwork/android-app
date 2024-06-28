@@ -133,7 +133,7 @@ class Web3ViewModel
             address: String,
             fungibleId: String,
         ): Web3Token? {
-            return if (chain == "ethereum") evmTokenMap[chainId + address + fungibleId] else solanaTokenMap[chainId + address + fungibleId] ?: web3Service.web3Tokens(chain, fungibleIds = fungibleId, addresses = address)
+            return web3Token(chain, chainId + address + fungibleId) ?: web3Service.web3Tokens(chain, fungibleIds = fungibleId, addresses = address)
                 .let {
                     if (it.isSuccess) {
                         val token = it.data?.first()
@@ -143,6 +143,10 @@ class Web3ViewModel
                         null
                     }
                 }
+        }
+
+        fun web3Token(chain: String, tokenId: String): Web3Token? {
+            return if (chain == "ethereum") evmTokenMap[tokenId] else solanaTokenMap[tokenId]
         }
 
         private fun updateTokens(chain: String, tokens: List<Web3Token>) {

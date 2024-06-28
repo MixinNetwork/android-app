@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
@@ -28,6 +29,7 @@ import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.SolanaRefreshEvent
+import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -49,6 +51,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
@@ -158,6 +161,23 @@ class SolanaFragment : BaseFragment() {
                 address?.let { address ->
                     lifecycleScope.launch {
                         refreshAccount(address)
+                    }
+                }
+            }
+        RxBus.listen(TokenEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                val token = web3ViewModel.web3Token("solana", e.tokenId)
+                parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
+                    parentFragmentManager.beginTransaction().remove(it).commit()
+                }
+                parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
+                    parentFragmentManager.beginTransaction().remove(it).commit()
+                }
+                if (token != null) {
+                    address?.let { address ->
+                        navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
                     }
                 }
             }

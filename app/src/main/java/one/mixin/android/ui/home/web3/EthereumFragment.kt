@@ -50,6 +50,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
@@ -144,14 +145,25 @@ class EthereumFragment : BaseFragment() {
         }
         RxBus.listen(WCUnlockEvent::class.java)
             .autoDispose(destroyScope)
-            .subscribe { e ->
+            .subscribe { _ ->
                 updateUI()
             }
         RxBus.listen(TokenEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
-            .subscribe {
-                // Todo open
+            .subscribe { e ->
+                val token = web3ViewModel.web3Token("ethereum", e.tokenId)
+                parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
+                    parentFragmentManager.beginTransaction().remove(it).commit()
+                }
+                parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
+                    parentFragmentManager.beginTransaction().remove(it).commit()
+                }
+                if (token != null) {
+                    address?.let { address ->
+                        navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
+                    }
+                }
             }
         updateUI()
         return binding.root
