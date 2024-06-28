@@ -16,6 +16,8 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -146,4 +148,14 @@ interface RouteService {
     suspend fun stakeSol(
         @Body stakeRequest: StakeRequest,
     ): MixinResponse<StakeResponse>
+
+    @GET("web3/stake/sol/{account}")
+    suspend fun getStakeAccounts(
+        @Path("account") account: String,
+    ): MixinResponse<List<StakeAccount>>
+
+    @GET("web3/stake/sol/activation")
+    suspend fun getStakeAccountActivations(
+        @Query("accounts") accounts: String,
+    ): MixinResponse<List<StakeAccountActivation>>
 }

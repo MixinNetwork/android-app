@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeResponse
 import one.mixin.android.ui.oldwallet.AssetRepository
 import javax.inject.Inject
@@ -20,6 +22,15 @@ class StakeViewModel
             invokeNetwork = { assetRepository.stakeSol(stakeRequest) },
             successBlock = {
                it.data
+            }
+        )
+    }
+
+    suspend fun getStakeAccountActivations(accounts: List<String>): List<StakeAccountActivation>? {
+        return handleMixinResponse(
+            invokeNetwork = { assetRepository.getStakeAccountActivations(accounts.joinToString(",")) },
+            successBlock = {
+                it.data
             }
         )
     }

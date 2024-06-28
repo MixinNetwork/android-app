@@ -1574,4 +1574,7 @@
     <string name="Estimated_APY">预估 APY</string>
     <string name="Commission">佣金</string>
     <string name="Total_Stake">总质押</string>
+    <string name="Staking">质押中</string>
+    <string name="Your_Stake">你的质押</string>
+    <string name="Activating">生效中</string>
 </resources>

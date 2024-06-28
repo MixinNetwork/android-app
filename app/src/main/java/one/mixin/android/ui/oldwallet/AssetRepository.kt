@@ -394,4 +394,8 @@ class AssetRepository
         suspend fun searchTokens(query: String) = routeService.searchTokens(query)
 
         suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
+
+        suspend fun getStakeAccounts(account: String) = routeService.getStakeAccounts(account)
+
+        suspend fun getStakeAccountActivations(accounts: String) = routeService.getStakeAccountActivations(accounts)
     }

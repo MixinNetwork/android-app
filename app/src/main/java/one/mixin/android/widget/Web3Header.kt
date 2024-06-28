@@ -4,11 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWeb3HeaderBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -33,6 +37,10 @@ class Web3Header : ConstraintLayout {
         }
         _binding.swap.setOnClickListener {
             onClickAction?.invoke(it.id)
+        }
+        _binding.stake.root.isVisible = false
+        _binding.stake.root.updateLayoutParams<LayoutParams> {
+            topToBottom = _binding.more.id
         }
     }
 
@@ -60,6 +68,20 @@ class Web3Header : ConstraintLayout {
                 endToStart = R.id.swap
             }
             swap.isVisible = true
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun showStake(stakeAccountSummary: StakeAccountSummary?) {
+        if (stakeAccountSummary == null) {
+            _binding.stake.root.isVisible = false
+        } else {
+            _binding.stake.apply {
+                root.isVisible = true
+                icon.loadImage("https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png")
+                amountTv.text = "${stakeAccountSummary.amount} SOL"
+                countTv.text = "${stakeAccountSummary.count} account"
+            }
         }
     }
 }

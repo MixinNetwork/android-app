@@ -1610,4 +1610,7 @@
     <string name="Estimated_APY">Estimated APY</string>
     <string name="Commission">Commission</string>
     <string name="Total_Stake">Total Stake</string>
+    <string name="Staking">Staking</string>
+    <string name="Your_Stake">Your Stake</string>
+    <string name="Activating">Activating</string>
 </resources>

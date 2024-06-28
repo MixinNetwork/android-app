@@ -27,6 +27,7 @@ import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
 import one.mixin.android.api.response.isSolToken
+import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
@@ -46,6 +47,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.stake.StakeFragment
+import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
@@ -112,7 +114,7 @@ class SolanaFragment : BaseFragment() {
                             stakeSolTv.setOnClickListener {
                                 this@SolanaFragment.navTo(StakeFragment.newInstance(
                                     Validator("Mixin Validator", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "6.9%", "9%", "412,456.1234", "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"),
-                                    tokens.find { t -> t.isSolToken() }?.balance ?: "0",
+                                    tokens.find { t -> t.isSolToken() }?.balance ?: "0", null
                                 ), StakeFragment.TAG)
                                 bottomSheet.dismiss()
                             }
@@ -214,6 +216,7 @@ class SolanaFragment : BaseFragment() {
                 } else {
                     adapter.address = address
                     refreshAccount(address)
+                    getStakeAccounts(address)
                 }
             }
         }
@@ -258,6 +261,21 @@ class SolanaFragment : BaseFragment() {
     }
 
     private var dialog: AlertDialog? = null
+
+    private suspend fun getStakeAccounts(address: String) {
+        val stakeAccounts = web3ViewModel.getStakeAccounts(address)
+        if (stakeAccounts.isNullOrEmpty()) return
+
+        var amount: Long = 0
+        var count = 0
+        stakeAccounts.forEach { a ->
+            count++
+            amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
+        }
+        adapter.setStake(StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())) {
+            navTo(StakingFragment.newInstance(ArrayList(stakeAccounts)), StakingFragment.TAG)
+        }
+    }
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun refreshAccount(address: String) {

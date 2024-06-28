@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -428,8 +429,8 @@ private fun Instructions(
         modifier = Modifier.height(200.dp)
     ) {
         items(instructions.size) { i ->
-            Instruction(instructions[i])
-            Box(modifier = Modifier.height(8.dp))
+            Instruction(instruction = instructions[i])
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

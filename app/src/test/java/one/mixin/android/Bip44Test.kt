@@ -1,5 +1,7 @@
 package one.mixin.android
 
+import com.google.gson.Gson
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.bip44.Bip44Path
@@ -56,6 +58,13 @@ class Bip44Test {
         val wallet = PublicKey(address)
         val balance = connection.getBalance(wallet)
         println("Balance in Lamports: $balance")
+    }
+
+    @Test
+    fun testJson() {
+        val d = """[{"pubkey":"EvZfWbpG9HE7cJrq3o3d6gkZMcP8TLTisfVQMNLqGw4H","account":{"lamports":10000000,"owner":"Stake11111111111111111111111111111111111111","rentEpoch":18446744073709551615,"data":{"parsed":{"info":{"meta":{"authorized":{"staker":"5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9","withdrawer":"5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9"},"lockup":{"custodian":"11111111111111111111111111111111","epoch":0,"unixTimestamp":0},"rentExemptReserve":"2282880"},"stake":{"creditsObserved":94885293,"delegation":{"activationEpoch":"634","deactivationEpoch":"18446744073709551615","stake":"7717120","voter":"J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp","warmupCooldownRate":0.25}}},"type":"delegated"},"program":"stake","space":200},"executable":false}}]"""
+        val sas = Gson().fromJson(d, Array<StakeAccount>::class.java)
+        println("sas ${sas.size}")
     }
 
     @Test

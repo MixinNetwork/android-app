@@ -326,3 +326,6 @@ fun Web3Token.copy(
     )
 }
 
+fun Long.solLamportToAmount(): BigDecimal {
+    return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(9, RoundingMode.CEILING)
+}

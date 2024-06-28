@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="20dp"
+        android:background="?attr/bg_window" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/Staking"
+        android:textColor="?attr/text_assist"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="vertical">
+
+        <Space
+            android:id="@+id/center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+        <one.mixin.android.widget.CircleImageView
+            android:id="@+id/icon"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="@dimen/margin16" />
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/center"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_toEndOf="@id/icon"
+            android:ellipsize="end"
+            android:text="@string/Your_Stake"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/count_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/center"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_toEndOf="@id/icon"
+            android:ellipsize="end"
+            android:textColor="?attr/text_assist"
+            android:textSize="14sp"
+            tools:text="1 account" />
+
+        <TextView
+            android:id="@+id/amount_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/name_tv"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/margin20"
+            android:ellipsize="end"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp"
+            tools:text="0.01 SOL"/>
+    </RelativeLayout>
+</LinearLayout>

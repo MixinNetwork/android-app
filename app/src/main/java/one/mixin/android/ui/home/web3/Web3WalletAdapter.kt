@@ -14,6 +14,7 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.databinding.ViewWeb3SolStakeBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColorResource
@@ -59,6 +60,15 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
     var icon: Int = R.drawable.ic_ethereum
     var onClickListener: OnClickListener = OnClickListener { }
 
+    private var stakeAccountSummary: StakeAccountSummary? = null
+    private var onStakeClickListener: OnClickListener = OnClickListener {  }
+
+    fun setStake(stakeAccountSummary: StakeAccountSummary, onStakeClickListener: OnClickListener) {
+        this.stakeAccountSummary = stakeAccountSummary
+        this.onStakeClickListener = onStakeClickListener
+        notifyItemRangeChanged(0, 2)
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     fun setContent(
         title: String,
@@ -90,7 +100,7 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
     }
 
     override fun getItemCount(): Int {
-        return tokens.size + 1
+        return tokens.size +  1
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -116,7 +126,7 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
 
             1 -> {
                 account?.let { account ->
-                    (holder as Web3HeaderHolder).bind(account.balance, onClickAction)
+                    (holder as Web3HeaderHolder).bind(account.balance, stakeAccountSummary, onClickAction)
                 }
             }
 
@@ -125,13 +135,20 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
     }
 }
 
+class StakeAccountSummary(
+    val count: Int,
+    val amount: String,
+)
+
 class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(
         balance: String,
+        summary: StakeAccountSummary?,
         onClickListener: ((Int) -> Unit)?,
     ) {
         binding.header.setText(balance)
         binding.header.setOnClickAction(onClickListener)
+        binding.header.showStake(summary)
     }
 }
 

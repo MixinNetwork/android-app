@@ -5,27 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.web3.StakeAction
 import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.Validator
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -42,20 +34,19 @@ class StakeFragment : BaseFragment() {
         const val TAG = "StakeFragment"
         private const val ARGS_VALIDATOR = "args_validator"
         private const val ARGS_BALANCE = "args_balance"
+        private const val ARGS_STAKE_ACCOUNT = "args_stake_account"
 
-        fun newInstance(validator: Validator, balance: String) = StakeFragment().withArgs {
+        fun newInstance(validator: Validator, balance: String, stakeAccount: StakeAccount?) = StakeFragment().withArgs {
             putParcelable(ARGS_VALIDATOR, validator)
             putString(ARGS_BALANCE, balance)
+            stakeAccount?.let { putParcelable(ARGS_STAKE_ACCOUNT, it) }
         }
-    }
-
-    enum class StakeDestination {
-        Validators, Stake
     }
 
     private val stakeViewModel by viewModels<StakeViewModel>()
 
-    private val validator by lazy {  requireNotNull(requireArguments().getParcelableCompat(ARGS_VALIDATOR, Validator::class.java)) { "required validator cannot be null" } }
+    private val validator by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_VALIDATOR, Validator::class.java)) { "required validator cannot be null" } }
+    private val stakeAccount by lazy { requireArguments().getParcelableCompat(ARGS_STAKE_ACCOUNT, StakeAccount::class.java) }
 
     private var amountText: String by mutableStateOf("")
     private var isLoading by mutableStateOf(false)
@@ -68,70 +59,29 @@ class StakeFragment : BaseFragment() {
         val balance = requireNotNull(requireArguments().getString(ARGS_BALANCE))
         return ComposeView(inflater.context).apply {
             setContent {
-                MixinAppTheme(
-                    darkTheme = context.isNightMode(),
+                StakePage(
+                    validator,
+                    amountText,
+                    balance,
+                    isLoading,
+                    onInputChanged = {
+                        amountText = it
+                    },
+                    onChooseValidator = {
+                        toast("click choose")
+                    },
+                    onMax = {
+                        toast("click max")
+                    },
+                    onStake = { onStake() },
                 ) {
-                    val navController = rememberNavController()
-                    NavHost(
-                        navController = navController,
-                        startDestination = StakeDestination.Stake.name,
-                        enterTransition = {
-                            slideIntoContainer(
-                                AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(300),
-                            )
-                        },
-                        popEnterTransition = {
-                            slideIntoContainer(
-                                AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(300),
-                            )
-                        },
-                        exitTransition = {
-                            slideOutOfContainer(
-                                AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(300),
-                            )
-                        },
-                        popExitTransition = {
-                            slideOutOfContainer(
-                                AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(300),
-                            )
-                        },
-                    ) {
-                        composable(StakeDestination.Stake.name) {
-                            StakePage(
-                                validator,
-                                amountText,
-                                balance,
-                                isLoading,
-                                onInputChanged = {
-                                    amountText = it
-                                },
-                                onChooseValidator = {
-                                    toast("click choose")
-                                },
-                                onMax = {
-                                    toast("click max")
-                                },
-                                onStake = { onStake(navController) },
-                            ) {
-                                navigateUp(navController)
-                            }
-                        }
-                        composable(StakeDestination.Validators.name) {
-                            ValidatorsPage {
-                                navigateUp(navController)
-                            }
-                        }
-                    }
+                    activity?.onBackPressedDispatcher?.onBackPressed()
                 }
             }
         }
     }
 
-    private fun onStake(navController: NavHostController) {
+    private fun onStake() {
         lifecycleScope.launch {
             isLoading = true
             val amount =
@@ -161,7 +111,6 @@ class StakeFragment : BaseFragment() {
                         val txStateFragment =
                             TransactionStateFragment.newInstance(serializedTx, null).apply {
                                 setCloseAction {
-                                    navigateUp(navController)
                                     parentFragmentManager.popBackStackImmediate()
                                 }
                             }
@@ -169,12 +118,6 @@ class StakeFragment : BaseFragment() {
                     }
                 },
             )
-        }
-    }
-
-    private fun navigateUp(navController: NavHostController) {
-        if (!navController.safeNavigateUp()) {
-            activity?.onBackPressedDispatcher?.onBackPressed()
         }
     }
 }
