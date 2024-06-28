@@ -8,6 +8,7 @@ import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
@@ -116,6 +117,11 @@ interface RouteService {
     suspend fun getWeb3Tx(
         @Path("txhash") txhash: String,
     ): MixinResponse<Tx>
+
+    @POST("web3/transactions")
+    suspend fun postWeb3Tx(
+        @Body rawTx: PostTxRequest,
+    ): MixinResponse<Unit>
 
     @POST("web3/transactions/parse")
     suspend fun parseWeb3Tx(

@@ -9,6 +9,7 @@ import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.PriorityFeeRequest
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
@@ -21,6 +22,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import org.sol4k.exception.RpcException
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -137,6 +139,15 @@ class BrowserWalletBottomSheetViewModel
                 return parseWeb3Tx(tx)
             } else {
                 return parsedTx
+            }
+        }
+
+        suspend fun postRawTx(rawTx: String) {
+            val resp = assetRepo.postRawTx(PostTxRequest(rawTx))
+            if (!resp.isSuccess) {
+                val err = resp.error!!
+                // simulate RpcException
+                throw RpcException(err.code, err.description, err.toString())
             }
         }
     }
