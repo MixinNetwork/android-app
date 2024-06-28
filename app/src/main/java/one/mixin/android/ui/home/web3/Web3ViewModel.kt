@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.protobuf.Mixin
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,6 +16,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.getChainIdFromName
@@ -51,6 +53,7 @@ import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import retrofit2.http.Query
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -112,7 +115,17 @@ class Web3ViewModel
             }
         }
 
-        suspend fun web3Account(address: String) = web3Service.web3Account(address)
+        suspend fun web3Account(chain: String, address: String): MixinResponse<Web3Account> {
+            return web3Service.web3Account(address)
+        }
+
+        suspend fun web3Token(
+            chain: String,
+            address: String,
+            fungibleId: String,
+        ): MixinResponse<List<Web3Token>> {
+            return web3Service.web3Tokens(chain, fungibleIds = fungibleId, addresses = address)
+        }
 
         suspend fun web3Transaction(
             address: String,

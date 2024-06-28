@@ -48,6 +48,7 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
@@ -353,7 +354,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun refreshTokensPrice(tokens: List<SwapToken>): List<SwapToken> {
-        val web3Tokens = swapViewModel.web3Tokens(tokens.map { it.address })
+        val web3Tokens = swapViewModel.web3Tokens(chain = "solana", address = tokens.map { it.address })
         if (web3Tokens.isEmpty()) {
             return tokens
         }

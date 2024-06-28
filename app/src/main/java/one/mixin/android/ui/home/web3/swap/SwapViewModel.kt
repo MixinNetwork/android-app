@@ -39,9 +39,9 @@ class SwapViewModel
 
         suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)
 
-        suspend fun web3Tokens(address: List<String>): List<Web3Token> {
+        suspend fun web3Tokens(chain: String, fungibleIds: List<String>? = null, address: List<String>? = null): List<Web3Token> {
             return handleMixinResponse(
-                invokeNetwork = { web3Service.web3Tokens(address.joinToString(",")) },
+                invokeNetwork = { web3Service.web3Tokens(chain = chain, fungibleIds = fungibleIds?.joinToString(","), addresses = address?.joinToString(",")) },
                 successBlock = {
                     return@handleMixinResponse it.data
                 },

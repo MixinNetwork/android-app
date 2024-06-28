@@ -239,7 +239,7 @@ class SolanaFragment : BaseFragment() {
         }
         val account =
             try {
-                val response = web3ViewModel.web3Account(address)
+                val response = web3ViewModel.web3Account("ethereum", address)
                 if (!isAdded) return
                 if (response.errorCode == ErrorHandler.OLD_VERSION) {
                     dialog?.dismiss()

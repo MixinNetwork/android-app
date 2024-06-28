@@ -223,7 +223,7 @@ class EthereumFragment : BaseFragment() {
         }
         val account =
             try {
-                val response = web3ViewModel.web3Account(address)
+                val response = web3ViewModel.web3Account("solana", address)
                 if (!isAdded) return
                 if (response.errorCode == ErrorHandler.OLD_VERSION) {
                     dialog?.dismiss()
