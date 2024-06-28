@@ -57,9 +57,9 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             toTv.text = transaction.receiver
             avatar.bg.loadImage(transaction.icon, R.drawable.ic_avatar_place_holder)
             avatar.setOnClickListener {
-                // Todo find token by id(asset_key chain_id fungible_id)
-                // todo
-                // RxBus.publish(TokenEvent(""))
+                transaction.event?.let {
+                    RxBus.publish(it)
+                }
             }
             val badge = transaction.badge
             if (badge == null) {

@@ -102,7 +102,7 @@ class BrowserWalletBottomSheetViewModel
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         suspend fun solanaWeb3Tokens(address: List<String>): List<Web3Token> {
-            val resp = web3Service.web3Tokens(chain = "solana", fungibleIds = null, addresses = address.joinToString(","))
+            val resp = web3Service.web3Tokens(chain = "solana", addresses = address.joinToString(","))
             return if (resp.isSuccess) {
                 resp.data ?: emptyList()
             } else {

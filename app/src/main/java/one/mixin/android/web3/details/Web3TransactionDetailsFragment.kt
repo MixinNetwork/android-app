@@ -38,7 +38,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_transaction_details) {
     companion object {
-        const val TAG = "TransactionsFragment"
+        const val TAG = "Web3TransactionDetailsFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_TOKENS = "args_tokens"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"

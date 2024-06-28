@@ -81,6 +81,11 @@ class Web3Token(
     fun realAmount(amount: Long): BigDecimal {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
     }
+
+    val tokenId: String
+        get() {
+            return chainId + assetKey
+        }
 }
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"

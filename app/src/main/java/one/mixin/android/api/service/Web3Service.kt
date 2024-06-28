@@ -35,7 +35,6 @@ interface Web3Service {
     suspend fun web3Tokens(
         @Query("chain") chain: String,
         @Query("addresses") addresses: String?,
-        @Query("fungibleIds") fungibleIds: String?,
     ): MixinResponse<List<Web3Token>>
 
     @POST("estimate-priority-fees")

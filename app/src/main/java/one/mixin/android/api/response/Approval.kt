@@ -6,6 +6,10 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Approval(
+    @SerializedName("asset_key")
+    val assetKey: String,
+    @SerializedName("chain_id")
+    val chainId: String,
     val name: String,
     val symbol: String,
     @SerializedName("icon_url") val iconUrl: String,

@@ -131,9 +131,8 @@ class Web3ViewModel
             chain: String,
             chainId: String,
             address: String,
-            fungibleId: String,
         ): Web3Token? {
-            return web3Token(chain, chainId + address + fungibleId) ?: web3Service.web3Tokens(chain, fungibleIds = fungibleId, addresses = address)
+            return web3Token(chain, chainId + address) ?: web3Service.web3Tokens(chain, addresses = address)
                 .let {
                     if (it.isSuccess) {
                         val token = it.data?.first()
@@ -151,7 +150,7 @@ class Web3ViewModel
 
         private fun updateTokens(chain: String, tokens: List<Web3Token>) {
             val tokenMap = if (chain == "ethereum") evmTokenMap else solanaTokenMap
-            val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}${it.fungibleId}" }.toSet()
+            val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}" }.toSet()
 
             val missingTokenIds = tokenMap.keys - newTokenIds
             missingTokenIds.forEach { tokenId ->
@@ -162,14 +161,14 @@ class Web3ViewModel
             }
 
             tokens.forEach { token ->
-                val tokenId = "${token.chainId}${token.assetKey}${token.fungibleId}"
+                val tokenId = "${token.chainId}${token.assetKey}"
                 tokenMap[tokenId] = token
             }
         }
 
         private fun updateToken(token: Web3Token?, chain: String) {
             token?.let {
-                val tokenId = "${it.chainId}${it.assetKey}${it.fungibleId}"
+                val tokenId = "${it.chainId}${it.assetKey}"
                 val tokenMap = if (chain == "ethereum") evmTokenMap else solanaTokenMap
                 tokenMap[tokenId] = it
             }

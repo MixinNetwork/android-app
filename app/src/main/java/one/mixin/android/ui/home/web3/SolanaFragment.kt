@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -169,15 +170,19 @@ class SolanaFragment : BaseFragment() {
             .autoDispose(destroyScope)
             .subscribe { e ->
                 val token = web3ViewModel.web3Token("solana", e.tokenId)
-                parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
-                    parentFragmentManager.beginTransaction().remove(it).commit()
-                }
-                parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
-                    parentFragmentManager.beginTransaction().remove(it).commit()
-                }
                 if (token != null) {
+                    val fragments = mutableListOf<Fragment>()
+                    parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
+                        fragments.add(it)
+                    }
+                    parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
+                        fragments.add(it)
+                    }
                     address?.let { address ->
                         navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
+                    }
+                    fragments.forEach {
+                        parentFragmentManager.beginTransaction().remove(it).commit()
                     }
                 }
             }
@@ -259,7 +264,7 @@ class SolanaFragment : BaseFragment() {
         }
         val account =
             try {
-                val response = web3ViewModel.web3Account("ethereum", address)
+                val response = web3ViewModel.web3Account("solana", address)
                 if (!isAdded) return
                 if (response.errorCode == ErrorHandler.OLD_VERSION) {
                     dialog?.dismiss()
