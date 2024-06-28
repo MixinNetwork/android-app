@@ -1,8 +1,8 @@
 package one.mixin.android.event
 
-data class TokenEvent(val chain: String, val address: String) {
+data class TokenEvent(val chainId: String, val address: String) {
     val tokenId: String
         get() {
-            return chain + address
+            return chainId + address
         }
 }

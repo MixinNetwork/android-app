@@ -21,6 +21,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.web3.ChainType
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -102,7 +103,7 @@ class BrowserWalletBottomSheetViewModel
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
         suspend fun solanaWeb3Tokens(address: List<String>): List<Web3Token> {
-            val resp = web3Service.web3Tokens(chain = "solana", addresses = address.joinToString(","))
+            val resp = web3Service.web3Tokens(chain = ChainType.solana.name, addresses = address.joinToString(","))
             return if (resp.isSuccess) {
                 resp.data ?: emptyList()
             } else {

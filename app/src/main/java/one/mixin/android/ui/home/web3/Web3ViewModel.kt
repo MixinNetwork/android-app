@@ -43,6 +43,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
@@ -132,10 +133,10 @@ class Web3ViewModel
             chainId: String,
             address: String,
         ): Web3Token? {
-            return web3Token(chain, chainId + address) ?: web3Service.web3Tokens(chain, addresses = address)
+            return web3Token(chain, chainId + address) ?: web3Service.web3Tokens(chainId, addresses = address)
                 .let {
                     if (it.isSuccess) {
-                        val token = it.data?.first()
+                        val token = it.data?.firstOrNull() ?: return null
                         updateToken(token, chain)
                         token
                     } else {
@@ -145,11 +146,11 @@ class Web3ViewModel
         }
 
         fun web3Token(chain: String, tokenId: String): Web3Token? {
-            return if (chain == "ethereum") evmTokenMap[tokenId] else solanaTokenMap[tokenId]
+            return if (chain == ChainType.ethereum.name) evmTokenMap[tokenId] else solanaTokenMap[tokenId]
         }
 
         private fun updateTokens(chain: String, tokens: List<Web3Token>) {
-            val tokenMap = if (chain == "ethereum") evmTokenMap else solanaTokenMap
+            val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
             val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}" }.toSet()
 
             val missingTokenIds = tokenMap.keys - newTokenIds
@@ -169,7 +170,7 @@ class Web3ViewModel
         private fun updateToken(token: Web3Token?, chain: String) {
             token?.let {
                 val tokenId = "${it.chainId}${it.assetKey}"
-                val tokenMap = if (chain == "ethereum") evmTokenMap else solanaTokenMap
+                val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
                 tokenMap[tokenId] = it
             }
         }

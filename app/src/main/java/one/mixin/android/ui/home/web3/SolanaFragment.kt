@@ -50,6 +50,7 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.web3.details.Web3TransactionFragment
@@ -76,7 +77,7 @@ class SolanaFragment : BaseFragment() {
         Web3WalletAdapter(SOLANA_CHAIN_ID).apply {
             setOnWeb3Click { token ->
                 address?.let { address ->
-                    navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens), tokens), Web3TransactionDetailsFragment.TAG)
+                    navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.solana.name, token, token.findChainToken(tokens), tokens), Web3TransactionDetailsFragment.TAG)
                 }
             }
             setOnClickAction { id ->
@@ -179,7 +180,7 @@ class SolanaFragment : BaseFragment() {
                         fragments.add(it)
                     }
                     address?.let { address ->
-                        navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
+                        navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.solana.name, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
                     }
                     fragments.forEach {
                         parentFragmentManager.beginTransaction().remove(it).commit()
