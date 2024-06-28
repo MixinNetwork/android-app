@@ -3,35 +3,34 @@ package one.mixin.android.web3.details
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
+import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import java.util.Locale
 
 @AndroidEntryPoint
-class Web3Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
+class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
     companion object {
         const val TAG = "Web3TransactionFragment"
         const val ARGS_TRANSACTION = "args_transaction"
 
         fun newInstance(
             transaction: Web3Transaction,
-        ) = Web3Web3TransactionFragment().withArgs {
+        ) = Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
         }
     }
 
-    private val walletViewModel by viewModels<Web3ViewModel>()
     private val binding by viewBinding(FragmentWeb3TransactionBinding::bind)
 
     private val transaction by lazy {
@@ -57,6 +56,11 @@ class Web3Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transact
             fromTv.text = transaction.sender
             toTv.text = transaction.receiver
             avatar.bg.loadImage(transaction.icon, R.drawable.ic_avatar_place_holder)
+            avatar.setOnClickListener {
+                // Todo find token by id(asset_key chain_id fungible_id)
+                // todo
+                // RxBus.publish(TokenEvent(""))
+            }
             val badge = transaction.badge
             if (badge == null) {
                 avatar.badge.isVisible = false

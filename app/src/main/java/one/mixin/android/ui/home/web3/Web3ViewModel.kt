@@ -18,6 +18,7 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.copy
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.response.isSolToken
@@ -115,16 +116,59 @@ class Web3ViewModel
             }
         }
 
+        private val evmTokenMap = mutableMapOf<String, Web3Token>()
+        private val solanaTokenMap = mutableMapOf<String, Web3Token>()
+
         suspend fun web3Account(chain: String, address: String): MixinResponse<Web3Account> {
-            return web3Service.web3Account(address)
+            val response =  web3Service.web3Account(address)
+            if (response.isSuccess) {
+                updateTokens(chain,response.data!!.tokens)
+            }
+            return response
         }
 
         suspend fun web3Token(
             chain: String,
+            chainId: String,
             address: String,
             fungibleId: String,
-        ): MixinResponse<List<Web3Token>> {
-            return web3Service.web3Tokens(chain, fungibleIds = fungibleId, addresses = address)
+        ): Web3Token? {
+            return if (chain == "ethereum") evmTokenMap[chainId + address + fungibleId] else solanaTokenMap[chainId + address + fungibleId] ?: web3Service.web3Tokens(chain, fungibleIds = fungibleId, addresses = address)
+                .let {
+                    if (it.isSuccess) {
+                        val token = it.data?.first()
+                        updateToken(token, chain)
+                        token
+                    } else {
+                        null
+                    }
+                }
+        }
+
+        private fun updateTokens(chain: String, tokens: List<Web3Token>) {
+            val tokenMap = if (chain == "ethereum") evmTokenMap else solanaTokenMap
+            val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}${it.fungibleId}" }.toSet()
+
+            val missingTokenIds = tokenMap.keys - newTokenIds
+            missingTokenIds.forEach { tokenId ->
+                val token = tokenMap[tokenId]
+                if (token != null) {
+                    tokenMap[tokenId] = token.copy(balance = "0")
+                }
+            }
+
+            tokens.forEach { token ->
+                val tokenId = "${token.chainId}${token.assetKey}${token.fungibleId}"
+                tokenMap[tokenId] = token
+            }
+        }
+
+        private fun updateToken(token: Web3Token?, chain: String) {
+            token?.let {
+                val tokenId = "${it.chainId}${it.assetKey}${it.fungibleId}"
+                val tokenMap = if (chain == "ethereum") evmTokenMap else solanaTokenMap
+                tokenMap[tokenId] = it
+            }
         }
 
         suspend fun web3Transaction(

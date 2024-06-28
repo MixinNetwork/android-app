@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
@@ -27,6 +28,8 @@ import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.ExitEvent
+import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -143,6 +146,12 @@ class EthereumFragment : BaseFragment() {
             .autoDispose(destroyScope)
             .subscribe { e ->
                 updateUI()
+            }
+        RxBus.listen(TokenEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                // Todo open
             }
         updateUI()
         return binding.root
