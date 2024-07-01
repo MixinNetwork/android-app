@@ -141,7 +141,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 }
             }
             setOnClickListener { transaction ->
-                navTo(Web3TransactionFragment.newInstance(transaction, chain), Web3TransactionFragment.TAG)
+                navTo(Web3TransactionFragment.newInstance(transaction, chain, token), Web3TransactionFragment.TAG)
             }
         }
     }

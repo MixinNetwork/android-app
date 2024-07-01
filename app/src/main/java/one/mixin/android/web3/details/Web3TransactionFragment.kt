@@ -9,9 +9,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
-import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
@@ -20,6 +20,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
+import timber.log.Timber
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -32,14 +34,19 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         fun newInstance(
             transaction: Web3Transaction,
             chain: String,
+            web3Token: Web3Token,
         ) = Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
             putString(ARGS_CHAIN, chain)
+            putParcelable(ARGS_TOKEN, web3Token)
         }
     }
 
     private val binding by viewBinding(FragmentWeb3TransactionBinding::bind)
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    private val token: Web3Token by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)!!
+    }
 
     private val transaction by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_TRANSACTION, Web3Transaction::class.java))
@@ -70,11 +77,20 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.bg.loadImage(transaction.icon, R.drawable.ic_avatar_place_holder)
             avatar.setOnClickListener {
                 transaction.event?.let {
+                    if (it.address == token.assetKey) {
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        return@setOnClickListener
+                    }
                     lifecycleScope.launch {
-                        web3ViewModel.web3Token(
-                            chain, it.chainId, it.address
-                        ) ?: return@launch
-                        RxBus.publish(it)
+                        try {
+                            web3ViewModel.web3Token(
+                                chain, it.chainId, it.address
+                            ) ?: return@launch
+                            RxBus.publish(it)
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                            return@launch
+                        }
                     }
                 }
             }
