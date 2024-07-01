@@ -25,11 +25,9 @@ import one.mixin.android.util.TextLoaderComposable
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
-fun TextInscription(iconUrl: String?, contentUrl:String?) {
+fun TextInscription(iconUrl: String?, contentUrl:String?, modifier:Modifier = Modifier) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(RoundedCornerShape(8.dp)),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Image(
