@@ -28,7 +28,9 @@
             android:text="@string/Cancel"
             android:layout_marginEnd="36dp"
             android:textSize="14sp"
-            android:textAllCaps="false"/>
+            android:gravity="center"
+            android:textAllCaps="false"
+            android:includeFontPadding="false" />
 
         <Button
             style="@style/AppTheme.MaterialButton"
@@ -40,7 +42,9 @@
             android:layout_gravity="center_horizontal|bottom"
             android:text="@string/Confirm"
             android:textAllCaps="false"
-            android:textSize="14sp" />
+            android:gravity="center"
+            android:textSize="14sp"
+            android:includeFontPadding="false" />
 
     </LinearLayout>
 
