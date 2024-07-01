@@ -17,6 +17,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.checkout.risk.FramesOptions
 import com.checkout.risk.PublishDataResult
 import com.checkout.risk.Risk
 import com.checkout.risk.RiskConfig
@@ -519,7 +520,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     RiskConfig(
                         BuildConfig.CHCEKOUT_ID,
                         RISK_ENVIRONMENT,
-                        false,
+                        null,
                     ),
                 )
             if (riskInstance == null) {

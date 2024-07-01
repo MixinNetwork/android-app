@@ -110,12 +110,12 @@ buildscript {
         ext.web3jVersion = '4.8.7-android'
 
         ext.sumsubVersion = '1.31.3'
-        ext.checkoutFramesVersion = '4.2.2'
+        ext.checkoutFramesVersion = '4.2.3'
         ext.checkoutSecureVersion = '3.2.2'
         ext.checkoutRiskVersion = '1.0.6'
 
-        ext.playWalletVersion = '19.3.0'
-        ext.playPayVersion = '16.4.0'
+        ext.playWalletVersion = '19.4.0'
+        ext.playPayVersion = '16.5.0'
         ext.datastoreVersion = '1.1.1'
         ext.protobufVersion = '3.11.0'
     }

@@ -313,8 +313,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
-                    val sig = JsSigner.sendSolanaTransaction(tx)
-                    onTxhash?.invoke(sig, tx.serialize().base64Encode())
+                    val sig = tx.signatures.first()
+                    val rawTx = tx.serialize().base64Encode()
+                    viewModel.postRawTx(rawTx)
+                    onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
