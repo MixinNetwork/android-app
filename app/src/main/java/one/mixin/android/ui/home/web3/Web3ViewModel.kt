@@ -117,9 +117,6 @@ class Web3ViewModel
             }
         }
 
-        private val evmTokenMap = mutableMapOf<String, Web3Token>()
-        private val solanaTokenMap = mutableMapOf<String, Web3Token>()
-
         suspend fun web3Account(chain: String, address: String): MixinResponse<Web3Account> {
             val response =  web3Service.web3Account(address)
             if (response.isSuccess) {
@@ -370,4 +367,9 @@ class Web3ViewModel
             viewModelScope.launch(Dispatchers.IO) {
                 userRepository.upsert(user)
             }
+
+        companion object {
+            private val evmTokenMap = mutableMapOf<String, Web3Token>()
+            private val solanaTokenMap = mutableMapOf<String, Web3Token>()
+        }
     }

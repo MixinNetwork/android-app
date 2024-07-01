@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
@@ -156,18 +157,22 @@ class EthereumFragment : BaseFragment() {
             .subscribe { e ->
                 val token = web3ViewModel.web3Token(ChainType.ethereum.name, e.tokenId)
                 if (token != null) {
-                    val fragments = mutableListOf<Fragment>()
-                    parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
-                        fragments.add(it)
-                    }
-                    parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
-                        fragments.add(it)
-                    }
-                    address?.let { address ->
-                        navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
-                    }
-                    fragments.forEach {
-                        parentFragmentManager.beginTransaction().remove(it).commit()
+                    lifecycleScope.launch {
+                        val fragments = mutableListOf<Fragment>()
+                        parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
+                            fragments.add(it)
+                        }
+                        parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
+                            fragments.add(it)
+                        }
+                        address?.let { address ->
+                            navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
+                        }
+
+                        delay(200)
+                        fragments.forEach {
+                            parentFragmentManager.beginTransaction().remove(it).commit()
+                        }
                     }
                 }
             }
