@@ -176,7 +176,7 @@ class TransferHeader : LinearLayout {
         asset: TokenItem,
     ) {
         _binding.apply {
-            nftIcon.loadImage(inscriptionItem.contentURL, R.drawable.ic_default_inscription)
+            nftIcon.render(inscriptionItem, asset.iconUrl)
         }
         awaiting(type, asset)
     }

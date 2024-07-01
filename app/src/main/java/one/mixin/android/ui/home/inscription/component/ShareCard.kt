@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,6 +37,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.CoilImageCompat
 import one.mixin.android.inscription.compose.Barcode
+import one.mixin.android.inscription.compose.TextInscription
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
@@ -50,8 +52,24 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
-                placeholder = R.drawable.ic_inscription_content,
+                placeholder = if (value.isText) R.drawable.bg_text_inscirption else R.drawable.ic_inscription_content,
             )
+            if (value.isText) {
+                TextInscription(
+                    value.iconUrl, value.contentURL,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                )
+            } else {
+                CoilImageCompat(
+                    model = value.contentURL,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                    placeholder = R.drawable.ic_inscription_content,
+                )
+            }
             Box(
                 modifier = Modifier
                     .alpha(if (inScreenshot) 0f else 1f)

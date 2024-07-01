@@ -44,4 +44,9 @@ data class InscriptionItem(
     @ColumnInfo(name = "traits")
     @SerializedName("traits")
     val traits: String?,
-) : Parcelable
+) : Parcelable {
+    val isText: Boolean
+        get() {
+            return contentType.startsWith("text", true)
+        }
+}
