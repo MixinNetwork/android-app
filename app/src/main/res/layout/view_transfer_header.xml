@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/bg_white"
@@ -19,10 +20,19 @@
             android:layout_width="70dp"
             android:layout_height="70dp" />
 
-        <ImageView
+        <one.mixin.android.widget.InscriptionView
             android:id="@+id/nft_icon"
             android:layout_width="70dp"
-            android:layout_height="70dp" />
+            android:layout_height="70dp"
+            app:textGranularity="1"
+            app:textMinTextSize="4"
+            app:textMaxTextSize="8"
+            app:textMarginHorizon="0.5dp"
+            app:textMarginVertical="0.5dp"
+            app:textMaxLines="1"
+            app:iconRound="all"
+            app:iconRoundSize="8dp"
+            app:iconSize="40dp"/>
 
         <ImageView
             android:id="@+id/status_icon"
