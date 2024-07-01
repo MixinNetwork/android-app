@@ -9,11 +9,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
@@ -76,23 +78,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             toTv.text = transaction.receiver
             avatar.bg.loadImage(transaction.icon, R.drawable.ic_avatar_place_holder)
             avatar.setOnClickListener {
-                transaction.event?.let {
-                    if (it.address == token.assetKey) {
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
-                        return@setOnClickListener
-                    }
-                    lifecycleScope.launch {
-                        try {
-                            web3ViewModel.web3Token(
-                                chain, it.chainId, it.address
-                            ) ?: return@launch
-                            RxBus.publish(it)
-                        } catch (e: Exception) {
-                            Timber.e(e)
-                            return@launch
-                        }
-                    }
-                }
+                tokenClick(transaction)
             }
             val badge = transaction.badge
             if (badge == null) {
@@ -104,6 +90,32 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             feeTv.text = "${transaction.fee.amount.numberFormat8()} ${transaction.fee.symbol}"
             dateTv.text = transaction.createdAt.fullDate()
             statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+        }
+    }
+
+    private fun tokenClick(transaction: Web3Transaction) {
+        lifecycleScope.launch {
+            transaction.event?.let { event ->
+                if (event.address == token.assetKey) {
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    return@launch
+                }
+                val dialog =
+                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                        setCancelable(false)
+                    }
+                try {
+                    web3ViewModel.web3Token(
+                        chain, event.chainId, event.address
+                    ) ?: return@launch
+                    dialog.dismiss()
+                    RxBus.publish(event)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    dialog.dismiss()
+                    return@launch
+                }
+            }
         }
     }
 }
