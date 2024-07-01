@@ -125,6 +125,7 @@ fun Web3Token.getChainIdFromName(): String {
     return when {
         chainName.equals("ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
         chainName.equals("base", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
+        chainName.equals("blast", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
         chainName.equals("arbitrum", true) -> Constants.ChainId.Arbitrum
         chainName.equals("optimism", true) -> Constants.ChainId.Optimism
         chainName.equals("polygon", true) -> Constants.ChainId.Polygon
@@ -147,6 +148,8 @@ private fun Web3Token.getChainAssetKey(): String {
     return if (chainName.equals("ethereum", true)) {
         "0x0000000000000000000000000000000000000000"
     } else if (chainName.equals("base", true)) {
+        "0x0000000000000000000000000000000000000000"}
+    else if (chainName.equals("blast", true)) {
         "0x0000000000000000000000000000000000000000"
     } else if (chainName.equals("arbitrum", true)) {
         "0x0000000000000000000000000000000000000000"
@@ -255,6 +258,7 @@ suspend fun Web3Token.buildTransaction(
         val transaction =
             if ((chainName.equals("ethereum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("base", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainName.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("arbitrum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("polygon", true) && assetKey == "0x0000000000000000000000000000000000001010") ||
