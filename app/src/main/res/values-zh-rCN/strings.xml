@@ -1538,7 +1538,8 @@
     <string name="Collection_collected">已收藏 %1$d 件</string>
     <string name="Content_type">内容类型</string>
     <string name="View_details">显示详情</string>
-    <string name="Traits">特征</string>
+    <string name="collectible_owner">拥有者</string>
+    <string name="collectible_traits">特征</string>
     <string name="View_on_Marketplace">在市场中查看</string>
     <string name="View_on_Explorer">在浏览器中查看</string>
 </resources>
