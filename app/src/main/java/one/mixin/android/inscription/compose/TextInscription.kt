@@ -9,18 +9,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.request.ImageRequest
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.util.TextLoaderComposable
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
-fun TextInscription(contentUrl: String?) {
+fun TextInscription(iconUrl: String?, contentUrl:String?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -37,10 +42,14 @@ fun TextInscription(contentUrl: String?) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_text_inscription),
-                contentDescription = null,
-                modifier = Modifier.size(100.dp)
+            CoilImage(
+                model =
+                ImageRequest.Builder(LocalContext.current)
+                    .data(iconUrl)
+                    .transformations(CoilRoundedHexagonTransformation())
+                    .build(),
+                modifier =Modifier.size(100.dp),
+                placeholder = R.drawable.ic_text_inscription,
             )
             Spacer(modifier = Modifier.height(10.dp))
             TextLoaderComposable(contentUrl)

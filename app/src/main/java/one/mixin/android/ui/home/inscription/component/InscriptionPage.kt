@@ -185,7 +185,7 @@ private fun InscriptionPageImp(
                                         .aspectRatio(1f),
                                 ) {
                                     if (inscription.isText) {
-                                        TextInscription(inscription.contentURL)
+                                        TextInscription(inscription.iconUrl, inscription.contentURL)
                                     } else {
                                         CoilImage(
                                             model = inscription.contentURL,
