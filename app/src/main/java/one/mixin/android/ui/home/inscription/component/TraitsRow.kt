@@ -111,7 +111,7 @@ fun TraitsRow(json: String?) {
     if (list.isNullOrEmpty()) return
     Column {
         Box(modifier = Modifier.height(20.dp))
-        Text(text = stringResource(id = R.string.Traits).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+        Text(text = stringResource(id = R.string.collectible_traits).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
         Box(modifier = Modifier.height(8.dp))
         WrappingRow {
             list.forEach { trait ->

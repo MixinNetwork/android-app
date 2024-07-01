@@ -323,6 +323,15 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(8.dp))
                                         Text(text = inscription.contentType ?: "", fontSize = 16.sp, color = Color.White)
 
+                                        if (!inscription.owner.isNullOrEmpty()) {
+                                            Box(modifier = Modifier.height(20.dp))
+                                            Text(text = stringResource(id = R.string.collectible_owner).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+                                            Box(modifier = Modifier.height(8.dp))
+                                            SelectionContainer {
+                                                Text(text = inscription.owner, fontSize = 16.sp, color = Color.White)
+                                            }
+                                        }
+
                                         TraitsRow(inscription.traits)
                                         Box(modifier = Modifier.height(70.dp))
                                     }
