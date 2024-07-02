@@ -71,7 +71,7 @@
 
         <TextView
             android:id="@+id/bottom_hint_tv"
-            android:text="@string/web3_deposit_description"
+            android:text="@string/web3_deposit_description_evm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="38dp"
@@ -127,6 +127,13 @@
                 android:layout_height="24dp"
                 android:layout_marginStart="60dp"
                 android:src="@drawable/ic_web3_chain_optimism_eth" />
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_7"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="60dp"
+                android:src="@drawable/ic_web3_chain_blast" />
 
         </FrameLayout>
 
