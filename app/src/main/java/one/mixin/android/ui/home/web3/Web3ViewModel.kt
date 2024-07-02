@@ -30,8 +30,6 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.conversation.link.parser.NewSchemeParser.Companion.FAILURE
-import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
@@ -313,14 +311,15 @@ class Web3ViewModel
                 userRepository.upsert(user)
             }
 
-        suspend fun getOwner(hash: String): List<User>? {
+        suspend fun getOwner(hash: String): Pair<List<User>?, String?>? {
             val item = withContext(Dispatchers.IO) { tokenRepository.getInscriptionItem(hash) } ?: return null
             if (item.owner != null) {
                 val mixinAddress = item.owner.toMixAddress() ?: return null
                 return if (mixinAddress.uuidMembers.isNotEmpty()) {
-                    userRepository.findOrRefreshUsers(mixinAddress.uuidMembers)
+                    val users = userRepository.findOrRefreshUsers(mixinAddress.uuidMembers)
+                    Pair(users, null)
                 } else {
-                    null
+                    Pair(null, item.owner)
                 }
             }
             return null

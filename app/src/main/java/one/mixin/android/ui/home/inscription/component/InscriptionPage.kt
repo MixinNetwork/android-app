@@ -328,7 +328,7 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(8.dp))
                                         Text(text = inscription.contentType ?: "", fontSize = 16.sp, color = Color.White)
 
-                                        OwnerScreen(inscriptionHash, inscription.owner)
+                                        OwnerScreen(inscriptionHash)
 
                                         TraitsRow(inscription.traits)
                                         Box(modifier = Modifier.height(70.dp))

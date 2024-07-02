@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,17 +29,18 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.vo.User
-import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
-fun OwnerScreen(hash: String, owner:String?) {
+fun OwnerScreen(hash: String) {
     val viewModel = hiltViewModel<Web3ViewModel>()
     var isLoading by remember { mutableStateOf(true) }
-    var ownerData by remember { mutableStateOf(emptyList<User>()) }
+    var owners by remember { mutableStateOf(emptyList<User>()) }
+    var owner by remember { mutableStateOf("") }
 
     LaunchedEffect(hash) {
         viewModel.getOwner(hash)?.let {
-            ownerData = it
+            owners = it.first ?: emptyList()
+            owner = it.second ?: ""
         }
         isLoading = false
     }
@@ -53,13 +53,13 @@ fun OwnerScreen(hash: String, owner:String?) {
     Box(modifier = Modifier.height(8.dp))
     if (isLoading) {
         CircularProgressIndicator(modifier = Modifier.height(18.dp))
-    } else if (ownerData.isEmpty() && owner != null) {
+    } else if (owner.isNotEmpty()) {
         SelectionContainer {
             Text(text = owner, fontSize = 16.sp, color = Color.White)
         }
     } else {
         WrappingRow{
-            ownerData.forEach {
+            owners.forEach {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CoilImage(
                         model =
