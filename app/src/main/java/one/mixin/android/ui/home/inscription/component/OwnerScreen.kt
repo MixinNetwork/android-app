@@ -28,38 +28,33 @@ import coil.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.vo.User
 
 @Composable
 fun OwnerScreen(hash: String) {
     val viewModel = hiltViewModel<Web3ViewModel>()
     var isLoading by remember { mutableStateOf(true) }
-    var owners by remember { mutableStateOf(emptyList<User>()) }
-    var owner by remember { mutableStateOf("") }
+    var ownerState by remember { mutableStateOf(OwnerState()) }
 
     LaunchedEffect(hash) {
-        viewModel.getOwner(hash)?.let {
-            owners = it.first ?: emptyList()
-            owner = it.second ?: ""
-        }
+        ownerState = viewModel.getOwner(hash)
         isLoading = false
     }
     Box(modifier = Modifier.height(20.dp))
     Text(
-        text = stringResource(id = R.string.collectible_owner).uppercase(),
+        text = "${stringResource(id = R.string.collectible_owner).uppercase()}${ownerState.title ?: ""}",
         fontSize = 16.sp,
         color = Color(0xFF999999),
     )
     Box(modifier = Modifier.height(8.dp))
     if (isLoading) {
         CircularProgressIndicator(modifier = Modifier.height(18.dp))
-    } else if (owner.isNotEmpty()) {
+    } else if (ownerState.owner != null) {
         SelectionContainer {
-            Text(text = owner, fontSize = 16.sp, color = Color.White)
+            Text(text = ownerState.owner ?: "", fontSize = 16.sp, color = Color.White)
         }
     } else {
-        WrappingRow{
-            owners.forEach {
+        WrappingRow {
+            ownerState.users?.forEach {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CoilImage(
                         model =
@@ -78,5 +73,4 @@ fun OwnerScreen(hash: String) {
             }
         }
     }
-
 }

@@ -30,6 +30,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.common.biometric.NftBiometricItem
+import one.mixin.android.ui.home.inscription.component.OwnerState
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
@@ -52,6 +53,7 @@ import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -311,17 +313,26 @@ class Web3ViewModel
                 userRepository.upsert(user)
             }
 
-        suspend fun getOwner(hash: String): Pair<List<User>?, String?>? {
-            val item = withContext(Dispatchers.IO) { tokenRepository.getInscriptionItem(hash) } ?: return null
-            if (item.owner != null) {
-                val mixinAddress = item.owner.toMixAddress() ?: return null
-                return if (mixinAddress.uuidMembers.isNotEmpty()) {
-                    val users = userRepository.findOrRefreshUsers(mixinAddress.uuidMembers)
-                    Pair(users, null)
-                } else {
-                    Pair(null, item.owner)
+        suspend fun getOwner(hash: String): OwnerState {
+            try {
+                val item = withContext(Dispatchers.IO) { tokenRepository.getInscriptionItem(hash) } ?: return OwnerState()
+                if (item.owner != null) {
+                    val mixinAddress = item.owner.toMixAddress() ?: return OwnerState()
+                    return if (mixinAddress.uuidMembers.isNotEmpty()) {
+                        val users = userRepository.findOrRefreshUsers(mixinAddress.uuidMembers)
+                        val title = if (mixinAddress.uuidMembers.size > 1) {
+                            "(${mixinAddress.threshold}/${mixinAddress.uuidMembers.size})"
+                        } else {
+                            null
+                        }
+                        OwnerState(title = title, users = users)
+                    } else {
+                        OwnerState(owner = item.owner)
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.e(e)
             }
-            return null
+            return OwnerState()
         }
     }
