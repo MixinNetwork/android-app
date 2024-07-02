@@ -30,6 +30,8 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.ui.common.biometric.NftBiometricItem
+import one.mixin.android.ui.conversation.link.parser.NewSchemeParser.Companion.FAILURE
+import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
@@ -40,6 +42,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
+import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
@@ -309,4 +312,17 @@ class Web3ViewModel
             viewModelScope.launch(Dispatchers.IO) {
                 userRepository.upsert(user)
             }
+
+        suspend fun getOwner(hash: String): List<User>? {
+            val item = withContext(Dispatchers.IO) { tokenRepository.getInscriptionItem(hash) } ?: return null
+            if (item.owner != null) {
+                val mixinAddress = item.owner.toMixAddress() ?: return null
+                return if (mixinAddress.uuidMembers.isNotEmpty()) {
+                    userRepository.findOrRefreshUsers(mixinAddress.uuidMembers)
+                } else {
+                    null
+                }
+            }
+            return null
+        }
     }
