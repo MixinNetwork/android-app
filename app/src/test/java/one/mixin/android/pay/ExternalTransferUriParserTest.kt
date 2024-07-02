@@ -203,7 +203,7 @@ class ExternalTransferUriParserTest {
             if (result1 != null) {
                 checkResult(result1, Constants.ChainId.Solana, "mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN", "1")
             }
-            assertTrue(result2 == null)
+            assertTrue(result2 != null)
             assertTrue(result3 == null)
         }
 
