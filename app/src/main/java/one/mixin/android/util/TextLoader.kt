@@ -82,25 +82,12 @@ fun TextLoaderComposable(url: String?) {
     val context = LocalContext.current
     val textLoader = remember { TextLoader(context) }
     var text by remember { mutableStateOf<String?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(url) {
-        isLoading = true
         text = textLoader.getData(url)
-        isLoading = false
     }
 
-    if (isLoading) {
-        CircularProgressIndicator(
-            modifier =
-            Modifier.size(10.dp),
-            color = Color.White,
-        )
-    } else {
-        if (!text.isNullOrEmpty()) {
-            AutoSizeText(
-                text = text ?: "", maxLines = 12, color = Color(0xFF, 0xA7, 0x24, 0xFF), fontSize = 24.sp, constraint = AutoSizeConstraint.Height(min = 12.sp), overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
+    AutoSizeText(
+        text = text ?: "", maxLines = 12, color = Color(0xFF, 0xA7, 0x24, 0xFF), fontSize = 24.sp, constraint = AutoSizeConstraint.Height(min = 12.sp), overflow = TextOverflow.Ellipsis
+    )
 }
