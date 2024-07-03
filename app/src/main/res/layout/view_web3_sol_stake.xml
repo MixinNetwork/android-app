@@ -28,6 +28,7 @@
         tools:ignore="HardcodedText" />
 
     <RelativeLayout
+        android:id="@+id/stake_rl"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:orientation="vertical">

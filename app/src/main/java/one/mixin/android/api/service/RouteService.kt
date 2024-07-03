@@ -22,6 +22,7 @@ import one.mixin.android.api.response.web3.StakeResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
+import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -158,4 +159,9 @@ interface RouteService {
     suspend fun getStakeAccountActivations(
         @Query("accounts") accounts: String,
     ): MixinResponse<List<StakeAccountActivation>>
+
+    @GET("web3/stake/sol/validators")
+    suspend fun getStakeValidators(
+        @Query("votePubkeys") votePubkeys: String? = null,
+    ): MixinResponse<List<Validator>>
 }

@@ -4,12 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.StakeAccountActivation
+import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import timber.log.Timber
 
 @AndroidEntryPoint
 class StakingFragment : BaseFragment() {
@@ -21,6 +33,10 @@ class StakingFragment : BaseFragment() {
             putParcelableArrayList(ARGS_STAKE_ACCOUNTS, stakeAccounts)
         }
     }
+    private val stakeViewModel by viewModels<StakeViewModel>()
+
+    private val activationMap: MutableMap<String, StakeAccountActivation?> = SnapshotStateMap()
+    private val validatorMap: MutableMap<String, Validator?> = SnapshotStateMap()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,17 +44,42 @@ class StakingFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         val stakeAccounts = requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_STAKE_ACCOUNTS, StakeAccount::class.java)) { "required stakeAccounts cannot be null" }
+        lifecycleScope.launch {
+            loadStakeActivations(stakeAccounts)
+            loadValidators(stakeAccounts)
+        }
         return ComposeView(inflater.context).apply {
             setContent {
                 StakingPage(
                     stakeAccounts = stakeAccounts,
+                    activations = activationMap,
+                    validators = validatorMap,
                     onClick = { sa ->
-
+                        toast("click staking")
                     }
                 ) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
             }
+        }
+    }
+
+    private suspend fun loadStakeActivations(stakeAccounts: List<StakeAccount>) {
+        val activations = stakeViewModel.getStakeAccountActivations(stakeAccounts.map { it.pubkey })
+        if (activations.isNullOrEmpty()) return
+
+        stakeAccounts.forEach { sa ->
+            activationMap[sa.pubkey] = activations.find { a -> a.pubkey == sa.pubkey }
+        }
+    }
+
+    private suspend fun loadValidators(stakeAccounts: List<StakeAccount>) {
+        val validators = stakeViewModel.getStakeValidators(stakeAccounts.map { it.account.data.parsed.info.stake.delegation.voter })
+        if (validators.isNullOrEmpty()) return
+
+        stakeAccounts.forEach { sa ->
+            val votePubkey = sa.account.data.parsed.info.stake.delegation.voter
+            validatorMap[votePubkey] = validators.find { v -> v.votePubkey == votePubkey }
         }
     }
 }

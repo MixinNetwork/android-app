@@ -6,13 +6,15 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Validator(
+    val nodePubkey: String,
     val name: String,
-    val icon: String?,
-    @SerializedName("estimated_apy")
-    val estimatedApy: String,
-    val commission: String,
-    @SerializedName("total_stake")
-    val totalStake: String,
-    @SerializedName("vote_pubkey")
+    val details: String,
+    val keybaseUsername: String,
+    val website: String,
+    val iconUrl: String,
     val votePubkey: String,
+    val activatedStake: Long,
+    val commission: Int,
+    val lastVote: Long,
+    val rootSlot: Long
 ) : Parcelable

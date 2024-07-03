@@ -398,4 +398,6 @@ class AssetRepository
         suspend fun getStakeAccounts(account: String) = routeService.getStakeAccounts(account)
 
         suspend fun getStakeAccountActivations(accounts: String) = routeService.getStakeAccountActivations(accounts)
+
+        suspend fun getStakeValidators(votePubkeys: String?) = routeService.getStakeValidators(votePubkeys)
     }

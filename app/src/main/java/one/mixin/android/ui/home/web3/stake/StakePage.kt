@@ -269,7 +269,7 @@ private fun ValidatorInfo(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
-                model = validator.icon ?: "",
+                model = validator.iconUrl ?: "",
                 modifier =
                 Modifier
                     .size(28.dp)
@@ -297,9 +297,9 @@ private fun ValidatorInfo(
         Spacer(modifier = Modifier.height(12.dp))
         Divider(color = MixinAppTheme.colors.textSubtitle, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
-        Item(stringResource(id = R.string.Estimated_APY), validator.estimatedApy)
-        Item(stringResource(id = R.string.Commission), validator.commission)
-        Item(stringResource(id = R.string.Total_Stake), validator.totalStake)
+        Item(stringResource(id = R.string.Estimated_APY), "")
+        Item(stringResource(id = R.string.Commission), "${validator.commission}%")
+        Item(stringResource(id = R.string.Total_Stake), "${validator.activatedStake}")
     }
 
 }
@@ -344,5 +344,5 @@ private fun InputPreview() {
 @Preview
 @Composable
 private fun ValidatorInfoPreview() {
-    ValidatorInfo(Validator("Mixin Validator", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "6.9%", "9%", "412,456.1234", "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"))
+    ValidatorInfo(Validator("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "", 123123131231231, 9, 123124, 123123))
 }

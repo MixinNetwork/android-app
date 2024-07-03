@@ -65,6 +65,7 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SolanaFragment : BaseFragment() {
@@ -113,7 +114,7 @@ class SolanaFragment : BaseFragment() {
                             addressTv.text = this@SolanaFragment.address?.formatPublicKey()
                             stakeSolTv.setOnClickListener {
                                 this@SolanaFragment.navTo(StakeFragment.newInstance(
-                                    Validator("Mixin Validator", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "6.9%", "9%", "412,456.1234", "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp"),
+                                    Validator("7GkMBmtrTZz8QbjSe1sXvAUtz7Pp42SQxfT5ymmJD4We", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", 123123131231231, 9, 123124, 123123),
                                     tokens.find { t -> t.isSolToken() }?.balance ?: "0", null
                                 ), StakeFragment.TAG)
                                 bottomSheet.dismiss()
@@ -131,6 +132,10 @@ class SolanaFragment : BaseFragment() {
                         }
 
                         bottomSheet.show()
+                    }
+
+                    R.id.stake_rl -> {
+                        navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList())), StakingFragment.TAG)
                     }
                 }
             }
@@ -272,9 +277,7 @@ class SolanaFragment : BaseFragment() {
             count++
             amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
         }
-        adapter.setStake(StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())) {
-            navTo(StakingFragment.newInstance(ArrayList(stakeAccounts)), StakingFragment.TAG)
-        }
+        adapter.setStake(stakeAccounts, StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString()))
     }
 
     @SuppressLint("NotifyDataSetChanged")

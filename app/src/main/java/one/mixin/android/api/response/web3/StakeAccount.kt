@@ -10,9 +10,6 @@ import kotlinx.parcelize.Parcelize
 data class StakeAccount(
     val pubkey: String,
     val account: AccountInfo,
-
-    var validator: Validator?,
-    var activation: StakeAccountActivation?,
 ) : Parcelable
 
 @Parcelize

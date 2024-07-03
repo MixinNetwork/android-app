@@ -11,6 +11,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
@@ -60,12 +61,12 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
     var icon: Int = R.drawable.ic_ethereum
     var onClickListener: OnClickListener = OnClickListener { }
 
+    var stakeAccounts: List<StakeAccount>? = null
     private var stakeAccountSummary: StakeAccountSummary? = null
-    private var onStakeClickListener: OnClickListener = OnClickListener {  }
 
-    fun setStake(stakeAccountSummary: StakeAccountSummary, onStakeClickListener: OnClickListener) {
+    fun setStake(stakeAccounts: List<StakeAccount>, stakeAccountSummary: StakeAccountSummary) {
+        this.stakeAccounts = stakeAccounts
         this.stakeAccountSummary = stakeAccountSummary
-        this.onStakeClickListener = onStakeClickListener
         notifyItemRangeChanged(0, 2)
     }
 

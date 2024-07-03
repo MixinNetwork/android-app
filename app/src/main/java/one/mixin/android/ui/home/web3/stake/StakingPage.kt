@@ -39,6 +39,8 @@ import java.math.RoundingMode
 @Composable
 fun StakingPage(
     stakeAccounts: List<StakeAccount>,
+    activations: Map<String, StakeAccountActivation?>,
+    validators: Map<String, Validator?>,
     onClick: (StakeAccount) -> Unit,
     pop: () -> Unit,
 ) {
@@ -54,7 +56,8 @@ fun StakingPage(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             items(stakeAccounts.size) { i ->
-                StakeAccountItem(stakeAccount = stakeAccounts[i], onClick)
+                val sa = stakeAccounts[i]
+                StakeAccountItem(stakeAccount = sa, activations[sa.pubkey], validators[sa.account.data.parsed.info.stake.delegation.voter], onClick)
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
@@ -64,6 +67,8 @@ fun StakingPage(
 @Composable
 private fun StakeAccountItem(
     stakeAccount: StakeAccount,
+    activation: StakeAccountActivation?,
+    validator: Validator?,
     onClick: (StakeAccount) -> Unit,
 ) {
     Row(
@@ -76,7 +81,7 @@ private fun StakeAccountItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(
-            model = stakeAccount.validator?.icon ?: "",
+            model = validator?.iconUrl ?: "",
             modifier =
             Modifier
                 .size(42.dp)
@@ -88,7 +93,7 @@ private fun StakeAccountItem(
             Row {
                 Text(
                     modifier = Modifier.fillMaxWidth(0.4f),
-                    text = stakeAccount.validator?.name ?: "",
+                    text = validator?.name ?: "",
                     style =
                     TextStyle(
                         color = MixinAppTheme.colors.textPrimary,
@@ -99,7 +104,7 @@ private fun StakeAccountItem(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "${stakeAccount.activation?.let { calcStakeAmount(it) } ?: "0"} SOL",
+                    text = "${activation?.let { calcStakeAmount(it) } ?: "0"} SOL",
                     style =
                     TextStyle(
                         color = MixinAppTheme.colors.textPrimary,
@@ -109,7 +114,7 @@ private fun StakeAccountItem(
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stakeAccount.activation?.state ?: "",
+                text = activation?.state ?: "",
                 style =
                 TextStyle(
                     color = MixinAppTheme.colors.accent,
@@ -172,7 +177,7 @@ private fun StakeAccountItemPreview() {
       }
     }"""
     val stakeAccount = Gson().fromJson(d, StakeAccount::class.java)
-    stakeAccount.validator = Validator("Mixin Validator", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "6.9%", "9%", "412,456.1234", "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp")
-    stakeAccount.activation = StakeAccountActivation("EvZfWbpG9HE7cJrq3o3d6gkZMcP8TLTisfVQMNLqGw4H", 0, 7717120, "activating")
-    StakeAccountItem(stakeAccount = stakeAccount) {}
+    val validator = Validator("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "", 123123131231231, 9, 123124, 123123)
+    val activation = StakeAccountActivation("EvZfWbpG9HE7cJrq3o3d6gkZMcP8TLTisfVQMNLqGw4H", 0, 7717120, "activating")
+    StakeAccountItem(stakeAccount = stakeAccount, activation, validator) {}
 }
