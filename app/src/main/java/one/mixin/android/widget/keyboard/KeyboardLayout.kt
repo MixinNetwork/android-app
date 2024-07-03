@@ -55,6 +55,7 @@ class KeyboardLayout : LinearLayout {
         resources.getDimensionPixelSize(R.dimen.default_custom_keyboard_size)
     private var systemBottom = 0
     private var systemTop = 0
+    private val minImeHeight = 100.dp
 
     private enum class STATUS {
         EXPANDED,
@@ -157,8 +158,11 @@ class KeyboardLayout : LinearLayout {
             if (inMultiWindowMode) {
                 calculateInsertBottom(insets.getInsets(WindowInsetsCompat.Type.ime()))
             } else {
+                val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+                val imeHeight = imeInsets.bottom - systemBottom
+                if (imeHeight < minImeHeight) return@setOnApplyWindowInsetsListener insets
                 max(
-                    insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
+                    imeHeight,
                     0,
                 ).let { value ->
                     if (lastKeyboardHeight == value) return@let
@@ -169,7 +173,7 @@ class KeyboardLayout : LinearLayout {
                     }
                     if (value > 0) {
                         // If the callback saved keyboard height is very small, and the height obtained at this time is greater than it, reset the new value
-                        if (100.dp in (keyboardHeight + 1) until lastKeyboardHeight) {
+                        if (minImeHeight in (keyboardHeight + 1) until lastKeyboardHeight) {
                             keyboardHeight = lastKeyboardHeight
                         }
                         onKeyboardShownListener?.onKeyboardShown(value)
