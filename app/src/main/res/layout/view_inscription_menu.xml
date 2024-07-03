@@ -81,7 +81,7 @@
         android:gravity="center_vertical"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:textColor="#E86B67"
+        android:textColor="?attr/text_primary"
         android:text="@string/Release" />
 
     <TextView
