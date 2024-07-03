@@ -74,9 +74,7 @@ class KeyboardLayout : LinearLayout {
                 field = value
                 if (value >= 100.dp) {
                     PreferenceManager.getDefaultSharedPreferences(context)
-                        .edit()
                         .putInt("keyboard_height_portrait", value)
-                        .apply()
                 }
             }
         }
@@ -160,15 +158,14 @@ class KeyboardLayout : LinearLayout {
             } else {
                 val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
                 val imeHeight = imeInsets.bottom - systemBottom
-                if (imeHeight < minImeHeight) return@setOnApplyWindowInsetsListener insets
                 max(
                     imeHeight,
                     0,
                 ).let { value ->
                     if (lastKeyboardHeight == value) return@let
                     lastKeyboardHeight = value
-                    Timber.e("IME insets changed, new height: $value")
-                    if (value > 0 && value != inputAreaHeight) {
+                    Timber.e("IME insets changed, new height: $value, keyboardHeight: $keyboardHeight, lastKeyboardHeight: $lastKeyboardHeight")
+                    if (value > minImeHeight && value != inputAreaHeight) {
                         inputAreaHeight = value
                     }
                     if (value > 0) {
