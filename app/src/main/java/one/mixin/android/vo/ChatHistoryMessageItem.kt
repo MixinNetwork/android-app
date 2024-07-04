@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.os.Environment
@@ -10,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.media3.common.MimeTypes
 import androidx.recyclerview.widget.DiffUtil
+import kotlinx.parcelize.IgnoredOnParcel
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
@@ -24,6 +26,7 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isFileUri
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.getLocalString
 import one.mixin.android.util.reportException
@@ -74,11 +77,18 @@ class ChatHistoryMessageItem(
                     newItem: ChatHistoryMessageItem,
                 ): Boolean = oldItem.messageId == newItem.messageId
 
+                @SuppressLint("DiffUtilEquals")
                 override fun areContentsTheSame(
                     oldItem: ChatHistoryMessageItem,
                     newItem: ChatHistoryMessageItem,
                 ): Boolean = oldItem == newItem
             }
+    }
+
+    val appCardData: AppCardData? by lazy {
+        content?.let {
+            GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+        }
     }
 }
 

@@ -817,9 +817,10 @@ class ConversationFragment() :
                 appCard: AppCardData,
                 userId: String,
             ) {
-                if (openInputAction(appCard.action)) return
+                val action = appCard.action ?: return
+                if (openInputAction(action)) return
 
-                open(appCard.action, null, appCard)
+                open(action, null, appCard)
             }
 
             override fun onBillClick(messageItem: MessageItem) {

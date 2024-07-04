@@ -9,6 +9,7 @@ import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
+import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.databinding.ItemChatFileBinding
@@ -216,6 +217,14 @@ class ChatHistoryAdapter(
                     ),
                 )
             11 ->
+                ActionsCardHolder(
+                    ItemChatActionsCardBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false,
+                    ),
+                )
+            12 ->
                 PostHolder(
                     ItemChatPostBinding.inflate(
                         LayoutInflater.from(parent.context),
@@ -223,7 +232,7 @@ class ChatHistoryAdapter(
                         false,
                     ),
                 )
-            12 ->
+            13 ->
                 TranscriptHolder(
                     ItemChatTranscriptBinding.inflate(
                         LayoutInflater.from(parent.context),
@@ -231,7 +240,7 @@ class ChatHistoryAdapter(
                         false,
                     ),
                 )
-            13 ->
+            14 ->
                 RecallHolder(
                     ItemChatRecallBinding.inflate(
                         LayoutInflater.from(parent.context),
@@ -239,7 +248,7 @@ class ChatHistoryAdapter(
                         false,
                     ),
                 )
-            14 ->
+            15 ->
                 ActionHolder(
                     ItemChatActionBinding.inflate(
                         LayoutInflater.from(parent.context),
@@ -389,6 +398,13 @@ class ChatHistoryAdapter(
                     onItemListener,
                 )
             11 ->
+                (holder as ActionsCardHolder).bind(
+                    transcript,
+                    isLast = isLast(position),
+                    isFirst = isFirst(position),
+                    onItemListener,
+                )
+            12 ->
                 (holder as PostHolder).bind(
                     transcript,
                     isLast = isLast(position),
@@ -396,21 +412,21 @@ class ChatHistoryAdapter(
                     onItemListener,
                     miniMarkwon,
                 )
-            12 ->
+            13 ->
                 (holder as TranscriptHolder).bind(
                     transcript,
                     isLast = isLast(position),
                     isFirst = isFirst(position),
                     onItemListener,
                 )
-            13 ->
+            14 ->
                 (holder as RecallHolder).bind(
                     transcript,
                     isFirst = isFirst(position),
                     isLast = isLast(position),
                     onItemListener,
                 )
-            14 ->
+            15 ->
                 (holder as ActionHolder).bind(
                     transcript,
                     isLast = isLast(position),
@@ -447,11 +463,17 @@ class ChatHistoryAdapter(
             item.isContact() -> -6
             item.isSticker() -> 7
             item.isLocation() -> 9
-            item.isAppCard() -> 10
-            item.isPost() -> 11
-            item.isTranscript() -> 12
-            item.isRecall() -> 13
-            item.isAppButtonGroup() -> 14
+            item.isAppCard() -> {
+                if (item.appCardData?.newVersion == true) {
+                    11
+                }else{
+                    10
+                }
+            }
+            item.isPost() -> 12
+            item.isTranscript() -> 13
+            item.isRecall() -> 14
+            item.isAppButtonGroup() -> 15
             else -> -99
         }
     }

@@ -12,6 +12,7 @@ import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
+import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.databinding.ItemChatCallBinding
 import one.mixin.android.databinding.ItemChatCardBinding
 import one.mixin.android.databinding.ItemChatContactCardBinding
@@ -47,6 +48,7 @@ import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chat.CompressedList
+import one.mixin.android.ui.conversation.holder.ActionsCardHolder
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -204,6 +206,10 @@ class MessageAdapter(
 
             ACTION_CARD_TYPE -> {
                 ActionCardHolder(ItemChatActionCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
+
+            ACTION_BUTTON_CARD_TYPE -> {
+                ActionsCardHolder(ItemChatActionsCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
 
             LINK_TYPE -> {
@@ -517,6 +523,18 @@ class MessageAdapter(
                     )
                 }
 
+                ACTION_BUTTON_CARD_TYPE ->{
+                    (holder as ActionsCardHolder).bind(
+                        it,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        isRepresentative(it),
+                        onItemListener,
+                    )
+                }
+
                 CONTACT_CARD_TYPE -> {
                     (holder as ContactCardHolder).bind(
                         it,
@@ -654,7 +672,11 @@ class MessageAdapter(
                     item.type == MessageCategory.SYSTEM_SAFE_INSCRIPTION.name -> SYSTEM_SAFE_INSCRIPTION_TYPE
                     item.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> SAFE_SNAPSHOT_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
-                    item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
+                    item.type == MessageCategory.APP_CARD.name -> {
+                        if(item.appCardData?.newVersion == true) ACTION_BUTTON_CARD_TYPE else ACTION_CARD_TYPE
+                    }
+
+
                     item.isContact() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             CONTACT_CARD_QUOTE_TYPE
@@ -1113,15 +1135,16 @@ class MessageAdapter(
         const val POST_TYPE = 13
         const val ACTION_TYPE = 14
         const val ACTION_CARD_TYPE = 15
-        const val SYSTEM_TYPE = 16
-        const val WAITING_TYPE = 17
-        const val STRANGER_TYPE = 18
-        const val SECRET_TYPE = 19
-        const val CALL_TYPE = 20
-        const val RECALL_TYPE = 21
-        const val LOCATION_TYPE = 22
-        const val GROUP_CALL_TYPE = 23
-        const val TRANSCRIPT_TYPE = 24
-        const val PIN_TYPE = 25
+        const val ACTION_BUTTON_CARD_TYPE = 16
+        const val SYSTEM_TYPE = 17
+        const val WAITING_TYPE = 18
+        const val STRANGER_TYPE = 19
+        const val SECRET_TYPE = 20
+        const val CALL_TYPE = 21
+        const val RECALL_TYPE = 22
+        const val LOCATION_TYPE = 23
+        const val GROUP_CALL_TYPE = 24
+        const val TRANSCRIPT_TYPE = 25
+        const val PIN_TYPE = 26
     }
 }
