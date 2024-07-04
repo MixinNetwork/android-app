@@ -37,12 +37,6 @@ class Web3Header : ConstraintLayout {
         _binding.swap.setOnClickListener {
             onClickAction?.invoke(it.id)
         }
-        _binding.stake.root.apply {
-            isVisible = false
-            updateLayoutParams<LayoutParams> {
-                topToBottom = _binding.more.id
-            }
-        }
     }
 
     private var onClickAction: ((Int) -> Unit)? = null
@@ -69,23 +63,6 @@ class Web3Header : ConstraintLayout {
                 endToStart = R.id.swap
             }
             swap.isVisible = true
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    fun showStake(stakeAccountSummary: StakeAccountSummary?) {
-        if (stakeAccountSummary == null) {
-            _binding.stake.root.isVisible = false
-        } else {
-            _binding.stake.apply {
-                root.isVisible = true
-                icon.loadImage("https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png")
-                amountTv.text = "${stakeAccountSummary.amount} SOL"
-                countTv.text = "${stakeAccountSummary.count} account"
-                stakeRl.setOnClickListener {
-                    onClickAction?.invoke(_binding.stake.stakeRl.id)
-                }
-            }
         }
     }
 }

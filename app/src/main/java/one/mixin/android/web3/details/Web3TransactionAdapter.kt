@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.api.response.isSolana
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -19,6 +20,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.GrayscaleTransformation
@@ -39,6 +41,15 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
 
     private var onClickListener: ((Web3Transaction) -> Unit)? = null
     private var onClickAction: ((Int) -> Unit)? = null
+
+    var stakeAccounts: List<StakeAccount>? = null
+    private var stakeAccountSummary: StakeAccountSummary? = null
+
+    fun setStake(stakeAccounts: List<StakeAccount>, stakeAccountSummary: StakeAccountSummary) {
+        this.stakeAccounts = stakeAccounts
+        this.stakeAccountSummary = stakeAccountSummary
+        notifyItemRangeChanged(0, 2)
+    }
 
     fun setOnClickAction(onClickListener: (Int) -> Unit) {
         this.onClickAction = onClickListener
@@ -95,7 +106,7 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
                 onClickListener?.invoke(transactions[position - 1])
             }
         } else {
-            (holder as Web3HeaderHolder).bind(token) { id ->
+            (holder as Web3HeaderHolder).bind(token, stakeAccountSummary) { id ->
                 onClickAction?.invoke(id)
             }
         }
@@ -295,10 +306,12 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
 class Web3HeaderHolder(val binding: ItemWeb3TokenHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(
         token: Web3Token,
+        summary: StakeAccountSummary?,
         onClickListener: ((Int) -> Unit)?,
     ) {
         binding.header.setToken(token)
         binding.header.setOnClickAction(onClickListener)
+        binding.header.showStake(summary)
     }
 
     fun enableSwap() {

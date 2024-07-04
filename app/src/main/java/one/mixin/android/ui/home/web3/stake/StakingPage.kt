@@ -15,11 +15,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,11 +45,21 @@ fun StakingPage(
     activations: Map<String, StakeAccountActivation?>,
     validators: Map<String, Validator?>,
     onClick: (StakeAccount) -> Unit,
+    onAdd: () -> Unit,
     pop: () -> Unit,
 ) {
     PageScaffold(
         title = stringResource(id = R.string.Your_Stake),
         verticalScrollable = true,
+        actions = {
+            IconButton(onClick = { onAdd.invoke() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_add_black_24dp),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+            }
+        },
         pop = pop,
     ) {
         LazyColumn(
@@ -92,7 +105,7 @@ private fun StakeAccountItem(
         Column {
             Row {
                 Text(
-                    modifier = Modifier.fillMaxWidth(0.4f),
+                    modifier = Modifier.fillMaxWidth(0.5f),
                     text = validator?.name ?: "",
                     style =
                     TextStyle(

@@ -1,5 +1,6 @@
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +20,7 @@ fun PageScaffold(
     title: String,
     verticalScrollable: Boolean = true,
     pop: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -28,6 +30,7 @@ fun PageScaffold(
                 title = {
                     Text(title)
                 },
+                actions = actions,
                 navigationIcon = {
                     IconButton(onClick = { pop() }) {
                         Icon(

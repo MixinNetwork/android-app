@@ -112,13 +112,6 @@ class SolanaFragment : BaseFragment() {
                         bottomBinding.apply {
                             title.setText(R.string.Solana_Account)
                             addressTv.text = this@SolanaFragment.address?.formatPublicKey()
-                            stakeSolTv.setOnClickListener {
-                                this@SolanaFragment.navTo(StakeFragment.newInstance(
-                                    Validator("7GkMBmtrTZz8QbjSe1sXvAUtz7Pp42SQxfT5ymmJD4We", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", 123123131231231, 9, 123124, 123123),
-                                    tokens.find { t -> t.isSolToken() }?.balance ?: "0", null
-                                ), StakeFragment.TAG)
-                                bottomSheet.dismiss()
-                            }
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                                 toast(R.string.copied_to_clipboard)
@@ -132,10 +125,6 @@ class SolanaFragment : BaseFragment() {
                         }
 
                         bottomSheet.show()
-                    }
-
-                    R.id.stake_rl -> {
-                        navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList())), StakingFragment.TAG)
                     }
                 }
             }
@@ -221,7 +210,6 @@ class SolanaFragment : BaseFragment() {
                 } else {
                     adapter.address = address
                     refreshAccount(address)
-                    getStakeAccounts(address)
                 }
             }
         }
@@ -266,19 +254,6 @@ class SolanaFragment : BaseFragment() {
     }
 
     private var dialog: AlertDialog? = null
-
-    private suspend fun getStakeAccounts(address: String) {
-        val stakeAccounts = web3ViewModel.getStakeAccounts(address)
-        if (stakeAccounts.isNullOrEmpty()) return
-
-        var amount: Long = 0
-        var count = 0
-        stakeAccounts.forEach { a ->
-            count++
-            amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
-        }
-        adapter.setStake(stakeAccounts, StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString()))
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     private suspend fun refreshAccount(address: String) {

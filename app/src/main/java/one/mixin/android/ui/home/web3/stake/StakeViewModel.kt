@@ -35,9 +35,18 @@ class StakeViewModel
         )
     }
 
-    suspend fun getStakeValidators(votePubkeys: List<String>): List<Validator>? {
+    suspend fun getStakeValidators(votePubkeys: List<String>?): List<Validator>? {
         return handleMixinResponse(
-            invokeNetwork = { assetRepository.getStakeValidators(votePubkeys.joinToString(",")) },
+            invokeNetwork = { assetRepository.getStakeValidators(votePubkeys?.joinToString(",")) },
+            successBlock = {
+                it.data
+            }
+        )
+    }
+
+    suspend fun searchStakeValidators(query: String): List<Validator>? {
+        return handleMixinResponse(
+            invokeNetwork = { assetRepository.searchStakeValidators(query) },
             successBlock = {
                 it.data
             }

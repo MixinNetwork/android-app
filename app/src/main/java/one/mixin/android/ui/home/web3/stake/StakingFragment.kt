@@ -4,24 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import timber.log.Timber
 
 @AndroidEntryPoint
 class StakingFragment : BaseFragment() {
@@ -56,6 +55,13 @@ class StakingFragment : BaseFragment() {
                     validators = validatorMap,
                     onClick = { sa ->
                         toast("click staking")
+                    },
+                    onAdd = {
+                        navTo(ValidatorsFragment.newInstance().apply {
+                            setOnSelect { v ->
+
+                            }
+                        }, ValidatorsFragment.TAG)
                     }
                 ) {
                     activity?.onBackPressedDispatcher?.onBackPressed()

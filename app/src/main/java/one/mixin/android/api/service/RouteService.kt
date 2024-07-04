@@ -164,4 +164,9 @@ interface RouteService {
     suspend fun getStakeValidators(
         @Query("votePubkeys") votePubkeys: String? = null,
     ): MixinResponse<List<Validator>>
+
+    @GET("web3/stake/sol/validators/search/{query}")
+    suspend fun searchStakeValidators(
+        @Path("query") query: String,
+    ): MixinResponse<List<Validator>>
 }
