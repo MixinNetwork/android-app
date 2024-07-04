@@ -1457,7 +1457,8 @@
     <string name="copy_address">复制地址</string>
     <string name="copy_contract_address">复制合约地址</string>
     <string name="coming_soon">即将推出</string>
-    <string name="web3_deposit_description">使用此地址在 Ethereum、Polygon、BSC 网络上接收代币</string>
+    <string name="web3_deposit_description_evm">使用此地址在 Ethereum、Polygon、BSC、Base、Arbitrum、Optimism、Blast 网络上接收代币</string>
+    <string name="web3_deposit_description_solana">使用此地址在 Solana 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
     <string name="Ethereum_Account">Ethereum 账户</string>
     <string name="Solana_Account">Solana 账户</string>
@@ -1538,7 +1539,8 @@
     <string name="Collection_collected">已收藏 %1$d 件</string>
     <string name="Content_type">内容类型</string>
     <string name="View_details">显示详情</string>
-    <string name="Traits">特征</string>
-    <string name="View_on_Marketplace">在市场查看</string>
+    <string name="collectible_owner">拥有者</string>
+    <string name="collectible_traits">特征</string>
+    <string name="View_on_Marketplace">在市场中查看</string>
     <string name="View_on_Explorer">在浏览器中查看</string>
 </resources>

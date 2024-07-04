@@ -185,7 +185,12 @@ private fun InscriptionPageImp(
                                         .aspectRatio(1f),
                                 ) {
                                     if (inscription.isText) {
-                                        TextInscription(inscription.contentURL)
+                                        TextInscription(
+                                            inscription.iconUrl, inscription.contentURL,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(RoundedCornerShape(8.dp)),
+                                        )
                                     } else {
                                         CoilImage(
                                             model = inscription.contentURL,
@@ -322,6 +327,8 @@ private fun InscriptionPageImp(
                                         Text(text = stringResource(id = R.string.Content_type).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                                         Box(modifier = Modifier.height(8.dp))
                                         Text(text = inscription.contentType ?: "", fontSize = 16.sp, color = Color.White)
+
+                                        OwnerScreen(inscriptionHash)
 
                                         TraitsRow(inscription.traits)
                                         Box(modifier = Modifier.height(70.dp))

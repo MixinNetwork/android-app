@@ -1491,8 +1491,8 @@
     <string name="copy_address">Copy Address</string>
     <string name="copy_contract_address">Copy Contract Address</string>
     <string name="coming_soon">Coming soon</string>
-    <string name="web3_deposit_description">Use this address for receiving tokens on Ethereum, Polygon, BSC networks</string>
-    <string name="web3_sol_deposit_description">Use this address for receiving tokens on Solana.</string>
+    <string name="web3_deposit_description_evm">Use this address for receiving tokens on Ethereum, Polygon, BSC, Base, Arbitrum, Optimism, Blast networks, </string>
+    <string name="web3_deposit_description_solana">Use this address for receiving tokens on Solana.</string>
     <string name="No_asset">No Tokens</string>
     <string name="Ethereum_Account">Ethereum Account</string>
     <string name="Solana_Account">Solana Account</string>
@@ -1575,7 +1575,8 @@
     <string name="Collection_collected">%1$d collected</string>
     <string name="Content_type">Content type</string>
     <string name="View_details">View details</string>
-    <string name="Traits">Traits</string>
+    <string name="collectible_owner">Owner</string>
+    <string name="collectible_traits">Traits</string>
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
 </resources>

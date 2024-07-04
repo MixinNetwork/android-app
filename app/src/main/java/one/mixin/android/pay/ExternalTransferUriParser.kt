@@ -8,6 +8,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.vo.AssetPrecision
+import org.sol4k.Base58
 import java.math.BigDecimal
 
 suspend fun parseExternalTransferUri(
@@ -24,14 +25,22 @@ suspend fun parseExternalTransferUri(
 
     val uri = url.addSlashesIfNeeded().toUri()
     val scheme = uri.scheme
-    val assetId = externalTransferAssetIdMap[scheme] ?: return null
+    val chainId = externalTransferAssetIdMap[scheme] ?: return null
 
-    if (assetId == Constants.ChainId.Solana) {
+    val splAssetId = if (chainId == Constants.ChainId.Solana) {
         val splToken = uri.getQueryParameter("spl-token")
         if (!splToken.isNullOrEmpty()) {
-            return null
+            try {
+                Base58.decode(splToken)
+                findAssetIdByAssetKey(splToken)
+            } catch (e: Exception) {
+                return null
+            }
+        } else {
+            null
         }
-    }
+    } else null
+    val assetId = splAssetId ?: chainId
 
     val destination = uri.host ?: return null
     val addressResponse = validateAddress(assetId, destination) ?: return null
