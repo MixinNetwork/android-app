@@ -1543,4 +1543,5 @@
     <string name="collectible_traits">特征</string>
     <string name="View_on_Marketplace">在市场中查看</string>
     <string name="View_on_Explorer">在浏览器中查看</string>
+    <string name="malicious_instruction_token_set_authority">此交易将更改 SPL 代币的所有者。这将允许新的所有者在未经您允许的情况下转让代币。</string>
 </resources>

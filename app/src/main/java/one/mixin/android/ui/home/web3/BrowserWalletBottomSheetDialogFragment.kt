@@ -63,6 +63,7 @@ import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
@@ -288,6 +289,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                             }
                         }
+                        tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
                     }
