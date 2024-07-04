@@ -45,12 +45,12 @@ class TransferContentReceiveItem : LinearLayout {
     fun setContent(
         @PluralsRes titleRes: Int,
         users: List<User>,
-        sendersThreshold: Int? = null,
+        threshold: Int? = null,
         userClick: (User) -> Unit,
     ) {
         _binding.apply {
-            if (sendersThreshold != null) {
-                title.text = "${context.resources.getQuantityString(titleRes, users.size).uppercase()} ($sendersThreshold/${users.size})"
+            if (threshold != null) {
+                title.text = "${context.resources.getQuantityString(titleRes, users.size).uppercase()} ($threshold/${users.size})"
             } else {
                 title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
             }
