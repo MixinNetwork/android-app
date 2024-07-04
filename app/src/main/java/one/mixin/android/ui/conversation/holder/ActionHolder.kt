@@ -4,14 +4,10 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
-import android.view.ViewGroup
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.databinding.ItemChatActionBinding
-import one.mixin.android.extension.bottomPadding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.leftPadding
-import one.mixin.android.extension.rightPadding
-import one.mixin.android.extension.topPadding
+import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
@@ -20,7 +16,13 @@ import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
 
-class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
+class ActionHolder(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
+    init {
+        binding.chatLayout.layoutParams = binding.chatLayout.layoutParams.apply {
+            width = itemView.context.maxItemWidth() + 14.dp
+        }
+        binding.chatLayout.setLineSpacing(3.dp)
+    }
     @SuppressLint("RestrictedApi")
     fun bind(
         messageItem: MessageItem,
@@ -79,12 +81,6 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
                 binding.chatLayout.addView(button)
-                (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
-                (button.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = dp1
-                button.topPadding = dp8
-                button.bottomPadding = dp8
-                button.leftPadding = dp12
-                button.rightPadding = dp12
                 button.setOnLongClickListener {
                     if (!hasSelect) {
                         onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
