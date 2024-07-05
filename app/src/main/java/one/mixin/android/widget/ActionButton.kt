@@ -3,6 +3,7 @@ package one.mixin.android.widget
 import android.content.Context
 import android.content.res.ColorStateList
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.res.ResourcesCompat
@@ -20,6 +21,8 @@ class ActionButton(context: Context) : AppCompatTextView(context) {
             )
         setBackgroundResource(R.drawable.bg_action_button)
         val outValue = TypedValue()
+        gravity = Gravity.CENTER
+        maxLines = 1
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
         foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
         backgroundTintList = ColorStateList.valueOf(context.colorFromAttribute(R.attr.bg_bubble))
