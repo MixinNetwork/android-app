@@ -13,14 +13,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.stake.StakeFragment.Companion.ARGS_BALANCE
+import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
 
 @AndroidEntryPoint
 class StakingFragment : BaseFragment() {
@@ -28,8 +33,12 @@ class StakingFragment : BaseFragment() {
         const val TAG = "StakingFragment"
         private const val ARGS_STAKE_ACCOUNTS = "args_stake_accounts"
 
-        fun newInstance(stakeAccounts: ArrayList<StakeAccount>) = StakingFragment().withArgs {
+        fun newInstance(
+            stakeAccounts: ArrayList<StakeAccount>,
+            balance: String,
+        ) = StakingFragment().withArgs {
             putParcelableArrayList(ARGS_STAKE_ACCOUNTS, stakeAccounts)
+            putString(ARGS_BALANCE, balance)
         }
     }
     private val stakeViewModel by viewModels<StakeViewModel>()
@@ -43,6 +52,7 @@ class StakingFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         val stakeAccounts = requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_STAKE_ACCOUNTS, StakeAccount::class.java)) { "required stakeAccounts cannot be null" }
+        val balance = requireNotNull(requireArguments().getString(ARGS_BALANCE))
         lifecycleScope.launch {
             loadStakeActivations(stakeAccounts)
             loadValidators(stakeAccounts)
@@ -53,13 +63,18 @@ class StakingFragment : BaseFragment() {
                     stakeAccounts = stakeAccounts,
                     activations = activationMap,
                     validators = validatorMap,
-                    onClick = { sa ->
-                        toast("click staking")
+                    onClick = { sa, v, a ->
+                        if (v == null || a == null) {
+                            toast(R.string.error_bad_data)
+                            return@StakingPage
+                        }
+                        navTo(UnstakeFragment.newInstance(v, sa, a), UnstakeFragment.TAG)
                     },
                     onAdd = {
                         navTo(ValidatorsFragment.newInstance().apply {
                             setOnSelect { v ->
-
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                                navTo(StakeFragment.newInstance(v, balance), StakeFragment.TAG)
                             }
                         }, ValidatorsFragment.TAG)
                     }

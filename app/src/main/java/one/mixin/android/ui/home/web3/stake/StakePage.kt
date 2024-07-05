@@ -29,7 +29,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -269,7 +268,7 @@ private fun ValidatorInfo(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
-                model = validator.iconUrl ?: "",
+                model = validator.iconUrl,
                 modifier =
                 Modifier
                     .size(28.dp)
@@ -301,11 +300,10 @@ private fun ValidatorInfo(
         Item(stringResource(id = R.string.Commission), "${validator.commission}%")
         Item(stringResource(id = R.string.Total_Stake), "${validator.activatedStake}")
     }
-
 }
 
 @Composable
-private fun Item(
+fun Item(
     key: String,
     value: String,
 ) {

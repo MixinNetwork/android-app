@@ -402,7 +402,7 @@ class Web3ViewModel
                 }
             )
         }
-    
+
         companion object {
             private val evmTokenMap = mutableMapOf<String, Web3Token>()
             private val solanaTokenMap = mutableMapOf<String, Web3Token>()

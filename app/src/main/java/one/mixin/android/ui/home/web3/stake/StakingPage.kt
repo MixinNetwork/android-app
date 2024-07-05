@@ -44,7 +44,7 @@ fun StakingPage(
     stakeAccounts: List<StakeAccount>,
     activations: Map<String, StakeAccountActivation?>,
     validators: Map<String, Validator?>,
-    onClick: (StakeAccount) -> Unit,
+    onClick: (StakeAccount, Validator?, StakeAccountActivation?) -> Unit,
     onAdd: () -> Unit,
     pop: () -> Unit,
 ) {
@@ -82,14 +82,14 @@ private fun StakeAccountItem(
     stakeAccount: StakeAccount,
     activation: StakeAccountActivation?,
     validator: Validator?,
-    onClick: (StakeAccount) -> Unit,
+    onClick: (StakeAccount, Validator?, StakeAccountActivation?) -> Unit,
 ) {
     Row(
       modifier = Modifier
           .fillMaxWidth()
           .clip(RoundedCornerShape(12.dp))
           .background(color = MixinAppTheme.colors.backgroundWindow)
-          .clickable { onClick.invoke(stakeAccount) }
+          .clickable { onClick.invoke(stakeAccount, validator, activation) }
           .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -149,48 +149,9 @@ private fun calcStakeAmount(activation: StakeAccountActivation): String {
 @Preview
 @Composable
 private fun StakeAccountItemPreview() {
-    val d = """{
-      "pubkey": "EvZfWbpG9HE7cJrq3o3d6gkZMcP8TLTisfVQMNLqGw4H",
-      "account": {
-        "lamports": 10000000,
-        "owner": "Stake11111111111111111111111111111111111111",
-        "rentEpoch": 18446744073709551615,
-        "data": {
-          "parsed": {
-            "info": {
-              "meta": {
-                "authorized": {
-                  "staker": "5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9",
-                  "withdrawer": "5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9"
-                },
-                "lockup": {
-                  "custodian": "11111111111111111111111111111111",
-                  "epoch": 0,
-                  "unixTimestamp": 0
-                },
-                "rentExemptReserve": "2282880"
-              },
-              "stake": {
-                "creditsObserved": 94885293,
-                "delegation": {
-                  "activationEpoch": "634",
-                  "deactivationEpoch": "18446744073709551615",
-                  "stake": "7717120",
-                  "voter": "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp",
-                  "warmupCooldownRate": 0.25
-                }
-              }
-            },
-            "type": "delegated"
-          },
-          "program": "stake",
-          "space": 200
-        },
-        "executable": false
-      }
-    }"""
+    val d = """{"data":[{"pubkey":"EvZfWbpG9HE7cJrq3o3d6gkZMcP8TLTisfVQMNLqGw4H","account":{"lamports":10009967,"owner":"Stake11111111111111111111111111111111111111","rentEpoch":18446744073709551615,"data":{"parsed":{"info":{"meta":{"authorized":{"staker":"5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9","withdrawer":"5TDMKU3basuWC9sb9xAJgvn17KYFTLk9srPifmjZqJH9"},"lockup":{"custodian":"11111111111111111111111111111111","epoch":0,"unixTimestamp":0},"rentExemptReserve":"2282880"},"stake":{"creditsObserved":96113126,"delegation":{"activationEpoch":"634","deactivationEpoch":"18446744073709551615","stake":"7726256","voter":"J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp","warmupCooldownRate":0.25}}},"type":"delegated"},"program":"stake","space":200},"executable":false}}]}"""
     val stakeAccount = Gson().fromJson(d, StakeAccount::class.java)
     val validator = Validator("J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp", "Mixin Validator", "", "", "", "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", "", 123123131231231, 9, 123124, 123123)
     val activation = StakeAccountActivation("EvZfWbpG9HE7cJrq3o3d6gkZMcP8TLTisfVQMNLqGw4H", 0, 7717120, "activating")
-    StakeAccountItem(stakeAccount = stakeAccount, activation, validator) {}
+    StakeAccountItem(stakeAccount = stakeAccount, activation, validator) {_,_,_ ->}
 }

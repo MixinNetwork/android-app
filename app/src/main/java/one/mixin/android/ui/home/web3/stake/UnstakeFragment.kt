@@ -14,6 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.web3.StakeAction
 import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -28,23 +30,30 @@ import one.mixin.android.web3.js.SolanaTxSource
 import java.math.BigDecimal
 
 @AndroidEntryPoint
-class StakeFragment : BaseFragment() {
+class UnstakeFragment : BaseFragment() {
     companion object {
-        const val TAG = "StakeFragment"
+        const val TAG = "UnstakeFragment"
         private const val ARGS_VALIDATOR = "args_validator"
-        const val ARGS_BALANCE = "args_balance"
+        private const val ARGS_STAKE_ACCOUNT = "args_stake_account"
+        private const val ARGS_STAKE_ACTIVATION = "args_stake_activation"
 
-        fun newInstance(validator: Validator, balance: String) = StakeFragment().withArgs {
+        fun newInstance(
+            validator: Validator,
+            stakeAccount: StakeAccount,
+            stakeActivation: StakeAccountActivation,
+        ) = UnstakeFragment().withArgs {
             putParcelable(ARGS_VALIDATOR, validator)
-            putString(ARGS_BALANCE, balance)
+            putParcelable(ARGS_STAKE_ACCOUNT, stakeAccount)
+            putParcelable(ARGS_STAKE_ACTIVATION, stakeActivation)
         }
     }
 
     private val stakeViewModel by viewModels<StakeViewModel>()
 
     private val validator by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_VALIDATOR, Validator::class.java)) { "required validator cannot be null" } }
+    private val stakeAccount by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_STAKE_ACCOUNT, StakeAccount::class.java)) { "required stake_account cannot be null" } }
+    private val stakeActivation by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_STAKE_ACTIVATION, StakeAccountActivation::class.java)) { "required stake_activation cannot be null" } }
 
-    private var amountText: String by mutableStateOf("")
     private var isLoading by mutableStateOf(false)
 
     override fun onCreateView(
@@ -52,24 +61,14 @@ class StakeFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val balance = requireNotNull(requireArguments().getString(ARGS_BALANCE))
         return ComposeView(inflater.context).apply {
             setContent {
-                StakePage(
+                UnstakePage(
                     validator,
-                    amountText,
-                    balance,
+                    stakeAccount,
+                    stakeActivation,
                     isLoading,
-                    onInputChanged = {
-                        amountText = it
-                    },
-                    onChooseValidator = {
-                        toast("click choose")
-                    },
-                    onMax = {
-                        toast("click max")
-                    },
-                    onStake = { onStake() },
+                    onUnstake = { onUnstake() },
                 ) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
@@ -77,19 +76,13 @@ class StakeFragment : BaseFragment() {
         }
     }
 
-    private fun onStake() {
+    private fun onUnstake() {
         lifecycleScope.launch {
             isLoading = true
-            val amount =
-                try {
-                    BigDecimal(amountText).multiply(BigDecimal.TEN.pow(9)).toLong()
-                } catch (e: Exception) {
-                    return@launch
-                }
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
                 payer = JsSigner.solanaAddress,
-                amount = amount,
-                action = StakeAction.Delegate.name.lowercase(),
+                amount = stakeAccount.account.lamports,
+                action = StakeAction.Deactive.name.lowercase(),
                 vote = validator.votePubkey,
             ))
             if (stakeResp == null) {

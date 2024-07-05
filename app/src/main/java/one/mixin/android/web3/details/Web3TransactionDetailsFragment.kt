@@ -138,7 +138,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                             stakeSolTv.setOnClickListener {
                                 this@Web3TransactionDetailsFragment.navTo(ValidatorsFragment.newInstance().apply {
                                     setOnSelect { v ->
-                                        this@Web3TransactionDetailsFragment.navTo(StakeFragment.newInstance(v, token.balance, null), StakeFragment.TAG)
+                                        this@Web3TransactionDetailsFragment.navTo(StakeFragment.newInstance(v, token.balance), StakeFragment.TAG)
                                     }
                                 }, ValidatorsFragment.TAG)
                                 bottomSheet.dismiss()
@@ -155,7 +155,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.stake_rl -> {
-                        navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList())), StakingFragment.TAG)
+                        navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
                     }
                 }
             }

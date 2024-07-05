@@ -1613,4 +1613,12 @@
     <string name="Staking">Staking</string>
     <string name="Your_Stake">Your Stake</string>
     <string name="Activating">Activating</string>
+    <string name="Unstake">Unstake</string>
+    <string name="Balance">Balance</string>
+    <string name="unstake_hint">Your SOL is currently staked with a validator. You\'ll need to unstake to access these funds.</string>
+    <string name="Rent_Reserve">Rent Reserve</string>
+    <string name="Active_Stake">Active Stake</string>
+    <string name="Lookup_Until">Lookup Until</string>
+    <string name="Last_Reward">Last Reward</string>
+    <string name="last_reward_hint">This is the most recent reward you earned for staking. You are rewarded 3 days.</string>
 </resources>
