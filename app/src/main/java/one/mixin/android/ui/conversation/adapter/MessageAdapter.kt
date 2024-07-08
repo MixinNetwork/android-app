@@ -208,7 +208,7 @@ class MessageAdapter(
                 ActionCardHolder(ItemChatActionCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
 
-            ACTION_BUTTON_CARD_TYPE -> {
+            ACTIONS_CARD_TYPE -> {
                 ActionsCardHolder(ItemChatActionsCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
 
@@ -523,7 +523,7 @@ class MessageAdapter(
                     )
                 }
 
-                ACTION_BUTTON_CARD_TYPE ->{
+                ACTIONS_CARD_TYPE ->{
                     (holder as ActionsCardHolder).bind(
                         it,
                         isFirst(position),
@@ -673,7 +673,7 @@ class MessageAdapter(
                     item.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> SAFE_SNAPSHOT_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> {
-                        if(item.appCardData?.newVersion == true) ACTION_BUTTON_CARD_TYPE else ACTION_CARD_TYPE
+                        if(item.appCardData?.newVersion == true) ACTIONS_CARD_TYPE else ACTION_CARD_TYPE
                     }
 
 
@@ -1135,7 +1135,7 @@ class MessageAdapter(
         const val POST_TYPE = 13
         const val ACTION_TYPE = 14
         const val ACTION_CARD_TYPE = 15
-        const val ACTION_BUTTON_CARD_TYPE = 16
+        const val ACTIONS_CARD_TYPE = 16
         const val SYSTEM_TYPE = 17
         const val WAITING_TYPE = 18
         const val STRANGER_TYPE = 19
