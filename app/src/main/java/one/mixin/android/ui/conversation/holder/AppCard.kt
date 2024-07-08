@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -51,10 +53,9 @@ fun AppCard(
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
-    val maxItemWidth = (screenWidthDp * 4 / 5)
 
     MixinAppTheme {
-        Column(modifier = Modifier.width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: maxItemWidth)) {
+        Column(modifier = Modifier.width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))) {
             CoilImage(
                 model = appCardData.iconUrl,
                 placeholder = R.drawable.bot_default,

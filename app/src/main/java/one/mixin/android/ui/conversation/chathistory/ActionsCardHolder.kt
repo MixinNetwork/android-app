@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.maxCardWidth
 import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.AppCard
 import one.mixin.android.util.ColorUtil
@@ -22,7 +22,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
     BaseViewHolder(binding.root) {
     init {
         binding.chatGroupLayout.layoutParams = binding.chatGroupLayout.layoutParams.apply {
-            width = itemView.context.maxItemWidth() - 6.dp
+            width = itemView.context.maxCardWidth() - 6.dp
         }
         binding.chatGroupLayout.setLineSpacing(3.dp)
     }
