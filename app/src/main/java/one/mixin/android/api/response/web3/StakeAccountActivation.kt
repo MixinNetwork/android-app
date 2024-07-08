@@ -10,3 +10,11 @@ data class StakeAccountActivation(
     val inactive: Long,
     val state: String,
 ): Parcelable
+
+@Suppress("EnumEntryName")
+enum class StakeState {
+    active, inactive, activating, deactivating;
+}
+
+fun String.isActiveState(): Boolean = this == StakeState.active.name || this == StakeState.activating.name
+fun String.isInactiveStakeState(): Boolean = this == StakeState.inactive.name || this == StakeState.deactivating.name

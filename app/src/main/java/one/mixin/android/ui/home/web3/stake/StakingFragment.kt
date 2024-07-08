@@ -73,7 +73,6 @@ class StakingFragment : BaseFragment() {
                     onAdd = {
                         navTo(ValidatorsFragment.newInstance().apply {
                             setOnSelect { v ->
-                                activity?.onBackPressedDispatcher?.onBackPressed()
                                 navTo(StakeFragment.newInstance(v, balance), StakeFragment.TAG)
                             }
                         }, ValidatorsFragment.TAG)

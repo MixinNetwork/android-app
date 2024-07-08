@@ -1578,6 +1578,7 @@
     <string name="Your_Stake">你的质押</string>
     <string name="Activating">生效中</string>
     <string name="Unstake">取消质押</string>
+    <string name="Withdraw_Stake">提现质押</string>
     <string name="Balance">余额</string>
     <string name="unstake_hint">您的 SOL 目前已被委托给验证者。您需要取消委托才能访问这些资金。</string>
     <string name="Rent_Reserve">租金储备</string>

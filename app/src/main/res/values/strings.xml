@@ -1614,6 +1614,7 @@
     <string name="Your_Stake">Your Stake</string>
     <string name="Activating">Activating</string>
     <string name="Unstake">Unstake</string>
+    <string name="Withdraw_Stake">Withdraw Stake</string>
     <string name="Balance">Balance</string>
     <string name="unstake_hint">Your SOL is currently staked with a validator. You\'ll need to unstake to access these funds.</string>
     <string name="Rent_Reserve">Rent Reserve</string>

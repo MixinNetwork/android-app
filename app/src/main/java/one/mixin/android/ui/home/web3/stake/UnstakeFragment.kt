@@ -17,9 +17,9 @@ import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.api.response.web3.isActiveState
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
@@ -27,7 +27,6 @@ import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
-import java.math.BigDecimal
 
 @AndroidEntryPoint
 class UnstakeFragment : BaseFragment() {
@@ -68,7 +67,7 @@ class UnstakeFragment : BaseFragment() {
                     stakeAccount,
                     stakeActivation,
                     isLoading,
-                    onUnstake = { onUnstake() },
+                    onClick = { onClick() },
                 ) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
@@ -76,14 +75,14 @@ class UnstakeFragment : BaseFragment() {
         }
     }
 
-    private fun onUnstake() {
+    private fun onClick() {
         lifecycleScope.launch {
             isLoading = true
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
                 payer = JsSigner.solanaAddress,
                 amount = stakeAccount.account.lamports,
-                action = StakeAction.Deactive.name.lowercase(),
-                vote = validator.votePubkey,
+                action = if (stakeActivation.state.isActiveState()) StakeAction.deactive.name else StakeAction.withdraw.name,
+                pubkey = stakeAccount.pubkey,
             ))
             if (stakeResp == null) {
                 isLoading = false
@@ -97,6 +96,7 @@ class UnstakeFragment : BaseFragment() {
                 signMessage,
                 onTxhash = { _, serializedTx ->
                     lifecycleScope.launch {
+                        activity?.onBackPressedDispatcher?.onBackPressed()
                         val txStateFragment =
                             TransactionStateFragment.newInstance(serializedTx, null).apply {
                                 setCloseAction {

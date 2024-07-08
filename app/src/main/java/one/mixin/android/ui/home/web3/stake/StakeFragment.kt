@@ -42,8 +42,6 @@ class StakeFragment : BaseFragment() {
 
     private val stakeViewModel by viewModels<StakeViewModel>()
 
-    private val validator by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_VALIDATOR, Validator::class.java)) { "required validator cannot be null" } }
-
     private var amountText: String by mutableStateOf("")
     private var isLoading by mutableStateOf(false)
 
@@ -52,6 +50,7 @@ class StakeFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        var validator: Validator by mutableStateOf(requireNotNull(requireArguments().getParcelableCompat(ARGS_VALIDATOR, Validator::class.java)) { "required validator cannot be null" })
         val balance = requireNotNull(requireArguments().getString(ARGS_BALANCE))
         return ComposeView(inflater.context).apply {
             setContent {
@@ -64,12 +63,16 @@ class StakeFragment : BaseFragment() {
                         amountText = it
                     },
                     onChooseValidator = {
-                        toast("click choose")
+                        navTo(ValidatorsFragment.newInstance().apply {
+                            setOnSelect { v ->
+                                validator = v
+                            }
+                        }, ValidatorsFragment.TAG)
                     },
                     onMax = {
                         toast("click max")
                     },
-                    onStake = { onStake() },
+                    onStake = { onStake(validator) },
                 ) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
@@ -77,7 +80,7 @@ class StakeFragment : BaseFragment() {
         }
     }
 
-    private fun onStake() {
+    private fun onStake(validator: Validator) {
         lifecycleScope.launch {
             isLoading = true
             val amount =
@@ -89,7 +92,7 @@ class StakeFragment : BaseFragment() {
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
                 payer = JsSigner.solanaAddress,
                 amount = amount,
-                action = StakeAction.Delegate.name.lowercase(),
+                action = StakeAction.delegate.name.lowercase(),
                 vote = validator.votePubkey,
             ))
             if (stakeResp == null) {

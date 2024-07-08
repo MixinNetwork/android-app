@@ -90,7 +90,7 @@ fun StakePage(
                 ),
             )
             Spacer(modifier = Modifier.height(20.dp))
-            Input(amountText, onInputChanged)
+            Input(amountText, onInputChanged, onMax)
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -107,6 +107,7 @@ fun StakePage(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
+                    modifier = Modifier.clickable { onChooseValidator.invoke() },
                     text = stringResource(id = R.string.Choose),
                     style =
                     TextStyle(
@@ -167,6 +168,7 @@ fun StakePage(
 private fun Input(
     text: String,
     onInputChanged: ((String) -> Unit)? = null,
+    onMax:() -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
@@ -234,7 +236,8 @@ private fun Input(
                         .padding(8.dp, 4.dp),
                 ) {
                     Text(
-                        modifier = Modifier.align(Alignment.CenterEnd),
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                            .clickable { onMax.invoke() },
                         text = stringResource(id = R.string.Max),
                         style =
                         TextStyle(
@@ -336,7 +339,7 @@ fun Item(
 @Preview
 @Composable
 private fun InputPreview() {
-    Input(text = "123")
+    Input(text = "123") {}
 }
 
 @Preview

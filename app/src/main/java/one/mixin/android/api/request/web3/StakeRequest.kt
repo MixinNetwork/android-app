@@ -4,9 +4,11 @@ data class StakeRequest(
     val payer: String,
     val amount: Long,
     val action: String,
-    val vote: String? = null,
+    val vote: String? = null, // for stake
+    val pubkey: String? = null, // for unstake and withdraw
 )
 
+@Suppress("EnumEntryName")
 enum class StakeAction {
-    Delegate, Deactive, Withdraw
+    delegate, deactive, withdraw
 }

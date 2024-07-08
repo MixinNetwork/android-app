@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.stake
 
 import PageScaffold
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,14 +17,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +34,9 @@ import one.mixin.android.R
 import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
+import one.mixin.android.api.response.web3.StakeState
 import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.api.response.web3.isActiveState
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.formatPublicKey
@@ -48,7 +47,7 @@ fun UnstakePage(
     stakeAccount: StakeAccount,
     stakeActivation: StakeAccountActivation,
     isLoading: Boolean,
-    onUnstake: () -> Unit,
+    onClick: () -> Unit,
     pop: () -> Unit,
 ) {
     PageScaffold(
@@ -79,7 +78,7 @@ fun UnstakePage(
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    onUnstake.invoke()
+                    onClick.invoke()
                 },
                 colors =
                 ButtonDefaults.outlinedButtonColors(
@@ -102,7 +101,7 @@ fun UnstakePage(
                     )
                 } else {
                     Text(
-                        text = stringResource(R.string.Unstake),
+                        text = stringResource(if (stakeActivation.state.isActiveState()) R.string.Unstake else R.string.Withdraw_Stake),
                         color = Color.White,
                     )
                 }
@@ -158,7 +157,13 @@ private fun StakeInfo(
                 style =
                 TextStyle(
                     fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.accent,
+                    color = if (stakeActivation.state == StakeState.active.name) {
+                        MixinAppTheme.colors.green
+                    } else if (stakeActivation.state == StakeState.inactive.name) {
+                        MixinAppTheme.colors.red
+                    } else {
+                        MixinAppTheme.colors.textSubtitle
+                    },
                     fontSize = 16.sp,
                 ),
             )
