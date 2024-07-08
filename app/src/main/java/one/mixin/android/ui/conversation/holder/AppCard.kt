@@ -1,10 +1,16 @@
 package one.mixin.android.ui.conversation.holder
 
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,14 +37,18 @@ import one.mixin.android.vo.AppCardData
 import java.util.regex.Pattern
 
 @Composable
-fun AppCard(appCardData: AppCardData, urlClick: (String) -> Unit, width: Int? = null,
+fun AppCard(
+    appCardData: AppCardData,
+    urlClick: (String) -> Unit,
+    width: Int? = null,
     createdAt: String ? = null,
     isMe: Boolean = false,
     status: String? = null,
     isPin: Boolean = false,
     isRepresentative: Boolean = false,
     isSecret: Boolean = false,
-    isWhite: Boolean = false) {
+    isWhite: Boolean = false
+) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val maxItemWidth = (screenWidthDp * 4 / 5)

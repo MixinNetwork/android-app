@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
+import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
-import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.databinding.ItemChatFileBinding

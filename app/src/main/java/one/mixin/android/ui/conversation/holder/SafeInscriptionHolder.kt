@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder

@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil

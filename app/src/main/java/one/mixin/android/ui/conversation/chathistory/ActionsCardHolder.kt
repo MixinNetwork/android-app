@@ -16,7 +16,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.ActionButton
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
