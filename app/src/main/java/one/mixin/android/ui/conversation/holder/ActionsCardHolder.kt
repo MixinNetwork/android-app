@@ -17,6 +17,7 @@ import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.ActionButton
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
@@ -78,9 +79,17 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         val actionCard =
             GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
         binding.chatContentLayout.setContent {
-            AppCard(actionCard, isMe = isMe, messageItem.createdAt.timeAgoClock(), urlClick = { url ->
-                onItemListener.onUrlClick(url)
-            })
+            AppCard(
+                actionCard,
+                urlClick = { url ->
+                    onItemListener.onUrlClick(url)
+                },
+                width = null, createdAt = messageItem.createdAt, isMe,
+                messageItem.status,
+                messageItem.isPin ?: false,
+                isRepresentative = isRepresentative,
+                isSecret = messageItem.isSecret(),
+            )
         }
         binding.chatGroupLayout.removeAllViews()
         if (!actionCard.actions.isNullOrEmpty()) {

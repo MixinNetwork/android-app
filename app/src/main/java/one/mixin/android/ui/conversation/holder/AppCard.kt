@@ -21,7 +21,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +31,14 @@ import one.mixin.android.vo.AppCardData
 import java.util.regex.Pattern
 
 @Composable
-fun AppCard(appCardData: AppCardData, isMe: Boolean, timeAgo: String? = null, urlClick: (String) -> Unit, width: Int? = null) {
+fun AppCard(appCardData: AppCardData, urlClick: (String) -> Unit, width: Int? = null,
+    createdAt: String ? = null,
+    isMe: Boolean = false,
+    status: String? = null,
+    isPin: Boolean = false,
+    isRepresentative: Boolean = false,
+    isSecret: Boolean = false,
+    isWhite: Boolean = false) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val maxItemWidth = (screenWidthDp * 4 / 5)
@@ -68,8 +74,10 @@ fun AppCard(appCardData: AppCardData, isMe: Boolean, timeAgo: String? = null, ur
                     text = appCardData.description, urlClick
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(timeAgo ?: "", Modifier.align(Alignment.End), color = Color(0xFF83919E), fontWeight = FontWeight.W300, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(modifier = Modifier.height(8.dp))
+                if (createdAt != null) {
+                    TimeBubble(modifier = Modifier.align(Alignment.End), createdAt, isMe, status, isPin, isRepresentative, isSecret, isWhite)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }

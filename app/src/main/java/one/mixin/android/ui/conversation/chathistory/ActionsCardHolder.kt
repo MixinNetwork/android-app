@@ -9,13 +9,14 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.AppCard
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.ActionButton
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
@@ -58,9 +59,17 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         val actionCard =
             GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
         binding.chatContentLayout.setContent {
-            AppCard(actionCard, isMe = isMe, messageItem.createdAt.timeAgoClock(), urlClick = { url ->
-                onItemListener.onUrlClick(url)
-            })
+            AppCard(
+                actionCard,
+                urlClick = { url ->
+                    onItemListener.onUrlClick(url)
+                },
+                width = null, createdAt = messageItem.createdAt, isMe,
+                MessageStatus.DELIVERED.name,
+                false,
+                isRepresentative = false,
+                isSecret = false,
+            )
         }
         binding.chatGroupLayout.removeAllViews()
         if (!actionCard.actions.isNullOrEmpty()) {
