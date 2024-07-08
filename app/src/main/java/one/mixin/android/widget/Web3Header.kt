@@ -6,12 +6,9 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWeb3HeaderBinding
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
