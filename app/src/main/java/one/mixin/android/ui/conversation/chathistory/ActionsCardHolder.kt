@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.chathistory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
@@ -133,8 +134,12 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 8.dp
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginEnd = 12.dp
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 12.dp
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,

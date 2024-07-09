@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.Text
@@ -43,6 +45,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.AppCardData
 import java.util.regex.Pattern
 
@@ -52,7 +55,7 @@ fun AppCard(
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit,
     width: Int? = null,
-    createdAt: String ? = null,
+    createdAt: String? = null,
     isMe: Boolean = false,
     status: String? = null,
     isPin: Boolean = false,
@@ -72,15 +75,15 @@ fun AppCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .padding(start = 7.dp)
+                    .padding(start = if (isMe) 0.dp else 7.dp, end = if (isMe) 7.dp else 0.dp)
                     .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
             )
             Spacer(modifier = Modifier.height(8.dp))
             Column(modifier = Modifier.run {
                 if (isMe) {
-                    padding(start = 8.dp, end = 16.dp)
+                    padding(start = 10.dp, end = 16.dp)
                 } else {
-                    padding(start = 16.dp, end = 8.dp)
+                    padding(start = 16.dp, end = 10.dp)
                 }
             }) {
                 Text(
@@ -91,12 +94,11 @@ fun AppCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ClickableTextWithUrls(
-                    text = appCardData.description, urlClick,urlLongClick
+                    text = appCardData.description, urlClick, urlLongClick
                 )
-                Spacer(modifier = Modifier.height(8.dp))
                 if (createdAt != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     TimeBubble(modifier = Modifier.align(Alignment.End), createdAt, isMe, status, isPin, isRepresentative, isSecret, isWhite)
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
@@ -105,6 +107,7 @@ fun AppCard(
 
 private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
 private const val LONG_CLICK_TIME = 200L
+
 @Composable
 fun ClickableTextWithUrls(
     text: String,
