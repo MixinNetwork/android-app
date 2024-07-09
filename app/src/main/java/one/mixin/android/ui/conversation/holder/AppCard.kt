@@ -9,10 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -42,6 +50,7 @@ import java.util.regex.Pattern
 fun AppCard(
     appCardData: AppCardData,
     urlClick: (String) -> Unit,
+    urlLongClick: (String) -> Unit,
     width: Int? = null,
     createdAt: String ? = null,
     isMe: Boolean = false,
@@ -82,7 +91,7 @@ fun AppCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ClickableTextWithUrls(
-                    text = appCardData.description, urlClick
+                    text = appCardData.description, urlClick,urlLongClick
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 if (createdAt != null) {
@@ -94,10 +103,14 @@ fun AppCard(
     }
 }
 
-const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
-
+private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
+private const val LONG_CLICK_TIME = 200L
 @Composable
-fun ClickableTextWithUrls(text: String, urlClick: (String) -> Unit) {
+fun ClickableTextWithUrls(
+    text: String,
+    urlClick: (String) -> Unit,
+    urlLongClick: (String) -> Unit
+) {
     val annotatedString = remember(text) {
         buildAnnotatedString {
             val urlPattern = Pattern.compile(URL_PATTERN)
@@ -125,30 +138,91 @@ fun ClickableTextWithUrls(text: String, urlClick: (String) -> Unit) {
         }
     }
 
-    var layoutResult: TextLayoutResult? = null
+    var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var highlightedUrl by remember { mutableStateOf<String?>(null) }
 
-    SelectionContainer {
-        Text(
-            text = annotatedString,
-            style = TextStyle(fontSize = 13.sp, color = MixinAppTheme.colors.textPrimary, lineHeight = 18.sp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectTapGestures { offsetPosition ->
+    val coroutineScope = rememberCoroutineScope()
+
+    var isLongPressed by remember { mutableStateOf(false) }
+    var job by remember { mutableStateOf<Job?>(null) }
+
+    BasicText(
+        text = buildAnnotatedString {
+            val urlPattern = Pattern.compile(URL_PATTERN)
+            val matcher = urlPattern.matcher(text)
+
+            var lastIndex = 0
+
+            while (matcher.find()) {
+                val start = matcher.start()
+                val end = matcher.end()
+                val url = matcher.group()
+
+                append(text.substring(lastIndex, start))
+                pushStringAnnotation(tag = "URL", annotation = url)
+                withStyle(
+                    style = SpanStyle(
+                        color = Color(0xFF5FA7E4),
+                        textDecoration = TextDecoration.Underline,
+                        background = if (highlightedUrl == url) Color(0x660D94FC) else Color.Transparent
+                    )
+                ) {
+                    append(url)
+                }
+                pop()
+                lastIndex = end
+            }
+
+            if (lastIndex < text.length) {
+                append(text.substring(lastIndex))
+            }
+        },
+        style = TextStyle(fontSize = 13.sp, color = MixinAppTheme.colors.textPrimary, lineHeight = 18.sp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offsetPosition ->
+                        if (!isLongPressed) {
+                            layoutResult?.let {
+                                val position = it.getOffsetForPosition(offsetPosition)
+                                annotatedString
+                                    .getStringAnnotations(tag = "URL", start = position, end = position)
+                                    .firstOrNull()
+                                    ?.let { annotation ->
+                                        urlClick(annotation.item)
+                                    }
+                            }
+                        }
+                    },
+                    onLongPress = { offsetPosition ->
                         layoutResult?.let {
                             val position = it.getOffsetForPosition(offsetPosition)
                             annotatedString
                                 .getStringAnnotations(tag = "URL", start = position, end = position)
                                 .firstOrNull()
                                 ?.let { annotation ->
-                                    urlClick(annotation.item)
+                                    job = coroutineScope.launch {
+                                        delay(LONG_CLICK_TIME)
+                                        highlightedUrl = annotation.item
+                                        urlLongClick(annotation.item)
+                                        isLongPressed = true
+                                    }
                                 }
                         }
                     }
-                },
-            onTextLayout = { textLayoutResult ->
-                layoutResult = textLayoutResult
-            }
-        )
+                )
+            },
+        onTextLayout = { textLayoutResult ->
+            layoutResult = textLayoutResult
+        }
+    )
+
+    LaunchedEffect(isLongPressed) {
+        if (isLongPressed) {
+            delay(LONG_CLICK_TIME)
+            isLongPressed = false
+            highlightedUrl = null
+        }
     }
 }

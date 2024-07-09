@@ -83,6 +83,9 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 urlClick = { url ->
                     onItemListener.onUrlClick(url)
                 },
+                urlLongClick = { url ->
+                    onItemListener.onUrlLongClick(url)
+                },
                 width = null, createdAt = messageItem.createdAt, isMe,
                 messageItem.status,
                 messageItem.isPin ?: false,
