@@ -73,7 +73,7 @@ data class Message(
 
     fun setPriorityFee(unitPrice: Long, unitLimit: Int) {
         val leftInstructions = instructions.filter { i ->
-            accounts[i.programIdIndex] != Constants.COMPUTE_BUDGET_PROGRAM_ID
+            accounts[i.programIdIndex] != Constants.COMPUTE_BUDGET_PROGRAM_ID || notComputeInstruction(i.data)
         }
         var programIdIdx = accounts.indexOf(Constants.COMPUTE_BUDGET_PROGRAM_ID)
         if (programIdIdx == -1) {
