@@ -57,7 +57,7 @@ fun AppCard(
     MixinAppTheme {
         Column(modifier = Modifier.width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))) {
             CoilImage(
-                model = appCardData.iconUrl,
+                model = appCardData.coverUrl,
                 placeholder = R.drawable.bot_default,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

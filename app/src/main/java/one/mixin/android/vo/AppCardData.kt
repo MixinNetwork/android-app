@@ -12,6 +12,8 @@ data class AppCardData(
     val appId: String?,
     @SerializedName("icon_url")
     val iconUrl: String,
+    @SerializedName("cover_url")
+    val coverUrl: String,
     var title: String,
     var description: String,
     val action: String?,
