@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class RpcErrorResponse(
-    val error: RpcError,
+    val error: RpcError?,
     val id: Long,
     val jsonrpc: String,
 )
