@@ -2,7 +2,6 @@ package one.mixin.android.vo
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
-import com.mapbox.maps.extension.style.expressions.dsl.generated.get
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
@@ -20,7 +19,7 @@ data class AppCardData(
     @SerializedName("updated_at")
     val updatedAt: String?,
     val shareable: Boolean?,
-    val actions: List<Action>? = null,
+    val actions: List<ActionButton>? = null,
 ) : Parcelable {
     init {
         title = title.take(36)
@@ -28,14 +27,21 @@ data class AppCardData(
     }
 
     @IgnoredOnParcel
-    val newVersion :Boolean
+    val newVersion: Boolean
         get() {
-            return action.isNullOrBlank() && actions?.isNotEmpty() == true
+            return action.isNullOrBlank()
+        }
+
+    @IgnoredOnParcel
+    val canShare: Boolean?
+        get() {
+            return if (newVersion) false
+            else shareable
         }
 }
 
 @Parcelize
-data class Action(
+data class ActionButton(
     val label: String,
     val color: String,
     val action: String,

@@ -155,7 +155,7 @@ data class MessageItem(
 
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
-                appCardShareable = appCardData?.shareable
+                appCardShareable = appCardData?.canShare
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) && appCardShareable == null) {
                 appCardShareable =
                     GsonHelper.customGson.fromJson(
