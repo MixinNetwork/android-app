@@ -35,11 +35,12 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application
         android:name=".MixinApp"
-        android:allowBackup="false"
         android:hardwareAccelerated="true"
         android:hasFragileUserData="true"
         android:icon="@mipmap/ic_launcher"
@@ -52,8 +53,7 @@
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
         android:largeHeap="true"
-        tools:ignore="LockedOrientationActivity,UnusedAttribute"
-        tools:replace="allowBackup">
+        tools:ignore="LockedOrientationActivity,UnusedAttribute" >
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -369,6 +369,7 @@
             android:exported="false" />
         <service
             android:name=".fcm.FcmService"
+            android:foregroundServiceType="remoteMessaging"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -377,6 +378,7 @@
         <service
             android:name=".job.MyJobService"
             android:exported="true"
+            android:foregroundServiceType="remoteMessaging"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name=".webrtc.VoiceCallService"
@@ -386,7 +388,7 @@
             android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
-            android:foregroundServiceType="dataSync"
+            android:foregroundServiceType="remoteMessaging"
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"
