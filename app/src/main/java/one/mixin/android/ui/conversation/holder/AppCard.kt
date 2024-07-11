@@ -1,6 +1,5 @@
 package one.mixin.android.ui.conversation.holder
 
-import android.util.TypedValue
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -58,12 +57,13 @@ import java.util.regex.Pattern
 @Composable
 fun AppCard(
     appCardData: AppCardData,
-    contentClick:()->Unit,
-    contentLongClick:()->Unit,
+    contentClick: () -> Unit,
+    contentLongClick: () -> Unit,
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit,
     width: Int? = null,
     createdAt: String? = null,
+    isLast: Boolean = false,
     isMe: Boolean = false,
     status: String? = null,
     isPin: Boolean = false,
@@ -80,8 +80,7 @@ fun AppCard(
         Column(modifier = Modifier
             .width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))
             .combinedClickable(
-                onClick = contentClick,
-                onLongClick = contentLongClick
+                onClick = contentClick, onLongClick = contentLongClick
             )) {
             CoilImage(
                 model = appCardData.coverUrl,
@@ -91,7 +90,11 @@ fun AppCard(
                     .fillMaxWidth()
                     .aspectRatio(1.0f)
                     .wrapContentHeight()
-                    .padding(start = if (isMe) 0.dp else 7.dp, end = if (isMe) 7.dp else 0.dp)
+                    .padding(
+                        start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
+                            if (isLast) 6.dp else 7.dp
+                        } else 0.dp
+                    )
                     .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -110,7 +113,7 @@ fun AppCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ClickableTextWithUrls(
-                    text = appCardData.description, textSize, urlClick, urlLongClick
+                    text = appCardData.description, textSize, contentClick, contentLongClick, urlClick, urlLongClick
                 )
                 if (createdAt != null) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -135,6 +138,8 @@ private const val LONG_CLICK_TIME = 200L
 fun ClickableTextWithUrls(
     text: String,
     fontSize: TextUnit,
+    contentClick: () -> Unit,
+    contentLongClick: () -> Unit,
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit
 ) {
@@ -208,37 +213,39 @@ fun ClickableTextWithUrls(
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { offsetPosition ->
-                        if (!isLongPressed) {
-                            layoutResult?.let {
-                                val position = it.getOffsetForPosition(offsetPosition)
-                                annotatedString
-                                    .getStringAnnotations(tag = "URL", start = position, end = position)
-                                    .firstOrNull()
-                                    ?.let { annotation ->
-                                        urlClick(annotation.item)
-                                    }
-                            }
-                        }
-                    },
-                    onLongPress = { offsetPosition ->
+                detectTapGestures(onTap = { offsetPosition ->
+                    if (!isLongPressed) {
                         layoutResult?.let {
                             val position = it.getOffsetForPosition(offsetPosition)
-                            annotatedString
+                            val urlAnnotation = annotatedString
                                 .getStringAnnotations(tag = "URL", start = position, end = position)
                                 .firstOrNull()
-                                ?.let { annotation ->
-                                    job = coroutineScope.launch {
-                                        delay(LONG_CLICK_TIME)
-                                        highlightedUrl = annotation.item
-                                        urlLongClick(annotation.item)
-                                        isLongPressed = true
-                                    }
-                                }
+                            if (urlAnnotation != null) {
+                                urlClick(urlAnnotation.item)
+                            } else {
+                                contentClick()
+                            }
                         }
                     }
-                )
+                }, onLongPress = { offsetPosition ->
+                    layoutResult?.let {
+                        val position = it.getOffsetForPosition(offsetPosition)
+                        val urlAnnotation = annotatedString
+                            .getStringAnnotations(tag = "URL", start = position, end = position)
+                            .firstOrNull()
+
+                        if (urlAnnotation != null) {
+                            job = coroutineScope.launch {
+                                delay(LONG_CLICK_TIME)
+                                highlightedUrl = urlAnnotation.item
+                                urlLongClick(urlAnnotation.item)
+                                isLongPressed = true
+                            }
+                        } else {
+                            contentLongClick()
+                        }
+                    }
+                })
             },
         onTextLayout = { textLayoutResult ->
             layoutResult = textLayoutResult

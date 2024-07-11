@@ -19,6 +19,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.ActionButton
+import timber.log.Timber
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
     BaseViewHolder(binding.root) {
@@ -78,18 +79,21 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         }
         val actionCard =
             GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+        val contentClick = {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+        }
         binding.chatContentLayout.setContent {
             AppCard(
                 actionCard,
-                contentClick = {
+                contentClick = contentClick,
+                contentLongClick = {
                     if (!hasSelect) {
                         onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                     } else {
                         onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                     }
-                },
-                contentLongClick = {
-                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 },
                 urlClick = { url ->
                     onItemListener.onUrlClick(url)
@@ -97,7 +101,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 urlLongClick = { url ->
                     onItemListener.onUrlLongClick(url)
                 },
-                width = null, createdAt = messageItem.createdAt, isMe,
+                width = null, createdAt = messageItem.createdAt, isLast, isMe,
                 messageItem.status,
                 messageItem.isPin ?: false,
                 isRepresentative = isRepresentative,

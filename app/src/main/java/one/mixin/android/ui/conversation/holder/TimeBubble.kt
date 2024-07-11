@@ -78,7 +78,7 @@ fun TimeBubble(
         if (isMe && status != null) {
             Spacer(modifier = Modifier.width(2.dp))
             val statusIcon = when (status) {
-                MessageStatus.SENDING.name -> if (isWhite) R.drawable.ic_status_sending_white else R.drawable.ic_status_sending
+                MessageStatus.SENDING.name -> if (isWhite) R.drawable.ic_status_sending_white_static else R.drawable.ic_status_sending_static
                 MessageStatus.SENT.name -> if (isWhite) R.drawable.ic_status_sent_white else R.drawable.ic_status_sent
                 MessageStatus.DELIVERED.name -> if (isWhite) R.drawable.ic_status_delivered_white else R.drawable.ic_status_delivered
                 MessageStatus.READ.name -> R.drawable.ic_status_read
