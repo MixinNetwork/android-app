@@ -28,10 +28,6 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         binding.chatGroupLayout.setLineSpacing(3.dp)
     }
 
-    private val radius by lazy {
-        4.dp
-    }
-
     fun bind(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
@@ -84,7 +80,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true
             for (b in actionCard.actions) {
-                val button = ActionButton(itemView.context)
+                val button = ActionButton(itemView.context, b.externalLink)
                 button.setTextColor(
                     try {
                         ColorUtil.parseColor(b.color.trim())
@@ -93,7 +89,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     },
                 )
                 button.setTypeface(null, Typeface.BOLD)
-                button.text = b.label
+                button.setText(b.label)
                 binding.chatGroupLayout.addView(button)
                 button.setOnClickListener {
                     onItemListener.onActionClick(b.action, messageItem.userId)

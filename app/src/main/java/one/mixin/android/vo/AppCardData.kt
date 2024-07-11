@@ -38,4 +38,10 @@ data class ActionButton(
     val label: String,
     val color: String,
     val action: String,
-) : Parcelable
+) : Parcelable {
+    @IgnoredOnParcel
+    val externalLink:Boolean
+        get() {
+            return action.startsWith("http://", true) || action.startsWith("https://")
+        }
+}

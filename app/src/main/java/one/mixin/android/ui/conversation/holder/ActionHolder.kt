@@ -79,7 +79,7 @@ class ActionHolder(val binding: ItemChatActionBinding) : BaseViewHolder(binding.
                     },
                 )
                 button.setTypeface(null, Typeface.BOLD)
-                button.text = b.label
+                button.setText(b.label)
                 binding.chatLayout.addView(button)
                 button.setOnLongClickListener {
                     if (!hasSelect) {

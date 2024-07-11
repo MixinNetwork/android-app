@@ -58,7 +58,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
                     },
                 )
                 button.setTypeface(null, Typeface.BOLD)
-                button.text = b.label
+                button.setText(b.label)
                 binding.chatLayout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
                 (button.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = dp1
