@@ -61,6 +61,12 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         binding.chatContentLayout.setContent {
             AppCard(
                 actionCard,
+                contentClick = {
+
+                },
+                contentLongClick = {
+                    onItemListener.onMenu(binding.chatJump, messageItem)
+                },
                 urlClick = { url ->
                     onItemListener.onUrlClick(url)
                 },

@@ -1,6 +1,8 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.util.TypedValue
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,9 +54,12 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.AppCardData
 import java.util.regex.Pattern
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppCard(
     appCardData: AppCardData,
+    contentClick:()->Unit,
+    contentLongClick:()->Unit,
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit,
     width: Int? = null,
@@ -72,7 +77,12 @@ fun AppCard(
     val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
 
     MixinAppTheme {
-        Column(modifier = Modifier.width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))) {
+        Column(modifier = Modifier
+            .width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))
+            .combinedClickable(
+                onClick = contentClick,
+                onLongClick = contentLongClick
+            )) {
             CoilImage(
                 model = appCardData.coverUrl,
                 placeholder = R.drawable.bot_default,

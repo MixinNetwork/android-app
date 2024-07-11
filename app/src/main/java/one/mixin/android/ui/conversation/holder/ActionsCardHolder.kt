@@ -81,6 +81,16 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         binding.chatContentLayout.setContent {
             AppCard(
                 actionCard,
+                contentClick = {
+                    if (!hasSelect) {
+                        onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+                    } else {
+                        onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                    }
+                },
+                contentLongClick = {
+                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                },
                 urlClick = { url ->
                     onItemListener.onUrlClick(url)
                 },
@@ -124,13 +134,6 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     }
                 }
             }
-            binding.chatContentLayout.setOnLongClickListener {
-                if (!hasSelect) {
-                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-                } else {
-                    true
-                }
-            }
             binding.chatLayout.setOnClickListener {
                 if (hasSelect) {
                     onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -138,18 +141,9 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
             }
         } else {
             binding.chatGroupLayout.isVisible = false
-            binding.chatContentLayout.setOnLongClickListener {
-                if (!hasSelect) {
-                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-                } else {
-                    true
-                }
-            }
             binding.chatLayout.setOnClickListener {
                 if (hasSelect) {
                     onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-                } else {
-                    onItemListener.onAppCardClick(actionCard, messageItem.userId)
                 }
             }
         }
