@@ -180,7 +180,7 @@ fun ClickableTextWithUrls(
                 append(text.substring(lastIndex))
             }
         },
-        style = TextStyle(fontSize = 13.sp, color = MixinAppTheme.colors.textPrimary, lineHeight = 18.sp),
+        style = TextStyle(fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary, lineHeight = 18.sp),
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {
