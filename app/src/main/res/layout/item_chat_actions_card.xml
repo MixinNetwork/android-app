@@ -58,7 +58,8 @@
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="1dp"
+        android:layout_marginBottom="1.5dp"
+        android:layout_marginTop="1.5dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -77,8 +78,7 @@
             android:id="@+id/chat_group_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginTop="4dp" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

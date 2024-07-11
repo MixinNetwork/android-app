@@ -464,10 +464,10 @@ class ChatHistoryAdapter(
             item.isSticker() -> 7
             item.isLocation() -> 9
             item.isAppCard() -> {
-                if (item.appCardData?.newVersion == true) {
-                    11
-                }else{
+                if (item.appCardData?.oldVersion == true) {
                     10
+                } else {
+                    11
                 }
             }
             item.isPost() -> 12

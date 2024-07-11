@@ -124,6 +124,13 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     }
                 }
             }
+            binding.chatContentLayout.setOnLongClickListener {
+                if (!hasSelect) {
+                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+                } else {
+                    true
+                }
+            }
             binding.chatLayout.setOnClickListener {
                 if (hasSelect) {
                     onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -131,6 +138,13 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
             }
         } else {
             binding.chatGroupLayout.isVisible = false
+            binding.chatContentLayout.setOnLongClickListener {
+                if (!hasSelect) {
+                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+                } else {
+                    true
+                }
+            }
             binding.chatLayout.setOnClickListener {
                 if (hasSelect) {
                     onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -168,8 +182,8 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
-            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 8.dp
-            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginEnd = 12.dp
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 6.dp
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginEnd = 14.dp
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 12.dp

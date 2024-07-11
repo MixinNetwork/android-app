@@ -1,6 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
-import androidx.compose.foundation.background
+import android.util.TypedValue
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.Text
@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
@@ -35,17 +36,19 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.AppCardData
 import java.util.regex.Pattern
 
@@ -65,6 +68,8 @@ fun AppCard(
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
+    val context = LocalContext.current
+    val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
 
     MixinAppTheme {
         Column(modifier = Modifier.width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))) {
@@ -74,7 +79,8 @@ fun AppCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
+                    .aspectRatio(1.0f)
+                    .wrapContentHeight()
                     .padding(start = if (isMe) 0.dp else 7.dp, end = if (isMe) 7.dp else 0.dp)
                     .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
             )
@@ -88,13 +94,13 @@ fun AppCard(
             }) {
                 Text(
                     text = appCardData.title,
-                    fontSize = 14.sp,
+                    fontSize = textSize,
                     color = MixinAppTheme.colors.textPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ClickableTextWithUrls(
-                    text = appCardData.description, urlClick, urlLongClick
+                    text = appCardData.description, textSize, urlClick, urlLongClick
                 )
                 if (createdAt != null) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -105,12 +111,20 @@ fun AppCard(
     }
 }
 
+private fun Int.textDp(density: Density): TextUnit = with(density) {
+    this@textDp.dp.toSp()
+}
+
+val Int.textDp: TextUnit
+    @Composable get() =  this.textDp(density = LocalDensity.current)
+
 private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
 private const val LONG_CLICK_TIME = 200L
 
 @Composable
 fun ClickableTextWithUrls(
     text: String,
+    fontSize: TextUnit,
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit
 ) {
@@ -166,7 +180,7 @@ fun ClickableTextWithUrls(
                 withStyle(
                     style = SpanStyle(
                         color = Color(0xFF5FA7E4),
-                        textDecoration = TextDecoration.Underline,
+                        textDecoration = TextDecoration.None,
                         background = if (highlightedUrl == url) Color(0x660D94FC) else Color.Transparent
                     )
                 ) {
@@ -180,7 +194,7 @@ fun ClickableTextWithUrls(
                 append(text.substring(lastIndex))
             }
         },
-        style = TextStyle(fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary, lineHeight = 18.sp),
+        style = TextStyle(fontSize = fontSize, color = MixinAppTheme.colors.textPrimary, lineHeight = fontSize * 1.25),
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {

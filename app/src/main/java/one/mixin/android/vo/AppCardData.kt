@@ -27,16 +27,9 @@ data class AppCardData(
     }
 
     @IgnoredOnParcel
-    val newVersion: Boolean
+    val oldVersion: Boolean
         get() {
-            return action.isNullOrBlank()
-        }
-
-    @IgnoredOnParcel
-    val canShare: Boolean?
-        get() {
-            return if (newVersion) false
-            else shareable
+            return !action.isNullOrBlank()
         }
 }
 

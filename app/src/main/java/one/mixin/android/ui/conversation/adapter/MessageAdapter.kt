@@ -673,7 +673,7 @@ class MessageAdapter(
                     item.type == MessageCategory.SYSTEM_SAFE_SNAPSHOT.name -> SAFE_SNAPSHOT_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> {
-                        if(item.appCardData?.newVersion == true) ACTIONS_CARD_TYPE else ACTION_CARD_TYPE
+                        if (item.appCardData?.oldVersion == true) ACTION_CARD_TYPE else ACTIONS_CARD_TYPE
                     }
 
 
