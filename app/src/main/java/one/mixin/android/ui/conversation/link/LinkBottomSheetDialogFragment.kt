@@ -774,7 +774,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.SEND, true)) {
+        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(one.mixin.android.Constants.Scheme.HTTPS_SEND)) {
             val uri = Uri.parse(url)
             lifecycleScope.launch(errorHandler) {
                 val userId = uri.getQueryParameter("user")

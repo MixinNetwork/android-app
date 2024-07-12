@@ -71,6 +71,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) ||
         startsWith(Constants.Scheme.DEVICE, true) ||
         startsWith(Constants.Scheme.SEND, true) ||
+        startsWith(Constants.Scheme.MIXIN_SEND, true) ||
         startsWith(Constants.Scheme.ADDRESS, true) ||
         startsWith(Constants.Scheme.APPS, true) ||
         startsWith(Constants.Scheme.SNAPSHOTS, true) ||
@@ -78,6 +79,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.TIP, true) ||
         startsWith(Constants.Scheme.BUY, true) ||
         startsWith(Constants.Scheme.MIXIN_PAY, true) ||
+        startsWith(Constants.Scheme.HTTPS_SEND, true) ||
         startsWith(Constants.Scheme.HTTPS_MULTISIGS, true) ||
         startsWith(Constants.Scheme.MIXIN_MULTISIGS, true) ||
         startsWith(Constants.Scheme.HTTPS_SCHEME, true) ||
@@ -121,7 +123,7 @@ fun String.openAsUrl(
     host: String? = null,
     extraAction: () -> Unit,
 ) {
-    if (startsWith(Constants.Scheme.SEND, true)) {
+    if (startsWith(Constants.Scheme.SEND, true) || startsWith(Constants.Scheme.MIXIN_SEND, true) || startsWith(Constants.Scheme.HTTPS_SEND, true)) {
         val uri = Uri.parse(this)
         uri.handleSchemeSend(
             context,
