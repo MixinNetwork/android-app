@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -24,7 +25,6 @@ import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SC
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -36,7 +36,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
@@ -330,7 +329,7 @@ fun Uri.handleSchemeSend(
                     val bottomSheet = LinkBottomSheetDialogFragment.newInstance(this@handleSchemeSend.toString())
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                 } else {
-                    sendMessage(context, user, currentConversation, message = ForwardMessage(ShareCategory.Text, text))
+                    sendMessage(context, scope, user, currentConversation, message = ForwardMessage(ShareCategory.Text, text))
                 }
             }
         } else {
@@ -363,7 +362,7 @@ fun Uri.handleSchemeSend(
                         val bottomSheet = LinkBottomSheetDialogFragment.newInstance(this@handleSchemeSend.toString())
                         bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                     } else {
-                        sendMessage(context, user, currentConversation, message = ForwardMessage(shareCategory, String(Base64.decode(data))))
+                        sendMessage(context, scope, user, currentConversation, message = ForwardMessage(shareCategory, String(Base64.decode(data))))
                     }
                 }
             } else {
@@ -391,12 +390,15 @@ fun Uri.handleSchemeSend(
     }
 }
 
-fun sendMessage(context: Context, user: User, currentConversation: String?, message: ForwardMessage) {
+fun sendMessage(context: Context, scope: CoroutineScope, user: User, currentConversation: String?, message: ForwardMessage) {
     val toConversation = generateConversationId(Session.getAccountId()!!, user.userId)
-    ForwardActivity.show(context, arrayListOf(message), ForwardAction.App.Resultless(toConversation, context.getString(R.string.Send)))
-    if (toConversation != currentConversation) {
-        ConversationActivity.show(context, toConversation, recipientId = user.userId)
-    }
+    ForwardActivity.show(
+        context, arrayListOf(message), ForwardAction.Bot(name = context.getString(R.string.Send), userId = user.userId), toConversation = if (toConversation != currentConversation) {
+            toConversation
+        } else {
+            null
+        }
+    )
 }
 
 fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap =
