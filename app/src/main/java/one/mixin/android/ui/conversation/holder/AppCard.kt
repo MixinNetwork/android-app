@@ -110,14 +110,14 @@ fun AppCard(
                 }
             }) {
                 Text(
-                    text = appCardData.title,
+                    text = appCardData.title ?: "",
                     fontSize = textSize,
                     color = MixinAppTheme.colors.textPrimary,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ClickableTextWithUrls(
-                    text = appCardData.description, textSize, contentClick, contentLongClick, urlClick, urlLongClick
+                    text = appCardData.description?:"", textSize, contentClick, contentLongClick, urlClick, urlLongClick
                 )
                 if (createdAt != null) {
                     Spacer(modifier = Modifier.height(4.dp))

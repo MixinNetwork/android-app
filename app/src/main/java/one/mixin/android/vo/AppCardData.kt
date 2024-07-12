@@ -11,11 +11,11 @@ data class AppCardData(
     @SerializedName("app_id")
     val appId: String?,
     @SerializedName("icon_url")
-    val iconUrl: String,
+    val iconUrl: String?,
     @SerializedName("cover_url")
-    val coverUrl: String,
-    var title: String,
-    var description: String,
+    val coverUrl: String?,
+    var title: String?,
+    var description: String?,
     val action: String?,
     @SerializedName("updated_at")
     val updatedAt: String?,
@@ -23,8 +23,8 @@ data class AppCardData(
     val actions: List<ActionButtonData>? = null,
 ) : Parcelable {
     init {
-        title = title.take(36)
-        description = description.take(512)
+        title = title?.take(36)
+        description = description?.take(512)
     }
 
     @IgnoredOnParcel
