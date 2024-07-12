@@ -52,6 +52,7 @@
     <attr name="bg_flag" format="color|reference" />
     <attr name="bg_tip_warning" format="color|reference" />
     <attr name="bg_tip_warning_border" format="color|reference" />
+    <attr name="bg_chat" format="color|reference" />
     <attr name="bg_tip_info" format="color|reference" />
     <attr name="bg_tip_info_border" format="color|reference" />
 

@@ -20,7 +20,7 @@ data class AppCardData(
     @SerializedName("updated_at")
     val updatedAt: String?,
     val shareable: Boolean?,
-    val actions: List<ActionButton>? = null,
+    val actions: List<ActionButtonData>? = null,
 ) : Parcelable {
     init {
         title = title.take(36)
@@ -35,7 +35,7 @@ data class AppCardData(
 }
 
 @Parcelize
-data class ActionButton(
+data class ActionButtonData(
     val label: String,
     val color: String,
     val action: String,

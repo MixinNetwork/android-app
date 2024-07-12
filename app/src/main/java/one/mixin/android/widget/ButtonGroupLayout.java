@@ -46,13 +46,12 @@ public class ButtonGroupLayout extends ViewGroup {
             lineWidth += child.getMeasuredWidth() + lineSpacing;
 
             if ((i + 1) % 3 == 0 || i == childCount - 1) {
-                height += maxChildHeight + lineSpacing;
+                height += maxChildHeight;
                 lineWidth = getPaddingLeft() + getPaddingRight();
                 maxChildHeight = 0;
             }
         }
 
-        height -= lineSpacing;
         setMeasuredDimension(
                 widthMode == MeasureSpec.EXACTLY ? widthSize : width,
                 heightMode == MeasureSpec.EXACTLY ? heightSize : height
@@ -103,7 +102,7 @@ public class ButtonGroupLayout extends ViewGroup {
             }
 
             maxChildHeight = Math.max(maxChildHeight, child.getMeasuredHeight());
-            top += maxChildHeight + lineSpacing;
+            top += maxChildHeight;
             lineWidth = getPaddingLeft();
             maxChildHeight = 0;
             i += childrenInRow - 1;

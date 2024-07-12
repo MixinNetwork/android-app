@@ -776,16 +776,27 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         } else if (url.startsWith(Scheme.SEND, true)) {
             val uri = Uri.parse(url)
-            uri.handleSchemeSend(
-                requireContext(),
-                parentFragmentManager,
-                showNow = false,
-                afterShareText = { dismiss() },
-                afterShareData = { dismiss() },
-                onError = { err ->
-                    showError(err)
-                },
-            )
+            lifecycleScope.launch(errorHandler) {
+                val userId = uri.getQueryParameter("user")
+                if (!userId.isNullOrBlank()){
+                    val user = oldLinkViewModel.refreshUser(userId)
+                    if (user == null) {
+                        showError(R.string.User_not_found)
+                        return@launch
+                    }
+                }
+                uri.handleSchemeSend(
+                    requireContext(),
+                    lifecycleScope,
+                    parentFragmentManager,
+                    showNow = false,
+                    afterShareText = { dismiss() },
+                    afterShareData = { dismiss() },
+                    onError = { err ->
+                        showError(err)
+                    },
+                )
+            }
         } else if (url.startsWith(Scheme.DEVICE, true)) {
             contentView.post {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)

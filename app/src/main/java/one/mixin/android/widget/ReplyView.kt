@@ -21,7 +21,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.ActionButton
+import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -168,7 +168,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                     val appCard = GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
                     binding.replyViewTv.text = appCard.title
                 } else if (messageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
-                    val buttons = Gson().fromJson(messageItem.content, Array<ActionButton>::class.java)
+                    val buttons = Gson().fromJson(messageItem.content, Array<ActionButtonData>::class.java)
                     var content = ""
                     buttons.map { content += "[" + it.label + "]" }
                     binding.replyViewTv.text = content

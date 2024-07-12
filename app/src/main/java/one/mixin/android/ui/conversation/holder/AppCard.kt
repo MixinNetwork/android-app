@@ -1,8 +1,10 @@
 package one.mixin.android.ui.conversation.holder
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -80,6 +82,8 @@ fun AppCard(
         Column(modifier = Modifier
             .width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))
             .combinedClickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
                 onClick = contentClick, onLongClick = contentLongClick
             )) {
             CoilImage(

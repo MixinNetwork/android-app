@@ -24,6 +24,7 @@ import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SC
 import one.mixin.android.pay.externalTransferAssetIdMap
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -35,8 +36,11 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.User
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
 import timber.log.Timber
 
@@ -122,6 +126,7 @@ fun String.openAsUrl(
         val uri = Uri.parse(this)
         uri.handleSchemeSend(
             context,
+            scope,
             supportFragmentManager,
             currentConversation,
             app,
@@ -303,6 +308,7 @@ fun Uri.getRawQueryParameter(key: String): String? {
 
 fun Uri.handleSchemeSend(
     context: Context,
+    scope: CoroutineScope,
     supportFragmentManager: FragmentManager,
     currentConversation: String? = null,
     app: App? = null,
@@ -313,17 +319,28 @@ fun Uri.handleSchemeSend(
     onError: ((String) -> Unit)? = null,
 ) {
     val text = this.getQueryParameter("text")
-    val user = this.getQueryParameter("user")
-    if (user != null) {
-
-    }
+    val userId = this.getQueryParameter("user")
     if (text != null) {
-        ForwardActivity.show(
-            context,
-            arrayListOf(ForwardMessage(ShareCategory.Text, text)),
-            ForwardAction.App.Resultless(),
-        )
-        afterShareText?.invoke()
+        if (userId != null) {
+            scope.launch {
+                val db = MixinDatabase.getDatabase(context)
+                val userDao = db.userDao()
+                val user = userDao.suspendFindUserById(userId)
+                if (user == null) {
+                    val bottomSheet = LinkBottomSheetDialogFragment.newInstance(this@handleSchemeSend.toString())
+                    bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                } else {
+                    sendMessage(context, user, currentConversation, message = ForwardMessage(ShareCategory.Text, text))
+                }
+            }
+        } else {
+            ForwardActivity.show(
+                context,
+                arrayListOf(ForwardMessage(ShareCategory.Text, text)),
+                ForwardAction.App.Resultless(),
+            )
+            afterShareText?.invoke()
+        }
     } else {
         val category = this.getQueryParameter("category")
         val conversationId =
@@ -337,26 +354,48 @@ fun Uri.handleSchemeSend(
         val data = this.getRawQueryParameter("data")
         val shareCategory = category?.getShareCategory()
         if (shareCategory != null && data != null) {
-            try {
-                afterShareData?.invoke()
-                val fragment =
-                    ShareMessageBottomSheetDialogFragment.newInstance(
-                        ForwardMessage(shareCategory, String(Base64.decode(data))),
-                        conversationId,
-                        app,
-                        host,
-                    )
-                if (showNow) {
-                    fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                } else {
-                    fragment.show(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+            if (userId != null) {
+                scope.launch {
+                    val db = MixinDatabase.getDatabase(context)
+                    val userDao = db.userDao()
+                    val user = userDao.suspendFindUserById(userId)
+                    if (user == null) {
+                        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(this@handleSchemeSend.toString())
+                        bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                    } else {
+                        sendMessage(context, user, currentConversation, message = ForwardMessage(shareCategory, String(Base64.decode(data))))
+                    }
                 }
-            } catch (e: Exception) {
-                onError?.invoke("Error data:${e.message}")
+            } else {
+                try {
+                    afterShareData?.invoke()
+                    val fragment =
+                        ShareMessageBottomSheetDialogFragment.newInstance(
+                            ForwardMessage(shareCategory, String(Base64.decode(data))),
+                            conversationId,
+                            app,
+                            host,
+                        )
+                    if (showNow) {
+                        fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    } else {
+                        fragment.show(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    }
+                } catch (e: Exception) {
+                    onError?.invoke("Error data:${e.message}")
+                }
             }
         } else {
             onError?.invoke("Error data")
         }
+    }
+}
+
+fun sendMessage(context: Context, user: User, currentConversation: String?, message: ForwardMessage) {
+    val toConversation = generateConversationId(Session.getAccountId()!!, user.userId)
+    ForwardActivity.show(context, arrayListOf(message), ForwardAction.App.Resultless(toConversation, context.getString(R.string.Send)))
+    if (toConversation != currentConversation) {
+        ConversationActivity.show(context, toConversation, recipientId = user.userId)
     }
 }
 

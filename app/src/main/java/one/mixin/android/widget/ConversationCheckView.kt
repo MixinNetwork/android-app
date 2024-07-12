@@ -13,7 +13,7 @@ import one.mixin.android.databinding.ViewConversationCheckBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.util.markdown.MarkwonUtil
-import one.mixin.android.vo.ActionButton
+import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.MessageCategory
@@ -217,7 +217,7 @@ class ConversationCheckView : LinearLayout, Checkable {
             }
             item.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                 val buttons =
-                    Gson().fromJson(item.content, Array<ActionButton>::class.java)
+                    Gson().fromJson(item.content, Array<ActionButtonData>::class.java)
                 var content = ""
                 buttons.map { content += "[" + it.label + "]" }
                 binding.mixinIdTv.text = content
