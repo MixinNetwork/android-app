@@ -22,7 +22,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
 
 @SuppressLint("ViewConstructor")
-class ActionButton(context: Context, externalLink: Boolean = false) : FrameLayout(context) {
+class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Boolean = false) : FrameLayout(context) {
 
     val textView = AppCompatTextView(context)
 
@@ -51,6 +51,15 @@ class ActionButton(context: Context, externalLink: Boolean = false) : FrameLayou
         if (externalLink) {
             val icon = AppCompatImageView(context)
             icon.setImageResource(R.drawable.ic_external_link)
+            addView(icon, LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                gravity = Gravity.END or Gravity.TOP
+            })
+        } else if (sendLink) {
+            val icon = AppCompatImageView(context)
+            icon.setImageResource(R.drawable.ic_send_link)
             addView(icon, LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,

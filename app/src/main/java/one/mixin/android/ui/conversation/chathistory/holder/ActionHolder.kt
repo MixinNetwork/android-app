@@ -16,11 +16,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.widget.ActionButton
 
-class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
+class ActionHolder(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
     @SuppressLint("RestrictedApi")
     fun bind(
         messageItem: ChatHistoryMessageItem,
@@ -46,7 +45,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
             binding.chatName.visibility = View.GONE
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
-            val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
+            val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<one.mixin.android.vo.ActionButton>::class.java)
             binding.chatLayout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)

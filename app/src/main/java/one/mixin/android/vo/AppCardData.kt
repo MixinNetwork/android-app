@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.Scheme.SEND
 
 @Parcelize
 data class AppCardData(
@@ -43,5 +44,11 @@ data class ActionButton(
     val externalLink:Boolean
         get() {
             return action.startsWith("http://", true) || action.startsWith("https://")
+        }
+
+    @IgnoredOnParcel
+    val sendLink:Boolean
+        get() {
+            return action.startsWith(SEND, true)
         }
 }

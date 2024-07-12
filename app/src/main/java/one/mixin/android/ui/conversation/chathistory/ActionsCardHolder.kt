@@ -80,7 +80,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true
             for (b in actionCard.actions) {
-                val button = ActionButton(itemView.context, b.externalLink)
+                val button = ActionButton(itemView.context, b.externalLink, b.sendLink)
                 button.setTextColor(
                     try {
                         ColorUtil.parseColor(b.color.trim())

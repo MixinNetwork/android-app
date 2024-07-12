@@ -313,6 +313,10 @@ fun Uri.handleSchemeSend(
     onError: ((String) -> Unit)? = null,
 ) {
     val text = this.getQueryParameter("text")
+    val user = this.getQueryParameter("user")
+    if (user != null) {
+
+    }
     if (text != null) {
         ForwardActivity.show(
             context,

@@ -84,7 +84,7 @@ import one.mixin.android.util.NotificationBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.util.rxpermission.RxPermissions
-import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.ActionButton
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
@@ -923,7 +923,7 @@ class ConversationListFragment : LinkFragment() {
                             try {
                                 GsonHelper.customGson.fromJson(
                                     conversationItem.content,
-                                    Array<AppButtonData>::class.java,
+                                    Array<ActionButton>::class.java,
                                 )
                             } catch (e: Exception) {
                                 null
