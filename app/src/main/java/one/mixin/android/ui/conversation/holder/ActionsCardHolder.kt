@@ -27,7 +27,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         binding.chatGroupLayout.layoutParams = binding.chatGroupLayout.layoutParams.apply {
             width = itemView.context.maxCardWidth() - 6.dp
         }
-        binding.chatGroupLayout.setLineSpacing(3.dp)
+        binding.chatGroupLayout.setLineSpacing(6.dp)
     }
 
     private val radius by lazy {

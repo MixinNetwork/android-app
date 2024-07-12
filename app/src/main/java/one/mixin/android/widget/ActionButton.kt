@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import com.google.android.material.button.MaterialButton
 import one.mixin.android.R
@@ -23,9 +24,9 @@ class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Bo
     val textView = MaterialButton(context).apply {
         cornerRadius = 6.dp
         elevation = 1.dp.toFloat()
-        setBackgroundColor(context.colorAttr(R.attr.bg_chat))
+        backgroundTintList = ContextCompat.getColorStateList(context, R.color.bgChatNight)
         setPaddingRelative(4.dp, 12.dp, 4.dp, 12.dp)
-        insetBottom = 3.dp
+        insetBottom = 6.dp
         insetTop = 0
     }
 
