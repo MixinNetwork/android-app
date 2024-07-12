@@ -278,7 +278,7 @@
     <string name="Delete_for_everyone">撤回</string>
     <string name="Delete_for_me">刪除</string>
     <string name="Delete_Group">刪除群組</string>
-    <string name="Delete_my_account">登出賬戶</string>
+    <string name="Delete_my_account">刪除帳號</string>
     <string name="Delete_Synced_Contact">刪除已同步的通訊錄</string>
     <string name="Delete_withdraw_Address">刪除 %1$s 地址</string>
     <string name="Deposit">充值</string>

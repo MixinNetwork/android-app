@@ -312,7 +312,7 @@
     <string name="Delete_for_everyone">撤回</string>
     <string name="Delete_for_me">删除</string>
     <string name="Delete_Group">删除群组</string>
-    <string name="Delete_my_account">注销账户</string>
+    <string name="Delete_my_account">删除账号</string>
     <string name="Delete_Synced_Contact">删除已同步的通讯录</string>
     <string name="Delete_withdraw_Address">删除 %1$s 地址</string>
     <string name="Deposit">充值</string>
