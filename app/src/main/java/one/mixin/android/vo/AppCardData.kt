@@ -4,6 +4,8 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.Scheme.HTTPS_SEND
+import one.mixin.android.Constants.Scheme.MIXIN_SEND
 import one.mixin.android.Constants.Scheme.SEND
 
 @Parcelize
@@ -49,6 +51,6 @@ data class ActionButtonData(
     @IgnoredOnParcel
     val sendLink:Boolean
         get() {
-            return action.startsWith(SEND, true)
+            return action.startsWith(SEND, true) || action.startsWith(MIXIN_SEND, true) || action.startsWith(HTTPS_SEND, true)
         }
 }

@@ -52,7 +52,7 @@ class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Bo
 
         if (externalLink || sendLink) {
             val icon = AppCompatImageView(context)
-            icon.setImageResource(if (externalLink) R.drawable.ic_external_link else R.drawable.ic_send_link)
+            icon.setImageResource(if (sendLink) R.drawable.ic_send_link else R.drawable.ic_external_link)
             addView(icon, LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
