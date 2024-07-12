@@ -17,14 +17,15 @@ import com.google.android.material.button.MaterialButton
 import one.mixin.android.R
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.isNightMode
 
 @SuppressLint("ViewConstructor")
 class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Boolean = false) : FrameLayout(context) {
 
     val textView = MaterialButton(context).apply {
-        cornerRadius = 6.dp
+        backgroundTintList = ContextCompat.getColorStateList(context, if (context.isNightMode()) R.color.bgChatNight else R.color.bgChat)
         elevation = 1.dp.toFloat()
-        backgroundTintList = ContextCompat.getColorStateList(context, R.color.bgChatNight)
+        cornerRadius = 6.dp
         setPaddingRelative(4.dp, 12.dp, 4.dp, 12.dp)
         insetBottom = 6.dp
         insetTop = 0
