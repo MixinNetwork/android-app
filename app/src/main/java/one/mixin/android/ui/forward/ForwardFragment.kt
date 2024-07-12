@@ -227,6 +227,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
         }
 
+        if (action is ForwardAction.Bot) {
+            sendMessage(listOf(SelectItem(null, (action as ForwardAction.Bot).userId)))
+            requireActivity().finish()
+            return
+        }
+
         if (!action.name.isNullOrBlank()) {
             binding.titleView.titleTv.text = action.name
         }

@@ -1243,6 +1243,7 @@ class WebFragment : BaseFragment() {
                                             AppCardData(
                                                 app.appId,
                                                 app.iconUrl,
+                                                "",
                                                 webTitle,
                                                 app.name,
                                                 currentUrl,

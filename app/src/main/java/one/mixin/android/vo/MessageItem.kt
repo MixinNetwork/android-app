@@ -125,6 +125,13 @@ data class MessageItem(
     @Ignore
     private var appCardShareable: Boolean? = null
 
+    @IgnoredOnParcel
+    val appCardData: AppCardData? by lazy {
+        content?.let {
+            GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+        }
+    }
+
     val formatMemo: FormatMemo?
         get() {
             return if (snapshotMemo.isNullOrBlank()) {
@@ -148,8 +155,7 @@ data class MessageItem(
 
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
-                appCardShareable =
-                    GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
+                appCardShareable = appCardData?.shareable
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) && appCardShareable == null) {
                 appCardShareable =
                     GsonHelper.customGson.fromJson(

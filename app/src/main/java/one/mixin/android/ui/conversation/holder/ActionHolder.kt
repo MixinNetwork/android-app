@@ -12,7 +12,7 @@ import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
 
@@ -67,7 +67,7 @@ class ActionHolder(val binding: ItemChatActionBinding) : BaseViewHolder(binding.
             binding.chatName.visibility = View.GONE
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
-            val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
+            val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<ActionButtonData>::class.java)
             binding.chatLayout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)
@@ -79,7 +79,7 @@ class ActionHolder(val binding: ItemChatActionBinding) : BaseViewHolder(binding.
                     },
                 )
                 button.setTypeface(null, Typeface.BOLD)
-                button.text = b.label
+                button.setText(b.label)
                 binding.chatLayout.addView(button)
                 button.setOnLongClickListener {
                     if (!hasSelect) {

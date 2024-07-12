@@ -14,7 +14,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 
-class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
+class ActionCardHolder(val binding: ItemChatActionCardBinding) :
     BaseViewHolder(binding.root) {
         private val radius by lazy {
             4.dp

@@ -12,6 +12,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
@@ -24,6 +25,7 @@ class ForwardActivity : BlazeBaseActivity() {
         const val ARGS_MESSAGES = "args_messages"
         const val ARGS_COMBINE_MESSAGES = "args_combine_messages"
         const val ARGS_ACTION = "args_action"
+        const val ARGS_TO_CONVERSATION = "args_to_conversation"
 
         const val ARGS_RESULT = "args_result"
 
@@ -31,11 +33,13 @@ class ForwardActivity : BlazeBaseActivity() {
             context: Context,
             messages: ArrayList<ForwardMessage>,
             action: ForwardAction,
+            toConversation: String? = null
         ) {
             val intent =
                 Intent(context, ForwardActivity::class.java).apply {
                     putParcelableArrayListExtra(ARGS_MESSAGES, messages)
                     putExtra(ARGS_ACTION, action)
+                    putExtra(ARGS_TO_CONVERSATION, toConversation)
                 }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -108,6 +112,17 @@ class ForwardActivity : BlazeBaseActivity() {
                 putExtra(ARGS_ACTION, ForwardAction.Combine())
             }
         }
+    }
+
+    private val toConversation by lazy {
+        intent.getStringExtra(ARGS_TO_CONVERSATION)
+    }
+
+    override fun onDestroy() {
+        if (toConversation != null) {
+            ConversationActivity.show(this, toConversation)
+        }
+        super.onDestroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
