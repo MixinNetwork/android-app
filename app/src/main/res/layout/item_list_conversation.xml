@@ -33,6 +33,7 @@
             android:layout_gravity="center_vertical"
             android:maxWidth="220dp"
             android:singleLine="true"
+            android:textFontWeight="500"
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
 
