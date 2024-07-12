@@ -101,6 +101,7 @@ class UnstakeFragment : BaseFragment() {
                             TransactionStateFragment.newInstance(serializedTx, null).apply {
                                 setCloseAction {
                                     parentFragmentManager.popBackStackImmediate()
+                                    parentFragmentManager.popBackStackImmediate()
                                 }
                             }
                         navTo(txStateFragment, TransactionStateFragment.TAG)

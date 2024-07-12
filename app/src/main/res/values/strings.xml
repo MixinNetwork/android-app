@@ -1622,4 +1622,5 @@
     <string name="Lookup_Until">Lookup Until</string>
     <string name="Last_Reward">Last Reward</string>
     <string name="last_reward_hint">This is the most recent reward you earned for staking. You are rewarded 3 days.</string>
+    <string name="No_balance_change_detected">No balance change detected</string>
 </resources>

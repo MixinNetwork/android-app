@@ -1586,5 +1586,5 @@
     <string name="Lookup_Until">查询截止日期</string>
     <string name="Last_Reward">最近奖励</string>
     <string name="last_reward_hint">这是您最近因委托获得的奖励。您每 3 天获得一次奖励。</string>
-
+    <string name="No_balance_change_detected">未检测到余额变化</string>
 </resources>

@@ -196,7 +196,10 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
-        if (stakeAccounts.isNullOrEmpty()) return
+        if (stakeAccounts.isNullOrEmpty()) {
+            adapter.setStake(emptyList(), StakeAccountSummary(0, "0"))
+            return
+        }
 
         var amount: Long = 0
         var count = 0

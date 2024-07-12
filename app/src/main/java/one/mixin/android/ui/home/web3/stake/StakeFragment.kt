@@ -22,10 +22,12 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.maxLeftAmount
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @AndroidEntryPoint
 class StakeFragment : BaseFragment() {
@@ -70,7 +72,7 @@ class StakeFragment : BaseFragment() {
                         }, ValidatorsFragment.TAG)
                     },
                     onMax = {
-                        toast("click max")
+                        amountText = calcMax(balance)
                     },
                     onStake = { onStake(validator) },
                 ) {
@@ -111,6 +113,7 @@ class StakeFragment : BaseFragment() {
                             TransactionStateFragment.newInstance(serializedTx, null).apply {
                                 setCloseAction {
                                     parentFragmentManager.popBackStackImmediate()
+                                    parentFragmentManager.popBackStackImmediate()
                                 }
                             }
                         navTo(txStateFragment, TransactionStateFragment.TAG)
@@ -118,5 +121,17 @@ class StakeFragment : BaseFragment() {
                 },
             )
         }
+    }
+
+    private fun calcMax(balance: String): String {
+        val calc = fun(balance: BigDecimal): String {
+            return balance.setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
+        }
+        var b = BigDecimal(balance)
+        if (b <= BigDecimal(maxLeftAmount)) {
+            return calc(b)
+        }
+        b = b.subtract(BigDecimal(maxLeftAmount))
+        return calc(b)
     }
 }

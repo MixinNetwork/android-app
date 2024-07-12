@@ -35,12 +35,10 @@ class Web3TokenHeader : ConstraintLayout {
         _binding.more.setOnClickListener {
             onClickAction?.invoke(it.id)
         }
-        _binding.stake.root.apply {
-            isVisible = false
-            updateLayoutParams<LayoutParams> {
-                topToBottom = _binding.more.id
-            }
+        _binding.stake.root.updateLayoutParams<LayoutParams> {
+            topToBottom = _binding.more.id
         }
+        _binding.stake.iconVa.displayedChild = 0
     }
 
     fun enableSwap() {
@@ -78,12 +76,13 @@ class Web3TokenHeader : ConstraintLayout {
 
     @SuppressLint("SetTextI18n")
     fun showStake(stakeAccountSummary: StakeAccountSummary?) {
-        if (stakeAccountSummary == null) {
-            _binding.stake.root.isVisible = false
-        } else {
-            _binding.stake.apply {
-                root.isVisible = true
-                icon.loadImage("https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png")
+        _binding.stake.apply {
+            if (stakeAccountSummary == null) {
+                _binding.stake.iconVa.displayedChild = 0
+                amountTv.text = "0 SOL"
+                countTv.text = "0 account"
+            } else {
+                _binding.stake.iconVa.displayedChild = 1
                 amountTv.text = "${stakeAccountSummary.amount} SOL"
                 countTv.text = "${stakeAccountSummary.count} account"
                 stakeRl.setOnClickListener {

@@ -201,6 +201,7 @@ private fun Input(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 4.dp)
                 .border(1.dp, color = MixinAppTheme.colors.backgroundDark, RoundedCornerShape(12.dp))
                 .padding(16.dp, 10.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -226,24 +227,23 @@ private fun Input(
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .border(1.dp, color = MixinAppTheme.colors.backgroundGray, RoundedCornerShape(16.dp))
+                        .border(1.dp, color = MixinAppTheme.colors.textMinor, RoundedCornerShape(16.dp))
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null,
                         ) {
-
+                            onMax.invoke()
                         }
                         .padding(8.dp, 4.dp),
                 ) {
                     Text(
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                            .clickable { onMax.invoke() },
-                        text = stringResource(id = R.string.Max),
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        text = stringResource(id = R.string.balance_max),
                         style =
                         TextStyle(
                             fontWeight = FontWeight.W400,
                             color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                         ),
                     )
                 }
@@ -299,7 +299,7 @@ private fun ValidatorInfo(
         Spacer(modifier = Modifier.height(12.dp))
         Divider(color = MixinAppTheme.colors.textSubtitle, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
-        Item(stringResource(id = R.string.Estimated_APY), "")
+        Item(stringResource(id = R.string.Estimated_APY), "-")
         Item(stringResource(id = R.string.Commission), "${validator.commission}%")
         Item(stringResource(id = R.string.Total_Stake), "${validator.activatedStake}")
     }

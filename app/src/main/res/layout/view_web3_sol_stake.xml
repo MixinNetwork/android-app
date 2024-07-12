@@ -21,7 +21,7 @@
         android:layout_marginEnd="20dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/Staking"
+        android:text="@string/Stake"
         android:textColor="?attr/text_assist"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -39,13 +39,29 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true" />
 
-        <one.mixin.android.widget.CircleImageView
-            android:id="@+id/icon"
+        <ViewAnimator
+            android:id="@+id/icon_va"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:layout_centerVertical="true"
+            android:background="@drawable/bg_circle_border"
             android:layout_marginStart="30dp"
-            android:layout_marginEnd="@dimen/margin16" />
+            android:layout_marginEnd="@dimen/margin16" >
+
+            <ProgressBar
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.BlueAccent" />
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                app:tint="@color/wallet_yellow"
+                android:src="@drawable/ic_baseline_star_24" />
+        </ViewAnimator>
 
         <TextView
             android:id="@+id/name_tv"
@@ -53,7 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@id/center"
             android:layout_marginEnd="@dimen/margin20"
-            android:layout_toEndOf="@id/icon"
+            android:layout_toEndOf="@id/icon_va"
             android:ellipsize="end"
             android:text="@string/Your_Stake"
             android:textColor="?attr/text_primary"
@@ -65,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center"
             android:layout_marginEnd="@dimen/margin20"
-            android:layout_toEndOf="@id/icon"
+            android:layout_toEndOf="@id/icon_va"
             android:ellipsize="end"
             android:textColor="?attr/text_assist"
             android:textSize="14sp"
