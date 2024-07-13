@@ -191,7 +191,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                             it.type == MessageCategory.APP_CARD.name -> {
                                 try {
                                     val cardData = Gson().fromJson(it.content, AppCardData::class.java)
-                                    if (cardData.title.isBlank()) {
+                                    if (cardData.title.isNullOrBlank()) {
                                         str.append("${it.name}: [${itemView.context.getString(R.string.Card)}]\n")
                                     } else {
                                         str.append("${it.name}: [${cardData.title}]\n")

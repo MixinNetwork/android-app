@@ -160,7 +160,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             } else if (shareMessage.category == ShareCategory.AppCard) {
                 val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
-                if (appCardData.title.length in 1..36 && appCardData.description.length in 1..128) {
+                if (appCardData.title?.length in 1..36 && appCardData.description?.length in 1..128) {
                     sendMessage()
                 } else {
                     toast(R.string.Data_error)
