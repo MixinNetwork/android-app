@@ -55,7 +55,6 @@ class DepositFragment : BaseFragment() {
         mapOf(
             "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
             "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
-            "5dac5e28-ad13-31ea-869f-41770dfcee09" to "EOS",
             "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
             "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
             "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",

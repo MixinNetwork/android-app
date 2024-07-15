@@ -30,6 +30,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
@@ -38,7 +39,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_transaction_details) {
     companion object {
-        const val TAG = "TransactionsFragment"
+        const val TAG = "Web3TransactionDetailsFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_TOKENS = "args_tokens"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
@@ -46,12 +47,14 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
         fun newInstance(
             address: String,
+            chain: String,
             web3Token: Web3Token,
             chainToken: Web3Token?,
             tokens: List<Web3Token>? = null
         ) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
+                putString(ARGS_CHAIN, chain)
                 putParcelable(ARGS_TOKEN, web3Token)
                 putParcelable(ARGS_CHAIN_TOKEN, chainToken)
                 putParcelableArrayList(ARGS_TOKENS, arrayListOf<Web3Token>().apply {
@@ -74,6 +77,10 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
     private val address: String by lazy {
         requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    }
+
+    private val chain: String by lazy {
+        requireNotNull(requireArguments().getString(ARGS_CHAIN))
     }
 
     private val web3tokens by lazy {
@@ -134,7 +141,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 }
             }
             setOnClickListener { transaction ->
-                navTo(Web3Web3TransactionFragment.newInstance(transaction), Web3Web3TransactionFragment.TAG)
+                navTo(Web3TransactionFragment.newInstance(transaction, chain, token), Web3TransactionFragment.TAG)
             }
         }
     }

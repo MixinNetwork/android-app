@@ -28,7 +28,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
@@ -246,7 +246,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                             val appCard = GsonHelper.customGson.fromJson(quoteMessageItem.content, AppCardData::class.java)
                             binding.replyContentTv.text = appCard.title
                         } else if (quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
-                            val buttons = GsonHelper.customGson.fromJson(quoteMessageItem.content, Array<AppButtonData>::class.java)
+                            val buttons = GsonHelper.customGson.fromJson(quoteMessageItem.content, Array<ActionButtonData>::class.java)
                             var content = ""
                             buttons.map { content += "[" + it.label + "]" }
                             binding.replyContentTv.text = content

@@ -168,6 +168,9 @@ import one.mixin.android.widget.WebControlView
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.ByteArrayInputStream
+import java.net.URI
+import java.net.URISyntaxException
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -1240,6 +1243,7 @@ class WebFragment : BaseFragment() {
                                             AppCardData(
                                                 app.appId,
                                                 app.iconUrl,
+                                                "",
                                                 webTitle,
                                                 app.name,
                                                 currentUrl,
@@ -1741,7 +1745,7 @@ class WebFragment : BaseFragment() {
                         context.startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
                         val fallbackUrl = intent.extras?.getString("browser_fallback_url")
-                        if (fallbackUrl != null) {
+                        if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {
                             view.loadUrl(fallbackUrl, extraHeaders)
                         } else {
                             throw e
@@ -1756,6 +1760,21 @@ class WebFragment : BaseFragment() {
                 }
             }
             return true
+        }
+
+        private fun isFallbackUrlValid(fallbackUrl: String): Boolean {
+            try {
+                val anyCaseScheme = URI(fallbackUrl).scheme
+                val scheme = if ((anyCaseScheme == null)) null else anyCaseScheme.lowercase(Locale.US)
+                if ("http" == scheme || "https" == scheme) {
+                    return true
+                } else {
+                    Timber.w("Fallback URI uses unsupported scheme: $scheme. Try http or https.")
+                }
+            } catch (e: URISyntaxException) {
+                Timber.w("URISyntaxException parsing fallback URI")
+            }
+            return false
         }
 
         interface OnPageFinishedListener {

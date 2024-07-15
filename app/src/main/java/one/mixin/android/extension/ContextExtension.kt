@@ -96,6 +96,8 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
@@ -413,6 +415,10 @@ fun Context.getUriForFile(file: File): Uri {
 
 fun Context.maxItemWidth(): Int {
     return realSize().x * 4 / 5
+}
+
+fun Context.maxCardWidth(): Int {
+    return min(340.dp ,max(240.dp, realSize().x * 3 / 4))
 }
 
 // fragment

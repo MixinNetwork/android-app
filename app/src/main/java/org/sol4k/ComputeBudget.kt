@@ -59,3 +59,10 @@ internal fun decodeComputeUnitPrice(data: ByteArray): Long {
     }
     return d.readLongLe()
 }
+
+internal fun notComputeInstruction(data: ByteArray): Boolean {
+    val d = Buffer()
+    d.write(data)
+    val instruction = d.readByte().toInt()
+    return instruction == InstructionRequestUnits || instruction == InstructionRequestHeapFrame
+}

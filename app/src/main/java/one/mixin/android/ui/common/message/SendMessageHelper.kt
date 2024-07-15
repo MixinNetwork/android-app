@@ -5,6 +5,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -16,6 +17,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.encodeBlurHash
+import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
@@ -37,6 +39,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.vo.AppCap
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -285,22 +288,29 @@ class SendMessageHelper
             jobManager.addJobInBackground(SendMessageJob(message))
         }
 
-        fun sendAppCardMessage(
-            conversationId: String,
-            sender: User,
-            content: String,
-        ) {
-            val message =
-                createAppCardMessage(
-                    UUID.randomUUID().toString(),
-                    conversationId,
-                    sender.userId,
-                    content,
-                    nowInUtc(),
-                    MessageStatus.SENDING.name,
-                )
-            jobManager.addJobInBackground(SendMessageJob(message))
-        }
+    fun sendAppCardMessage(
+        conversationId: String,
+        sender: User,
+        content: String,
+    ) {
+        val message =
+            createAppCardMessage(
+                UUID.randomUUID().toString(),
+                conversationId,
+                sender.userId,
+                try {
+                    val gson = GsonHelper.customGson
+                    val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
+                    val data = appCardData.copy(actions = null)
+                    gson.toJson(data)
+                } catch (e: Exception) {
+                    content
+                },
+                nowInUtc(),
+                MessageStatus.SENDING.name,
+            )
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
 
         fun sendAttachmentMessage(
             conversationId: String,

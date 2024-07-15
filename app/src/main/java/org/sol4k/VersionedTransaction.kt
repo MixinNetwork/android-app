@@ -1,15 +1,9 @@
 package org.sol4k
 
 import okio.Buffer
-import one.mixin.android.api.response.solanaNativeTokenAssetKey
-import org.sol4k.Transaction.Companion
-import org.sol4k.instruction.CompiledInstruction
-import org.sol4k.instruction.SetComputeUnitLimitInstruction
-import org.sol4k.instruction.SetComputeUnitPriceInstruction
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
-import kotlin.math.acos
 import kotlin.math.max
 
 class VersionedTransaction(
@@ -77,29 +71,6 @@ class VersionedTransaction(
             data.add(i.data)
         }
        return computeBudget(data)
-    }
-
-    // TODO uncertainty logic
-    fun calcBalanceChange(): TokenBalanceChange {
-        val accounts = message.accounts
-        for (i in message.instructions) {
-            if (accounts[i.programIdIndex] == Constants.SYSTEM_PROGRAM) {
-                val lamports = parseSystemProgramData(i.data) ?: continue
-                return TokenBalanceChange(lamports, solanaNativeTokenAssetKey)
-            } else if (accounts[i.programIdIndex] == Constants.TOKEN_PROGRAM_ID) {
-                val lamports = parseTokenProgramData(i.data) ?: continue
-                val mintAddress = accounts[i.accounts[1]].toBase58()
-                return TokenBalanceChange(lamports, mintAddress)
-            } else {
-                // TODO parse inner instruction
-//                if(i.accounts.find { accounts[it] == Constants.SYSTEM_PROGRAM } != null) {
-//
-//                } else if (i.accounts.find { accounts[it] == Constants.TOKEN_PROGRAM_ID } != null) {
-//
-//                }
-            }
-        }
-        return TokenBalanceChange(0L, "")
     }
 
     private fun parseSystemProgramData(data: ByteArray): Long? {

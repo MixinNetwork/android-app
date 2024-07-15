@@ -3,10 +3,12 @@ package one.mixin.android.web3.js
 import android.util.LruCache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.Buffer
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
@@ -22,12 +24,15 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Connection
+import org.sol4k.Constants
 import org.sol4k.Keypair
 import org.sol4k.RpcUrl
 import org.sol4k.SignInAccount
 import org.sol4k.SignInInput
 import org.sol4k.SignInOutput
+import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
+import org.sol4k.exception.MaliciousInstructionException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -136,6 +141,10 @@ object JsSigner {
             Chain.Base.hexReference -> {
                 currentChain = Chain.Base
                 Result.success(Chain.Base.name)
+            }
+            Chain.Blast.hexReference -> {
+                currentChain = Chain.Blast
+                Result.success(Chain.Blast.name)
             }
             Chain.Arbitrum.hexReference -> {
                 currentChain = Chain.Arbitrum
@@ -293,7 +302,9 @@ object JsSigner {
     }
 
     fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
-        return getSolanaRpc().sendTransaction(tx.serialize())
+        val hash = getSolanaRpc().sendTransaction(tx.serialize())
+        Timber.d("sendTransaction $hash")
+        return hash
     }
 
     fun solanaSignIn(
@@ -330,3 +341,19 @@ object JsSigner {
 fun getSolanaRpc(): Connection =
     Connection(MixinApplication.appContext.defaultSharedPreferences.getString(Chain.Solana.chainId, null) ?: RpcUrl.MAINNNET.value)
 
+fun VersionedTransaction.throwIfAnyMaliciousInstruction() {
+    val accounts = message.accounts
+    for (i in message.instructions) {
+        val program = accounts[i.programIdIndex]
+        if (program != Constants.TOKEN_PROGRAM_ID) {
+            continue
+        }
+        val d = Buffer()
+        d.write(i.data)
+        val instruction = d.readByte().toInt()
+        // instructionSetAuthority
+        if (instruction == 6) {
+            throw MaliciousInstructionException(MixinApplication.get().getString(R.string.malicious_instruction_token_set_authority))
+        }
+    }
+}

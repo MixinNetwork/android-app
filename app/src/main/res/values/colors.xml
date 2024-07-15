@@ -49,6 +49,7 @@
     <color name="bgChooseNetworkYellow">#4DFFF7AD</color>
     <color name="bgChooseNetwork">#F6F7FA</color>
 
+    <color name="bgChat">#FFFFFF</color>
     <color name="bgTipInfo">#F5F5F5</color>
     <color name="bgTipInfoBorder">#999999</color>
     <color name="bgTipWarning">#FBF1F0</color>

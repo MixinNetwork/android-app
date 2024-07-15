@@ -24,6 +24,19 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:textSize="16sp" />
 
+
+    <TextView
+        android:id="@+id/all_public_key"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:text="Reveal All Public SpendKey"
+        android:textColor="?attr/text_primary"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="16sp" />
+
     <TextView
         android:id="@+id/delete"
         android:layout_width="match_parent"
@@ -31,7 +44,7 @@
         android:gravity="center_vertical"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:text="Delete Salt"
+        android:text="Delete Latest Salt"
         android:textColor="@color/colorRed"
         android:foreground="?android:attr/selectableItemBackground"
         android:textSize="16sp" />

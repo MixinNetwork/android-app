@@ -133,6 +133,7 @@ class UrlInterpreterActivity : BaseActivity() {
             SEND -> {
                 uri.handleSchemeSend(
                     this,
+                    lifecycleScope,
                     supportFragmentManager,
                     afterShareText = { finish() },
                     onError = { err ->

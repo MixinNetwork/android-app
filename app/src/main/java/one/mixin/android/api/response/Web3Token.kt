@@ -81,6 +81,11 @@ class Web3Token(
     fun realAmount(amount: Long): BigDecimal {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
     }
+
+    val tokenId: String
+        get() {
+            return chainId + assetKey
+        }
 }
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
@@ -110,6 +115,7 @@ fun Web3Token.getChainFromName(): Chain {
     return when {
         chainName.equals("ethereum", true) -> Chain.Ethereum
         chainName.equals("base", true) -> Chain.Base
+        chainName.equals("blast", true) -> Chain.Blast
         chainName.equals("arbitrum", true) -> Chain.Arbitrum
         chainName.equals("optimism", true) -> Chain.Optimism
         chainName.equals("polygon", true) -> Chain.Polygon
@@ -124,6 +130,7 @@ fun Web3Token.getChainIdFromName(): String {
     return when {
         chainName.equals("ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
         chainName.equals("base", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
+        chainName.equals("blast", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
         chainName.equals("arbitrum", true) -> Constants.ChainId.Arbitrum
         chainName.equals("optimism", true) -> Constants.ChainId.Optimism
         chainName.equals("polygon", true) -> Constants.ChainId.Polygon
@@ -146,6 +153,8 @@ private fun Web3Token.getChainAssetKey(): String {
     return if (chainName.equals("ethereum", true)) {
         "0x0000000000000000000000000000000000000000"
     } else if (chainName.equals("base", true)) {
+        "0x0000000000000000000000000000000000000000"}
+    else if (chainName.equals("blast", true)) {
         "0x0000000000000000000000000000000000000000"
     } else if (chainName.equals("arbitrum", true)) {
         "0x0000000000000000000000000000000000000000"
@@ -254,6 +263,7 @@ suspend fun Web3Token.buildTransaction(
         val transaction =
             if ((chainName.equals("ethereum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("base", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainName.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("arbitrum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("polygon", true) && assetKey == "0x0000000000000000000000000000000000001010") ||
@@ -280,3 +290,36 @@ suspend fun Web3Token.buildTransaction(
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     }
 }
+
+fun Web3Token.copy(
+    fungibleId: String = this.fungibleId,
+    name: String = this.name,
+    symbol: String = this.symbol,
+    iconUrl: String = this.iconUrl,
+    chainId: String = this.chainId,
+    chainName: String = this.chainName,
+    chainIconUrl: String = this.chainIconUrl,
+    balance: String = this.balance,
+    price: String = this.price,
+    changeAbsolute: String = this.changeAbsolute,
+    changePercent: String = this.changePercent,
+    assetKey: String = this.assetKey,
+    decimals: Int = this.decimals
+): Web3Token {
+    return Web3Token(
+        fungibleId = fungibleId,
+        name = name,
+        symbol = symbol,
+        iconUrl = iconUrl,
+        chainId = chainId,
+        chainName = chainName,
+        chainIconUrl = chainIconUrl,
+        balance = balance,
+        price = price,
+        changeAbsolute = changeAbsolute,
+        changePercent = changePercent,
+        assetKey = assetKey,
+        decimals = decimals
+    )
+}
+

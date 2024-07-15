@@ -416,9 +416,10 @@ class ChatHistoryActivity : BaseActivity() {
                 appCard: AppCardData,
                 userId: String?,
             ) {
-                if (openInputAction(appCard.action)) return
+                val action = appCard.action ?: return
+                if (openInputAction(action)) return
 
-                appCard.action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, null, appCard)
+                action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, null, appCard)
             }
 
             override fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {

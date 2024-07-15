@@ -6,8 +6,10 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Web3Transfer(
-    @SerializedName("fungible_id")
-    val fungibleId: String,
+    @SerializedName("asset_key")
+    val assetKey: String,
+    @SerializedName("chain_id")
+    val chainId: String,
     val name: String,
     val symbol: String,
     @SerializedName("icon_url")
@@ -16,4 +18,9 @@ data class Web3Transfer(
     val sender: String,
     val amount: String,
     val price: String,
-) : Parcelable
+) : Parcelable {
+    val tokenId: String
+        get() {
+            return chainId + assetKey
+        }
+}

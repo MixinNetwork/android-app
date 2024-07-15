@@ -18,6 +18,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -73,6 +74,7 @@ import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
@@ -92,12 +94,14 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -407,6 +411,20 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     return@launch
                 }
                 parseUrl(scheme.target)
+            }
+        } else if (url.startsWith(Scheme.HTTPS_INSCRIPTION, true)) {
+            val segments = Uri.parse(url).pathSegments
+            if (segments.isEmpty()) return
+            lifecycleScope.launch(errorHandler) {
+                val inscriptionHash = segments.last()
+                val hash = linkViewModel.refreshInscription(inscriptionHash)
+                if (hash != null) {
+                    jobManager.addJobInBackground(SyncOutputJob())
+                    InscriptionActivity.show(requireContext(), hash)
+                    dismiss()
+                } else {
+                    showError()
+                }
             }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
@@ -756,18 +774,29 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-        } else if (url.startsWith(Scheme.SEND, true)) {
+        } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(one.mixin.android.Constants.Scheme.HTTPS_SEND)) {
             val uri = Uri.parse(url)
-            uri.handleSchemeSend(
-                requireContext(),
-                parentFragmentManager,
-                showNow = false,
-                afterShareText = { dismiss() },
-                afterShareData = { dismiss() },
-                onError = { err ->
-                    showError(err)
-                },
-            )
+            lifecycleScope.launch(errorHandler) {
+                val userId = uri.getQueryParameter("user")
+                if (!userId.isNullOrBlank()){
+                    val user = oldLinkViewModel.refreshUser(userId)
+                    if (user == null) {
+                        showError(R.string.User_not_found)
+                        return@launch
+                    }
+                }
+                uri.handleSchemeSend(
+                    requireContext(),
+                    lifecycleScope,
+                    parentFragmentManager,
+                    showNow = false,
+                    afterShareText = { dismiss() },
+                    afterShareData = { dismiss() },
+                    onError = { err ->
+                        showError(err)
+                    },
+                )
+            }
         } else if (url.startsWith(Scheme.DEVICE, true)) {
             contentView.post {
                 ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
@@ -880,6 +909,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (action.isNullOrBlank() || !action.equals("signRawTransaction", true)) {
             return false
         }
+        val requestId = uri.getQueryParameter("request_id")
         val data =
             try {
                 raw.base64RawURLDecode().base64Encode()
@@ -896,6 +926,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
         BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
+            .setOnTxhash { sig, _ ->
+                val cid = MixinApplication.conversationId
+                val self = Session.getAccount()?.toUser()
+                Timber.d("$TAG requestId $requestId, cid $cid, sig $sig")
+                if (requestId != null && cid != null && self != null) {
+                    val linkSigData = GsonHelper.customGson.toJson(LinkSigData(requestId, sig))
+                    linkViewModel.sendTextMessage(cid, self, linkSigData.base64Encode())
+                }
+            }
             .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         return true
     }
@@ -1138,4 +1177,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         }
+
+    class LinkSigData(
+        @SerializedName("request_id")
+        val requestId: String,
+        val signature: String,
+    )
 }

@@ -20,10 +20,6 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
 
     var pos: Int = START_BOTTOM
 
-    init {
-        clipToPadding = false
-    }
-
     override fun onMeasure(
         widthMeasureSpec: Int,
         heightMeasureSpec: Int,
@@ -47,11 +43,12 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         val badgeWidth = measuredWidth / 3
         if (pos == START_BOTTOM) {
             val positionLeft = (measuredWidth * 0.011f).toInt()
-            val positionTop = (measuredWidth * 0.7f).toInt()
+            val positionTop = (measuredHeight - badgeWidth)
             binding.badge.layout(positionLeft, positionTop, positionLeft + badgeWidth, positionTop + badgeWidth)
         } else if (pos == END_BOTTOM) {
-            val position = (measuredWidth * 0.7f).toInt()
-            binding.badge.layout(position, position, position + badgeWidth, position + badgeWidth)
+            val positionLeft = (measuredWidth - badgeWidth)
+            val positionTop = (measuredHeight - badgeWidth)
+            binding.badge.layout(positionLeft, positionTop, positionLeft + badgeWidth, positionTop + badgeWidth)
         }
     }
 

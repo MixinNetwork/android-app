@@ -24,6 +24,8 @@ sealed class Chain(
 
     object Base : Chain(ETHEREUM_CHAIN_ID, "eip155", "8453", "0x2105", "Base", "ETH", listOf("https://base.llamarpc.com"))
 
+    object Blast : Chain(ETHEREUM_CHAIN_ID, "eip155", "81457", "0x13e31", "Blast", "ETH", listOf("https://rpc.blast.io"))
+
     object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
     object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
@@ -43,13 +45,14 @@ sealed class Chain(
         }
 }
 
-internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
+internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Blast, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Blast, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainReference -> Chain.Ethereum
         Chain.Base.chainReference -> Chain.Ethereum
+        Chain.Blast.chainReference -> Chain.Ethereum
         Chain.Arbitrum.chainReference -> Chain.Ethereum
         Chain.Optimism.chainReference -> Chain.Ethereum
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
@@ -66,6 +69,7 @@ internal fun String?.getChainName(): String? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum.name
         Chain.Base.chainId -> Chain.Base.name
+        Chain.Blast.chainId -> Chain.Blast.name
         Chain.Arbitrum.chainId -> Chain.Arbitrum.name
         Chain.Optimism.chainId -> Chain.Optimism.name
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
@@ -82,6 +86,7 @@ internal fun String?.getChainSymbol(): String? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum.symbol
         Chain.Base.chainId -> Chain.Base.symbol
+        Chain.Blast.chainId -> Chain.Blast.symbol
         Chain.Arbitrum.chainId -> Chain.Arbitrum.symbol
         Chain.Optimism.chainId -> Chain.Optimism.symbol
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
@@ -98,6 +103,7 @@ internal fun getChainByChainId(chainId: String?): Chain? {
     return when (chainId) {
         Chain.Ethereum.chainId -> Chain.Ethereum
         Chain.Base.chainId -> Chain.Base
+        Chain.Blast.chainId -> Chain.Blast
         Chain.Arbitrum.chainId -> Chain.Arbitrum
         Chain.Optimism.chainId -> Chain.Optimism
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
@@ -112,6 +118,7 @@ val walletConnectChainIdMap =
     mapOf(
         Chain.Ethereum.symbol to ETHEREUM_CHAIN_ID,
         Chain.Base.symbol to ETHEREUM_CHAIN_ID,
+        Chain.Blast.symbol to ETHEREUM_CHAIN_ID,
         Chain.Arbitrum.symbol to ETHEREUM_CHAIN_ID,
         Chain.Optimism.symbol to ETHEREUM_CHAIN_ID,
         Chain.Polygon.symbol to Constants.ChainId.Polygon,

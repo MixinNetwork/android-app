@@ -10,22 +10,24 @@ class InscriptionState(
     val name: String?,
     @ColumnInfo(name = "sequence")
     val sequence: Long?,
+    // Note: The value of 'amount' might not be accurate as it is not calculated using the backend.
     @ColumnInfo(name = "amount")
-    val amount: String,
+    val amount: String?,
     @ColumnInfo(name = "symbol")
     val symbol: String?,
     @ColumnInfo(name = "price_usd")
     val priceUsd: String?,
     @ColumnInfo(name = "state")
-    val state: String,
+    val state: String?,
     @ColumnInfo(name = "icon_url")
     val iconUrl: String?,
     @ColumnInfo(name = "content_url")
     val contentURL: String?,
     @ColumnInfo(name = "content_type")
     val contentType: String?,
+    val owner: String?,
     @ColumnInfo(name = "traits")
-    val traits: String?
+    val traits: String?,
 ) {
     val isText: Boolean
         get() = contentType?.startsWith("text", true) == true

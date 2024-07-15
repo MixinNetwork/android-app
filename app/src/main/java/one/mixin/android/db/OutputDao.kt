@@ -131,12 +131,12 @@ interface OutputDao : BaseDao<Output> {
     // Get the latest inscription, inscription UTXO cannot be separated
     @Query(
         """
-        SELECT ic.name, i.sequence, o.amount, t.symbol, t.price_usd, t.icon_url, o.state, i.content_url, i.content_type, i.traits 
-        FROM outputs o 
-        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        SELECT ic.name, i.sequence, COALESCE(o.amount, ic.unit) AS amount, t.symbol, t.price_usd, t.icon_url, o.state, i.content_url, i.content_type, i.owner, i.traits
+        FROM inscription_items i
         LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        LEFT JOIN outputs o ON i.inscription_hash == o.inscription_hash
         LEFT JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE o.inscription_hash = :hash
+        WHERE i.inscription_hash = :hash
         ORDER BY o.sequence DESC LIMIT 1
     """,
     )

@@ -312,7 +312,7 @@
     <string name="Delete_for_everyone">撤回</string>
     <string name="Delete_for_me">删除</string>
     <string name="Delete_Group">删除群组</string>
-    <string name="Delete_my_account">注销账户</string>
+    <string name="Delete_my_account">删除账号</string>
     <string name="Delete_Synced_Contact">删除已同步的通讯录</string>
     <string name="Delete_withdraw_Address">删除 %1$s 地址</string>
     <string name="Deposit">充值</string>
@@ -1457,7 +1457,8 @@
     <string name="copy_address">复制地址</string>
     <string name="copy_contract_address">复制合约地址</string>
     <string name="coming_soon">即将推出</string>
-    <string name="web3_deposit_description">使用此地址在 Ethereum、Polygon、BSC 网络上接收代币</string>
+    <string name="web3_deposit_description_evm">使用此地址在 Ethereum、Polygon、BSC、Base、Arbitrum、Optimism、Blast 网络上接收代币</string>
+    <string name="web3_deposit_description_solana">使用此地址在 Solana 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
     <string name="Ethereum_Account">Ethereum 账户</string>
     <string name="Solana_Account">Solana 账户</string>
@@ -1538,5 +1539,9 @@
     <string name="Collection_collected">已收藏 %1$d 件</string>
     <string name="Content_type">内容类型</string>
     <string name="View_details">显示详情</string>
-    <string name="Traits">特征</string>
+    <string name="collectible_owner">拥有者</string>
+    <string name="collectible_traits">特征</string>
+    <string name="View_on_Marketplace">在市场中查看</string>
+    <string name="View_on_Explorer">在浏览器中查看</string>
+    <string name="malicious_instruction_token_set_authority">此交易将更改 SPL 代币的所有者。这将允许新的所有者在未经您允许的情况下转让代币。</string>
 </resources>

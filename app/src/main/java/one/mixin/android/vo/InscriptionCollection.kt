@@ -38,4 +38,7 @@ data class InscriptionCollection(
     @ColumnInfo(name = "description")
     @SerializedName("description")
     val description: String?,
+    @ColumnInfo(name = "kernel_asset_id")
+    @SerializedName("kernel_asset_id")
+    val kernelAssetId: String?,
 ) : Parcelable

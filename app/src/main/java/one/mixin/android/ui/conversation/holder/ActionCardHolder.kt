@@ -16,7 +16,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 
-class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
+class ActionCardHolder(val binding: ItemChatActionCardBinding) :
     BaseViewHolder(binding.root) {
         private val radius by lazy {
             4.dp

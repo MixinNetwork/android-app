@@ -353,14 +353,10 @@ fun RLottieImageView.loadSticker(
             } catch (e: Exception) {
                 null
             }
+        clear()
         when (imgType) {
-            "JSON" ->
-                loadLottie(it, cacheKey)
-
-            else -> {
-                clear()
-                loadImage(url, null, null)
-            }
+            "JSON" -> loadLottie(it, cacheKey)
+            else -> loadImage(url, null, null)
         }
     }
 }

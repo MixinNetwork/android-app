@@ -63,6 +63,7 @@ import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
@@ -281,13 +282,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val ptx = parsedTx
                         if (ptx != null && ptx.tokens == null) {
                             ptx.balanceChanges?.map { it.address }?.let { bc ->
-                                val tokens = viewModel.web3Tokens(bc)
+                                val tokens = viewModel.solanaWeb3Tokens(bc)
                                 if (tokens.isNotEmpty()) {
                                     ptx.tokens = tokens.associateBy { it.assetKey }
                                     parsedTx = ptx
                                 }
                             }
                         }
+                        tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
                     }
@@ -313,8 +315,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
                     step = Step.Sending
-                    val sig = JsSigner.sendSolanaTransaction(tx)
-                    onTxhash?.invoke(sig, tx.serialize().base64Encode())
+                    val sig = tx.signatures.first()
+                    val rawTx = tx.serialize().base64Encode()
+                    viewModel.postRawTx(rawTx)
+                    onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)

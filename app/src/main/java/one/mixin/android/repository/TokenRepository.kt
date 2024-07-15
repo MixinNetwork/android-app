@@ -30,6 +30,7 @@ import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
@@ -968,4 +969,49 @@ class TokenRepository
         }
 
         suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
-    }
+
+        suspend fun postRawTx(rawTxRequest: PostTxRequest) = routeService.postWeb3Tx(rawTxRequest)
+
+        suspend fun refreshInscription(inscriptionHash: String): String? {
+            val inscriptionItem = syncInscription(inscriptionHash) ?: return null
+            val inscriptionCollection = syncInscriptionCollection(inscriptionItem.collectionHash) ?: return null
+            val assetId = inscriptionCollection.kernelAssetId ?: return null
+            syncAsset(assetId)
+            return inscriptionItem.inscriptionHash
+        }
+
+        private suspend fun syncInscriptionCollection(collectionHash: String): InscriptionCollection? {
+            val inscriptionCollection = inscriptionCollectionDao.findInscriptionCollectionByHash(collectionHash)
+            if (inscriptionCollection == null) {
+                val collectionResponse = tokenService.getInscriptionCollection(collectionHash)
+                if (collectionResponse.isSuccess) {
+                    val data = collectionResponse.data ?: return null
+                    inscriptionCollectionDao.insert(data)
+                    return data
+                } else {
+                    Timber.e(collectionResponse.errorDescription)
+                    return null
+                }
+            } else {
+                return inscriptionCollection
+            }
+        }
+
+        private suspend fun syncInscription(inscriptionHash: String): InscriptionItem? {
+            val inscriptionItem = inscriptionDao.findInscriptionByHash(inscriptionHash)
+            if (inscriptionItem == null) {
+                val inscriptionResponse = tokenService.getInscriptionItem(inscriptionHash)
+                if (inscriptionResponse.isSuccess) {
+                    val data = inscriptionResponse.data ?: return null
+                    inscriptionDao.insert(data)
+                    return data
+                } else {
+                    Timber.e(inscriptionResponse.errorDescription)
+                    return null
+                }
+            } else {
+                return inscriptionItem
+            }
+        }
+
+}

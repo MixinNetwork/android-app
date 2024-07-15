@@ -136,6 +136,13 @@ sealed class ForwardAction(
             override val name: String? = null,
         ) : App()
     }
+
+    @Parcelize
+    data class Bot(
+        override val conversationId: String? = null,
+        override val name: String? = null,
+        val userId: String
+    ) : ForwardAction()
 }
 
 fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {

@@ -14,12 +14,14 @@ import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewInscriptionBinding
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.clearRound
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.roundLeftOrRight
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.util.load
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
@@ -84,6 +86,7 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = LayoutParams.MATCH_PARENT
                 icon.layoutParams = lp
                 background.setBackgroundColor(Color.TRANSPARENT)
+                icon.clear()
                 icon.setImageResource(R.drawable.ic_default_inscription)
                 textView.isVisible = false
             } else if (inscriptionItem.isText) {
@@ -92,7 +95,8 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = iconSize
                 icon.layoutParams = lp
                 background.setBackgroundResource(R.drawable.bg_text_inscirption)
-                icon.setImageResource(R.drawable.ic_text_inscription)
+                icon.clear()
+                icon.loadImage(data = inscriptionItem.iconURL, holder = R.drawable.ic_text_inscription, transformation = CoilRoundedHexagonTransformation())
                 textView.isVisible = true
                 textView.load(inscriptionItem.contentURL)
             } else {
@@ -101,6 +105,33 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = LayoutParams.MATCH_PARENT
                 icon.layoutParams = lp
                 background.setBackgroundColor(Color.TRANSPARENT)
+                icon.clear()
+                icon.loadImage(data = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
+                textView.isVisible = false
+            }
+        }
+    }
+
+    fun render(inscriptionItem: InscriptionItem, iconUrl: String) {
+        binding.apply {
+            round(root)
+            if (inscriptionItem.isText) {
+                val lp = icon.layoutParams
+                lp.width = iconSize
+                lp.height = iconSize
+                icon.layoutParams = lp
+                background.setBackgroundResource(R.drawable.bg_text_inscirption)
+                icon.clear()
+                icon.loadImage(data = iconUrl, holder = R.drawable.ic_text_inscription, transformation = CoilRoundedHexagonTransformation())
+                textView.isVisible = true
+                textView.load(inscriptionItem.contentURL)
+            } else {
+                val lp = icon.layoutParams
+                lp.width = LayoutParams.MATCH_PARENT
+                lp.height = LayoutParams.MATCH_PARENT
+                icon.layoutParams = lp
+                background.setBackgroundColor(Color.TRANSPARENT)
+                icon.clear()
                 icon.loadImage(data = inscriptionItem.contentURL, holder = R.drawable.ic_default_inscription)
                 textView.isVisible = false
             }
@@ -116,6 +147,7 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
             lp.height = LayoutParams.MATCH_PARENT
             icon.layoutParams = lp
             background.setBackgroundColor(Color.TRANSPARENT)
+            icon.clear()
             icon.loadImage(data = inscriptionCollection.iconURL, holder = R.drawable.ic_default_inscription)
             textView.isVisible = false
         }
@@ -130,7 +162,8 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = iconSize
                 icon.layoutParams = lp
                 background.setBackgroundResource(R.drawable.bg_text_inscirption)
-                icon.setImageResource(R.drawable.ic_text_inscription)
+                icon.clear()
+                icon.loadImage(data = snapshot.iconUrl, holder = R.drawable.ic_text_inscription, transformation = CoilRoundedHexagonTransformation())
                 textView.isVisible = true
                 textView.load(snapshot.contentUrl)
             } else {
@@ -139,6 +172,7 @@ class InscriptionView(context: Context, attrs: AttributeSet?) : RelativeLayout(c
                 lp.height = LayoutParams.MATCH_PARENT
                 icon.layoutParams = lp
                 background.setBackgroundColor(Color.TRANSPARENT)
+                icon.clear()
                 icon.loadImage(data = snapshot.contentUrl, holder = R.drawable.ic_default_inscription)
                 textView.isVisible = false
             }

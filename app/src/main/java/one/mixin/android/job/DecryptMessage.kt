@@ -61,7 +61,7 @@ import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AttachmentExtra
@@ -246,7 +246,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.createdAt,
                 data.status,
             )
-        val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
+        val appButton = gson.fromJson(message.content, Array<ActionButtonData>::class.java)
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
