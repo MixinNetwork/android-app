@@ -20,7 +20,7 @@ class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Bo
 
     val textView = TextView(context).apply {
         background = ContextCompat.getDrawable(context, R.drawable.ripple_button)
-        setPaddingRelative(4.dp, 8.dp, 4.dp, 8.dp)
+        setPaddingRelative(4.dp, 12.dp, 4.dp, 12.dp)
     }
 
     init {
