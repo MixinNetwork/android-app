@@ -66,7 +66,7 @@
         <item name="bg_flag">@color/bgFlag</item>
         <item name="bg_choose_network_yellow">@color/bgChooseNetworkYellow</item>
         <item name="bg_choose_network">@color/bgChooseNetwork</item>
-        <item name="bg_chat">@color/bgChat</item>
+        <item name="bg_action_button">@drawable/bg_button_action</item>
         <item name="bg_tip_info">@color/bgTipInfo</item>
         <item name="bg_tip_info_border">@color/bgTipInfoBorder</item>
         <item name="bg_tip_warning">@color/bgTipWarning</item>
