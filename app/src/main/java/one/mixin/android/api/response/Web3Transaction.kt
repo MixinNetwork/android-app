@@ -6,6 +6,7 @@ import android.text.SpannedString
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
+import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.numberFormat
@@ -69,6 +70,56 @@ data class Web3Transaction(
 
                 else -> {
                     return fee.iconUrl
+                }
+            }
+        }
+
+
+    val event: TokenEvent?
+        get() {
+            when (operationType) {
+                Web3TransactionType.Withdraw.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.In.value }?.let {
+                        TokenEvent(it.chainId, it.assetKey)
+                    }
+                }
+                Web3TransactionType.Send.value -> {
+                    return (transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value } ?: transfers.firstOrNull { it.direction == Web3TransactionDirection.Self.value })?.let {
+                        TokenEvent(it.chainId, it.assetKey)
+                    }
+                }
+                Web3TransactionType.Receive.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.In.value }?.let {
+                        TokenEvent(it.chainId, it.assetKey)
+                    }
+                }
+
+                Web3TransactionType.Trade.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.let {
+                        TokenEvent(it.chainId, it.assetKey)
+                    }
+                }
+
+                Web3TransactionType.Execute.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.let {
+                        TokenEvent(it.chainId, it.assetKey)
+                    }
+                }
+
+                Web3TransactionType.Deposit.value -> {
+                    return transfers.firstOrNull { it.direction == Web3TransactionDirection.Out.value }?.let {
+                        TokenEvent(it.chainId, it.assetKey)
+                    }
+                }
+
+                Web3TransactionType.Approve.value -> {
+                    // Todo
+                    return null
+                }
+
+                else -> {
+                    // Todo
+                    return null
                 }
             }
         }

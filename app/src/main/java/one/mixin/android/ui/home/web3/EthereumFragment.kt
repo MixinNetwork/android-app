@@ -9,10 +9,13 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
@@ -27,6 +30,8 @@ import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.ExitEvent
+import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -45,8 +50,10 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.dapp.SearchDappFragment
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
@@ -70,7 +77,7 @@ class EthereumFragment : BaseFragment() {
         Web3WalletAdapter(ETHEREUM_CHAIN_ID).apply {
             setOnWeb3Click { token ->
                 address?.let { address ->
-                    navTo(Web3TransactionDetailsFragment.newInstance(address, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
+                    navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
                 }
             }
             setOnClickAction { id ->
@@ -141,8 +148,33 @@ class EthereumFragment : BaseFragment() {
         }
         RxBus.listen(WCUnlockEvent::class.java)
             .autoDispose(destroyScope)
-            .subscribe { e ->
+            .subscribe { _ ->
                 updateUI()
+            }
+        RxBus.listen(TokenEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                val token = web3ViewModel.web3Token(ChainType.ethereum.name, e.tokenId)
+                if (token != null) {
+                    lifecycleScope.launch {
+                        val fragments = mutableListOf<Fragment>()
+                        parentFragmentManager.findFragmentByTag(Web3TransactionDetailsFragment.TAG)?.let {
+                            fragments.add(it)
+                        }
+                        parentFragmentManager.findFragmentByTag(Web3TransactionFragment.TAG)?.let {
+                            fragments.add(it)
+                        }
+                        address?.let { address ->
+                            navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, token.findChainToken(tokens)), Web3TransactionDetailsFragment.TAG)
+                        }
+
+                        delay(200)
+                        fragments.forEach {
+                            parentFragmentManager.beginTransaction().remove(it).commit()
+                        }
+                    }
+                }
             }
         updateUI()
         return binding.root
@@ -223,7 +255,7 @@ class EthereumFragment : BaseFragment() {
         }
         val account =
             try {
-                val response = web3ViewModel.web3Account(address)
+                val response = web3ViewModel.web3Account(ChainType.ethereum.name, address)
                 if (!isAdded) return
                 if (response.errorCode == ErrorHandler.OLD_VERSION) {
                     dialog?.dismiss()
