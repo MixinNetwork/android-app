@@ -72,6 +72,6 @@ data class ActionButtonData(
     @IgnoredOnParcel
     val sendLink:Boolean
         get() {
-            return action.startsWith(SEND, true) || action.startsWith(MIXIN_SEND, true) || action.startsWith(HTTPS_SEND, true)
+            return action.isValidSendUrl()
         }
 }
