@@ -21,6 +21,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -40,6 +41,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
 
     private val adapter = SnapshotPagedAdapter()
+
+    private val filterCriteria by lazy {
+        FilterCriteria()
+    }
 
     override fun onViewCreated(
         view: View,
@@ -88,8 +93,35 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 adapter.submitList(pagedList)
             }
         bindLiveData()
-
+        binding.apply {
+            filterAsset.setOnClickListener {
+                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
+                    .setOnAssetClick { tokenItem ->
+                        filterCriteria.tokenItem = tokenItem
+                        loadFilter()
+                    }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+            }
+            filterUser.setOnClickListener {
+                UserListBottomSheetDialogFragment.newInstance()
+                    .setOnUserClick { user->
+                        filterCriteria.user = user
+                        loadFilter()
+                    }.showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
+            }
+            filterTime.setOnClickListener {
+                datePicker()
+            }
+            loadFilter()
+        }
         refreshAllPendingDeposit()
+    }
+
+    private fun loadFilter() {
+        binding.apply {
+            filterAsset.loadToken(filterCriteria.tokenItem)
+            filterUser.loadUser(filterCriteria.user)
+            filterTime.setTitle(R.string.All_Dates)
+        }
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -172,6 +204,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             R.id.filters_radio_all -> {
                 bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
+
             R.id.filters_radio_transfer -> {
                 bindLiveData(
                     walletViewModel.allSnapshots(
@@ -182,9 +215,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     ),
                 )
             }
+
             R.id.filters_radio_deposit -> {
                 bindLiveData(walletViewModel.allSnapshots(SafeSnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
+
             R.id.filters_radio_withdrawal -> {
                 bindLiveData(walletViewModel.allSnapshots(SafeSnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
@@ -209,5 +244,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 }
             }
         }
+    }
+
+    private fun datePicker() {
+
     }
 }

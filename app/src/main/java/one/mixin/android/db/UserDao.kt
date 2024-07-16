@@ -28,6 +28,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUserById(id: String): LiveData<User>
 
+    @Query("SELECT * FROM users")
+    fun allUser(): LiveData<List<User>>
+
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findSelf(id: String): Flow<User?>
 

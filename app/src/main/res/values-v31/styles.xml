@@ -84,7 +84,7 @@
         <item name="icon_chain">@color/iconChain</item>
 
 
-    <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
+        <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>
@@ -108,5 +108,8 @@
         <item name="android:textAppearanceSmallPopupMenu">
             @style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge
         </item>
+
+        <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
     </style>
+
 </resources>

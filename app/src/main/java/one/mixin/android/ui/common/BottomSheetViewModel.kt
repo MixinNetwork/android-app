@@ -142,6 +142,8 @@ class BottomSheetViewModel
 
         fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
 
+        fun allUser(): LiveData<List<User>> = userRepository.allUser()
+
         fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = tokenRepository.assetItems(assetIds)
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)

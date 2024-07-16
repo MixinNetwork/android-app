@@ -101,7 +101,18 @@
         <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
 
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
+        <item name="materialCalendarStyle">@style/CustomMaterialCalendarStyle</item>
+    </style>
 
+    <style name="MaterialCalendarTheme" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="CustomMaterialCalendarStyle" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/colorPrimaryNight</item>
+        <item name="colorAccent">@color/colorAccentNight</item>
     </style>
 
     <style name="AppTheme.PopupMenuStyle" parent="Widget.AppCompat.PopupMenu">

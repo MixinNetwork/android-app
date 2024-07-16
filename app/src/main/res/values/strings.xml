@@ -1580,4 +1580,8 @@
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction change the owner of your SPL tokens. This allow the new owner to transfer the tokens without your permission.</string>
+    <string name="All_Assets">All Assets</string>
+    <string name="All_Recipients">All Recipients</string>
+    <string name="All_Dates">All Dates</string>
+    <string name="No_users">No users</string>
 </resources>

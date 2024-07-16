@@ -215,6 +215,8 @@ class UserRepository
 
         fun findContactUsers() = userDao.findContactUsers()
 
+        fun allUser() = userDao.allUser()
+
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)

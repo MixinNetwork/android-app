@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="32dp"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_inscription_radio"
+    android:layout_marginEnd="16dp"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:gravity="center_vertical"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <ImageView
+        android:id="@+id/startIcon"
+        android:layout_marginEnd="8dp"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/title"
+        android:textColor="?attr/text_primary"
+        android:textSize="14sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp" />
+
+    <ImageView
+        android:id="@+id/endIcon"
+        android:layout_marginEnd="8dp"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/arrow"
+        android:src="@drawable/ic_sort_arrow_down"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</merge>
