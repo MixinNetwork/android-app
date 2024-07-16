@@ -35,6 +35,7 @@ class MessageBuilder(
     private var mediaWaveform: ByteArray? = null
     private var quoteMessageId: String? = null
     private var quoteContent: String? = null
+    private var caption: String? = null
 
     fun setContent(content: String?): MessageBuilder {
         this.content = content?.maxLimit()
@@ -156,6 +157,11 @@ class MessageBuilder(
         return this
     }
 
+    fun setCaption(caption: String?): MessageBuilder {
+        this.caption = caption
+        return this
+    }
+
     fun build(): Message =
         Message(
             id,
@@ -189,5 +195,6 @@ class MessageBuilder(
             null,
             quoteMessageId,
             quoteContent,
+            caption
         )
 }
