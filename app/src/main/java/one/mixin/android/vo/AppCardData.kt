@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import android.net.Uri
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
@@ -34,6 +35,26 @@ data class AppCardData(
         get() {
             return !action.isNullOrBlank()
         }
+
+    val canShare: Boolean
+        get() {
+            return if (oldVersion) shareable ?: false
+            else {
+                shareable == true && (actions.isNullOrEmpty() || actions.all { button ->
+                    button.action.isValidShareUrl()
+                })
+            }
+        }
+}
+
+private fun String.isValidShareUrl(): Boolean {
+    return isValidSendUrl() || (startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true)
+}
+
+private fun String.isValidSendUrl(): Boolean {
+    return (startsWith(SEND, true) || startsWith(MIXIN_SEND, true) || startsWith(HTTPS_SEND, true)) && runCatching {
+        Uri.parse(this).getQueryParameter("user").isNullOrEmpty().not()
+    }.getOrElse { false }
 }
 
 @Parcelize

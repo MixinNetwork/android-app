@@ -298,14 +298,7 @@ class SendMessageHelper
                 UUID.randomUUID().toString(),
                 conversationId,
                 sender.userId,
-                try {
-                    val gson = GsonHelper.customGson
-                    val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
-                    val data = appCardData.copy(actions = null)
-                    gson.toJson(data)
-                } catch (e: Exception) {
-                    content
-                },
+                content,
                 nowInUtc(),
                 MessageStatus.SENDING.name,
             )
