@@ -48,7 +48,7 @@ data class AppCardData(
 }
 
 private fun String.isValidShareUrl(): Boolean {
-    return isValidSendUrl() || (startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true)
+    return isValidSendUrl() || ((startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true))
 }
 
 private fun String.isValidSendUrl(): Boolean {
