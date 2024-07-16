@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -18,14 +19,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentShareMessageBottomSheetBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.margin
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.share.renderer.ShareAppActionsCardRenderer
 import one.mixin.android.ui.common.share.renderer.ShareAppCardRenderer
 import one.mixin.android.ui.common.share.renderer.ShareContactRenderer
 import one.mixin.android.ui.common.share.renderer.ShareImageRenderer
@@ -296,9 +300,21 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun loadAppCard(content: String) {
         val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
-        val renderer = ShareAppCardRenderer(requireContext())
-        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
-        renderer.render(appCardData, requireContext().isNightMode())
+        if (appCardData.oldVersion) {
+            val renderer = ShareAppCardRenderer(requireContext())
+            binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
+            renderer.render(appCardData, requireContext().isNightMode())
+        } else {
+            val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
+            (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
+                margin = 20.dp
+            }
+            binding.contentLayout.addView(renderer.contentView, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                gravity = Gravity.TOP
+                topMargin = 20.dp
+            })
+            renderer.render(appCardData, requireContext().isNightMode())
+        }
     }
 
     private fun loadLive(content: String) {

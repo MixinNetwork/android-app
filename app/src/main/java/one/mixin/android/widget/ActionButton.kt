@@ -2,33 +2,25 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import com.google.android.material.button.MaterialButton
 import one.mixin.android.R
-import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.isNightMode
 
 @SuppressLint("ViewConstructor")
 class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Boolean = false) : FrameLayout(context) {
 
-    val textView = MaterialButton(context).apply {
-        backgroundTintList = ContextCompat.getColorStateList(context, if (context.isNightMode()) R.color.bgChatNight else R.color.bgChat)
-        elevation = 1.dp.toFloat()
-        cornerRadius = 6.dp
+    val textView = TextView(context).apply {
+        background = ContextCompat.getDrawable(context, R.drawable.ripple_button)
         setPaddingRelative(4.dp, 12.dp, 4.dp, 12.dp)
-        insetBottom = 6.dp
-        insetTop = 0
     }
 
     init {
@@ -61,9 +53,7 @@ class ActionButton(context: Context, externalLink: Boolean = false, sendLink: Bo
                 marginEnd = 4.dp
                 gravity = Gravity.END or Gravity.TOP
             })
-            ViewCompat.setElevation(icon, 3.dp.toFloat())
         }
-        setBackgroundColor(Color.TRANSPARENT)
     }
 
 
