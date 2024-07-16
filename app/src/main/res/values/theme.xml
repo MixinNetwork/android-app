@@ -52,7 +52,6 @@
     <attr name="bg_flag" format="color|reference" />
     <attr name="bg_tip_warning" format="color|reference" />
     <attr name="bg_tip_warning_border" format="color|reference" />
-    <attr name="bg_chat" format="color|reference" />
     <attr name="bg_tip_info" format="color|reference" />
     <attr name="bg_tip_info_border" format="color|reference" />
 
@@ -62,6 +61,8 @@
     <attr name="music_text" format="color|reference" />
     <attr name="music_floating_bg" format="color|reference" />
     <attr name="music_play_pause_bg" format="color|reference" />
+
+    <attr name="bg_action_button" format="reference" />
 
     <attr name="flag_night" format="boolean|reference" />
 

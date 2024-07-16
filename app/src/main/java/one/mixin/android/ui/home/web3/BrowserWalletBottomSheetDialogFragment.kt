@@ -282,7 +282,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val ptx = parsedTx
                         if (ptx != null && ptx.tokens == null) {
                             ptx.balanceChanges?.map { it.address }?.let { bc ->
-                                val tokens = viewModel.web3Tokens(bc)
+                                val tokens = viewModel.solanaWeb3Tokens(bc)
                                 if (tokens.isNotEmpty()) {
                                     ptx.tokens = tokens.associateBy { it.assetKey }
                                     parsedTx = ptx

@@ -81,6 +81,11 @@ class Web3Token(
     fun realAmount(amount: Long): BigDecimal {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
     }
+
+    val tokenId: String
+        get() {
+            return chainId + assetKey
+        }
 }
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
@@ -285,3 +290,36 @@ suspend fun Web3Token.buildTransaction(
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     }
 }
+
+fun Web3Token.copy(
+    fungibleId: String = this.fungibleId,
+    name: String = this.name,
+    symbol: String = this.symbol,
+    iconUrl: String = this.iconUrl,
+    chainId: String = this.chainId,
+    chainName: String = this.chainName,
+    chainIconUrl: String = this.chainIconUrl,
+    balance: String = this.balance,
+    price: String = this.price,
+    changeAbsolute: String = this.changeAbsolute,
+    changePercent: String = this.changePercent,
+    assetKey: String = this.assetKey,
+    decimals: Int = this.decimals
+): Web3Token {
+    return Web3Token(
+        fungibleId = fungibleId,
+        name = name,
+        symbol = symbol,
+        iconUrl = iconUrl,
+        chainId = chainId,
+        chainName = chainName,
+        chainIconUrl = chainIconUrl,
+        balance = balance,
+        price = price,
+        changeAbsolute = changeAbsolute,
+        changePercent = changePercent,
+        assetKey = assetKey,
+        decimals = decimals
+    )
+}
+
