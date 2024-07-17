@@ -95,8 +95,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         bindLiveData()
         binding.apply {
             filterAsset.setOnClickListener {
-                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
-                    .setOnAssetClick { tokenItem ->
+                MultiSelectTokenListBottomSheetDialogFragment.newInstance()
+                    .setOnTokenItemClick { tokenItem ->
                         filterCriteria.tokenItem = tokenItem
                         loadFilter()
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)

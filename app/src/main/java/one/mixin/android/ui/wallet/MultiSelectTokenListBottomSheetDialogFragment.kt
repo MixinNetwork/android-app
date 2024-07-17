@@ -20,40 +20,40 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.group.adapter.GroupSelectAdapter
-import one.mixin.android.ui.wallet.adapter.MultiSelectSearchUserAdapter
-import one.mixin.android.ui.wallet.adapter.WalletSearchUserCallback
+import one.mixin.android.ui.wallet.adapter.SelectableTokenAdapter
+import one.mixin.android.ui.wallet.adapter.SelectedTokenAdapter
+import one.mixin.android.ui.wallet.adapter.WalletSearchTokenItemCallback
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.User
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
-class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "UserListBottomSheetDialogFragment"
+        const val TAG = "TokenItemListBottomSheetDialogFragment"
         const val POS_RV = 0
         const val POS_EMPTY = 1
-        const val POS_EMPTY_USER = 2
+        const val POS_EMPTY_TOKEN = 2
 
-        fun newInstance() = MultiSelectUserListBottomSheetDialogFragment()
+        fun newInstance() = MultiSelectTokenListBottomSheetDialogFragment()
     }
 
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
 
-    private val selectedUsers = mutableListOf<User>()
-    private val adapter by lazy { MultiSelectSearchUserAdapter(selectedUsers) }
+    private val selectedTokenItems = mutableListOf<TokenItem>()
+    private val adapter by lazy { SelectableTokenAdapter(selectedTokenItems) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
     private var currentQuery: String = ""
-    private var defaultAssets = emptyList<User>()
+    private var defaultAssets = emptyList<TokenItem>()
 
-    private val groupAdapter: GroupSelectAdapter by lazy {
-        GroupSelectAdapter { user ->
-            selectedUsers.remove(user)
-            adapter.notifyItemChanged(adapter.currentList.indexOf(user))
+    private val groupAdapter: SelectedTokenAdapter by lazy {
+        SelectedTokenAdapter { tokenItem ->
+            selectedTokenItems.remove(tokenItem)
+            adapter.notifyItemChanged(adapter.currentList.indexOf(tokenItem))
             groupAdapter.notifyDataSetChanged()
         }
     }
@@ -81,23 +81,23 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             selectRv.adapter = groupAdapter
             adapter.callback =
-                object : WalletSearchUserCallback {
-                    override fun onUserClick(user: User) {
+                object : WalletSearchTokenItemCallback {
+                    override fun onTokenItemClick(tokenItem: TokenItem) {
                         binding.searchEt.hideKeyboard()
-                        if (selectedUsers.contains(user)) {
-                            selectedUsers.remove(user)
+                        if (selectedTokenItems.contains(tokenItem)) {
+                            selectedTokenItems.remove(tokenItem)
                         } else {
-                            selectedUsers.add(user)
+                            selectedTokenItems.add(tokenItem)
                         }
-                        adapter.notifyItemChanged(adapter.currentList.indexOf(user))
-                        groupAdapter.checkedUsers = selectedUsers
+                        adapter.notifyItemChanged(adapter.currentList.indexOf(tokenItem))
+                        groupAdapter.checkedTokenItems = selectedTokenItems
                         groupAdapter.notifyDataSetChanged()
-                        selectRv.scrollToPosition(selectedUsers.size - 1)
+                        selectRv.scrollToPosition(selectedTokenItems.size - 1)
                     }
                 }
-            depositTitle.setText(R.string.No_users)
+            depositTitle.setText(R.string.No_asset)
             depositTv.isVisible = false
-            searchEt.setHint(getString(R.string.search_placeholder_app))
+            searchEt.setHint(getString(R.string.search_placeholder_asset))
             disposable =
                 searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -118,7 +118,7 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                     )
         }
 
-        bottomViewModel.allUser()
+        bottomViewModel.assetItems()
             .observe(this) {
                 defaultAssets = it
                 if (binding.searchEt.et.text.isNullOrBlank()) {
@@ -140,7 +140,7 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                 binding.pb.isVisible = true
 
                 val localAssets = defaultAssets.filter {
-                    it.fullName?.contains(query) == true || it.identityNumber.contains(query)
+                    it.name?.contains(query) == true || it.symbol.contains(query)
                 }
                 adapter.submitList(localAssets) {
                     binding.assetRv.scrollToPosition(0)
@@ -148,15 +148,15 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                 binding.pb.isVisible = false
 
                 if (localAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY_USER
+                    binding.rvVa.displayedChild = POS_EMPTY_TOKEN
                 }
             }
     }
 
-    fun setOnUserClick(callback: (User) -> Unit): MultiSelectUserListBottomSheetDialogFragment {
-        this.onUser = callback
+    fun setOnTokenItemClick(callback: (TokenItem) -> Unit): MultiSelectTokenListBottomSheetDialogFragment {
+        this.onTokenItem = callback
         return this
     }
 
-    private var onUser: ((User) -> Unit)? = null
+    private var onTokenItem: ((TokenItem) -> Unit)? = null
 }

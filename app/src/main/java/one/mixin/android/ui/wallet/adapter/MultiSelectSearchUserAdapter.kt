@@ -29,7 +29,7 @@ class MultiSelectSearchUserAdapter(private val selectedUsers: MutableList<User>)
         fun bind(
             user: User,
             selectedUsers: MutableList<User>,
-            userClickListener: WalletSearchUserCallback? = null,
+            callback: WalletSearchUserCallback? = null,
         ) {
             binding.normal.text = user.fullName
             binding.mixinIdTv.text = user.identityNumber
@@ -39,7 +39,7 @@ class MultiSelectSearchUserAdapter(private val selectedUsers: MutableList<User>)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
                 binding.cb.isChecked = !binding.cb.isChecked
-                userClickListener?.onUserClick(user)
+                callback?.onUserClick(user)
                 notifyItemChanged(adapterPosition)
             }
         }
