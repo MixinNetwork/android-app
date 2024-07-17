@@ -64,21 +64,6 @@
             android:visibility="invisible" />
     </RelativeLayout>
 
-
-    <View
-        android:id="@+id/diver"
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="?attr/bg_window"
-        android:layout_below="@id/search_view" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/select_rv"
-        android:layout_width="match_parent"
-        android:background="?attr/bg_white"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/diver" />
-
     <RelativeLayout
         android:id="@+id/bottom_rl"
         android:layout_gravity="center"
@@ -91,6 +76,13 @@
         android:orientation="horizontal"
         android:translationZ="1dp"
         android:layout_alignParentBottom="true">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/select_rv"
+            android:layout_width="match_parent"
+            android:background="?attr/bg_white"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp" />
 
         <View
             android:id="@+id/center"
@@ -109,6 +101,7 @@
             android:gravity="center"
             android:textAllCaps="false"
             android:includeFontPadding="false"
+            android:layout_below="@id/select_rv"
             android:layout_toStartOf="@+id/center" />
 
         <Button
@@ -125,6 +118,7 @@
             android:textAllCaps="false"
             android:gravity="center"
             android:textSize="14sp"
+            android:layout_below="@id/select_rv"
             android:includeFontPadding="false" />
 
     </RelativeLayout>
@@ -133,7 +127,7 @@
         android:id="@+id/rv_va"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/select_rv"
+        android:layout_below="@id/search_view"
         android:layout_above="@id/bottom_rl">
 
         <androidx.recyclerview.widget.RecyclerView

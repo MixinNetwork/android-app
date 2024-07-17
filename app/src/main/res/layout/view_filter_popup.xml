@@ -6,9 +6,9 @@
     android:layout_height="32dp"
     android:orientation="horizontal"
     android:background="@drawable/bg_inscription_radio"
-    android:layout_marginEnd="16dp"
-    android:paddingStart="14dp"
-    android:paddingEnd="14dp"
+    android:layout_marginEnd="12dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
     android:gravity="center_vertical"
     tools:parentTag="android.widget.LinearLayout">
 

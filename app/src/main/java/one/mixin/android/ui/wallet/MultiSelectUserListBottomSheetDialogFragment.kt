@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
 @AndroidEntryPoint
 class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "UserListBottomSheetDialogFragment"
+        const val TAG = "MultiSelectUserListBottomSheetDialogFragment"
         const val POS_RV = 0
         const val POS_EMPTY = 1
         const val POS_EMPTY_USER = 2

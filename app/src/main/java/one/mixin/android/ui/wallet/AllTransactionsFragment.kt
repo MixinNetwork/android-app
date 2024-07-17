@@ -106,7 +106,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     .setOnTokenItemCallback { tokenItems ->
                         filterCriteria.tokenItems = tokenItems
                         loadFilter()
-                    }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    }.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
             }
             filterUser.setOnClickListener {
                 MultiSelectUserListBottomSheetDialogFragment.newInstance()
