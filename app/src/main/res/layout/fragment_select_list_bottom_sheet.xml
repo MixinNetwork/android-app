@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/ph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#22000000" />
+
+    <RelativeLayout
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@drawable/bg_upper_round"
+        android:layout_below="@id/ph"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageButton
+            android:id="@+id/close_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            android:src="@drawable/ic_close_black"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.SearchView
+            android:id="@+id/search_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:layout_toEndOf="@+id/close_ib"
+            android:background="@null"
+            android:drawablePadding="6dp"
+            android:gravity="center_vertical"
+            android:hint="@string/search_placeholder_app"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
+            android:maxLines="1"
+            app:circle_clear_icon="true"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_assist"
+            android:textSize="14sp" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:id="@+id/pb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="64dp"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+
+    <View
+        android:id="@+id/diver"
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="?attr/bg_window"
+        android:layout_below="@id/search_view"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/select_rv"
+        android:layout_width="match_parent"
+        android:background="?attr/bg_white"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/diver"/>
+
+    <ViewAnimator
+        android:id="@+id/rv_va"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/select_rv">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/asset_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            app:layoutManager="LinearLayoutManager" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_search_empty"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/margin16"
+                android:text="@string/NO_RESULTS"
+                android:textColor="?attr/text_assist" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white">
+
+            <TextView
+                android:id="@+id/deposit_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Dont_have_assets"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="@dimen/margin12"
+                android:layout_above="@id/deposit_tv"
+                android:textSize="16sp"
+                android:textColor="?attr/text_primary" />
+
+            <TextView
+                android:id="@+id/deposit_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/Receive"
+                android:textSize="16sp"
+                android:textColor="?attr/text_blue" />
+        </RelativeLayout>
+    </ViewAnimator>
+</RelativeLayout>

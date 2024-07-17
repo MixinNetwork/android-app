@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,40 +15,48 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
+import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.adapter.SearchUserAdapter
+import one.mixin.android.ui.group.adapter.GroupSelectAdapter
+import one.mixin.android.ui.wallet.adapter.MultiSelectSearchUserAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchUserCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
-class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "UserListBottomSheetDialogFragment"
         const val POS_RV = 0
         const val POS_EMPTY = 1
         const val POS_EMPTY_USER = 2
 
-        fun newInstance() = UserListBottomSheetDialogFragment()
+        fun newInstance() = MultiSelectUserListBottomSheetDialogFragment()
     }
 
-    private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
 
-
-
-    private val adapter by lazy { SearchUserAdapter() }
-
+    private val selectedUsers = mutableListOf<User>()
+    private val adapter by lazy { MultiSelectSearchUserAdapter(selectedUsers) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<User>()
+
+    private val groupAdapter: GroupSelectAdapter by lazy {
+        GroupSelectAdapter { user ->
+            selectedUsers.remove(user)
+            adapter.notifyItemChanged(adapter.currentList.indexOf(user))
+            groupAdapter.notifyDataSetChanged()
+        }
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -69,35 +78,44 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
             assetRv.adapter = adapter
+            selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            selectRv.adapter = groupAdapter
             adapter.callback =
                 object : WalletSearchUserCallback {
                     override fun onUserClick(user: User) {
                         binding.searchEt.hideKeyboard()
-                        onUser?.invoke(user)
-                        dismiss()
+                        if (selectedUsers.contains(user)) {
+                            selectedUsers.remove(user)
+                        } else {
+                            selectedUsers.add(user)
+                        }
+                        adapter.notifyItemChanged(adapter.currentList.indexOf(user))
+                        groupAdapter.checkedUsers = selectedUsers
+                        groupAdapter.notifyDataSetChanged()
+                        selectRv.scrollToPosition(selectedUsers.size - 1)
                     }
                 }
             depositTitle.setText(R.string.No_users)
             depositTv.isVisible = false
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-                disposable =
-                    searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDispose(destroyScope)
-                        .subscribe(
-                            {
-                                if (it.isNullOrBlank()) {
-                                    binding.rvVa.displayedChild = POS_RV
-                                    adapter.submitList(defaultAssets)
-                                } else {
-                                    if (it.toString() != currentQuery) {
-                                        currentQuery = it.toString()
-                                        search(it.toString())
-                                    }
+            disposable =
+                searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(destroyScope)
+                    .subscribe(
+                        {
+                            if (it.isNullOrBlank()) {
+                                binding.rvVa.displayedChild = POS_RV
+                                adapter.submitList(defaultAssets)
+                            } else {
+                                if (it.toString() != currentQuery) {
+                                    currentQuery = it.toString()
+                                    search(it.toString())
                                 }
-                            },
-                            {},
-                        )
+                            }
+                        },
+                        {},
+                    )
         }
 
         bottomViewModel.allUser()
@@ -124,8 +142,6 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val localAssets = defaultAssets.filter {
                     it.fullName?.contains(query) == true || it.identityNumber.contains(query)
                 }
-                adapter.submitList(localAssets)
-
                 adapter.submitList(localAssets) {
                     binding.assetRv.scrollToPosition(0)
                 }
@@ -137,7 +153,7 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
-    fun setOnUserClick(callback: (User) -> Unit): UserListBottomSheetDialogFragment {
+    fun setOnUserClick(callback: (User) -> Unit): MultiSelectUserListBottomSheetDialogFragment {
         this.onUser = callback
         return this
     }

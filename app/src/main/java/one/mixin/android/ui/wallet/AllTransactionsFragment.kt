@@ -102,11 +102,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             }
             filterUser.setOnClickListener {
-                UserListBottomSheetDialogFragment.newInstance()
+                MultiSelectUserListBottomSheetDialogFragment.newInstance()
                     .setOnUserClick { user->
                         filterCriteria.user = user
                         loadFilter()
-                    }.showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
+                    }.showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
             }
             filterTime.setOnClickListener {
                 datePicker()
