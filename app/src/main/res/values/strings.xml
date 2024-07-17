@@ -1586,4 +1586,6 @@
     <string name="No_users">No users</string>
     <string name="x_assets">%1$d Assets</string>
     <string name="x_recipients">%1$d Recipients</string>
+    <string name="Oldest">Oldest</string>
+    <string name="Value">Value</string>
 </resources>

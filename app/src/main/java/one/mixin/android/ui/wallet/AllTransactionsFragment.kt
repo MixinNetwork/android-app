@@ -1,9 +1,12 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.appcompat.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
@@ -17,10 +20,14 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
+import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -55,7 +62,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-                rightAnimator.setOnClickListener { showFiltersSheet() }
+                rightAnimator.setOnClickListener { sortMenu.show() }
             }
             transactionsRv.itemAnimator = null
             transactionsRv.adapter = adapter
@@ -248,5 +255,36 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private fun datePicker() {
 
+    }
+
+    private val sortMenu by lazy {
+        ListPopupWindow(requireContext()).apply {
+            anchorView = binding.titleView.rightIb
+            setAdapter(menuAdapter)
+            setOnItemClickListener { _, _, position, _ ->
+                dismiss()
+            }
+            width = requireContext().dpToPx(250f)
+            height = ListPopupWindow.WRAP_CONTENT
+            isModal = true
+            setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
+            setDropDownGravity(Gravity.END)
+            horizontalOffset = requireContext().dpToPx(2f)
+            verticalOffset = requireContext().dpToPx(10f)
+            setOnDismissListener {
+            }
+        }
+    }
+
+    private val menuAdapter: SortMenuAdapter by lazy {
+        val menuItems = listOf(
+            SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
+            SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest),
+            SortMenuData(SortOrder.Value, R.drawable.ic_menu_value, R.string.Value),
+            SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical, R.string.Alphabetical),
+        )
+        SortMenuAdapter(requireContext(), menuItems).apply {
+            checkPosition = 0
+        }
     }
 }
