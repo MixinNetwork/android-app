@@ -8,7 +8,7 @@ import one.mixin.android.databinding.ItemGroupFriendBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-class MultiSelectSearchUserAdapter(private val selectedUsers: MutableList<User>) : ListAdapter<User, MultiSelectSearchUserAdapter.SearchUserViewHolder>(User.DIFF_CALLBACK) {
+class SelectableUserAdapter(private val selectedUsers: MutableList<User>) : ListAdapter<User, SelectableUserAdapter.SearchUserViewHolder>(User.DIFF_CALLBACK) {
     var callback: WalletSearchUserCallback? = null
 
     override fun onCreateViewHolder(

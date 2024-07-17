@@ -20,8 +20,8 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.group.adapter.GroupSelectAdapter
-import one.mixin.android.ui.wallet.adapter.MultiSelectSearchUserAdapter
+import one.mixin.android.ui.wallet.adapter.SelectableUserAdapter
+import one.mixin.android.ui.wallet.adapter.SelectedUserAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchUserCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
@@ -43,15 +43,15 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
 
     private val selectedUsers = mutableListOf<User>()
-    private val adapter by lazy { MultiSelectSearchUserAdapter(selectedUsers) }
+    private val adapter by lazy { SelectableUserAdapter(selectedUsers) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<User>()
 
-    private val groupAdapter: GroupSelectAdapter by lazy {
-        GroupSelectAdapter { user ->
+    private val groupAdapter: SelectedUserAdapter by lazy {
+        SelectedUserAdapter { user ->
             selectedUsers.remove(user)
             adapter.notifyItemChanged(adapter.currentList.indexOf(user))
             groupAdapter.notifyDataSetChanged()
