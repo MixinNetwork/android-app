@@ -74,7 +74,7 @@
         android:clipToPadding="false"
         android:clipChildren="false"
         android:orientation="horizontal"
-        android:translationZ="1dp"
+        android:elevation="8dp"
         android:layout_alignParentBottom="true">
 
         <androidx.recyclerview.widget.RecyclerView
