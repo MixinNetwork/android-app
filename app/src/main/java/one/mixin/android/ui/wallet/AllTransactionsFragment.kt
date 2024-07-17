@@ -28,7 +28,6 @@ import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -101,6 +100,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
         bindLiveData()
         binding.apply {
+            filterType.setOnClickListener {
+                typeMenu.show()
+            }
             filterAsset.setOnClickListener {
                 MultiSelectTokenListBottomSheetDialogFragment.newInstance()
                     .setOnTokenItemCallback { tokenItems ->
@@ -125,6 +127,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private fun loadFilter() {
         binding.apply {
+            filterType.setTitle(R.string.All)
             filterAsset.updateTokens(R.string.All_Assets, filterCriteria.tokenItems)
             filterUser.updateUsers(R.string.All_Recipients, filterCriteria.users)
             filterTime.setTitle(R.string.All_Dates)
@@ -284,6 +287,37 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical, R.string.Alphabetical),
         )
         SortMenuAdapter(requireContext(), menuItems).apply {
+            checkPosition = 0
+        }
+    }
+
+    private val typeMenu by lazy {
+        ListPopupWindow(requireContext()).apply {
+            anchorView = binding.filterType
+            setAdapter(typeAdapter)
+            setOnItemClickListener { _, _, position, _ ->
+                dismiss()
+            }
+            width = requireContext().dpToPx(250f)
+            height = ListPopupWindow.WRAP_CONTENT
+            isModal = true
+            setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
+            setDropDownGravity(Gravity.START)
+            horizontalOffset = 0
+            verticalOffset = requireContext().dpToPx(10f)
+            setOnDismissListener {
+            }
+        }
+    }
+
+    private val typeAdapter: TypeMenuAdapter by lazy {
+        val menuItems = listOf(
+            TypeMenuData(SnapshotType.All, null, R.string.All),
+            TypeMenuData(SnapshotType.Deposit, R.drawable.ic_menu_type_deoisit, R.string.Deposit),
+            TypeMenuData(SnapshotType.Withdrawal, R.drawable.ic_menu_type_withdrawal, R.string.Withdrawal),
+            TypeMenuData(SnapshotType.Transfer, R.drawable.ic_menu_type_transfer, R.string.Transfer),
+        )
+        TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = 0
         }
     }
