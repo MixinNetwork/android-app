@@ -116,6 +116,14 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         },
                         {},
                     )
+            cancelButton.setOnClickListener {
+                onUser?.invoke(null)
+                dismiss()
+            }
+            applyButton.setOnClickListener {
+                onUser?.invoke(selectedUsers)
+                dismiss()
+            }
         }
 
         bottomViewModel.allUser()
@@ -153,10 +161,10 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             }
     }
 
-    fun setOnUserClick(callback: (User) -> Unit): MultiSelectUserListBottomSheetDialogFragment {
+    fun setOnUserCallback(callback: (List<User>?) -> Unit): MultiSelectUserListBottomSheetDialogFragment {
         this.onUser = callback
         return this
     }
 
-    private var onUser: ((User) -> Unit)? = null
+    private var onUser: ((List<User>?) -> Unit)? = null
 }

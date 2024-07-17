@@ -96,15 +96,15 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             filterAsset.setOnClickListener {
                 MultiSelectTokenListBottomSheetDialogFragment.newInstance()
-                    .setOnTokenItemClick { tokenItem ->
-                        filterCriteria.tokenItem = tokenItem
+                    .setOnTokenItemCallback { tokenItems ->
+                        filterCriteria.tokenItems = tokenItems
                         loadFilter()
                     }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             }
             filterUser.setOnClickListener {
                 MultiSelectUserListBottomSheetDialogFragment.newInstance()
-                    .setOnUserClick { user->
-                        filterCriteria.user = user
+                    .setOnUserCallback { users->
+                        filterCriteria.users = users
                         loadFilter()
                     }.showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
             }
@@ -118,8 +118,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private fun loadFilter() {
         binding.apply {
-            filterAsset.loadToken(filterCriteria.tokenItem)
-            filterUser.loadUser(filterCriteria.user)
+            filterAsset.updateTokens(R.string.All_Assets, filterCriteria.tokenItems)
+            filterUser.updateUsers(R.string.All_Recipients, filterCriteria.users)
             filterTime.setTitle(R.string.All_Dates)
         }
     }

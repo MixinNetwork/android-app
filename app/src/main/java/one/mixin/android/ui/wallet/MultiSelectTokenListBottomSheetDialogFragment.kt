@@ -98,6 +98,14 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             depositTitle.setText(R.string.No_asset)
             depositTv.isVisible = false
             searchEt.setHint(getString(R.string.search_placeholder_asset))
+            cancelButton.setOnClickListener {
+                onTokenItem?.invoke(null)
+                dismiss()
+            }
+            applyButton.setOnClickListener {
+                onTokenItem?.invoke(selectedTokenItems)
+                dismiss()
+            }
             disposable =
                 searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -153,10 +161,10 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             }
     }
 
-    fun setOnTokenItemClick(callback: (TokenItem) -> Unit): MultiSelectTokenListBottomSheetDialogFragment {
+    fun setOnTokenItemCallback(callback: (List<TokenItem>?) -> Unit): MultiSelectTokenListBottomSheetDialogFragment {
         this.onTokenItem = callback
         return this
     }
 
-    private var onTokenItem: ((TokenItem) -> Unit)? = null
+    private var onTokenItem: ((List<TokenItem>?) -> Unit)? = null
 }
