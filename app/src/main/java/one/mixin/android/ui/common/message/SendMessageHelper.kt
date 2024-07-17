@@ -5,7 +5,6 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -17,7 +16,6 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.encodeBlurHash
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
@@ -298,7 +296,18 @@ class SendMessageHelper
                 UUID.randomUUID().toString(),
                 conversationId,
                 sender.userId,
-                content,
+                try {
+                    val gson = GsonHelper.customGson
+                    val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
+                    if (appCardData.canShare) {
+                        content
+                    } else { // remove actions
+                        val data = appCardData.copy(actions = null)
+                        gson.toJson(data)
+                    }
+                } catch (e: Exception) {
+                    content
+                },
                 nowInUtc(),
                 MessageStatus.SENDING.name,
             )
