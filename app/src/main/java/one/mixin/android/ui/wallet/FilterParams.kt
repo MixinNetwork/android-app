@@ -48,7 +48,23 @@ class FilterParams {
         val filters = mutableListOf<String>()
 
         if (type != SnapshotType.all) {
-            filters.add("s.type = ${type.name}")
+            when(type){
+                SnapshotType.snapshot -> {
+                    filters.add("(s.deposit IS NULL OR s.deposit = 'null')")
+                    filters.add("(s.withdrawal IS NULL OR s.withdrawal = 'null')")
+                }
+
+                SnapshotType.deposit -> {
+                    filters.add("s.deposit IS NOT NULL")
+                    filters.add("s.deposit != 'null'")
+                }
+
+                SnapshotType.withdrawal -> {
+                    filters.add("s.withdrawal IS NOT NULL")
+                    filters.add("s.withdrawal != 'null'")
+                }
+                else->{}
+            }
         }
 
         tokenItems?.let {
