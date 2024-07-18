@@ -101,20 +101,30 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         bindLiveData()
         binding.apply {
             filterType.setOnClickListener {
+                filterType.open()
                 typeMenu.show()
             }
             filterAsset.setOnClickListener {
+                filterAsset.open()
                 MultiSelectTokenListBottomSheetDialogFragment.newInstance()
                     .setOnTokenItemCallback { tokenItems ->
                         filterCriteria.tokenItems = tokenItems
                         loadFilter()
-                    }.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+                    }
+                    .setOnDismissListener {
+                        filterAsset.close()
+                    }
+                    .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
             }
             filterUser.setOnClickListener {
+                filterUser.open()
                 MultiSelectUserListBottomSheetDialogFragment.newInstance()
                     .setOnUserCallback { users->
                         filterCriteria.users = users
                         loadFilter()
+                    }
+                    .setOnDismissListener {
+                        filterUser.close()
                     }.showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
             }
             filterTime.setOnClickListener {
@@ -306,6 +316,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             horizontalOffset = 0
             verticalOffset = requireContext().dpToPx(10f)
             setOnDismissListener {
+                binding.filterType.close()
             }
         }
     }

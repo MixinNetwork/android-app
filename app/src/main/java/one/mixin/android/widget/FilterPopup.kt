@@ -10,6 +10,7 @@ import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewFilterPopupBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
@@ -112,5 +113,17 @@ class FilterPopup @JvmOverloads constructor(
                 setTitle(context.getString(R.string.x_recipients, tokens.size))
             }
         }
+    }
+
+    fun open() {
+        setBackgroundResource(R.drawable.bg_inscription_drop)
+        binding.title.setTextColor(0xFF4B7CDD.toInt())
+        binding.arrow.animate().rotation(-180f).setDuration(200).start()
+    }
+
+    fun close() {
+        setBackgroundResource(R.drawable.bg_inscription_radio)
+        binding.title.setTextColor(context.colorAttr(R.attr.text_primary))
+        binding.arrow.animate().rotation(0f).setDuration(200).start()
     }
 }

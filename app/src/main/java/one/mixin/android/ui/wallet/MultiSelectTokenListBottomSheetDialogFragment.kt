@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -163,6 +164,11 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
 
     fun setOnTokenItemCallback(callback: (List<TokenItem>?) -> Unit): MultiSelectTokenListBottomSheetDialogFragment {
         this.onTokenItem = callback
+        return this
+    }
+
+    fun setOnDismissListener(onDismissListener: DialogInterface.OnDismissListener): MultiSelectTokenListBottomSheetDialogFragment {
+        dialog?.setOnDismissListener(onDismissListener)
         return this
     }
 
