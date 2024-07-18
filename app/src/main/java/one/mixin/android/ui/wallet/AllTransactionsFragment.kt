@@ -353,7 +353,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
             SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest),
             SortMenuData(SortOrder.Value, R.drawable.ic_menu_value, R.string.Value),
-            SortMenuData(SortOrder.Amount, R.drawable.ic_alphabetical, R.string.Amount),
+            SortMenuData(SortOrder.Amount, R.drawable.ic_menu_amount, R.string.Amount),
         )
         SortMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.order) {

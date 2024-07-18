@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewFilterPopupBinding
 import one.mixin.android.extension.colorAttr
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -56,7 +55,7 @@ class FilterPopup @JvmOverloads constructor(
                 binding.icon1.isVisible = true
                 binding.icon2.isVisible = false
                 binding.icon3.isVisible = false
-                binding.icon1.loadImage(tokens[0].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+                binding.icon1.loadUrl(tokens[0].iconUrl, holder = R.drawable.ic_avatar_place_holder)
                 setTitle(tokens[0].symbol)
             }
             else -> {
@@ -65,52 +64,52 @@ class FilterPopup @JvmOverloads constructor(
                 binding.icon3.isVisible = tokens.size > 2
 
                 if (tokens.isNotEmpty()) {
-                    binding.icon1.loadImage(tokens[0].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    binding.icon1.loadUrl(tokens[0].iconUrl, holder = R.drawable.ic_avatar_place_holder)
                 }
                 if (tokens.size > 1) {
-                    binding.icon2.loadImage(tokens[1].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    binding.icon2.loadUrl(tokens[1].iconUrl, holder = R.drawable.ic_avatar_place_holder)
 
                 }
                 if (tokens.size > 2) {
-                    binding.icon3.loadImage(tokens[2].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    binding.icon3.loadUrl(tokens[2].iconUrl, holder = R.drawable.ic_avatar_place_holder)
                 }
                 setTitle(context.getString(R.string.x_assets, tokens.size))
             }
         }
     }
 
-    fun updateUsers(@StringRes strRes: Int, tokens: List<User>?) {
-        if (tokens.isNullOrEmpty()) {
+    fun updateUsers(@StringRes strRes: Int, users: List<User>?) {
+        if (users.isNullOrEmpty()) {
             binding.iconGroup.isVisible = false
             setTitle(strRes)
             return
         }
 
         binding.iconGroup.isVisible = true
-        when (tokens.size) {
+        when (users.size) {
             1 -> {
                 binding.icon1.isVisible = true
                 binding.icon2.isVisible = false
                 binding.icon3.isVisible = false
-                binding.icon1.loadImage(tokens[0].avatarUrl, holder = R.drawable.ic_avatar_place_holder)
-                setTitle(tokens[0].fullName)
+                binding.icon1.setInfo(users[0].fullName, users[0].avatarUrl, users[0].identityNumber)
+                setTitle(users[0].fullName)
             }
+
             else -> {
                 binding.icon1.isVisible = true
-                binding.icon2.isVisible = tokens.size > 1
-                binding.icon3.isVisible = tokens.size > 2
+                binding.icon2.isVisible = users.size > 1
+                binding.icon3.isVisible = users.size > 2
 
-                if (tokens.isNotEmpty()) {
-                    binding.icon1.loadImage(tokens[0].avatarUrl, holder = R.drawable.ic_avatar_place_holder)
+                if (users.isNotEmpty()) {
+                    binding.icon1.setInfo(users[0].fullName, users[1].avatarUrl, users[0].identityNumber)
                 }
-                if (tokens.size > 1) {
-                    binding.icon2.loadImage(tokens[1].avatarUrl, holder = R.drawable.ic_avatar_place_holder)
-
+                if (users.size > 1) {
+                    binding.icon2.setInfo(users[1].fullName, users[1].avatarUrl, users[1].identityNumber)
                 }
-                if (tokens.size > 2) {
-                    binding.icon3.loadImage(tokens[2].avatarUrl, holder = R.drawable.ic_avatar_place_holder)
+                if (users.size > 2) {
+                    binding.icon3.setInfo(users[2].fullName, users[2].avatarUrl, users[2].identityNumber)
                 }
-                setTitle(context.getString(R.string.x_recipients, tokens.size))
+                setTitle(context.getString(R.string.x_recipients, users.size))
             }
         }
     }

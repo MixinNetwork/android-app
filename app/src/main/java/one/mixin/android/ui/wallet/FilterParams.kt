@@ -82,7 +82,7 @@ class FilterParams {
             SortOrder.Recent -> "ORDER BY s.created_at DESC"
             SortOrder.Oldest -> "ORDER BY s.created_at ASC"
             SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC"
-            SortOrder.Amount -> "ORDER BY s.amount ASC"
+            SortOrder.Amount -> "ORDER BY s.amount DESC"
             else -> ""
         }
 

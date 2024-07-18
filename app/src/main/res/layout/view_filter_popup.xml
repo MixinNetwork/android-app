@@ -19,14 +19,14 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp">
 
-        <one.mixin.android.widget.CircleImageView
+        <one.mixin.android.widget.AvatarView
             android:id="@+id/icon_1"
             android:layout_width="20dp"
             android:layout_height="20dp"
             app:border_color="?attr/bg_white"
             app:border_width="1dp" />
 
-        <one.mixin.android.widget.CircleImageView
+        <one.mixin.android.widget.AvatarView
             android:id="@+id/icon_2"
             android:layout_width="20dp"
             android:layout_height="20dp"
@@ -34,7 +34,7 @@
             app:border_width="1dp"
             android:layout_marginStart="10dp" />
 
-        <one.mixin.android.widget.CircleImageView
+        <one.mixin.android.widget.AvatarView
             android:id="@+id/icon_3"
             android:layout_width="20dp"
             android:layout_height="20dp"

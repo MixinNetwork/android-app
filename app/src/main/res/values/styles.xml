@@ -389,6 +389,7 @@
     <style name="AppTheme.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
         <item name="boxStrokeColor">?bg_window</item>
         <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
         <item name="hintTextColor">?text_assist</item>
     </style>
 
