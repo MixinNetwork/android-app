@@ -38,7 +38,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
@@ -162,8 +161,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             filterType.setTitle(filterParams.typeTitle)
             filterAsset.updateTokens(R.string.All_Assets, filterParams.tokenItems)
             filterUser.updateUsers(R.string.All_Recipients, filterParams.users)
-            filterTime.setTitle(R.string.All_Dates)
+            filterTime.setTitle(filterParams.selectTime?:getString(R.string.All_Dates))
             Timber.e(filterParams.toString())
+            bindLiveData()
         }
     }
 
@@ -205,9 +205,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun onApplyClick() {
-        initialLoadKey = null
-        bindLiveData()
-        filtersSheet.dismiss()
+        // Do noting
     }
 
     private fun refreshAllPendingDeposit() =
@@ -242,31 +240,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
 
     private fun bindLiveData() {
-        val orderByAmount = currentOrder == R.id.sort_amount
-        when (currentType) {
-            R.id.filters_radio_all -> {
-                bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-
-            R.id.filters_radio_transfer -> {
-                bindLiveData(
-                    walletViewModel.allSnapshots(
-                        SafeSnapshotType.snapshot.name,
-                        SafeSnapshotType.pending.name,
-                        initialLoadKey = initialLoadKey,
-                        orderByAmount = orderByAmount,
-                    ),
-                )
-            }
-
-            R.id.filters_radio_deposit -> {
-                bindLiveData(walletViewModel.allSnapshots(SafeSnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-
-            R.id.filters_radio_withdrawal -> {
-                bindLiveData(walletViewModel.allSnapshots(SafeSnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-            }
-        }
+        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, filterParams))
     }
 
     private fun showEmpty(show: Boolean) {
@@ -364,10 +338,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             setAdapter(typeAdapter)
             setOnItemClickListener { _, _, position, _ ->
                 filterParams.type = when (position) {
-                    1 -> SnapshotType.Deposit
-                    2 -> SnapshotType.Withdrawal
-                    3 -> SnapshotType.Transfer
-                    else -> SnapshotType.All
+                    1 -> SnapshotType.deposit
+                    2 -> SnapshotType.withdrawal
+                    3 -> SnapshotType.snapshot
+                    else -> SnapshotType.all
                 }
                 loadFilter()
                 dismiss()
@@ -387,10 +361,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val typeAdapter: TypeMenuAdapter by lazy {
         val menuItems = listOf(
-            TypeMenuData(SnapshotType.All, null, R.string.All),
-            TypeMenuData(SnapshotType.Deposit, R.drawable.ic_menu_type_deoisit, R.string.Deposit),
-            TypeMenuData(SnapshotType.Withdrawal, R.drawable.ic_menu_type_withdrawal, R.string.Withdrawal),
-            TypeMenuData(SnapshotType.Transfer, R.drawable.ic_menu_type_transfer, R.string.Transfer),
+            TypeMenuData(SnapshotType.all, null, R.string.All),
+            TypeMenuData(SnapshotType.deposit, R.drawable.ic_menu_type_deoisit, R.string.Deposit),
+            TypeMenuData(SnapshotType.withdrawal, R.drawable.ic_menu_type_withdrawal, R.string.Withdrawal),
+            TypeMenuData(SnapshotType.snapshot, R.drawable.ic_menu_type_transfer, R.string.Transfer),
         )
         TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = filterParams.type.value

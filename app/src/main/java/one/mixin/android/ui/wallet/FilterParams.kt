@@ -1,14 +1,18 @@
 package one.mixin.android.ui.wallet
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.R
+import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
+import org.threeten.bp.format.DateTimeFormatter
 
 class FilterParams {
     var order: SortOrder = SortOrder.Recent
-    var type: SnapshotType = SnapshotType.All
+    var type: SnapshotType = SnapshotType.all
     var tokenItems: List<TokenItem>? = null
     var users: List<User>? = null
     var startTime: Long? = null
@@ -18,13 +22,69 @@ class FilterParams {
         return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} users${users?.map { it.fullName }} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }
 
+    val selectTime: String?
+        get() {
+            if (startTime == null || endTime == null) return null
+            else {
+                val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+                    .withZone(ZoneId.systemDefault())
+                val start = Instant.ofEpochMilli(startTime!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                val end = Instant.ofEpochMilli(endTime!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                return "${formatter.format(start)} - ${formatter.format(end)}"
+            }
+        }
+
     val typeTitle: Int
         get() {
             return when (type) {
-                SnapshotType.All -> R.string.All
-                SnapshotType.Withdrawal -> R.string.Withdrawal
-                SnapshotType.Deposit -> R.string.Deposit
-                SnapshotType.Transfer -> R.string.Transfer
+                SnapshotType.all -> R.string.All
+                SnapshotType.withdrawal -> R.string.Withdrawal
+                SnapshotType.deposit -> R.string.Deposit
+                SnapshotType.snapshot -> R.string.Transfer
             }
         }
+
+    fun buildQuery(): SimpleSQLiteQuery {
+        val filters = mutableListOf<String>()
+
+        if (type != SnapshotType.all) {
+            filters.add("s.type = ${type.name}")
+        }
+
+        tokenItems?.let {
+            if (it.isNotEmpty()) {
+                val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
+                filters.add("s.asset_id IN ($tokenIds)")
+            }
+        }
+
+        users?.let {
+            if (it.isNotEmpty()) {
+                val userIds = it.joinToString(", ") { user -> "'${user.userId}'" }
+                filters.add("s.opponent_id IN ($userIds)")
+            }
+        }
+
+        startTime?.let {
+            filters.add("s.created_at >= '${Instant.ofEpochMilli(it)}'")
+        }
+
+        endTime?.let {
+            filters.add("s.created_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
+        }
+        val whereSql = if (filters.isEmpty()) {
+            ""
+        } else {
+            "WHERE ${filters.joinToString(" AND ")}"
+        }
+
+        val orderSql = when (order) {
+            SortOrder.Recent -> "ORDER BY s.created_at DESC"
+            SortOrder.Alphabetical -> "ORDER BY u.full_name ASC"
+            SortOrder.Oldest -> "ORDER BY s.created_at ASC"
+            SortOrder.Value -> "ORDER BY s.amount DESC"
+        }
+
+        return SimpleSQLiteQuery("$SNAPSHOT_ITEM_PREFIX $whereSql $orderSql")
+    }
 }

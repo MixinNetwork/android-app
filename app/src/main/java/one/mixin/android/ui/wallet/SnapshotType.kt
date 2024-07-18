@@ -1,11 +1,11 @@
 package one.mixin.android.ui.wallet;
 
+@Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
 enum class SnapshotType(val value: Int) {
-    All(0),
-    Deposit(1),
-    Withdrawal(2),
-    Transfer(3);
-
+    all(0),
+    deposit(1),
+    withdrawal(2),
+    snapshot(3);
 
     companion object {
         fun fromInt(value: Int): SnapshotType {

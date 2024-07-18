@@ -4,9 +4,15 @@ import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
+import one.mixin.android.vo.InscriptionCollection
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.Token
 
 @Dao
 interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
@@ -77,8 +83,8 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE trace_id = :traceId")
     suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
 
-    @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC")
-    fun allSnapshots(): DataSource.Factory<Int, SnapshotItem>
+    @RawQuery(observedEntities = [SafeSnapshot::class, User::class, Token::class, InscriptionItem::class, InscriptionCollection::class])
+    fun getSnapshots(query: SupportSQLiteQuery): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * t.price_usd) DESC")
     fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>
