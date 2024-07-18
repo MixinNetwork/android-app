@@ -100,11 +100,11 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             depositTv.isVisible = false
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             cancelButton.setOnClickListener {
-                onTokenItem?.invoke(null)
+                onMultiSelectTokenListener?.onTokenSelect(null)
                 dismiss()
             }
             applyButton.setOnClickListener {
-                onTokenItem?.invoke(selectedTokenItems)
+                onMultiSelectTokenListener?.onTokenSelect(selectedTokenItems)
                 dismiss()
             }
             disposable =
@@ -149,7 +149,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 binding.pb.isVisible = true
 
                 val localAssets = defaultAssets.filter {
-                    it.name?.contains(query) == true || it.symbol.contains(query)
+                    it.name.contains(query) || it.symbol.contains(query)
                 }
                 adapter.submitList(localAssets) {
                     binding.assetRv.scrollToPosition(0)
@@ -162,15 +162,20 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             }
     }
 
-    fun setOnTokenItemCallback(callback: (List<TokenItem>?) -> Unit): MultiSelectTokenListBottomSheetDialogFragment {
-        this.onTokenItem = callback
+    fun setOnMultiSelectTokenListener(onMultiSelectTokenListener: OnMultiSelectTokenListener): MultiSelectTokenListBottomSheetDialogFragment {
+        this.onMultiSelectTokenListener = onMultiSelectTokenListener
         return this
     }
 
-    fun setOnDismissListener(onDismissListener: DialogInterface.OnDismissListener): MultiSelectTokenListBottomSheetDialogFragment {
-        dialog?.setOnDismissListener(onDismissListener)
-        return this
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onMultiSelectTokenListener?.onDismiss()
     }
 
-    private var onTokenItem: ((List<TokenItem>?) -> Unit)? = null
+    private var onMultiSelectTokenListener: OnMultiSelectTokenListener? = null
+
+    interface OnMultiSelectTokenListener {
+        fun onTokenSelect(tokenItems: List<TokenItem>?)
+        fun onDismiss()
+    }
 }

@@ -118,11 +118,11 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         {},
                     )
             cancelButton.setOnClickListener {
-                onUser?.invoke(null)
+                onMultiSelectUserListener?.onUserSelect(null)
                 dismiss()
             }
             applyButton.setOnClickListener {
-                onUser?.invoke(selectedUsers)
+                onMultiSelectUserListener?.onUserSelect(selectedUsers)
                 dismiss()
             }
         }
@@ -162,15 +162,20 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             }
     }
 
-    fun setOnUserCallback(callback: (List<User>?) -> Unit): MultiSelectUserListBottomSheetDialogFragment {
-        this.onUser = callback
+    fun setOnMultiSelectUserListener(onMultiSelectUserListener: OnMultiSelectUserListener): MultiSelectUserListBottomSheetDialogFragment {
+        this.onMultiSelectUserListener = onMultiSelectUserListener
         return this
     }
 
-    fun setOnDismissListener(onDismissListener: DialogInterface.OnDismissListener): MultiSelectUserListBottomSheetDialogFragment {
-        dialog?.setOnDismissListener(onDismissListener)
-        return this
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onMultiSelectUserListener?.onDismiss()
     }
 
-    private var onUser: ((List<User>?) -> Unit)? = null
+    private var onMultiSelectUserListener: OnMultiSelectUserListener? = null
+
+    interface OnMultiSelectUserListener {
+        fun onUserSelect(users: List<User>?)
+        fun onDismiss()
+    }
 }

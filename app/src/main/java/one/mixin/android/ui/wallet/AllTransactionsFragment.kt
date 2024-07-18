@@ -24,7 +24,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
@@ -37,8 +36,10 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.User
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.SafeSnapshotType
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
 
@@ -52,8 +53,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val adapter = SnapshotPagedAdapter()
 
-    private val filterCriteria by lazy {
-        FilterCriteria()
+    private val filterParams by lazy {
+        FilterParams()
     }
 
     override fun onViewCreated(
@@ -65,7 +66,15 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-                rightAnimator.setOnClickListener { sortMenu.show() }
+                rightAnimator.setOnClickListener {
+                    menuAdapter.checkPosition = when (filterParams.order) {
+                        SortOrder.Recent -> 0
+                        SortOrder.Oldest -> 1
+                        SortOrder.Value -> 2
+                        else -> 3
+                    }
+                    sortMenu.show()
+                }
             }
             transactionsRv.itemAnimator = null
             transactionsRv.adapter = adapter
@@ -106,31 +115,39 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             filterType.setOnClickListener {
                 filterType.open()
+                typeAdapter.checkPosition = filterParams.type.value
                 typeMenu.show()
             }
             filterAsset.setOnClickListener {
                 filterAsset.open()
                 MultiSelectTokenListBottomSheetDialogFragment.newInstance()
-                    .setOnTokenItemCallback { tokenItems ->
-                        filterCriteria.tokenItems = tokenItems
-                        loadFilter()
-                    }
-                    .setOnDismissListener {
-                        filterAsset.close()
-                    }
+                    .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+                        override fun onTokenSelect(tokenItems: List<TokenItem>?) {
+                            filterAsset.close()
+                            filterParams.tokenItems = tokenItems
+                            loadFilter()
+                        }
+
+                        override fun onDismiss() {
+                            filterAsset.close()
+                        }
+                    })
                     .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
             }
             filterUser.setOnClickListener {
                 filterUser.open()
                 MultiSelectUserListBottomSheetDialogFragment.newInstance()
-                    .setOnUserCallback { users->
-                        filterUser.close()
-                        filterCriteria.users = users
-                        loadFilter()
-                    }
-                    .setOnDismissListener {
-                        filterUser.close()
-                    }.showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
+                    .setOnMultiSelectUserListener(object : MultiSelectUserListBottomSheetDialogFragment.OnMultiSelectUserListener {
+                        override fun onUserSelect(users: List<User>?) {
+                            filterUser.close()
+                            filterParams.users = users
+                            loadFilter()
+                        }
+
+                        override fun onDismiss() {
+                            filterUser.close()
+                        }
+                    }).showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
             }
             filterTime.setOnClickListener {
                 datePicker()
@@ -142,10 +159,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private fun loadFilter() {
         binding.apply {
-            filterType.setTitle(R.string.All)
-            filterAsset.updateTokens(R.string.All_Assets, filterCriteria.tokenItems)
-            filterUser.updateUsers(R.string.All_Recipients, filterCriteria.users)
+            filterType.setTitle(filterParams.typeTitle)
+            filterAsset.updateTokens(R.string.All_Assets, filterParams.tokenItems)
+            filterUser.updateUsers(R.string.All_Recipients, filterParams.users)
             filterTime.setTitle(R.string.All_Dates)
+            Timber.e(filterParams.toString())
         }
     }
 
@@ -286,8 +304,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         dateRangePicker.addOnPositiveButtonClickListener { selection ->
             val startDate = selection.first
             val endDate = selection.second
-            nowInUtc()
-            Timber.e("$startDate $endDate")
+            filterParams.startTime = startDate
+            filterParams.endTime = endDate
+            loadFilter()
         }
         dateRangePicker
     }
@@ -302,7 +321,14 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             anchorView = binding.titleView.rightIb
             setAdapter(menuAdapter)
             setOnItemClickListener { _, _, position, _ ->
-                // todo
+                filterParams.order = when (position) {
+                    0 -> SortOrder.Recent
+                    1 -> SortOrder.Oldest
+                    2 -> SortOrder.Value
+                    else -> SortOrder.Alphabetical
+                }
+                loadFilter()
+                dismiss()
                 dismiss()
             }
             width = requireContext().dpToPx(250f)
@@ -312,8 +338,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             setDropDownGravity(Gravity.END)
             horizontalOffset = requireContext().dpToPx(2f)
             verticalOffset = requireContext().dpToPx(10f)
-            setOnDismissListener {
-            }
         }
     }
 
@@ -325,7 +349,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical, R.string.Alphabetical),
         )
         SortMenuAdapter(requireContext(), menuItems).apply {
-            checkPosition = 0
+            checkPosition = when (filterParams.order) {
+                SortOrder.Recent -> 0
+                SortOrder.Oldest -> 1
+                SortOrder.Value -> 2
+                else -> 3
+            }
         }
     }
 
@@ -334,6 +363,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             anchorView = binding.filterType
             setAdapter(typeAdapter)
             setOnItemClickListener { _, _, position, _ ->
+                filterParams.type = when (position) {
+                    1 -> SnapshotType.Deposit
+                    2 -> SnapshotType.Withdrawal
+                    3 -> SnapshotType.Transfer
+                    else -> SnapshotType.All
+                }
+                loadFilter()
                 dismiss()
             }
             width = requireContext().dpToPx(250f)
@@ -357,7 +393,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             TypeMenuData(SnapshotType.Transfer, R.drawable.ic_menu_type_transfer, R.string.Transfer),
         )
         TypeMenuAdapter(requireContext(), menuItems).apply {
-            checkPosition = 0
+            checkPosition = filterParams.type.value
         }
     }
 }
