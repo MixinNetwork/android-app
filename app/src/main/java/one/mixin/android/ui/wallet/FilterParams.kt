@@ -80,9 +80,10 @@ class FilterParams {
 
         val orderSql = when (order) {
             SortOrder.Recent -> "ORDER BY s.created_at DESC"
-            SortOrder.Alphabetical -> "ORDER BY u.full_name ASC"
             SortOrder.Oldest -> "ORDER BY s.created_at ASC"
-            SortOrder.Value -> "ORDER BY s.amount DESC"
+            SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC"
+            SortOrder.Amount -> "ORDER BY s.amount ASC"
+            else -> ""
         }
 
         return SimpleSQLiteQuery("$SNAPSHOT_ITEM_PREFIX $whereSql $orderSql")

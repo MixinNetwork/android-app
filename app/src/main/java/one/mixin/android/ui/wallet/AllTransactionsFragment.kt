@@ -162,6 +162,14 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             filterAsset.updateTokens(R.string.All_Assets, filterParams.tokenItems)
             filterUser.updateUsers(R.string.All_Recipients, filterParams.users)
             filterTime.setTitle(filterParams.selectTime?:getString(R.string.All_Dates))
+            titleView.setSubTitle(getString(R.string.All_Transactions), getString(
+                when(filterParams.order) {
+                    SortOrder.Amount -> R.string.Amount
+                    SortOrder.Value -> R.string.Value
+                    SortOrder.Oldest -> R.string.Oldest
+                    else -> R.string.Recent
+                }
+            ))
             Timber.e(filterParams.toString())
             bindLiveData()
         }
@@ -299,7 +307,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     0 -> SortOrder.Recent
                     1 -> SortOrder.Oldest
                     2 -> SortOrder.Value
-                    else -> SortOrder.Alphabetical
+                    else -> SortOrder.Amount
                 }
                 loadFilter()
                 dismiss()
@@ -320,13 +328,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
             SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest),
             SortMenuData(SortOrder.Value, R.drawable.ic_menu_value, R.string.Value),
-            SortMenuData(SortOrder.Alphabetical, R.drawable.ic_alphabetical, R.string.Alphabetical),
+            SortMenuData(SortOrder.Amount, R.drawable.ic_alphabetical, R.string.Amount),
         )
         SortMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.order) {
                 SortOrder.Recent -> 0
                 SortOrder.Oldest -> 1
-                SortOrder.Value -> 2
+                SortOrder.Amount -> 2
                 else -> 3
             }
         }
