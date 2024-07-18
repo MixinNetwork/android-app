@@ -43,6 +43,7 @@ import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
@@ -215,7 +216,7 @@ class UserRepository
 
         fun findContactUsers() = userDao.findContactUsers()
 
-        fun allUser() = userDao.allUser()
+        fun allUser(): LiveData<List<UserItem>> = userDao.allUser()
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 

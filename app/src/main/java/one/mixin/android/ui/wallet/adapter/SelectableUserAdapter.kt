@@ -5,10 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemGroupFriendBinding
-import one.mixin.android.vo.User
+import one.mixin.android.vo.Recipient
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.showVerifiedOrBot
 
-class SelectableUserAdapter(private val selectedUsers: MutableList<User>) : ListAdapter<User, SelectableUserAdapter.SearchUserViewHolder>(User.DIFF_CALLBACK) {
+class SelectableUserAdapter(private val selectedUsers: MutableList<Recipient>) : ListAdapter<UserItem, SelectableUserAdapter.SearchUserViewHolder>(UserItem.DIFF_CALLBACK) {
     var callback: WalletSearchUserCallback? = null
 
     override fun onCreateViewHolder(
@@ -27,13 +28,13 @@ class SelectableUserAdapter(private val selectedUsers: MutableList<User>) : List
 
     inner class SearchUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
-            user: User,
-            selectedUsers: MutableList<User>,
+            user: UserItem,
+            selectedUsers: MutableList<Recipient>,
             callback: WalletSearchUserCallback? = null,
         ) {
             binding.normal.text = user.fullName
             binding.mixinIdTv.text = user.identityNumber
-            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.id)
             binding.cb.isChecked = selectedUsers.contains(user)
             user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
             binding.cb.isClickable = false
@@ -47,6 +48,6 @@ class SelectableUserAdapter(private val selectedUsers: MutableList<User>) : List
 }
 
 interface WalletSearchUserCallback {
-    fun onUserClick(user: User)
+    fun onUserClick(user: UserItem)
 }
 

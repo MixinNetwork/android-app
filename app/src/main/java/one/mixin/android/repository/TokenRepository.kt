@@ -76,6 +76,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
@@ -1002,4 +1003,5 @@ class TokenRepository
             }
         }
 
+    fun allAddresses(): LiveData<List<AddressItem>> = addressDao.allAddresses()
 }

@@ -4,22 +4,27 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.R
 import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.vo.AddressItem
+import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
+import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.safe.TokenItem
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
+import timber.log.Timber
 
 class FilterParams {
     var order: SortOrder = SortOrder.Recent
     var type: SnapshotType = SnapshotType.all
     var tokenItems: List<TokenItem>? = null
-    var users: List<User>? = null
+    var recipients: List<Recipient>? = null
     var startTime: Long? = null
     var endTime: Long? = null
 
     override fun toString(): String {
-        return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} users${users?.map { it.fullName }} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
+        return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} users${recipients?.map { it }} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }
 
     val selectTime: String?
@@ -74,10 +79,36 @@ class FilterParams {
             }
         }
 
-        users?.let {
-            if (it.isNotEmpty()) {
-                val userIds = it.joinToString(", ") { user -> "'${user.userId}'" }
-                filters.add("s.opponent_id IN ($userIds)")
+        recipients?.let { list ->
+            val users = list.mapNotNull { item ->
+                item as? UserItem
+            }
+            val userSql = if (users.isNotEmpty()) {
+                users.joinToString(", ") { user -> "'${user.id}'" }.let {userIds->
+                    "s.opponent_id IN ($userIds)"
+                }
+            } else {
+                null
+            }
+
+            val addresses = list.mapNotNull { item ->
+                item as? AddressItem
+            }
+            val addressSql = if (addresses.isNotEmpty()) {
+                 addresses.joinToString(" OR ") { item ->
+                    "s.withdrawal LIKE '%${item.displayAddress()}%' OR s.deposit LIKE '%${item.displayAddress()}%'"
+                }
+            } else {
+                null
+            }
+            if (userSql != null && addressSql != null) {
+                filters.add("($userSql OR $addressSql)")
+            } else if (userSql != null) {
+                filters.add("($userSql)")
+            } else if (addressSql != null) {
+                filters.add("($addressSql)")
+            } else {
+                // do nothing
             }
         }
 

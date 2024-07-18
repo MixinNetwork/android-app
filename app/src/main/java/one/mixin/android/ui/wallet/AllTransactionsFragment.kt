@@ -5,7 +5,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.Button
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -37,8 +36,8 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.User
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
@@ -137,7 +136,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             filterType.setTitle(filterParams.typeTitle)
             filterAsset.updateTokens(R.string.All_Assets, filterParams.tokenItems)
-            filterUser.updateUsers(R.string.All_Recipients, filterParams.users)
+            filterUser.updateUsers(R.string.All_Recipients, filterParams.recipients)
             filterTime.setTitle(filterParams.selectTime?:getString(R.string.All_Dates))
             titleView.setSubTitle(getString(R.string.All_Transactions), getString(
                 when(filterParams.order) {
@@ -271,10 +270,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val multiSelectUserListBottomSheetDialogFragment by lazy {
         MultiSelectUserListBottomSheetDialogFragment.newInstance()
-            .setOnMultiSelectUserListener(object : MultiSelectUserListBottomSheetDialogFragment.OnMultiSelectUserListener {
-                override fun onUserSelect(users: List<User>?) {
+            .setOnMultiSelectUserListener(object : MultiSelectUserListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
+                override fun onRecipientSelect(recipients: List<Recipient>?) {
                     binding.filterUser.close()
-                    filterParams.users = users
+                    filterParams.recipients = recipients
                     loadFilter()
                 }
 

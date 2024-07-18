@@ -136,6 +136,7 @@ class AvatarView : ViewAnimator {
         avatarSimple.setBackgroundResource(0)
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
+        avatarSimple.clear()
         avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
     }
 

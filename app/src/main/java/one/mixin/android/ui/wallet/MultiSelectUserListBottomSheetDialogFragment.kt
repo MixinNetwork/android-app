@@ -21,11 +21,15 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.adapter.SelectableAddressAdapter
 import one.mixin.android.ui.wallet.adapter.SelectableUserAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedUserAdapter
+import one.mixin.android.ui.wallet.adapter.WalletSearchAddressCallback
 import one.mixin.android.ui.wallet.adapter.WalletSearchUserCallback
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.User
+import one.mixin.android.vo.AddressItem
+import one.mixin.android.vo.Recipient
+import one.mixin.android.vo.UserItem
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
@@ -34,27 +38,33 @@ import java.util.concurrent.TimeUnit
 class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "MultiSelectUserListBottomSheetDialogFragment"
-        const val POS_RV = 0
-        const val POS_EMPTY = 1
-        const val POS_EMPTY_USER = 2
+        const val POS_USER_RV = 0
+        const val POS_ADDRESS_RV = 1
+        const val POS_EMPTY = 2
+        const val POS_EMPTY_USER = 3
 
         fun newInstance() = MultiSelectUserListBottomSheetDialogFragment()
     }
 
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
 
-    private val selectedUsers = mutableListOf<User>()
-    private val adapter by lazy { SelectableUserAdapter(selectedUsers) }
+    private val selectedRecipients = mutableListOf<Recipient>()
+    private val userAdapter by lazy { SelectableUserAdapter(selectedRecipients) }
+    private val addressesAdapter by lazy { SelectableAddressAdapter(selectedRecipients) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
+    private var currentAddressSearch: Job? = null
     private var currentQuery: String = ""
-    private var defaultAssets = emptyList<User>()
+
+    private var defaultAssets = emptyList<UserItem>()
+    private var defaultAddress = emptyList<AddressItem>()
 
     private val groupAdapter: SelectedUserAdapter by lazy {
-        SelectedUserAdapter { user ->
-            selectedUsers.remove(user)
-            adapter.notifyItemChanged(adapter.currentList.indexOf(user))
+        SelectedUserAdapter { item ->
+            selectedRecipients.remove(item)
+            userAdapter.notifyItemChanged(userAdapter.currentList.indexOf(item))
+            addressesAdapter.notifyItemChanged(addressesAdapter.currentList.indexOf(item))
             groupAdapter.notifyDataSetChanged()
         }
     }
@@ -78,22 +88,51 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                 searchEt.hideKeyboard()
                 dismiss()
             }
-            assetRv.adapter = adapter
+            radio.isVisible = true
+            radioGroup.setOnCheckedChangeListener { _, checkedId ->
+                when (checkedId) {
+                    R.id.radio_user -> {
+                        rvVa.displayedChild = POS_USER_RV
+                        searchEt.setHint(getString(R.string.search_placeholder_app))
+                    }
+                    R.id.radio_address -> {
+                        rvVa.displayedChild = POS_ADDRESS_RV
+                        searchEt.setHint(getString(R.string.search_placeholder_address))
+                    }
+                }
+            }
+            assetRv.adapter = userAdapter
+            addressRv.adapter = addressesAdapter
             selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             selectRv.adapter = groupAdapter
-            adapter.callback =
+            userAdapter.callback =
                 object : WalletSearchUserCallback {
-                    override fun onUserClick(user: User) {
+                    override fun onUserClick(user: UserItem) {
                         binding.searchEt.hideKeyboard()
-                        if (selectedUsers.contains(user)) {
-                            selectedUsers.remove(user)
+                        if (selectedRecipients.contains(user)) {
+                            selectedRecipients.remove(user)
                         } else {
-                            selectedUsers.add(user)
+                            selectedRecipients.add(user)
                         }
-                        adapter.notifyItemChanged(adapter.currentList.indexOf(user))
-                        groupAdapter.checkedUsers = selectedUsers
+                        userAdapter.notifyItemChanged(userAdapter.currentList.indexOf(user))
+                        groupAdapter.checkedUsers = selectedRecipients
                         groupAdapter.notifyDataSetChanged()
-                        selectRv.scrollToPosition(selectedUsers.size - 1)
+                        selectRv.scrollToPosition(selectedRecipients.size - 1)
+                    }
+                }
+            addressesAdapter.callback =
+                object :WalletSearchAddressCallback {
+                    override fun onAddressClick(address: AddressItem) {
+                        binding.searchEt.hideKeyboard()
+                        if (selectedRecipients.contains(address)) {
+                            selectedRecipients.remove(address)
+                        } else {
+                            selectedRecipients.add(address)
+                        }
+                        addressesAdapter.notifyItemChanged(addressesAdapter.currentList.indexOf(address))
+                        groupAdapter.checkedUsers = selectedRecipients
+                        groupAdapter.notifyDataSetChanged()
+                        selectRv.scrollToPosition(selectedRecipients.size - 1)
                     }
                 }
             depositTitle.setText(R.string.No_users)
@@ -106,8 +145,8 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                     .subscribe(
                         {
                             if (it.isNullOrBlank()) {
-                                binding.rvVa.displayedChild = POS_RV
-                                adapter.submitList(defaultAssets)
+                                binding.rvVa.displayedChild = if(binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
+                                userAdapter.submitList(defaultAssets)
                             } else {
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
@@ -118,12 +157,12 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         {},
                     )
             resetButton.setOnClickListener {
-                selectedUsers.clear()
-                onMultiSelectUserListener?.onUserSelect(null)
+                selectedRecipients.clear()
+                onMultiSelectRecipientListener?.onRecipientSelect(null)
                 dismiss()
             }
             applyButton.setOnClickListener {
-                onMultiSelectUserListener?.onUserSelect(selectedUsers)
+                onMultiSelectRecipientListener?.onRecipientSelect(selectedRecipients)
                 dismiss()
             }
         }
@@ -132,51 +171,89 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             .observe(this) {
                 defaultAssets = it
                 if (binding.searchEt.et.text.isNullOrBlank()) {
-                    adapter.submitList(defaultAssets)
+                    userAdapter.submitList(defaultAssets)
                 }
                 if (defaultAssets.isEmpty()) {
+                    binding.rvVa.displayedChild = POS_EMPTY
+                }
+            }
+
+        bottomViewModel.allAddresses()
+            .observe(this) {
+                defaultAddress = it
+                if (binding.searchEt.et.text.isNullOrBlank()) {
+                    addressesAdapter.submitList(defaultAddress)
+                }
+                if (defaultAddress.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY
                 }
             }
     }
 
     private fun search(query: String) {
+        searchUser(query)
+        searchAddress(query)
+    }
+
+    private fun searchUser(query: String) {
         currentSearch?.cancel()
         currentSearch =
             lifecycleScope.launch {
                 if (!isAdded) return@launch
 
-                binding.rvVa.displayedChild = POS_RV
+                binding.rvVa.displayedChild = if(binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
                 binding.pb.isVisible = true
 
                 val localAssets = defaultAssets.filter {
                     it.fullName?.contains(query) == true || it.identityNumber.contains(query)
                 }
-                adapter.submitList(localAssets) {
+                userAdapter.submitList(localAssets) {
                     binding.assetRv.scrollToPosition(0)
                 }
                 binding.pb.isVisible = false
 
-                if (localAssets.isEmpty()) {
+                if (localAssets.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_user) {
+                    binding.rvVa.displayedChild = POS_EMPTY_USER
+                }
+            }
+    }
+    private fun searchAddress(query: String) {
+        currentAddressSearch?.cancel()
+        currentAddressSearch =
+            lifecycleScope.launch {
+                if (!isAdded) return@launch
+
+                binding.rvVa.displayedChild = if(binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
+                binding.pb.isVisible = true
+
+                val localAddress = defaultAddress.filter {
+                    it.label.contains(query) || it.destination.contains(query) || it.tag?.contains(query) == true
+                }
+                addressesAdapter.submitList(localAddress) {
+                    binding.addressRv.scrollToPosition(0)
+                }
+                binding.pb.isVisible = false
+
+                if (localAddress.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_address) {
                     binding.rvVa.displayedChild = POS_EMPTY_USER
                 }
             }
     }
 
-    fun setOnMultiSelectUserListener(onMultiSelectUserListener: OnMultiSelectUserListener): MultiSelectUserListBottomSheetDialogFragment {
-        this.onMultiSelectUserListener = onMultiSelectUserListener
+    fun setOnMultiSelectUserListener(onMultiSelectUserListener: OnMultiSelectRecipientListener): MultiSelectUserListBottomSheetDialogFragment {
+        this.onMultiSelectRecipientListener = onMultiSelectUserListener
         return this
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        onMultiSelectUserListener?.onDismiss()
+        onMultiSelectRecipientListener?.onDismiss()
     }
 
-    private var onMultiSelectUserListener: OnMultiSelectUserListener? = null
+    private var onMultiSelectRecipientListener: OnMultiSelectRecipientListener? = null
 
-    interface OnMultiSelectUserListener {
-        fun onUserSelect(users: List<User>?)
+    interface OnMultiSelectRecipientListener {
+        fun onRecipientSelect(users: List<Recipient>?)
         fun onDismiss()
     }
 }

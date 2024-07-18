@@ -69,6 +69,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
@@ -83,6 +84,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
@@ -142,7 +144,9 @@ class BottomSheetViewModel
 
         fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
 
-        fun allUser(): LiveData<List<User>> = userRepository.allUser()
+        fun allUser(): LiveData<List<UserItem>> = userRepository.allUser()
+
+        fun allAddresses(): LiveData<List<AddressItem>> = tokenRepository.allAddresses()
 
         fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = tokenRepository.assetItems(assetIds)
 

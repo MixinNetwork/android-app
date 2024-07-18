@@ -12,7 +12,12 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewFilterPopupBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.vo.AddressItem
+import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
+import one.mixin.android.vo.displayAddress
+import one.mixin.android.vo.formatAddress
 import one.mixin.android.vo.safe.TokenItem
 
 class FilterPopup @JvmOverloads constructor(
@@ -78,39 +83,52 @@ class FilterPopup @JvmOverloads constructor(
         }
     }
 
-    fun updateUsers(@StringRes strRes: Int, users: List<User>?) {
-        if (users.isNullOrEmpty()) {
+    fun updateUsers(@StringRes strRes: Int, recipients: List<Recipient>?) {
+        if (recipients.isNullOrEmpty()) {
             binding.iconGroup.isVisible = false
             setTitle(strRes)
             return
         }
 
         binding.iconGroup.isVisible = true
-        when (users.size) {
+        when (recipients.size) {
             1 -> {
                 binding.icon1.isVisible = true
                 binding.icon2.isVisible = false
                 binding.icon3.isVisible = false
-                binding.icon1.setInfo(users[0].fullName, users[0].avatarUrl, users[0].identityNumber)
-                setTitle(users[0].fullName)
+                val item = recipients[0]
+                loadIcon(binding.icon1, item)
+                if (item is UserItem) {
+                    setTitle(item.fullName)
+                } else if (item is AddressItem) {
+                    setTitle(item.formatAddress())
+                }
             }
 
             else -> {
                 binding.icon1.isVisible = true
-                binding.icon2.isVisible = users.size > 1
-                binding.icon3.isVisible = users.size > 2
+                binding.icon2.isVisible = recipients.size > 1
+                binding.icon3.isVisible = recipients.size > 2
 
-                if (users.isNotEmpty()) {
-                    binding.icon1.setInfo(users[0].fullName, users[1].avatarUrl, users[0].identityNumber)
+                if (recipients.isNotEmpty()) {
+                    loadIcon(binding.icon1, recipients[0])
                 }
-                if (users.size > 1) {
-                    binding.icon2.setInfo(users[1].fullName, users[1].avatarUrl, users[1].identityNumber)
+                if (recipients.size > 1) {
+                    loadIcon(binding.icon2, recipients[1])
                 }
-                if (users.size > 2) {
-                    binding.icon3.setInfo(users[2].fullName, users[2].avatarUrl, users[2].identityNumber)
+                if (recipients.size > 2) {
+                    loadIcon(binding.icon3, recipients[2])
                 }
-                setTitle(context.getString(R.string.x_recipients, users.size))
+                setTitle(context.getString(R.string.x_recipients, recipients.size))
             }
+        }
+    }
+
+    private fun loadIcon(avatarView: AvatarView, recipient: Recipient){
+        if (recipient is UserItem){
+            avatarView.setInfo(recipient.fullName, recipient.avatarUrl, recipient.id)
+        } else if (recipient is AddressItem){
+            avatarView.loadUrl(recipient.iconUrl, R.drawable.ic_avatar_place_holder)
         }
     }
 
