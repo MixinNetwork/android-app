@@ -1588,4 +1588,5 @@
     <string name="x_recipients">%1$d Recipients</string>
     <string name="Oldest">Oldest</string>
     <string name="Value">Value</string>
+    <string name="Select_Date">Select Date</string>
 </resources>

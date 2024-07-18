@@ -12,6 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +24,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
@@ -37,6 +40,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.toSnapshot
+import timber.log.Timber
 
 @AndroidEntryPoint
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_all_transactions), OnSnapshotListener {
@@ -120,6 +124,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 filterUser.open()
                 MultiSelectUserListBottomSheetDialogFragment.newInstance()
                     .setOnUserCallback { users->
+                        filterUser.close()
                         filterCriteria.users = users
                         loadFilter()
                     }
@@ -266,8 +271,30 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
-    private fun datePicker() {
+    private val dateRangePicker by lazy {
+        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+            .setTheme(R.style.AppTheme_DatePicker)
+            .setTitleText(getString(R.string.Select_Date))
+            .setCalendarConstraints(
+                CalendarConstraints.Builder()
+                    .setEnd(MaterialDatePicker.todayInUtcMilliseconds()).build()
+            )
+            .build()
+        dateRangePicker.addOnDismissListener {
+            binding.filterTime.close()
+        }
+        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+            val startDate = selection.first
+            val endDate = selection.second
+            nowInUtc()
+            Timber.e("$startDate $endDate")
+        }
+        dateRangePicker
+    }
 
+    private fun datePicker() {
+        binding.filterTime.open()
+        dateRangePicker.show(parentFragmentManager, MaterialDatePicker::class.java.name)
     }
 
     private val sortMenu by lazy {
@@ -275,6 +302,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             anchorView = binding.titleView.rightIb
             setAdapter(menuAdapter)
             setOnItemClickListener { _, _, position, _ ->
+                // todo
                 dismiss()
             }
             width = requireContext().dpToPx(250f)

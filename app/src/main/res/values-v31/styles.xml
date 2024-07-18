@@ -109,7 +109,6 @@
             @style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge
         </item>
 
-        <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
     </style>
 
 </resources>

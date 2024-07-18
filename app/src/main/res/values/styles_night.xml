@@ -79,7 +79,6 @@
         <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyle</item>
         <item name="android:textAppearanceLargePopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceSmall</item>
         <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
-        <item name="materialCalendarTheme">@style/MaterialCalendarThemeNight</item>
     </style>
 
 
