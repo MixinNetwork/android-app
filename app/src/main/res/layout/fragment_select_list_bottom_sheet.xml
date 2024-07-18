@@ -92,7 +92,7 @@
 
         <Button
             style="@style/AppTheme.MaterialGrayButton"
-            android:id="@+id/cancel_button"
+            android:id="@+id/reset_button"
             android:layout_width="128dp"
             android:layout_height="40dp"
             android:text="@string/Reset"

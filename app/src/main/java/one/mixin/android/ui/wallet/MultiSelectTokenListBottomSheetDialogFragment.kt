@@ -99,7 +99,8 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             depositTitle.setText(R.string.No_asset)
             depositTv.isVisible = false
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            cancelButton.setOnClickListener {
+            resetButton.setOnClickListener {
+                selectedTokenItems.clear()
                 onMultiSelectTokenListener?.onTokenSelect(null)
                 dismiss()
             }

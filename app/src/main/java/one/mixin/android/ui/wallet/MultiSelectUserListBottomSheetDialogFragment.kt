@@ -117,7 +117,8 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         },
                         {},
                     )
-            cancelButton.setOnClickListener {
+            resetButton.setOnClickListener {
+                selectedUsers.clear()
                 onMultiSelectUserListener?.onUserSelect(null)
                 dismiss()
             }

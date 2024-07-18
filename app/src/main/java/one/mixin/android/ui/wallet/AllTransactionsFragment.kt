@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Button
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -13,6 +14,7 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
@@ -118,35 +120,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 typeMenu.show()
             }
             filterAsset.setOnClickListener {
-                filterAsset.open()
-                MultiSelectTokenListBottomSheetDialogFragment.newInstance()
-                    .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-                        override fun onTokenSelect(tokenItems: List<TokenItem>?) {
-                            filterAsset.close()
-                            filterParams.tokenItems = tokenItems
-                            loadFilter()
-                        }
-
-                        override fun onDismiss() {
-                            filterAsset.close()
-                        }
-                    })
-                    .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+                selectAsset()
             }
             filterUser.setOnClickListener {
-                filterUser.open()
-                MultiSelectUserListBottomSheetDialogFragment.newInstance()
-                    .setOnMultiSelectUserListener(object : MultiSelectUserListBottomSheetDialogFragment.OnMultiSelectUserListener {
-                        override fun onUserSelect(users: List<User>?) {
-                            filterUser.close()
-                            filterParams.users = users
-                            loadFilter()
-                        }
-
-                        override fun onDismiss() {
-                            filterUser.close()
-                        }
-                    }).showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
+                selectUser()
             }
             filterTime.setOnClickListener {
                 datePicker()
@@ -271,17 +248,65 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
+    private val multiSelectTokenListBottomSheetDialogFragment by lazy {
+        MultiSelectTokenListBottomSheetDialogFragment.newInstance()
+            .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+                override fun onTokenSelect(tokenItems: List<TokenItem>?) {
+                    binding.filterAsset.close()
+                    filterParams.tokenItems = tokenItems
+                    loadFilter()
+                }
+
+                override fun onDismiss() {
+                    binding.filterAsset.close()
+                }
+            })
+    }
+
+    private fun selectAsset() {
+        binding.filterAsset.open()
+        multiSelectTokenListBottomSheetDialogFragment
+            .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+    }
+
+    private val multiSelectUserListBottomSheetDialogFragment by lazy {
+        MultiSelectUserListBottomSheetDialogFragment.newInstance()
+            .setOnMultiSelectUserListener(object : MultiSelectUserListBottomSheetDialogFragment.OnMultiSelectUserListener {
+                override fun onUserSelect(users: List<User>?) {
+                    binding.filterUser.close()
+                    filterParams.users = users
+                    loadFilter()
+                }
+
+                override fun onDismiss() {
+                    binding.filterUser.close()
+                }
+            })
+    }
+
+    private fun selectUser() {
+        binding.filterUser.open()
+        multiSelectUserListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
+    }
+
     private val dateRangePicker by lazy {
+        val constraints = CalendarConstraints.Builder()
+            .setEnd(MaterialDatePicker.todayInUtcMilliseconds())
+            .setValidator(DateValidatorPointBackward.now())
+            .build()
         val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
             .setTheme(R.style.AppTheme_DatePicker)
             .setTitleText(getString(R.string.Select_Date))
-            .setCalendarConstraints(
-                CalendarConstraints.Builder()
-                    .setEnd(MaterialDatePicker.todayInUtcMilliseconds()).build()
-            )
+            .setNegativeButtonText(getString(R.string.Reset))
+            .setCalendarConstraints(constraints)
             .build()
         dateRangePicker.addOnDismissListener {
             binding.filterTime.close()
+        }
+        dateRangePicker.addOnNegativeButtonClickListener {
+            filterParams.startTime = null
+            filterParams.endTime = null
+            loadFilter()
         }
         dateRangePicker.addOnPositiveButtonClickListener { selection ->
             val startDate = selection.first
