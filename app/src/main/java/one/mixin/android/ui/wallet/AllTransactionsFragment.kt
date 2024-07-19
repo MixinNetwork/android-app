@@ -135,15 +135,15 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     private fun loadFilter() {
         binding.apply {
             filterType.setTitle(filterParams.typeTitle)
-            filterAsset.updateTokens(R.string.All_Assets, filterParams.tokenItems)
-            filterUser.updateUsers(R.string.All_Recipients, filterParams.recipients)
-            filterTime.setTitle(filterParams.selectTime?:getString(R.string.All_Dates))
+            filterAsset.updateTokens(R.string.Assets, filterParams.tokenItems)
+            filterUser.updateUsers(R.string.Recipients, filterParams.recipients)
+            filterTime.setTitle(filterParams.selectTime?:getString(R.string.Date))
             titleView.setSubTitle(getString(R.string.All_Transactions), getString(
                 when(filterParams.order) {
-                    SortOrder.Amount -> R.string.Amount
-                    SortOrder.Value -> R.string.Value
-                    SortOrder.Oldest -> R.string.Oldest
-                    else -> R.string.Recent
+                    SortOrder.Amount -> R.string.sort_by_amount
+                    SortOrder.Value -> R.string.sort_by_value
+                    SortOrder.Oldest -> R.string.sort_by_oldest
+                    else -> R.string.sort_by_recent
                 }
             ))
             Timber.e(filterParams.toString())
@@ -351,8 +351,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         val menuItems = listOf(
             SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
             SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest),
-            SortMenuData(SortOrder.Value, R.drawable.ic_menu_value, R.string.Value),
-            SortMenuData(SortOrder.Amount, R.drawable.ic_menu_amount, R.string.Amount),
+            SortMenuData(SortOrder.Value, R.drawable.ic_menu_value, R.string.Value_Descending),
+            SortMenuData(SortOrder.Amount, R.drawable.ic_menu_amount, R.string.Amount_Descending),
         )
         SortMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.order) {

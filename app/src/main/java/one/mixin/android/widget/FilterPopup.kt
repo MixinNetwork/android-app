@@ -14,9 +14,7 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
-import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
-import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.formatAddress
 import one.mixin.android.vo.safe.TokenItem
 
@@ -78,7 +76,7 @@ class FilterPopup @JvmOverloads constructor(
                 if (tokens.size > 2) {
                     binding.icon3.loadUrl(tokens[2].iconUrl, holder = R.drawable.ic_avatar_place_holder)
                 }
-                setTitle(context.getString(R.string.x_assets, tokens.size))
+                setTitle(context.getString(R.string.number_of_assets, tokens.size))
             }
         }
     }
@@ -119,7 +117,7 @@ class FilterPopup @JvmOverloads constructor(
                 if (recipients.size > 2) {
                     loadIcon(binding.icon3, recipients[2])
                 }
-                setTitle(context.getString(R.string.x_recipients, recipients.size))
+                setTitle(context.getString(R.string.number_of_recipients, recipients.size))
             }
         }
     }
