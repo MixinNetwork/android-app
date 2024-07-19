@@ -216,7 +216,7 @@ class UserRepository
 
         fun findContactUsers() = userDao.findContactUsers()
 
-        fun allUser(): LiveData<List<UserItem>> = userDao.allUser()
+        fun allRecipients(): LiveData<List<UserItem>> = userDao.allRecipients()
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 

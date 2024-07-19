@@ -169,7 +169,7 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
             }
         }
 
-        bottomViewModel.allUser()
+        bottomViewModel.allRecipients()
             .observe(this) {
                 defaultUsers = it
                 if (binding.searchEt.et.text.isNullOrBlank()) {

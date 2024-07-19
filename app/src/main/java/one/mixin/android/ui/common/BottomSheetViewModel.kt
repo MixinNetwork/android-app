@@ -144,7 +144,7 @@ class BottomSheetViewModel
 
         fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
 
-        fun allUser(): LiveData<List<UserItem>> = userRepository.allUser()
+        fun allRecipients(): LiveData<List<UserItem>> = userRepository.allRecipients()
 
         fun allAddresses(): LiveData<List<AddressItem>> = tokenRepository.allAddresses()
 
