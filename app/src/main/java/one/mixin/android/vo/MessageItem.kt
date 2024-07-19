@@ -456,6 +456,14 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         } else {
             thumbImage
         }
+    val content = if (isAppCard()) {
+        appCardData?.copy(actions = null)?.let {
+            GsonHelper.customGson.toJson(it)
+        }
+            ?: this.content
+    } else {
+        this.content
+    }
     return TranscriptMessage(
         transcriptId,
         messageId,
