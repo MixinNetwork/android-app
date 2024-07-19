@@ -44,6 +44,9 @@ class SelectableTokenAdapter(private val selectedTokenItems: MutableList<TokenIt
             binding.cb.isClickable = false
             val chainNetwork = getChainNetwork(tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey)
             binding.networkTv.isVisible = chainNetwork != null && tokenItem.collectionHash.isNullOrEmpty()
+            if (chainNetwork != null) {
+                binding.networkTv.text = chainNetwork
+            }
             itemView.setOnClickListener {
                 if (!binding.cb.isChecked && selectedTokenItems.size>= MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT) {
                     toast(binding.root.context.getString(R.string.Select_LIMIT, MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT))
