@@ -304,7 +304,7 @@ class SwapFragment : BaseFragment() {
     ) {
         if (index == 0) {
             if (inMixin()) {
-                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
+                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND, ArrayList(list.map { t -> t.assetId }))
                     .setOnAssetClick { t ->
                         val token = t.toSwapToken()
                         if (token == toToken) {
@@ -407,7 +407,13 @@ class SwapFragment : BaseFragment() {
                 }
                 toToken = swapTokens.firstOrNull { s -> s.address != fromToken?.address }
             } else {
-                swapTokens = it
+                swapTokens = it.map { token ->
+                    val t = tokenItems?.firstOrNull { tokenItem ->
+                        tokenItem.assetId == token.assetId
+                    } ?: return@map token
+                    token.balance = t.balance
+                    token
+                }
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                     toToken = swapTokens.getOrNull(1)

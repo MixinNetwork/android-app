@@ -3,6 +3,7 @@ package one.mixin.android.web3.swap
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
@@ -68,8 +69,14 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             avatar.badge.loadImage(token.chain.icon, R.drawable.ic_avatar_place_holder)
             nameTv.text = token.name
             balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"
-            alert.setOnClickListener {
-                onClickListener?.invoke(token, true)
+            if (!token.inMixin()) {
+                alert.isVisible = true
+                alert.setOnClickListener {
+                    onClickListener?.invoke(token, true)
+                }
+            } else {
+                alert.isVisible = false
+                alert.setOnClickListener(null)
             }
         }
     }
