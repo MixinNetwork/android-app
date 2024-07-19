@@ -24,13 +24,11 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.SortOrder
-import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_SCOPES
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
@@ -40,8 +38,8 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
-import one.mixin.android.vo.Scope
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.notMessengerUser
@@ -285,7 +283,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
     }
 
-    private val multiSelectUserListBottomSheetDialogFragment by lazy {
+    private val multiSelectRecipientsListBottomSheetDialogFragment by lazy {
         MultiSelectRecipientsListBottomSheetDialogFragment.newInstance(userItem)
             .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
                 override fun onRecipientSelect(recipients: List<Recipient>?) {
@@ -302,7 +300,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private fun selectUser() {
         binding.filterUser.open()
-        multiSelectUserListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
+        multiSelectRecipientsListBottomSheetDialogFragment.setType(filterParams.type)
+        multiSelectRecipientsListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
     }
 
     private val dateRangePicker by lazy {
@@ -391,6 +390,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     2 -> SnapshotType.withdrawal
                     3 -> SnapshotType.snapshot
                     else -> SnapshotType.all
+                }
+                if (filterParams.recipients?.isNotEmpty() == true){
+                    if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
+                        filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
+                    } else if (filterParams.type == SnapshotType.snapshot) {
+                        filterParams.recipients = filterParams.recipients?.filterIsInstance<UserItem>()
+                    }
                 }
                 loadFilter()
                 dismiss()

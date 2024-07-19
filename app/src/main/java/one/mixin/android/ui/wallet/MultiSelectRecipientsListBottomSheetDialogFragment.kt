@@ -35,6 +35,7 @@ import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")
@@ -96,12 +97,35 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
         style: Int,
     ) {
         super.setupDialog(dialog, style)
+        Timber.e("setupDialog")
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
+        }
+        when (type) {
+            SnapshotType.all -> {
+                binding.radioAddress.isVisible = true
+                binding.radioUser.isVisible = true
+            }
+            SnapshotType.snapshot -> {
+                binding.radioAddress.isVisible = false
+                binding.radioUser.isChecked = true
+                binding.radioUser.isVisible = true
+                selectedRecipients.removeAll{
+                    it is AddressItem
+                }
+            }
+            else -> {
+                binding.radioAddress.isVisible = true
+                binding.radioAddress.isChecked = true
+                binding.radioUser.isVisible = false
+                selectedRecipients.removeAll{
+                    it is UserItem
+                }
+            }
         }
 
         binding.apply {
@@ -279,5 +303,10 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
     interface OnMultiSelectRecipientListener {
         fun onRecipientSelect(users: List<Recipient>?)
         fun onDismiss()
+    }
+    private var type = SnapshotType.all
+
+    fun setType(type: SnapshotType) {
+        this.type = type
     }
 }

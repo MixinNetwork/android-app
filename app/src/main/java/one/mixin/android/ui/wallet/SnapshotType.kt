@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet;
+package one.mixin.android.ui.wallet
 
 @Suppress("ktlint:standard:enum-entry-name-case", "EnumEntryName")
 enum class SnapshotType(val value: Int) {
