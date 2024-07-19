@@ -1590,4 +1590,5 @@
     <string name="Value">Value</string>
     <string name="Select_Date">Select Date</string>
     <string name="Users">Users</string>
+    <string name="Select_LIMIT">Select up to %1$d</string>
 </resources>

@@ -37,6 +37,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         const val POS_RV = 0
         const val POS_EMPTY = 1
         const val POS_EMPTY_TOKEN = 2
+        const val LIMIT = 10
 
         fun newInstance() = MultiSelectTokenListBottomSheetDialogFragment()
     }
@@ -78,7 +79,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 searchEt.hideKeyboard()
                 dismiss()
             }
-            assetRv.adapter = adapter
+            rv.adapter = adapter
             selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             selectRv.adapter = groupAdapter
             adapter.callback =
@@ -153,7 +154,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     it.name.contains(query) || it.symbol.contains(query)
                 }
                 adapter.submitList(localAssets) {
-                    binding.assetRv.scrollToPosition(0)
+                    binding.rv.scrollToPosition(0)
                 }
                 binding.pb.isVisible = false
 

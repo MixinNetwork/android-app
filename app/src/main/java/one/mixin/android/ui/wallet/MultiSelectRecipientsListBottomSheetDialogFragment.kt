@@ -35,15 +35,16 @@ import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
-class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "MultiSelectUserListBottomSheetDialogFragment"
+        const val TAG = "MultiSelectRecipientsListBottomSheetDialogFragment"
         const val POS_USER_RV = 0
         const val POS_ADDRESS_RV = 1
         const val POS_EMPTY = 2
         const val POS_EMPTY_USER = 3
+        const val LIMIT = 10
 
-        fun newInstance() = MultiSelectUserListBottomSheetDialogFragment()
+        fun newInstance() = MultiSelectRecipientsListBottomSheetDialogFragment()
     }
 
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
@@ -57,7 +58,7 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
     private var currentAddressSearch: Job? = null
     private var currentQuery: String = ""
 
-    private var defaultAssets = emptyList<UserItem>()
+    private var defaultUsers = emptyList<UserItem>()
     private var defaultAddress = emptyList<AddressItem>()
 
     private val groupAdapter: SelectedUserAdapter by lazy {
@@ -101,7 +102,7 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                     }
                 }
             }
-            assetRv.adapter = userAdapter
+            rv.adapter = userAdapter
             addressRv.adapter = addressesAdapter
             selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             selectRv.adapter = groupAdapter
@@ -146,7 +147,8 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         {
                             if (it.isNullOrBlank()) {
                                 binding.rvVa.displayedChild = if(binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
-                                userAdapter.submitList(defaultAssets)
+                                userAdapter.submitList(defaultUsers)
+                                addressesAdapter.submitList(defaultAddress)
                             } else {
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
@@ -169,11 +171,11 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
 
         bottomViewModel.allUser()
             .observe(this) {
-                defaultAssets = it
+                defaultUsers = it
                 if (binding.searchEt.et.text.isNullOrBlank()) {
-                    userAdapter.submitList(defaultAssets)
+                    userAdapter.submitList(defaultUsers)
                 }
-                if (defaultAssets.isEmpty()) {
+                if (defaultUsers.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_user) {
                     binding.rvVa.displayedChild = POS_EMPTY
                 }
             }
@@ -184,15 +186,15 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     addressesAdapter.submitList(defaultAddress)
                 }
-                if (defaultAddress.isEmpty()) {
+                if (defaultAddress.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_address) {
                     binding.rvVa.displayedChild = POS_EMPTY
                 }
             }
     }
 
     private fun search(query: String) {
-        searchUser(query)
         searchAddress(query)
+        searchUser(query)
     }
 
     private fun searchUser(query: String) {
@@ -201,18 +203,18 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             lifecycleScope.launch {
                 if (!isAdded) return@launch
 
-                binding.rvVa.displayedChild = if(binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
+                binding.rvVa.displayedChild = if (binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
                 binding.pb.isVisible = true
 
-                val localAssets = defaultAssets.filter {
+                val localUsers = defaultUsers.filter {
                     it.fullName?.contains(query) == true || it.identityNumber.contains(query)
                 }
-                userAdapter.submitList(localAssets) {
-                    binding.assetRv.scrollToPosition(0)
+                userAdapter.submitList(localUsers) {
+                    binding.rv.scrollToPosition(0)
                 }
                 binding.pb.isVisible = false
 
-                if (localAssets.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_user) {
+                if (localUsers.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_user) {
                     binding.rvVa.displayedChild = POS_EMPTY_USER
                 }
             }
@@ -240,13 +242,15 @@ class MultiSelectUserListBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             }
     }
 
-    fun setOnMultiSelectUserListener(onMultiSelectUserListener: OnMultiSelectRecipientListener): MultiSelectUserListBottomSheetDialogFragment {
+    fun setOnMultiSelectUserListener(onMultiSelectUserListener: OnMultiSelectRecipientListener): MultiSelectRecipientsListBottomSheetDialogFragment {
         this.onMultiSelectRecipientListener = onMultiSelectUserListener
         return this
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        userAdapter.submitList(defaultUsers)
+        addressesAdapter.submitList(defaultAddress)
         onMultiSelectRecipientListener?.onDismiss()
     }
 

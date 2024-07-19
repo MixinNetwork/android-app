@@ -6,7 +6,10 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.R
 import one.mixin.android.databinding.ItemSelectableTokenBinding
+import one.mixin.android.extension.toast
+import one.mixin.android.ui.wallet.MultiSelectRecipientsListBottomSheetDialogFragment
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.safe.TokenItem
 
@@ -42,6 +45,10 @@ class SelectableTokenAdapter(private val selectedTokenItems: MutableList<TokenIt
             val chainNetwork = getChainNetwork(tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey)
             binding.networkTv.isVisible = chainNetwork != null && tokenItem.collectionHash.isNullOrEmpty()
             itemView.setOnClickListener {
+                if (!binding.cb.isChecked && selectedTokenItems.size>= MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT) {
+                    toast(binding.root.context.getString(R.string.Select_LIMIT, MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT))
+                    return@setOnClickListener
+                }
                 binding.cb.isChecked = !binding.cb.isChecked
                 tokenItemClickListener?.onTokenItemClick(tokenItem)
                 notifyItemChanged(adapterPosition)

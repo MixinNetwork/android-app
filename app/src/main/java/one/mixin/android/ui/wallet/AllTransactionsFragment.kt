@@ -269,8 +269,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     private val multiSelectUserListBottomSheetDialogFragment by lazy {
-        MultiSelectUserListBottomSheetDialogFragment.newInstance()
-            .setOnMultiSelectUserListener(object : MultiSelectUserListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
+        MultiSelectRecipientsListBottomSheetDialogFragment.newInstance()
+            .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
                 override fun onRecipientSelect(recipients: List<Recipient>?) {
                     binding.filterUser.close()
                     filterParams.recipients = recipients
@@ -285,7 +285,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private fun selectUser() {
         binding.filterUser.open()
-        multiSelectUserListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectUserListBottomSheetDialogFragment.TAG)
+        multiSelectUserListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
     }
 
     private val dateRangePicker by lazy {
