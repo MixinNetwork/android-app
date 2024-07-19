@@ -42,10 +42,12 @@
     <TextView
         android:id="@+id/description_tv"
         android:textSize="14sp"
-        android:textColor="?attr/text_assist"
+        android:textColor="?attr/text_primary"
         android:layout_width="wrap_content"
         android:layout_marginTop="12dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/count_tv"/>
