@@ -15,14 +15,14 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import timber.log.Timber
 
-class FilterParams {
-    var order: SortOrder = SortOrder.Recent
-    var type: SnapshotType = SnapshotType.all
-    var tokenItems: List<TokenItem>? = null
-    var recipients: List<Recipient>? = null
-    var startTime: Long? = null
-    var endTime: Long? = null
-
+class FilterParams(
+    var order: SortOrder = SortOrder.Recent,
+    var type: SnapshotType = SnapshotType.all,
+    var tokenItems: List<TokenItem>? = null,
+    var recipients: List<Recipient>? = null,
+    var startTime: Long? = null,
+    var endTime: Long? = null,
+) {
     override fun toString(): String {
         return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} users${recipients?.map { it }} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }

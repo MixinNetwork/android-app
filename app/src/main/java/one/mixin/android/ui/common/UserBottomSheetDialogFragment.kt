@@ -53,6 +53,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.localTime
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showConfirmDialog
@@ -72,7 +73,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
-import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.addPinShortcut
@@ -87,6 +88,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.notMessengerUser
@@ -323,9 +325,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             menu {
                 title = getString(R.string.Transactions)
                 action = {
-                    RxBus.publish(BotCloseEvent())
-                    UserTransactionBottomSheetFragment.newInstance(u.userId)
-                        .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
+                    navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG)
                     dismiss()
                 }
             }

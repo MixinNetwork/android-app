@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.os.Bundle
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -18,9 +19,12 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_USER
 import one.mixin.android.ui.wallet.adapter.SelectableAddressAdapter
 import one.mixin.android.ui.wallet.adapter.SelectableUserAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedUserAdapter
@@ -44,7 +48,15 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
         const val POS_EMPTY_USER = 3
         const val LIMIT = 10
 
-        fun newInstance() = MultiSelectRecipientsListBottomSheetDialogFragment()
+        fun newInstance(user: UserItem? = null): MultiSelectRecipientsListBottomSheetDialogFragment {
+            return MultiSelectRecipientsListBottomSheetDialogFragment().withArgs {
+                putParcelable(ARGS_USER, user)
+            }
+        }
+    }
+
+    private val userItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_USER, UserItem::class.java)
     }
 
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
@@ -67,6 +79,14 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
             userAdapter.notifyItemChanged(userAdapter.currentList.indexOf(item))
             addressesAdapter.notifyItemChanged(addressesAdapter.currentList.indexOf(item))
             groupAdapter.notifyDataSetChanged()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        userItem?.let {
+            selectedRecipients.add(it)
+            groupAdapter.checkedUsers = selectedRecipients
         }
     }
 

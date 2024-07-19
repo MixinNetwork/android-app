@@ -1,10 +1,12 @@
 package one.mixin.android.vo
 
+import android.os.Parcelable
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 
 interface Recipient
@@ -43,6 +45,7 @@ data class AddressItem(
     }
 }
 
+@Parcelize
 data class UserItem(
     @ColumnInfo(name = "user_id")
     val id: String,
@@ -56,7 +59,7 @@ data class UserItem(
     val isVerified: Boolean?,
     @ColumnInfo(name = "app_id")
     val appId: String?
-) : Recipient {
+) : Recipient, Parcelable {
     companion object {
         val DIFF_CALLBACK =
             object : DiffUtil.ItemCallback<UserItem>() {
