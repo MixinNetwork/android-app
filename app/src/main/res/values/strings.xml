@@ -439,6 +439,7 @@
     <string name="error_expired_session">ERROR 10609: Session expired</string>
     <string name="error_inconsistent_country">ERROR 10610: Inconsistent country</string>
     <string name="error_invalid_swap">ERROR 10611: Invalid swap</string>
+    <string name="error_invalid_quote_amount">ERROR 10612: Invalid quote amount</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>

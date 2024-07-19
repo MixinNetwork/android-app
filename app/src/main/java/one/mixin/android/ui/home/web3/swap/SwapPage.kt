@@ -175,7 +175,9 @@ fun SwapPage(
                                     ),
                             )
                         }
-                        SlippageInfo(slippageBps, onShowSlippage)
+                        if (!fromToken.inMixin()) {
+                            SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
+                        }
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     val checkBalance = checkBalance(inputText.value, fromToken.balance)
@@ -342,6 +344,7 @@ fun SwapPageScaffold(
 @Composable
 private fun SlippageInfo(
     slippageBps: Int,
+    enableClick: Boolean,
     onShowSlippage: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -356,6 +359,7 @@ private fun SlippageInfo(
                 .clickable(
                     interactionSource,
                     null,
+                    enableClick,
                 ) {
                     onShowSlippage.invoke()
                 },
@@ -537,13 +541,13 @@ fun SwapLayoutPreview() {
 @Preview
 @Composable
 fun PreviewSlippageInfo() {
-    SlippageInfo(slippageBps = 50) {}
+    SlippageInfo(slippageBps = 50, true) {}
 }
 
 @Preview
 @Composable
 fun PreviewSlippageInfoWarning() {
-    SlippageInfo(slippageBps = 600) {}
+    SlippageInfo(slippageBps = 600, true) {}
 }
 
 @Preview
