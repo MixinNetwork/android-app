@@ -29,7 +29,9 @@ data class ParsedInstruction(
     @SerializedName("items")
     val items: List<Item>? = null,
     @SerializedName("token_changes")
-    val tokenChanges: List<TokenChange>? = null
+    val tokenChanges: List<TokenChange>? = null,
+
+    val info: String? = null,
 )
 
 data class Item(
