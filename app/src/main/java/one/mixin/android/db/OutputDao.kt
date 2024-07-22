@@ -69,10 +69,10 @@ interface OutputDao : BaseDao<Output> {
     @Query(
         """
         SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o 
-        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
-        LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
-        LEFT JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' 
+        INNER JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        INNER JOIN tokens t on t.collection_hash = i.collection_hash
+        WHERE o.state = 'unspent'  
         ORDER BY 
             CASE 
                 WHEN :orderBy = 'Recent' THEN o.sequence 
@@ -87,10 +87,10 @@ interface OutputDao : BaseDao<Output> {
     @Query(
         """
         SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o 
-        LEFT JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
-        LEFT JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
-        LEFT JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE i.inscription_hash IS NOT NULL AND ic.collection_hash IS NOT NULL AND o.state = 'unspent' AND ic.collection_hash = :collectionHash
+        INNER JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        INNER JOIN tokens t on t.collection_hash = i.collection_hash
+        WHERE o.state = 'unspent' AND ic.collection_hash = :collectionHash
         ORDER BY o.sequence ASC
         """,
     )

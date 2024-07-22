@@ -161,7 +161,7 @@ class CollectiblesFragment : BaseFragment() {
                 }
             }
 
-            R.id.radio_collection -> {
+            else -> {
                 binding.collectiblesRv.adapter = collectionAdapter
                 web3ViewModel.collections(sortOrder).observe(this@CollectiblesFragment.viewLifecycleOwner) {
                     binding.collectiblesVa.displayedChild =
@@ -173,8 +173,6 @@ class CollectiblesFragment : BaseFragment() {
                     collectionAdapter.list = it
                 }
             }
-
-            else -> {}
         }
     }
 
