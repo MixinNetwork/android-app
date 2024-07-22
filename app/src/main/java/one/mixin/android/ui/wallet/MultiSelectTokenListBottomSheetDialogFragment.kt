@@ -25,6 +25,7 @@ import one.mixin.android.ui.wallet.adapter.SelectableTokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedTokenAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchTokenItemCallback
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
@@ -66,6 +67,10 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         style: Int,
     ) {
         super.setupDialog(dialog, style)
+        dataProvider?.let { provider ->
+            selectedTokenItems.clear()
+            selectedTokenItems.addAll(provider.getCurrentTokens())
+        }
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
@@ -102,8 +107,8 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             resetButton.setOnClickListener {
                 selectedTokenItems.clear()
-                onMultiSelectTokenListener?.onTokenSelect(null)
-                dismiss()
+                adapter.notifyDataSetChanged()
+                groupAdapter.notifyDataSetChanged()
             }
             applyButton.setOnClickListener {
                 onMultiSelectTokenListener?.onTokenSelect(selectedTokenItems)
@@ -179,5 +184,15 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     interface OnMultiSelectTokenListener {
         fun onTokenSelect(tokenItems: List<TokenItem>?)
         fun onDismiss()
+    }
+
+    interface DataProvider {
+        fun getCurrentTokens(): List<TokenItem>
+    }
+
+    private var dataProvider: DataProvider? = null
+    fun setDateProvider(dataProvider:DataProvider): MultiSelectTokenListBottomSheetDialogFragment {
+        this.dataProvider = dataProvider
+        return this
     }
 }

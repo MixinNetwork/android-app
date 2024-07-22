@@ -48,7 +48,7 @@ import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
 
 @AndroidEntryPoint
-class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_all_transactions), OnSnapshotListener {
+class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_all_transactions), OnSnapshotListener, MultiSelectTokenListBottomSheetDialogFragment.DataProvider, MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
@@ -264,6 +264,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val multiSelectTokenListBottomSheetDialogFragment by lazy {
         MultiSelectTokenListBottomSheetDialogFragment.newInstance()
+            .setDateProvider(this@AllTransactionsFragment)
             .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
                 override fun onTokenSelect(tokenItems: List<TokenItem>?) {
                     binding.filterAsset.close()
@@ -285,6 +286,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val multiSelectRecipientsListBottomSheetDialogFragment by lazy {
         MultiSelectRecipientsListBottomSheetDialogFragment.newInstance(userItem)
+            .setDateProvider(this@AllTransactionsFragment)
             .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
                 override fun onRecipientSelect(recipients: List<Recipient>?) {
                     binding.filterUser.close()
@@ -424,5 +426,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = filterParams.type.value
         }
+    }
+
+    override fun getCurrentTokens(): List<TokenItem> {
+        return filterParams.tokenItems?: emptyList()
+    }
+
+    override fun getCurrentRecipients(): List<Recipient> {
+        return filterParams.recipients?: emptyList()
     }
 }

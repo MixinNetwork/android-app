@@ -35,7 +35,6 @@ import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")
@@ -97,8 +96,11 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
         style: Int,
     ) {
         super.setupDialog(dialog, style)
-        Timber.e("setupDialog")
         contentView = binding.root
+        dataProvider?.let { provider ->
+            selectedRecipients.clear()
+            selectedRecipients.addAll(provider.getCurrentRecipients())
+        }
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
         }
@@ -204,8 +206,9 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                     )
             resetButton.setOnClickListener {
                 selectedRecipients.clear()
-                onMultiSelectRecipientListener?.onRecipientSelect(null)
-                dismiss()
+                addressesAdapter.notifyDataSetChanged()
+                userAdapter.notifyDataSetChanged()
+                groupAdapter.notifyDataSetChanged()
             }
             applyButton.setOnClickListener {
                 onMultiSelectRecipientListener?.onRecipientSelect(selectedRecipients)
@@ -308,5 +311,15 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
 
     fun setType(type: SnapshotType) {
         this.type = type
+    }
+
+    interface DataProvider {
+        fun getCurrentRecipients(): List<Recipient>
+    }
+
+    private var dataProvider: DataProvider? = null
+    fun setDateProvider(dataProvider: DataProvider): MultiSelectRecipientsListBottomSheetDialogFragment {
+        this.dataProvider = dataProvider
+        return this
     }
 }
