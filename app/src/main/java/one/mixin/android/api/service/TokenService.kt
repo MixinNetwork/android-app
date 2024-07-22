@@ -53,7 +53,7 @@ interface TokenService {
     suspend fun getSnapshots(
         @Query("asset") assetId: String? = null,
         @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
+        @Query("limit") limit: Int = 300,
         @Query("opponent") opponent: String? = null,
         @Query("destination") destination: String? = null,
         @Query("tag") tag: String? = null,
