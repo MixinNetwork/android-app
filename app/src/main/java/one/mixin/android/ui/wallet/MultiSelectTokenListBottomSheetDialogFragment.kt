@@ -111,7 +111,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 groupAdapter.notifyDataSetChanged()
             }
             applyButton.setOnClickListener {
-                onMultiSelectTokenListener?.onTokenSelect(selectedTokenItems)
+                onMultiSelectTokenListener?.onTokenSelect(selectedTokenItems.toList())
                 dismiss()
             }
             disposable =

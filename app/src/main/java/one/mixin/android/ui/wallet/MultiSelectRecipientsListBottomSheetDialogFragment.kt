@@ -211,7 +211,7 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                 groupAdapter.notifyDataSetChanged()
             }
             applyButton.setOnClickListener {
-                onMultiSelectRecipientListener?.onRecipientSelect(selectedRecipients)
+                onMultiSelectRecipientListener?.onRecipientSelect(selectedRecipients.toList())
                 dismiss()
             }
         }
