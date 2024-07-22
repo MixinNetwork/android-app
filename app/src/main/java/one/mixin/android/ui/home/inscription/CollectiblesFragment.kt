@@ -41,7 +41,8 @@ import javax.inject.Inject
 class CollectiblesFragment : BaseFragment() {
     companion object {
         const val TAG = "CollectiblesFragment"
-
+        private const val TYPE_COLLECTION = 0
+        private const val TYPE_COLLECTIBLES= 1
         fun newInstance() = CollectiblesFragment()
     }
 
@@ -110,7 +111,7 @@ class CollectiblesFragment : BaseFragment() {
             settingIb.setOnClickListener {
                 SettingActivity.show(requireContext(), compose = false)
             }
-            if (type == R.id.radio_collectibles) {
+            if (type == TYPE_COLLECTIBLES) {
                 radioCollectibles.isChecked = true
             } else {
                 radioCollection.isChecked = true
@@ -129,7 +130,11 @@ class CollectiblesFragment : BaseFragment() {
             }
 
             radioGroupCollectibles.setOnCheckedChangeListener { _, id ->
-                type = id
+                type = if (R.id.radio_collectibles == id) {
+                    TYPE_COLLECTIBLES
+                } else {
+                    TYPE_COLLECTION
+                }
             }
         }
         bindData()
@@ -148,7 +153,7 @@ class CollectiblesFragment : BaseFragment() {
     private fun bindData() {
         binding.dropTv.setText(if (sortOrder == SortOrder.Recent) R.string.Recent else R.string.Alphabetical)
         when (type) {
-            R.id.radio_collectibles -> {
+            TYPE_COLLECTIBLES -> {
                 binding.collectiblesRv.adapter = collectiblesAdapter
                 web3ViewModel.collectibles(sortOrder).observe(this@CollectiblesFragment.viewLifecycleOwner) {
                     binding.collectiblesVa.displayedChild =
@@ -185,7 +190,7 @@ class CollectiblesFragment : BaseFragment() {
             }
         }
 
-    private var type = MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_INSCRIPTION_TYPE, R.id.radio_collectibles)
+    private var type = MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_INSCRIPTION_TYPE, TYPE_COLLECTIBLES)
         set(value) {
             if (field != value) {
                 field = value
