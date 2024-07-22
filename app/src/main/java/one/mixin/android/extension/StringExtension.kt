@@ -323,8 +323,8 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(length: Int = 50): String {
-    if (this.length <= length) return this
+fun String.formatPublicKey(limit: Int = 50): String {
+    if (this.length <= limit) return this
     return substring(0, 8) + "..." + substring(length - 6, length)
 }
 
