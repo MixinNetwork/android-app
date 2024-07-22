@@ -37,6 +37,7 @@ fun ImageView.loadImage(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    this.clear()
     this.load(data) {
         if (base64Holder != null) {
             placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
@@ -68,6 +69,7 @@ fun ImageView.loadImageCompat(
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
 ) {
+    this.clear()
     this.load(data) {
         if (base64Holder != null) {
             placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
@@ -92,6 +94,7 @@ fun ImageView.loadImage(
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
 ) {
+    this.clear()
     this.load(uri) {
         if (base64Holder != null) {
             placeholder(base64Holder.toDrawable(layoutParams.width, layoutParams.height))
