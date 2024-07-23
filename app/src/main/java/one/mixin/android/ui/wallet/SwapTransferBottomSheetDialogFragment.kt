@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -53,47 +54,52 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.ResponseError
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment.Companion
 import one.mixin.android.ui.home.web3.components.ActionBottom
-import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
-import one.mixin.android.ui.home.web3.error.ProgramErrorHandler
-import one.mixin.android.ui.home.web3.error.RaydiumErrorHandler
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
-import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
-import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.UUID
 
+@AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     companion object {
@@ -118,6 +124,8 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
+
+    protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     enum class Step {
         Pending,
@@ -144,6 +152,10 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val self by lazy {
         requireNotNull(Session.getAccount()).toUser()
+    }
+
+    private val link by lazy {
+        Uri.parse(requireNotNull(requireArguments().getString(ARGS_LINK)))
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -376,12 +388,55 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 step = Step.Sending
-                delay(3000)
-                step = Step.Done
+                val assetId = link.getQueryParameter("asset")!!
+                val amount = link.getQueryParameter("amount")!!
+                val receiverIds = listOf(link.lastPathSegment!!)
+                val memo = link.getQueryParameter("memo")
+                val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+                val response = bottomViewModel.kernelTransaction(assetId, receiverIds, 1.toByte(), amount, pin, traceId, memo)
+                if (response.isSuccess) {
+                    defaultSharedPreferences.putLong(
+                        Constants.BIOMETRIC_PIN_CHECK,
+                        System.currentTimeMillis(),
+                    )
+                    context?.updatePinCheck()
+                    step = Step.Done
+                } else {
+                    errorInfo = handleError(response.error) ?: response.errorDescription
+                    step = Step.Error
+                }
+
             } catch (e: Exception) {
                 handleException(e)
             }
         }
+
+    private suspend fun handleError(
+        error: ResponseError?,
+    ): String? {
+        if (error != null) {
+            val errorCode = error.code
+            val errorDescription = error.description
+            val errorInfo =
+                when (errorCode) {
+                    ErrorHandler.TOO_MANY_REQUEST -> {
+                        requireContext().getString(R.string.error_pin_check_too_many_request)
+                    }
+
+                    ErrorHandler.PIN_INCORRECT -> {
+                        val errorCount = bottomViewModel.errorCount()
+                        requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
+                    }
+
+                    else -> {
+                        requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+                    }
+                }
+            return errorInfo
+        } else {
+            return null
+        }
+    }
 
     private fun handleException(e: Throwable) {
         Timber.e(e)

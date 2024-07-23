@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
