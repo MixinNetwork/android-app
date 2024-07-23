@@ -47,7 +47,7 @@ class CollectiblesFragment : BaseFragment() {
     }
 
     private val padding: Int by lazy {
-        15.dp
+        16.dp
     }
 
     @Inject
@@ -116,7 +116,7 @@ class CollectiblesFragment : BaseFragment() {
             } else {
                 radioCollection.isChecked = true
             }
-            collectiblesRv.addItemDecoration(StickerSpacingItemDecoration(2, padding, true))
+            collectiblesRv.addItemDecoration(InscriptionSpacingItemDecoration(2, padding))
 
             collectiblesRv.layoutManager = GridLayoutManager(requireContext(), 2)
             collectiblesRv.adapter = collectiblesAdapter

@@ -88,6 +88,7 @@ class AvatarView : ViewAnimator {
 
     fun setNet(padding: Int = context.dpToPx(8f)) {
         displayedChild = POS_AVATAR
+        avatarSimple.clear()
         avatarSimple.setBackgroundResource(R.drawable.bg_circle_70_solid_gray)
         avatarSimple.setImageResource(R.drawable.ic_transfer_address)
         avatarSimple.setPadding(padding)
@@ -96,15 +97,18 @@ class AvatarView : ViewAnimator {
     fun setDeposit() {
         displayedChild = POS_AVATAR
         avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
+        avatarSimple.clear()
     }
 
     fun setWithdrawal() {
         displayedChild = POS_AVATAR
+        avatarSimple.clear()
         avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
     }
 
     fun setAnonymous() {
         displayedChild = POS_AVATAR
+        avatarSimple.clear()
         avatarSimple.setImageResource(R.drawable.ic_snapshot_anonymous)
     }
 
@@ -121,6 +125,7 @@ class AvatarView : ViewAnimator {
         displayedChild =
             if (!url.isNullOrEmpty()) {
                 avatarSimple.setBackgroundResource(0)
+                avatarSimple.clear()
                 avatarSimple.setImageResource(0)
                 avatarSimple.setPadding(0)
                 avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
