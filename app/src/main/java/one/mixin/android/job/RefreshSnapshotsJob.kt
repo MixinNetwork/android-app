@@ -4,7 +4,6 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.PREF_SNAPSHOT_OFFSET
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.safe.SafeSnapshot
 import org.threeten.bp.Instant
 
@@ -13,6 +12,7 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
         private const val serialVersionUID = 2L
         private val TIME_ZERO: String = Instant.ofEpochMilli(0).toString()
         const val GROUP = "RefreshSnapshotsJob"
+        const val LIMIT = 300
     }
 
     override fun onRun(): Unit =
