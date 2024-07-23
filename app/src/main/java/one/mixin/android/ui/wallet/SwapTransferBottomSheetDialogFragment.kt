@@ -394,7 +394,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 step = Step.Sending
                 val assetId = link.getQueryParameter("asset")!!
                 val amount = link.getQueryParameter("amount")!!
-                val receiverIds = listOf(link.lastPathSegment!!)
+                val receiverId = link.lastPathSegment!!
+                bottomViewModel.refreshUser(receiverId) ?: throw IllegalArgumentException(getString(R.string.User_not_found))
+                val receiverIds = listOf(receiverId)
                 val memo = link.getQueryParameter("memo")
                 val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
                 val response = bottomViewModel.kernelTransaction(assetId, receiverIds, 1.toByte(), amount, pin, traceId, memo)
