@@ -84,6 +84,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -125,7 +126,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    protected val bottomViewModel by viewModels<BottomSheetViewModel>()
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     enum class Step {
         Pending,
@@ -317,6 +318,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     ) {
                                         Button(
                                             onClick = {
+                                                parentFragmentManager.findFragmentByTag(SwapFragment.TAG)?.let {
+                                                    parentFragmentManager.beginTransaction().remove(it).commit()
+                                                }
                                                 dismiss()
                                             },
                                             colors =
