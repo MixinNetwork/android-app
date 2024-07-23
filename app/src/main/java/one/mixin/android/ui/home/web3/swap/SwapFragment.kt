@@ -51,11 +51,11 @@ import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
+import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
@@ -252,8 +252,10 @@ class SwapFragment : BaseFragment() {
                                         ) ?: return@launch
                                     if (inMixin()) {
                                         isLoading = false
-                                        LinkBottomSheetDialogFragment.newInstance(swapResult.tx)
-                                            .showNow(parentFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                                        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint }?:return@launch
+                                        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint }?:return@launch
+                                        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken)
+                                            .showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
                                         return@launch
                                     }
                                     val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)

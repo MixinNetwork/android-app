@@ -1545,4 +1545,8 @@
     <string name="View_on_Marketplace">在市场中查看</string>
     <string name="View_on_Explorer">在浏览器中查看</string>
     <string name="malicious_instruction_token_set_authority">此交易将更改 SPL 代币的所有者。这将允许新的所有者在未经您允许的情况下转让代币。</string>
+    <string name="swap_confirmation">确认闪兑</string>
+    <string name="swap_failed">闪兑失败</string>
+    <string name="swap_inner_desc">该签名请求来自 Mixin Messenger。</string>
+    <string name="swap_message_success">您的闪兑交易已发送至网络，将很快交易被处理。</string>
 </resources>

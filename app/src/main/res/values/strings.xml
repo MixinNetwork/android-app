@@ -1581,4 +1581,8 @@
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction change the owner of your SPL tokens. This allow the new owner to transfer the tokens without your permission.</string>
+    <string name="swap_confirmation">Swap Confirm</string>
+    <string name="swap_failed">Swap Failed</string>
+    <string name="swap_inner_desc">The signature request from Mixin Messenger。</string>
+    <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
 </resources>
