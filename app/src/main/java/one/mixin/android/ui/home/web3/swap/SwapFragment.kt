@@ -568,12 +568,15 @@ class SwapFragment : BaseFragment() {
             }
             newTokens.forEach { token ->
                 if (token.assetId == fromToken?.assetId) {
+                    fromToken = null // keep
                     fromToken = token.toSwapToken()
                 } else if (token.assetId == toToken?.assetId) {
+                    toToken = null // keep
                     toToken = token.toSwapToken()
                 }
             }
             inputText.value = ""
+            exchangeRate = 0f
             quoteResp = null
             onTextChanged("")
         }
