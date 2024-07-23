@@ -82,9 +82,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
-import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -318,9 +316,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     ) {
                                         Button(
                                             onClick = {
-                                                parentFragmentManager.findFragmentByTag(SwapFragment.TAG)?.let {
-                                                    parentFragmentManager.beginTransaction().remove(it).commit()
-                                                }
+                                                onDoneAction?.invoke()
                                                 dismiss()
                                             },
                                             colors =
@@ -375,6 +371,13 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
         }
+
+    private var onDoneAction: (() -> Unit)? = null
+
+    fun setOnDone(callback: () -> Unit): SwapTransferBottomSheetDialogFragment {
+        onDoneAction = callback
+        return this
+    }
 
     private fun showPin() {
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
@@ -447,7 +450,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun handleException(e: Throwable) {
         Timber.e(e)
         errorInfo = e.message
-        reportException("${BrowserWalletBottomSheetDialogFragment.TAG} handleException", e)
+        reportException("$TAG handleException", e)
         step = Step.Error
     }
 

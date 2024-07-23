@@ -254,8 +254,9 @@ class SwapFragment : BaseFragment() {
                                         isLoading = false
                                         val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint }?:return@launch
                                         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint }?:return@launch
-                                        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken)
-                                            .showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+                                        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
+                                            setOnDone { clearInputAndRefreshInMixinFromToToken() }
+                                        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
                                         return@launch
                                     }
                                     val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)
@@ -552,6 +553,30 @@ class SwapFragment : BaseFragment() {
         }
         b = b.subtract(BigDecimal(maxLeftAmount))
         return calc(b)
+    }
+
+    private fun clearInputAndRefreshInMixinFromToToken() {
+        if (!inMixin()) return
+
+        val list = mutableListOf<String>()
+        fromToken?.let { list.add(it.assetId) }
+        toToken?.let { list.add(it.assetId) }
+        lifecycleScope.launch {
+            val newTokens = swapViewModel.syncAndFindTokens(list)
+            if (newTokens.isEmpty()) {
+                return@launch
+            }
+            newTokens.forEach { token ->
+                if (token.assetId == fromToken?.assetId) {
+                    fromToken = token.toSwapToken()
+                } else if (token.assetId == toToken?.assetId) {
+                    toToken = token.toSwapToken()
+                }
+            }
+            inputText.value = ""
+            quoteResp = null
+            onTextChanged("")
+        }
     }
 
     private fun inMixin(): Boolean = !tokenItems.isNullOrEmpty()
