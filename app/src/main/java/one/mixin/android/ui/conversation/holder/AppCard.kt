@@ -77,6 +77,7 @@ fun AppCard(
     val screenWidthDp = configuration.screenWidthDp.dp
     val context = LocalContext.current
     val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
+    val titleSize = ((context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14) +2).textDp)
 
     MixinAppTheme {
         Column(modifier = Modifier
@@ -102,8 +103,8 @@ fun AppCard(
                         )
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                 )
-                Spacer(modifier = Modifier.height(8.dp))
             }
+            Spacer(modifier = Modifier.height(8.dp))
             Column(modifier = Modifier.run {
                 if (isMe) {
                     padding(start = 10.dp, end = 16.dp)
@@ -111,16 +112,24 @@ fun AppCard(
                     padding(start = 16.dp, end = 10.dp)
                 }
             }) {
-                Text(
-                    text = appCardData.title ?: "",
-                    fontSize = textSize,
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                ClickableTextWithUrls(
-                    text = appCardData.description?:"", textSize, contentClick, contentLongClick, urlClick, urlLongClick
-                )
+                if (
+                    !appCardData.title.isNullOrBlank()
+                ) {
+                    Text(
+                        text = appCardData.title ?: "",
+                        fontSize = titleSize,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                if (
+                    !appCardData.description.isNullOrEmpty()
+                ) {
+                    ClickableTextWithUrls(
+                        text = appCardData.description ?: "", textSize, contentClick, contentLongClick, urlClick, urlLongClick
+                    )
+                }
                 if (createdAt != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     TimeBubble(modifier = Modifier.align(Alignment.End), createdAt, isMe, status, isPin, isRepresentative, isSecret, isWhite)
