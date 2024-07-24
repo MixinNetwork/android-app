@@ -93,7 +93,7 @@ fun AppCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1.6f)
+                        .aspectRatio(1.0f)
                         .wrapContentHeight()
                         .padding(
                             start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
