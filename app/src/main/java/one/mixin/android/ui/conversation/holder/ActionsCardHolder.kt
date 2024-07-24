@@ -62,6 +62,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
             }
         itemView.setOnLongClickListener(longClickListener)
         binding.chatLayout.setOnLongClickListener(longClickListener)
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
