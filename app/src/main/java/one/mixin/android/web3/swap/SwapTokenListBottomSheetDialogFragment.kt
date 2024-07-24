@@ -69,10 +69,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         binding.apply {
-            radio.isVisible = true
+            radio.isVisible = !inMixin()
             assetRv.adapter = adapter
             adapter.tokens = tokens!!
-            searchEt.et.setHint(R.string.search_swap_token)
+            searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
@@ -115,8 +115,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
                 }?.toMutableList() ?: mutableListOf()
 
-            val total = search(s, assetList)
-
+            val total = if (inMixin()) {
+                assetList
+            } else {
+                search(s, assetList)
+            }
             adapter.tokens = ArrayList(total)
             if (!isAdded) {
                 return@launch
@@ -152,4 +155,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
         this.adapter.setOnClickListener(onClickListener)
     }
+
+    private fun inMixin(): Boolean = tokens?.firstOrNull()?.inMixin() == true
 }

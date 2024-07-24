@@ -81,4 +81,36 @@
             android:layout_gravity="center" />
     </ViewAnimator>
 
+    <View
+        android:id="@+id/swap_delimiter"
+        android:layout_width="2dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        android:layout_gravity="center_vertical"
+        android:background="#0D000000" />
+
+    <ViewAnimator
+        android:id="@+id/swap_va"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:foreground="@drawable/mixin_ripple_round_right_12dp"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Swap"
+            android:textSize="16sp"
+            android:textFontWeight="500"
+            android:textColor="?attr/text_primary" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:theme="@style/AppTheme.BlueProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </ViewAnimator>
 </merge>

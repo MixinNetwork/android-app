@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
-import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,8 +46,6 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
-
-    private val swapViewModel by viewModels<SwapViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

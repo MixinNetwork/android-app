@@ -23,11 +23,20 @@ class SendReceiveView : LinearLayoutCompat {
     val receive get() = binding.receiveTv
     val receiveProgress get() = binding.receiveProgress
     val buy get() = binding.buyVa
+    val swap get() = binding.swapVa
 
     fun enableBuy() {
         buy.displayedChild = 0
         buy.isVisible = true
         binding.buyDelimiter.isVisible = true
+        receive.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_rect)
+        weightSum = 3f
+    }
+
+    fun enableSwap() {
+        swap.displayedChild = 0
+        swap.isVisible = true
+        binding.swapDelimiter.isVisible = true
         receive.foreground = ContextCompat.getDrawable(context, R.drawable.mixin_ripple_rect)
         weightSum = 3f
     }

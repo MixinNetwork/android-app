@@ -6,10 +6,10 @@ data class SwapRequest(
     val payer: String,
     val inputMint: String,
     val inAmount: Long,
+    val inputAmount: String, // exin
     val outputMint: String,
     val slippage: Int,
     val source: String,
 
     val jupiterQuoteResponse: JupiterQuoteResponse? = null,
-    val forceLegacy: Boolean = false,
 )

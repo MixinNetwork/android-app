@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.api.response.web3.SwapChain
+import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.WithdrawalMemoPossibility
@@ -32,7 +35,7 @@ data class TokenItem(
     val dust: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
     val collectionHash: String?,
-) : Parcelable {
+) : Parcelable, Swappable {
     fun fiat(): BigDecimal {
         return try {
             BigDecimal(balance).multiply(priceFiat())
@@ -67,6 +70,28 @@ data class TokenItem(
 
         val dustVal = dust.toDoubleOrNull() ?: return false
         return dustVal > 0
+    }
+
+    override fun toSwapToken(): SwapToken {
+        return SwapToken(
+            address = "",
+            assetId = assetId,
+            decimals = 0,
+            name = name,
+            symbol = symbol,
+            icon = iconUrl,
+            chain =
+            SwapChain(
+                chainId = chainId,
+                decimals = 0,
+                name = chainName ?: "",
+                symbol = chainSymbol ?: "",
+                icon = chainIconUrl ?: "",
+                price = null,
+            ),
+            balance = balance,
+            price = priceUsd,
+        )
     }
 
     companion object {
