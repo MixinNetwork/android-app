@@ -62,6 +62,7 @@ import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
+import timber.log.Timber
 import java.math.BigDecimal
 
 @Composable
@@ -73,6 +74,7 @@ fun SwapPage(
     outputText: String,
     exchangeRate: Float,
     slippageBps: Int,
+    errorInfo: String?,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
@@ -136,8 +138,9 @@ fun SwapPage(
                     margin = 6.dp,
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    Column(
-                        modifier =
+                    if (errorInfo.isNullOrBlank()) {
+                        Column(
+                            modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
@@ -147,36 +150,56 @@ fun SwapPage(
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MixinAppTheme.colors.backgroundGray)
                                 .padding(20.dp),
-                    ) {
-                        Row(
-                            modifier =
+                        ) {
+                            Row(
+                                modifier =
                                 Modifier
                                     .fillMaxWidth()
                                     .wrapContentHeight(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.Best_price),
-                                maxLines = 1,
-                                style =
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.Best_price),
+                                    maxLines = 1,
+                                    style =
                                     TextStyle(
                                         fontWeight = FontWeight.W400,
                                         color = MixinAppTheme.colors.textSubtitle,
                                     ),
-                            )
-                            Text(
-                                text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
-                                maxLines = 1,
-                                style =
+                                )
+                                Text(
+                                    text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
+                                    maxLines = 1,
+                                    style =
                                     TextStyle(
                                         fontWeight = FontWeight.W400,
                                         color = MixinAppTheme.colors.textPrimary,
                                     ),
-                            )
+                                )
+                            }
+                            if (!fromToken.inMixin()) {
+                                SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
+                            }
                         }
-                        if (!fromToken.inMixin()) {
-                            SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
+                    } else {
+                        Column(
+                            modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MixinAppTheme.colors.backgroundGray)
+                                .padding(20.dp),
+                        ) {
+                            Text(
+                                text = errorInfo,
+                                style =
+                                TextStyle(
+                                    fontSize = 14.sp,
+                                    color = MixinAppTheme.colors.tipError,
+                                ),
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(20.dp))

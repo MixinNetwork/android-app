@@ -57,6 +57,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -108,6 +109,7 @@ class SwapFragment : BaseFragment() {
     private var exchangeRate: Float by mutableFloatStateOf(0f)
     private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
+    private var errorInfo: String? = null
     private val web3tokens: List<Web3Token>? by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
     }
@@ -184,7 +186,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, errorInfo, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -245,7 +247,8 @@ class SwapFragment : BaseFragment() {
                                                 isLoading = false
                                                 return@handleMixinResponse false
                                             },
-                                            failureBlock = {
+                                            failureBlock = { r ->
+                                                errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                                                 isLoading = false
                                                 return@handleMixinResponse false
                                             },
@@ -514,10 +517,15 @@ class SwapFragment : BaseFragment() {
         }
 
         isLoading = true
+        errorInfo = null
         val resp = handleMixinResponse(
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage.toString(), getSource()) },
             successBlock = {
                 return@handleMixinResponse it.data
+            },
+            failureBlock = { r ->
+                errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                return@handleMixinResponse true
             },
             endBlock = {
                 isLoading = false
