@@ -105,7 +105,7 @@ fun AppCard(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Column(modifier = Modifier.run {
+            Column(modifier = Modifier.fillMaxWidth().run {
                 if (isMe) {
                     padding(start = 10.dp, end = 16.dp)
                 } else {
@@ -119,7 +119,7 @@ fun AppCard(
                         text = appCardData.title ?: "",
                         fontSize = titleSize,
                         color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.W500
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
