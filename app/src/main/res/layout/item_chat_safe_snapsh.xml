@@ -63,6 +63,7 @@
             android:textStyle="bold"
             android:layout_marginTop="12dp"
             android:layout_below="@id/bill_iv"
+            android:fontFamily="@font/mixin_font"
             tools:text="12345678.987534" />
 
         <TextView
