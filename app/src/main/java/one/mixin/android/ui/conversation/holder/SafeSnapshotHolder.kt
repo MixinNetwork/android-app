@@ -41,9 +41,9 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshotBinding) :
         if (!amount.isNullOrBlank()) {
             binding.billTv.text =
                 if (amount.startsWith('-')) {
-                    "-${amount.substring(1).numberFormat8()}"
+                    "-${amount.substring(1)}"
                 } else {
-                    amount.numberFormat8()
+                    amount
                 }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol
