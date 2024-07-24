@@ -234,6 +234,7 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
+import one.mixin.android.vo.getSendText
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAttachment
@@ -2496,8 +2497,14 @@ class ConversationFragment() :
                 sendTextMessage(msg)
             }
             return true
+        } else {
+            val msg = action.getSendText()
+            if (!msg.isNullOrEmpty()){
+                sendTextMessage(msg)
+                return true
+            }
+            return false
         }
-        return false
     }
 
     private fun clickSticker() {
