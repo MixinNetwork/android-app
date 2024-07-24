@@ -77,7 +77,7 @@ fun AppCard(
     val screenWidthDp = configuration.screenWidthDp.dp
     val context = LocalContext.current
     val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
-    val titleSize = ((context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14) +2).textDp)
+    val titleSize = ((context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14) + 2).textDp)
 
     MixinAppTheme {
         Column(modifier = Modifier
@@ -144,7 +144,7 @@ private fun Int.textDp(density: Density): TextUnit = with(density) {
 }
 
 val Int.textDp: TextUnit
-    @Composable get() =  this.textDp(density = LocalDensity.current)
+    @Composable get() = this.textDp(density = LocalDensity.current)
 
 private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
 private const val LONG_CLICK_TIME = 200L
