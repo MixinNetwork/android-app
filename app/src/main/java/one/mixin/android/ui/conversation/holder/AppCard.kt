@@ -86,22 +86,24 @@ fun AppCard(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = contentClick, onLongClick = contentLongClick
             )) {
-            CoilImage(
-                model = appCardData.coverUrl,
-                placeholder = R.drawable.bot_default,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1.0f)
-                    .wrapContentHeight()
-                    .padding(
-                        start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
-                            if (isLast) 6.dp else 7.dp
-                        } else 0.dp
-                    )
-                    .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            if (!appCardData.coverUrl.isNullOrBlank()) {
+                CoilImage(
+                    model = appCardData.coverUrl,
+                    placeholder = R.drawable.bot_default,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1.0f)
+                        .wrapContentHeight()
+                        .padding(
+                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
+                                if (isLast) 6.dp else 7.dp
+                            } else 0.dp
+                        )
+                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Column(modifier = Modifier.run {
                 if (isMe) {
                     padding(start = 10.dp, end = 16.dp)
