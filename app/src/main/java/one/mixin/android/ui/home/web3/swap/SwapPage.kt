@@ -62,7 +62,6 @@ import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
-import timber.log.Timber
 import java.math.BigDecimal
 
 @Composable
@@ -291,6 +290,12 @@ fun InputArea(
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_web3_wallet),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = token?.balance ?: "0",
                     style =
@@ -299,23 +304,11 @@ fun InputArea(
                             textAlign = TextAlign.End,
                         ),
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_web3_wallet),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
-                )
-            }
-        }
-        if (!readOnly) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                InputAction(text = stringResource(id = R.string.balance_half)) {
-                    onHalf?.invoke()
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                InputAction(text = stringResource(id = R.string.balance_max)) {
-                    onMax?.invoke()
+                if (!readOnly) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    InputAction(text = stringResource(id = R.string.balance_max)) {
+                        onMax?.invoke()
+                    }
                 }
             }
         }
@@ -577,12 +570,6 @@ fun PreviewSlippageInfoWarning() {
 @Composable
 fun PreviewInputActionMax() {
     InputAction("MAX") {}
-}
-
-@Preview
-@Composable
-fun PreviewInputActionHalf() {
-    InputAction("HALF") {}
 }
 
 /*
