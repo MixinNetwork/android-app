@@ -34,13 +34,14 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
-import one.mixin.android.api.response.toSwapToken
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
@@ -48,11 +49,16 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.withArgs
-import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
+import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -68,6 +74,8 @@ import kotlin.time.Duration.Companion.seconds
 class SwapFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
+        const val ARGS_WEB3_TOKENS = "args_web3_tokens"
+        const val ARGS_TOKEN_ITEMS = "args_token_items"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -76,9 +84,16 @@ class SwapFragment : BaseFragment() {
 
         const val maxLeftAmount = 0.01
 
-        fun newInstance(tokens: List<Web3Token>): SwapFragment =
+        inline fun <reified T : Swappable> newInstance(tokens: List<T>): SwapFragment =
             SwapFragment().withArgs {
-                putParcelableArrayList("TOKENS", arrayListOf<Web3Token>().apply { addAll(tokens) })
+                when (T::class) {
+                    Web3Token::class -> {
+                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { addAll(tokens) })
+                    }
+                    TokenItem::class -> {
+                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { addAll(tokens) })
+                    }
+                }
             }
     }
 
@@ -94,8 +109,12 @@ class SwapFragment : BaseFragment() {
     private var exchangeRate: Float by mutableFloatStateOf(0f)
     private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
-    private val web3tokens by lazy {
-        requireArguments().getParcelableArrayListCompat("TOKENS", Web3Token::class.java)!!
+    private var errorInfo: String? = null
+    private val web3tokens: List<Web3Token>? by lazy {
+        requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
+    }
+    private val tokenItems: List<TokenItem>? by lazy {
+        requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
     }
 
     private var quoteResp: QuoteResponse? = null
@@ -129,12 +148,7 @@ class SwapFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         lifecycleScope.launch {
-            if (web3tokens.size > 0) {
-                fromToken = web3tokens[0].toSwapToken()
-            }
-            if (web3tokens.size > 1) {
-                toToken = web3tokens[1].toSwapToken()
-            }
+            setFromTo()
             refreshTokens()
         }
         return ComposeView(inflater.context).apply {
@@ -172,7 +186,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, errorInfo, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -209,14 +223,23 @@ class SwapFragment : BaseFragment() {
                             }, {
                                 lifecycleScope.launch {
                                     val qr = quoteResp ?: return@launch
-                                    val inputMint = fromToken?.address ?: return@launch
-                                    val outputMint = toToken?.address ?: return@launch
+                                    val inputMint = fromToken?.getUnique() ?: return@launch
+                                    val outputMint = toToken?.getUnique() ?: return@launch
 
                                     quoteJob?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
-                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(JsSigner.solanaAddress, inputMint, qr.inAmount.toLong(), outputMint, qr.slippage, qr.source, qr.jupiterQuoteResponse)) },
+                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(
+                                                if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
+                                                inputMint,
+                                                if (inMixin()) 0 else qr.inAmount.toLong(),
+                                                if (inMixin()) qr.inAmount else "0",
+                                                outputMint,
+                                                qr.slippage,
+                                                qr.source,
+                                                qr.jupiterQuoteResponse,
+                                            )) },
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
@@ -224,11 +247,21 @@ class SwapFragment : BaseFragment() {
                                                 isLoading = false
                                                 return@handleMixinResponse false
                                             },
-                                            failureBlock = {
+                                            failureBlock = { r ->
+                                                errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                                                 isLoading = false
                                                 return@handleMixinResponse false
                                             },
                                         ) ?: return@launch
+                                    if (inMixin()) {
+                                        isLoading = false
+                                        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint }?:return@launch
+                                        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint }?:return@launch
+                                        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
+                                            setOnDone { clearInputAndRefreshInMixinFromToToken() }
+                                        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+                                        return@launch
+                                    }
                                     val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)
                                     JsSigner.useSolana()
                                     isLoading = false
@@ -260,27 +293,56 @@ class SwapFragment : BaseFragment() {
         }
     }
 
+    private fun setFromTo() {
+        (web3tokens ?: tokenItems)?.let {
+            if (it.isNotEmpty()) {
+                fromToken = it[0].toSwapToken()
+            }
+            if (it.size > 1) {
+                toToken = it[1].toSwapToken()
+            }
+        }
+    }
+
     private val selectCallback = fun(
         list: List<SwapToken>,
         index: Int,
     ) {
         if (index == 0) {
-            Web3TokenListBottomSheetDialogFragment.newInstance(
-                ArrayList(web3tokens),
-            ).apply {
-                setOnClickListener { t ->
-                    val token = t.toSwapToken()
-                    if (token == toToken) {
-                        toToken = fromToken
+            if (inMixin()) {
+                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND, ArrayList(list.map { t -> t.assetId }))
+                    .setOnAssetClick { t ->
+                        val token = t.toSwapToken()
+                        if (token == toToken) {
+                            toToken = fromToken
+                        }
+                        fromToken = token
+                        lifecycleScope.launch {
+                            refreshTokensPrice(listOf(token))
+                            onTextChanged(currentText)
+                        }
+                    }.setOnDepositClick {
+                        parentFragmentManager.popBackStackImmediate()
                     }
-                    fromToken = token
-                    lifecycleScope.launch {
-                        refreshTokensPrice(listOf(token))
-                        onTextChanged(currentText)
+                    .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+            } else {
+                Web3TokenListBottomSheetDialogFragment.newInstance(
+                    ArrayList(web3tokens ?: emptyList()),
+                ).apply {
+                    setOnClickListener { t ->
+                        val token = t.toSwapToken()
+                        if (token == toToken) {
+                            toToken = fromToken
+                        }
+                        fromToken = token
+                        lifecycleScope.launch {
+                            refreshTokensPrice(listOf(token))
+                            onTextChanged(currentText)
+                        }
+                        dismissNow()
                     }
-                    dismissNow()
-                }
-            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+                }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+            }
         } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
                 ArrayList(
@@ -311,7 +373,7 @@ class SwapFragment : BaseFragment() {
     private suspend fun refreshTokens() {
         handleMixinResponse(
             invokeNetwork = {
-                swapViewModel.web3Tokens()
+                swapViewModel.web3Tokens(getSource())
             },
             successBlock = { resp ->
                 resp.data
@@ -337,32 +399,74 @@ class SwapFragment : BaseFragment() {
                 return@handleMixinResponse true
             },
         )?.let {
-            swapTokens =
-                it.map { token ->
+            if (!inMixin()) {
+                swapTokens = it.map { token ->
                     val t =
-                        web3tokens.firstOrNull { web3Token ->
+                        web3tokens?.firstOrNull { web3Token ->
                             web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                         } ?: return@map token
                     token.balance = t.balance
                     token
                 }
-            if (fromToken == null) {
-                fromToken = swapTokens.firstOrNull { t -> fromToken?.address == t.address } ?: swapTokens[0]
+                if (fromToken == null) {
+                    fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
+                }
+                toToken = swapTokens.firstOrNull { s -> s.address != fromToken?.address }
+            } else {
+                swapTokens = it.map { token ->
+                    val t = tokenItems?.firstOrNull { tokenItem ->
+                        tokenItem.assetId == token.assetId
+                    } ?: return@map token
+                    token.balance = t.balance
+                    token
+                }
+                if (fromToken == null) {
+                    fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
+                    toToken = swapTokens.getOrNull(1)
+                } else {
+                    val found = swapTokens.firstOrNull { s -> s.assetId == fromToken?.assetId }
+                    if (found == null) {
+                        fromToken = swapTokens[0]
+                    }
+                    if (toToken != null) {
+                        val toFound = swapTokens.firstOrNull { s -> s.assetId == toToken?.assetId }
+                        if (toFound == null) {
+                            toToken = swapTokens.getOrNull(1)
+                        }
+                    } else {
+                        toToken = swapTokens.getOrNull(1)
+                    }
+                }
             }
-            toToken = swapTokens.firstOrNull { t -> toToken?.address == t.address }
-            if (fromToken != null  && toToken != null) refreshTokensPrice(listOf(fromToken!!, toToken!!))
+            if (fromToken != null  && toToken != null) {
+                refreshTokensPrice(listOf(fromToken!!, toToken!!))
+            }
         }
     }
 
     private suspend fun refreshTokensPrice(tokens: List<SwapToken>): List<SwapToken> {
-        val web3Tokens = swapViewModel.web3Tokens(chain = ChainType.solana.name, address = tokens.map { it.address })
-        if (web3Tokens.isEmpty()) {
-            return tokens
-        }
-        tokens.forEachIndexed { _, token ->
-            web3Tokens.forEach { t ->
-                if (t.assetKey.equals(token.address, true)) {
-                    token.price = t.price
+        if (inMixin()) {
+            val newTokens = swapViewModel.syncAndFindTokens(tokens.map { it.assetId })
+            if (newTokens.isEmpty()) {
+                return tokens
+            }
+            tokens.forEachWithIndex { _, token ->
+                newTokens.forEach { t ->
+                    if (t.assetId == token.assetId) {
+                        token.price = t.priceUsd
+                    }
+                }
+            }
+        } else {
+            val web3Tokens = swapViewModel.web3Tokens(chain = ChainType.solana.name, address = tokens.map { it.address })
+            if (web3Tokens.isEmpty()) {
+                return tokens
+            }
+            tokens.forEachIndexed { _, token ->
+                web3Tokens.forEach { t ->
+                    if (t.assetKey.equals(token.address, true)) {
+                        token.price = t.price
+                    }
                 }
             }
         }
@@ -402,32 +506,43 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun quote(input: String) {
-        val inputMint = fromToken?.address ?: return
-        val outputMint = toToken?.address ?: return
-        val amount = fromToken?.toLongAmount(input) ?: return
-        if (amount <= 0L) return
+        val inputMint = fromToken?.getUnique() ?: return
+        val outputMint = toToken?.getUnique() ?: return
+        val amount = if (inMixin()) {
+            input
+        } else {
+            val a = fromToken?.toLongAmount(input) ?: return
+            if (a <= 0L) return
+            a.toString()
+        }
 
         isLoading = true
-        quoteResp = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage) },
+        errorInfo = null
+        val resp = handleMixinResponse(
+            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage.toString(), getSource()) },
             successBlock = {
                 return@handleMixinResponse it.data
+            },
+            failureBlock = { r ->
+                errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                return@handleMixinResponse true
             },
             endBlock = {
                 isLoading = false
             },
         ) ?: return
 
-        val inValue = fromToken?.realAmount(quoteResp?.inAmount?.toLongOrNull() ?: 0L)
-        val outValue = toToken?.realAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L)
+        quoteResp = resp
+        val inValue = fromToken?.realAmount(resp.inAmount)
+        val outValue = toToken?.realAmount(resp.outAmount)
         exchangeRate =
             if (inValue == null || outValue == null || inValue == BigDecimal.ZERO || outValue == BigDecimal.ZERO) {
                 0f
             } else {
                 outValue.divide(inValue, RoundingMode.CEILING).toFloat()
             }
-        slippage = quoteResp?.slippage ?: 0
-        outputText = toToken?.toStringAmount(quoteResp?.outAmount?.toLongOrNull() ?: 0L) ?: "0"
+        slippage = resp.slippage
+        outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
     }
 
     private fun calcInput(half: Boolean): String {
@@ -447,6 +562,36 @@ class SwapFragment : BaseFragment() {
         b = b.subtract(BigDecimal(maxLeftAmount))
         return calc(b)
     }
+
+    private fun clearInputAndRefreshInMixinFromToToken() {
+        if (!inMixin()) return
+
+        val list = mutableListOf<String>()
+        fromToken?.let { list.add(it.assetId) }
+        toToken?.let { list.add(it.assetId) }
+        lifecycleScope.launch {
+            val newTokens = swapViewModel.syncAndFindTokens(list)
+            if (newTokens.isEmpty()) {
+                return@launch
+            }
+            newTokens.forEach { token ->
+                if (token.assetId == fromToken?.assetId) {
+                    fromToken = null // keep
+                    fromToken = token.toSwapToken()
+                } else if (token.assetId == toToken?.assetId) {
+                    toToken = null // keep
+                    toToken = token.toSwapToken()
+                }
+            }
+            inputText.value = ""
+            exchangeRate = 0f
+            quoteResp = null
+            onTextChanged("")
+        }
+    }
+
+    private fun inMixin(): Boolean = !tokenItems.isNullOrEmpty()
+    private fun getSource(): String = if (!tokenItems.isNullOrEmpty()) "exin" else ""
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

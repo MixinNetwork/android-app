@@ -8,6 +8,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -63,7 +64,7 @@ class Web3Token(
     val assetKey: String,
     @SerializedName("decimals")
     val decimals: Int,
-) : Parcelable {
+) : Parcelable, Swappable {
     fun toLongAmount(amount: String): Long {
         val a =
             try {
@@ -86,30 +87,32 @@ class Web3Token(
         get() {
             return chainId + assetKey
         }
-}
 
-const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
-const val wrappedSolTokenAssetKey = "So11111111111111111111111111111111111111112"
-
-fun Web3Token.toSwapToken(): SwapToken {
-    return SwapToken(
-        address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
-        decimals = decimals,
-        name = name,
-        symbol = symbol,
-        icon = iconUrl,
-        chain =
+    override fun toSwapToken(): SwapToken {
+        return SwapToken(
+            address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
+            assetId = "",
+            decimals = decimals,
+            name = name,
+            symbol = symbol,
+            icon = iconUrl,
+            chain =
             SwapChain(
+                chainId = "",
                 decimals = 0,
                 name = chainName,
                 symbol = symbol,
                 icon = chainIconUrl,
                 price = null,
             ),
-        balance = balance,
-        price = price,
-    )
+            balance = balance,
+            price = price,
+        )
+    }
 }
+
+const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
+const val wrappedSolTokenAssetKey = "So11111111111111111111111111111111111111112"
 
 fun Web3Token.getChainFromName(): Chain {
     return when {

@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class SwapChain(
+    @SerializedName("chainId") val chainId: String,
     @SerializedName("decimals") val decimals: Int,
     @SerializedName("name") val name: String,
     @SerializedName("symbol") val symbol: String,
