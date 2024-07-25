@@ -192,6 +192,9 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                     .subscribe(
                         {
                             if (it.isNullOrBlank()) {
+                                currentQuery = it.toString()
+                                currentAddressSearch?.cancel()
+                                currentSearch?.cancel()
                                 binding.rvVa.displayedChild = if(binding.radioGroup.checkedRadioButtonId == R.id.radio_user) POS_USER_RV else POS_ADDRESS_RV
                                 userAdapter.submitList(defaultUsers)
                                 addressesAdapter.submitList(defaultAddress)
