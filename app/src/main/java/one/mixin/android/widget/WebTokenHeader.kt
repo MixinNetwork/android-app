@@ -51,6 +51,7 @@ class Web3TokenHeader : ConstraintLayout {
         this.onClickAction = onClickAction
     }
 
+    @SuppressLint("SetTextI18n")
     fun setToken(token: Web3Token) {
         _binding.avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
         _binding.avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)

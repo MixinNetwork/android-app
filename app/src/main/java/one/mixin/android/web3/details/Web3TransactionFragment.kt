@@ -10,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
@@ -18,7 +17,6 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel

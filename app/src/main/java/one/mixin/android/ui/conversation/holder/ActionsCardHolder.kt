@@ -19,7 +19,6 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.ActionButton
-import timber.log.Timber
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
     BaseViewHolder(binding.root) {

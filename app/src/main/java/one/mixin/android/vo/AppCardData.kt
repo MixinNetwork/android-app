@@ -9,8 +9,6 @@ import one.mixin.android.Constants.Scheme.HTTPS_SEND
 import one.mixin.android.Constants.Scheme.MIXIN_SEND
 import one.mixin.android.Constants.Scheme.SEND
 import one.mixin.android.crypto.Base64
-import one.mixin.android.extension.getRawQueryParameter
-import one.mixin.android.extension.handleSchemeSend
 
 @Parcelize
 data class AppCardData(

@@ -4,7 +4,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.api.response.WithdrawalResponse
-import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.InscriptionCollection

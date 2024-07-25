@@ -11,7 +11,6 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.media3.common.MimeTypes
 import androidx.recyclerview.widget.DiffUtil
-import kotlinx.parcelize.IgnoredOnParcel
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream

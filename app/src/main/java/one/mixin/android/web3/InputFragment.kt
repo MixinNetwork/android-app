@@ -25,7 +25,6 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast

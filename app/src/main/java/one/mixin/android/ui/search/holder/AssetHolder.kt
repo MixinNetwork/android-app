@@ -7,7 +7,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.NormalHolder
