@@ -1,5 +1,6 @@
 package one.mixin.android.web3.details
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
@@ -9,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
@@ -17,7 +17,6 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -58,6 +57,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         requireNotNull(requireArguments().getString(ARGS_CHAIN))
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -87,7 +87,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 avatar.badge.isVisible = true
                 avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
             }
-            feeTv.text = "${transaction.fee.amount.numberFormat8()} ${transaction.fee.symbol}"
+            feeTv.text = "${transaction.fee.amount} ${transaction.fee.symbol}"
             dateTv.text = transaction.createdAt.fullDate()
             statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }

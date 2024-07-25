@@ -36,7 +36,7 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         if (!amount.isNullOrBlank()) {
             binding.billTv.text =
                 if (amount.startsWith('-')) {
-                    "-${amount.substring(1).numberFormat8()}"
+                    "-${amount.substring(1)}"
                 } else {
                     amount.numberFormat8()
                 }

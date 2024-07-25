@@ -17,7 +17,6 @@ import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
@@ -121,7 +120,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             inTv.textColorResource = R.color.wallet_pink
-                            inTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            inTv.text = "-${outTransfer.amount}"
                             inSymbolTv.text = outTransfer.symbol
                             outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).numberFormat2()}"
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
@@ -136,7 +135,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount.numberFormat8()}"
+                            inTv.text = "+${inTransfer.amount}"
                             inSymbolTv.text = inTransfer.symbol
                             outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(inTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(inTransfer.amount)).numberFormat2()}"
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
@@ -150,7 +149,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
                             inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount.numberFormat8()}"
+                            inTv.text = "+${inTransfer.amount}"
                             inSymbolTv.text = inTransfer.symbol
                             avatar.badge.loadImage(inTransfer.iconUrl, holder = R.drawable.ic_avatar_place_holder)
                             avatar.badge.isVisible = true
@@ -158,7 +157,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             outTv.isVisible = true
                             outTv.textColorResource = R.color.wallet_pink
-                            outTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            outTv.text = "-${outTransfer.amount}"
                             outSymbolTv.text = outTransfer.symbol
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
                         }
@@ -172,7 +171,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     if (transaction.transfers.isNotEmpty()) {
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             inTv.textColorResource = R.color.wallet_pink
-                            inTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            inTv.text = "-${outTransfer.amount}"
                             inSymbolTv.text = outTransfer.symbol
                             outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).numberFormat2()}"
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
@@ -195,7 +194,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     avatar.badge.loadImage(transaction.approvals.firstOrNull()?.iconUrl, holder = R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = true
                     inTv.textColorResource = R.color.wallet_pink
-                    inTv.text = "-${transaction.fee.amount.numberFormat8()}"
+                    inTv.text = "-${transaction.fee.amount}"
                     inSymbolTv.text = transaction.fee.symbol
                     outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).numberFormat2()}"
                     outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
@@ -216,7 +215,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     avatar.badge.loadImage(transaction.approvals.firstOrNull()?.iconUrl, holder = R.drawable.ic_no_dapp)
                     avatar.badge.isVisible = true
                     inTv.textColorResource = R.color.wallet_pink
-                    inTv.text = "-${transaction.fee.amount.numberFormat8()}"
+                    inTv.text = "-${transaction.fee.amount}"
                     inSymbolTv.text = transaction.fee.symbol
                     outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).numberFormat2()}"
                     outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
@@ -239,13 +238,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                                     },
                             )
                             inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount.numberFormat8()}"
+                            inTv.text = "+${inTransfer.amount}"
                             inSymbolTv.text = inTransfer.symbol
                         }
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             outTv.isVisible = true
                             outTv.textColorResource = R.color.wallet_pink
-                            outTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            outTv.text = "-${outTransfer.amount}"
                             outSymbolTv.text = outTransfer.symbol
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
                         }
@@ -268,13 +267,13 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                                     },
                             )
                             inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount.numberFormat8()}"
+                            inTv.text = "+${inTransfer.amount}"
                             inSymbolTv.text = inTransfer.symbol
                         }
                         transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
                             outTv.isVisible = true
                             outTv.textColorResource = R.color.wallet_pink
-                            outTv.text = "-${outTransfer.amount.numberFormat8()}"
+                            outTv.text = "-${outTransfer.amount}"
                             outSymbolTv.text = outTransfer.symbol
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
                         }

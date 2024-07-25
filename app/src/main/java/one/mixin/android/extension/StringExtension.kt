@@ -348,7 +348,7 @@ fun String.numberFormat8(): String {
 
     return try {
         val big = BigDecimal(this)
-        DecimalFormat(big.toPlainString().getPattern()).format(big)
+        DecimalFormat(",###.########").format(big)
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -390,7 +390,7 @@ fun BigDecimal.priceFormat(): String {
 
 fun BigDecimal.numberFormat8(): String {
     return try {
-        DecimalFormat(this.toPlainString().getPattern()).format(this)
+        DecimalFormat(",###.########").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {

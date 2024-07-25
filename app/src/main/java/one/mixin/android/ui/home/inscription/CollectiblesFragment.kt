@@ -27,7 +27,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData

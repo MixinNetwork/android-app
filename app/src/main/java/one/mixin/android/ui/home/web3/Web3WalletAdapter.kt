@@ -15,7 +15,6 @@ import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
@@ -159,13 +158,13 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
             avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
             balance.text =
                 try {
-                    if (token.balance.numberFormat().toFloat() == 0f) {
+                    if (token.balance.toFloat() == 0f) {
                         "0.00"
                     } else {
-                        token.balance.numberFormat()
+                        token.balance
                     }
-                } catch (ignored: NumberFormatException) {
-                    token.balance.numberFormat()
+                } catch (ignored: Exception) {
+                    token.balance
                 }
             symbolTv.text = token.symbol
             balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"

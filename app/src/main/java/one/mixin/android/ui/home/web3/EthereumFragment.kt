@@ -30,7 +30,6 @@ import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
