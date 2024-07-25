@@ -27,7 +27,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         binding.avatar.loadToken(asset)
         binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }
 
-        binding.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
+        binding.balance.text = asset.balance + " " + asset.symbol
         binding.balance.highLight(target)
         binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
         val chainNetwork = getChainNetwork(asset.assetId, asset.chainId, asset.assetKey)

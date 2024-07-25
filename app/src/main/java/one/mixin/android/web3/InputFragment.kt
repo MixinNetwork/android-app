@@ -353,7 +353,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         if (tokenPrice <= BigDecimal.ZERO) {
                             "≈ 0 $tokenSymbol"
                         } else {
-                            "≈ ${(value.toBigDecimal().divide(tokenPrice, 8, RoundingMode.UP)).numberFormat8()} $tokenSymbol"
+                            "≈ ${(value.toBigDecimal().divide(tokenPrice, 8, RoundingMode.UP))} $tokenSymbol"
                         }
                 }
             } else {

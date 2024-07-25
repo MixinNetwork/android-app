@@ -1,5 +1,6 @@
 package one.mixin.android.web3.details
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
@@ -58,6 +59,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         requireNotNull(requireArguments().getString(ARGS_CHAIN))
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -87,7 +89,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 avatar.badge.isVisible = true
                 avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
             }
-            feeTv.text = "${transaction.fee.amount.numberFormat8()} ${transaction.fee.symbol}"
+            feeTv.text = "${transaction.fee.amount} ${transaction.fee.symbol}"
             dateTv.text = transaction.createdAt.fullDate()
             statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
