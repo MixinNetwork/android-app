@@ -43,6 +43,7 @@ import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
@@ -214,6 +215,8 @@ class UserRepository
         suspend fun searchAppByHost(query: String) = appDao.searchAppByHost("%$query%")
 
         fun findContactUsers() = userDao.findContactUsers()
+
+        fun allRecipients(): LiveData<List<UserItem>> = userDao.allRecipients()
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 

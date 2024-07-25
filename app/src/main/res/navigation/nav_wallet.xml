@@ -55,6 +55,10 @@
         android:label="AllTransactionsFragment"
         tools:layout="@layout/fragment_all_transactions">
 
+        <argument
+            android:name="args_user"
+            app:argType="one.mixin.android.vo.UserItem" />
+
         <action
             android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"

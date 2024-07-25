@@ -44,7 +44,7 @@
             android:background="@null"
             android:drawablePadding="6dp"
             android:gravity="center_vertical"
-            android:hint="@string/search_placeholder_asset"
+            android:hint="@string/search_placeholder_app"
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:inputType="text"
             android:maxLines="1"
@@ -74,7 +74,7 @@
         android:visibility="gone">
 
         <RadioGroup
-            android:id="@+id/radio_group_explore"
+            android:id="@+id/radio_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -84,27 +84,106 @@
             android:paddingBottom="12dp">
 
             <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_solana"
+                android:id="@+id/radio_user"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
-                android:text="@string/Solana"
+                android:text="@string/Users"
                 android:checked="true"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Address"
                 android:textColor="@drawable/radio_button_text_selector" />
 
         </RadioGroup>
     </LinearLayout>
 
+    <RelativeLayout
+        android:id="@+id/bottom_rl"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:background="?attr/bg_white"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:orientation="horizontal"
+        android:elevation="8dp"
+        android:layout_alignParentBottom="true">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/select_rv"
+            android:layout_width="match_parent"
+            android:background="?attr/bg_white"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp" />
+
+        <View
+            android:id="@+id/center"
+            android:layout_centerInParent="true"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
+
+        <Button
+            style="@style/AppTheme.MaterialGrayButton"
+            android:id="@+id/reset_button"
+            android:layout_width="128dp"
+            android:layout_height="40dp"
+            android:text="@string/Reset"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="16dp"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:textAllCaps="false"
+            android:includeFontPadding="false"
+            android:layout_below="@id/select_rv"
+            android:layout_toStartOf="@+id/center" />
+
+        <Button
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/apply_button"
+            android:layout_width="128dp"
+            android:layout_height="40dp"
+            android:paddingStart="36dp"
+            android:paddingEnd="36dp"
+            android:layout_toEndOf="@+id/center"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:text="@string/Apply"
+            android:textAllCaps="false"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:layout_below="@id/select_rv"
+            android:includeFontPadding="false" />
+
+    </RelativeLayout>
+
     <ViewAnimator
         android:id="@+id/rv_va"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/radio">
+        android:layout_below="@id/radio"
+        android:layout_above="@id/bottom_rl">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/asset_rv"
+            android:id="@+id/rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            app:layoutManager="LinearLayoutManager" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/address_rv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?attr/bg_white"

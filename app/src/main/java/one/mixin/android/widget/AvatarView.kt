@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import one.mixin.android.R
@@ -134,11 +135,13 @@ class AvatarView : ViewAnimator {
             }
     }
 
-    fun loadUrl(url: String) {
+
+    fun loadUrl(url: String?, @DrawableRes holder: Int = R.drawable.ic_group_place_holder) {
         displayedChild = POS_AVATAR
         avatarSimple.setBackgroundResource(0)
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
+        avatarSimple.clear()
         avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
     }
 

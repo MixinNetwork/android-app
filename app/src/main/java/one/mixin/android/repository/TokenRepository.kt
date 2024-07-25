@@ -10,6 +10,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import androidx.room.withTransaction
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -51,6 +53,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
+import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
@@ -67,11 +70,13 @@ import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
@@ -459,24 +464,8 @@ class TokenRepository
 
         fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()
 
-        fun allSnapshots(
-            type: String? = null,
-            otherType: String? = null,
-            orderByAmount: Boolean = false,
-        ): DataSource.Factory<Int, SnapshotItem> {
-            return if (type == null) {
-                if (orderByAmount) {
-                    safeSnapshotDao.allSnapshotsOrderByAmount()
-                } else {
-                    safeSnapshotDao.allSnapshots()
-                }
-            } else {
-                if (orderByAmount) {
-                    safeSnapshotDao.allSnapshotsByTypeOrderByAmount(type, otherType)
-                } else {
-                    safeSnapshotDao.allSnapshotsByType(type, otherType)
-                }
-            }
+        fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
+            return safeSnapshotDao.getSnapshots(filterParams.buildQuery())
         }
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
@@ -1027,4 +1016,5 @@ class TokenRepository
             }
         }
 
+    fun allAddresses(): LiveData<List<AddressItem>> = addressDao.allAddresses()
 }
