@@ -257,7 +257,7 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                 binding.pb.isVisible = true
 
                 val localUsers = defaultUsers.filter {
-                    it.fullName?.contains(query) == true || it.identityNumber.contains(query)
+                    it.fullName?.contains(query, true) == true || it.identityNumber.contains(query, true)
                 }
                 userAdapter.submitList(localUsers) {
                     binding.rv.scrollToPosition(0)
@@ -279,7 +279,7 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                 binding.pb.isVisible = true
 
                 val localAddress = defaultAddress.filter {
-                    it.label.contains(query) || it.destination.contains(query) || it.tag?.contains(query) == true
+                    it.label.contains(query, true) || it.destination.contains(query, true) || it.tag?.contains(query, true) == true
                 }
                 addressesAdapter.submitList(localAddress) {
                     binding.addressRv.scrollToPosition(0)
@@ -299,6 +299,10 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        binding.searchEt.et.setText(null)
+        currentQuery = ""
+        currentSearch?.cancel()
+        currentSearch?.cancel()
         userAdapter.submitList(defaultUsers)
         addressesAdapter.submitList(defaultAddress)
         onMultiSelectRecipientListener?.onDismiss()

@@ -156,7 +156,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 binding.pb.isVisible = true
 
                 val localAssets = defaultAssets.filter {
-                    it.name.contains(query) || it.symbol.contains(query)
+                    it.name.contains(query, true) || it.symbol.contains(query, true)
                 }
                 adapter.submitList(localAssets) {
                     binding.rv.scrollToPosition(0)
@@ -176,6 +176,9 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        binding.searchEt.et.setText(null)
+        currentQuery = ""
+        currentSearch?.cancel()
         onMultiSelectTokenListener?.onDismiss()
     }
 
