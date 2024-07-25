@@ -7,6 +7,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
+import androidx.core.util.Pair
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
@@ -306,7 +307,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         multiSelectRecipientsListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
     }
 
-    private val dateRangePicker by lazy {
+    private fun dateRangePicker(): MaterialDatePicker<Pair<Long,Long>> {
         val constraints = CalendarConstraints.Builder()
             .setEnd(MaterialDatePicker.todayInUtcMilliseconds())
             .setValidator(DateValidatorPointBackward.now())
@@ -315,6 +316,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             .setTheme(R.style.AppTheme_DatePicker)
             .setTitleText(getString(R.string.Select_Date))
             .setNegativeButtonText(getString(R.string.Reset))
+            .apply {
+                val start = filterParams.startTime ?: return@apply
+                val end = filterParams.endTime ?: return@apply
+                setSelection(Pair(start, end))
+            }
             .setCalendarConstraints(constraints)
             .build()
         dateRangePicker.addOnDismissListener {
@@ -332,12 +338,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             filterParams.endTime = endDate
             loadFilter()
         }
-        dateRangePicker
+        return dateRangePicker
     }
 
     private fun datePicker() {
         binding.filterTime.open()
-        dateRangePicker.show(parentFragmentManager, MaterialDatePicker::class.java.name)
+        dateRangePicker().show(parentFragmentManager, MaterialDatePicker::class.java.name)
     }
 
     private val sortMenu by lazy {
