@@ -48,6 +48,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openMarket
@@ -64,6 +65,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
@@ -314,6 +316,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     }
                     sendReceiveView.receive.setOnClickListener {
                         showReceiveAssetList()
+                    }
+                    sendReceiveView.enableSwap()
+                    sendReceiveView.swap.setOnClickListener {
+                        navTo(SwapFragment.newInstance(assets), SwapFragment.TAG)
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root

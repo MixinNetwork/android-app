@@ -276,6 +276,19 @@ class TokenRepository
             return tokenDao.findAssetItemById(assetId)
         }
 
+        suspend fun syncAndFindTokens(assetIds: List<String>): List<TokenItem> {
+            handleMixinResponse(
+                invokeNetwork = { tokenService.fetchTokenSuspend(assetIds) },
+                successBlock = { resp ->
+                   resp.data?.let { list ->
+                       tokenDao.insertListSuspend(list)
+                       list
+                   }
+                }
+            ) ?: return emptyList()
+            return tokenDao.findTokenItems(assetIds)
+        }
+
         suspend fun syncAssetByKernel(kernelAssetId: String): TokenItem? {
             val asset: Token =
                 handleMixinResponse(

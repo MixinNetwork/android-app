@@ -12,6 +12,7 @@ import java.math.RoundingMode
 @Parcelize
 data class SwapToken(
     @SerializedName("address") val address: String,
+    @SerializedName("assetId") val assetId: String,
     @SerializedName("decimals") val decimals: Int,
     @SerializedName("name") val name: String,
     @SerializedName("symbol") val symbol: String,
@@ -30,19 +31,45 @@ data class SwapToken(
         return a.multiply(BigDecimal.TEN.pow(decimals)).toLong()
     }
 
-    fun toStringAmount(amount: Long): String {
-        return realAmount(amount).stripTrailingZeros().toPlainString()
+    fun toStringAmount(amount: String): String {
+        return if (address.isNotEmpty()) {
+            realAmount(amount).stripTrailingZeros().toPlainString()
+        } else {
+            amount
+        }
     }
 
-    fun realAmount(amount: Long): BigDecimal {
-        return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+    fun realAmount(amount: String): BigDecimal {
+        return if (address.isNotEmpty()) {
+            BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+        } else {
+            BigDecimal(amount)
+        }
     }
 
     fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolTokenAssetKey, true)
 
+    fun getUnique(): String {
+        return address.ifEmpty {
+            assetId
+        }
+    }
+
+    fun inMixin(): Boolean = assetId != ""
+
     override fun equals(other: Any?): Boolean {
         if (other !is SwapToken) return false
 
-        return address == other.address
+        return if (address.isNotEmpty()) {
+            address == other.address
+        } else if (assetId.isNotEmpty()) {
+            assetId == other.assetId
+        } else {
+            false
+        }
     }
+}
+
+interface Swappable : Parcelable {
+    fun toSwapToken(): SwapToken
 }

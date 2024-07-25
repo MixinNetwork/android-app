@@ -10,8 +10,10 @@ import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.Web3Service
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,19 +21,21 @@ class SwapViewModel
     @Inject
     internal constructor(
         private val assetRepository: AssetRepository,
+        private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository,
         private val web3Service: Web3Service,
     ) : ViewModel() {
         suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
 
-        suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens()
+        suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source)
 
         suspend fun web3Quote(
             inputMint: String,
             outputMint: String,
-            amount: Long,
-            slippage: Int,
-        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage)
+            amount: String,
+            slippage: String,
+            source: String,
+        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
@@ -47,4 +51,7 @@ class SwapViewModel
                 },
             ) ?: emptyList()
         }
+
+        suspend fun syncAndFindTokens(assetIds: List<String>): List<TokenItem> =
+            tokenRepository.syncAndFindTokens(assetIds)
     }

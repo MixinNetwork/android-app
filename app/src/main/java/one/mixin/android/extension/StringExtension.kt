@@ -121,10 +121,12 @@ fun String.generateQRCode(
                 x = padding
                 y = padding
             }
+
             1 -> {
                 x = size - sideQuadSize * multiple - padding
                 y = padding
             }
+
             else -> {
                 x = padding
                 y = size - sideQuadSize * multiple - padding
@@ -679,6 +681,7 @@ fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean 
         } catch (ignored: Exception) {
             null
         }
+
     val uri = toSchemeHostOrNull(this)
     return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
         ?.find { pattern -> uri.equals(pattern, true) } != null
@@ -744,7 +747,9 @@ fun String.isValidHex(): Boolean {
 }
 
 fun BigDecimal.currencyFormat(): String {
-    return if (this < BigDecimal("0.01")) {
+    return if (this == BigDecimal.ZERO) {
+        "$0"
+    } else if (this < BigDecimal("0.01")) {
         "< $0.01"
     } else {
         "≈ $${this.setScale(2, RoundingMode.HALF_UP)}"

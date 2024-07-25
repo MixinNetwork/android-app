@@ -73,6 +73,7 @@ fun SwapPage(
     outputText: String,
     exchangeRate: Float,
     slippageBps: Int,
+    errorInfo: String?,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
@@ -136,8 +137,9 @@ fun SwapPage(
                     margin = 6.dp,
                 )
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    Column(
-                        modifier =
+                    if (errorInfo.isNullOrBlank()) {
+                        Column(
+                            modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
@@ -147,35 +149,57 @@ fun SwapPage(
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MixinAppTheme.colors.backgroundGray)
                                 .padding(20.dp),
-                    ) {
-                        Row(
-                            modifier =
+                        ) {
+                            Row(
+                                modifier =
                                 Modifier
                                     .fillMaxWidth()
                                     .wrapContentHeight(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.Best_price),
-                                maxLines = 1,
-                                style =
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.Best_price),
+                                    maxLines = 1,
+                                    style =
                                     TextStyle(
                                         fontWeight = FontWeight.W400,
                                         color = MixinAppTheme.colors.textSubtitle,
                                     ),
-                            )
-                            Text(
-                                text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
-                                maxLines = 1,
-                                style =
+                                )
+                                Text(
+                                    text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
+                                    maxLines = 1,
+                                    style =
                                     TextStyle(
                                         fontWeight = FontWeight.W400,
                                         color = MixinAppTheme.colors.textPrimary,
                                     ),
+                                )
+                            }
+                            if (!fromToken.inMixin()) {
+                                SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
+                            }
+                        }
+                    } else {
+                        Column(
+                            modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MixinAppTheme.colors.backgroundGray)
+                                .padding(20.dp),
+                        ) {
+                            Text(
+                                text = errorInfo,
+                                style =
+                                TextStyle(
+                                    fontSize = 14.sp,
+                                    color = MixinAppTheme.colors.tipError,
+                                ),
                             )
                         }
-                        SlippageInfo(slippageBps, onShowSlippage)
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     val checkBalance = checkBalance(inputText.value, fromToken.balance)
@@ -266,6 +290,12 @@ fun InputArea(
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_web3_wallet),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = token?.balance ?: "0",
                     style =
@@ -274,23 +304,11 @@ fun InputArea(
                             textAlign = TextAlign.End,
                         ),
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_web3_wallet),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
-                )
-            }
-        }
-        if (!readOnly) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                InputAction(text = stringResource(id = R.string.balance_half)) {
-                    onHalf?.invoke()
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-                InputAction(text = stringResource(id = R.string.balance_max)) {
-                    onMax?.invoke()
+                if (!readOnly) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    InputAction(text = stringResource(id = R.string.balance_max)) {
+                        onMax?.invoke()
+                    }
                 }
             }
         }
@@ -342,6 +360,7 @@ fun SwapPageScaffold(
 @Composable
 private fun SlippageInfo(
     slippageBps: Int,
+    enableClick: Boolean,
     onShowSlippage: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -356,6 +375,7 @@ private fun SlippageInfo(
                 .clickable(
                     interactionSource,
                     null,
+                    enableClick,
                 ) {
                     onShowSlippage.invoke()
                 },
@@ -537,25 +557,19 @@ fun SwapLayoutPreview() {
 @Preview
 @Composable
 fun PreviewSlippageInfo() {
-    SlippageInfo(slippageBps = 50) {}
+    SlippageInfo(slippageBps = 50, true) {}
 }
 
 @Preview
 @Composable
 fun PreviewSlippageInfoWarning() {
-    SlippageInfo(slippageBps = 600) {}
+    SlippageInfo(slippageBps = 600, true) {}
 }
 
 @Preview
 @Composable
 fun PreviewInputActionMax() {
     InputAction("MAX") {}
-}
-
-@Preview
-@Composable
-fun PreviewInputActionHalf() {
-    InputAction("HALF") {}
 }
 
 /*

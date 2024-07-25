@@ -372,14 +372,15 @@ class AssetRepository
 
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-        suspend fun web3Tokens(): MixinResponse<List<SwapToken>> = routeService.web3Tokens()
+        suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source)
 
         suspend fun web3Quote(
             inputMint: String,
             outputMint: String,
-            amount: Long,
-            slippage: Int,
-        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, slippage)
+            amount: String,
+            slippage: String,
+            source: String,
+        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
