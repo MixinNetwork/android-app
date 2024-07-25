@@ -14,9 +14,7 @@ import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.round
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay

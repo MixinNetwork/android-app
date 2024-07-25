@@ -10,6 +10,7 @@ import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 
 @Dao
 interface UserDao : BaseDao<User> {
@@ -27,6 +28,9 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUserById(id: String): LiveData<User>
+
+    @Query("SELECT * FROM users WHERE user_id IN (SELECT DISTINCT opponent_id FROM safe_snapshots)")
+    fun allRecipients(): LiveData<List<UserItem>>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findSelf(id: String): Flow<User?>

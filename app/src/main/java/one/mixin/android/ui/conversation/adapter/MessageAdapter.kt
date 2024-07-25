@@ -27,7 +27,7 @@ import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.databinding.ItemChatSafeInscriptionBinding
-import one.mixin.android.databinding.ItemChatSafeSnapshBinding
+import one.mixin.android.databinding.ItemChatSafeSnapshotBinding
 import one.mixin.android.databinding.ItemChatSecretBinding
 import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.databinding.ItemChatStickerBinding
@@ -167,7 +167,7 @@ class MessageAdapter(
             }
 
             SAFE_SNAPSHOT_TYPE -> {
-                SafeSnapshotHolder(ItemChatSafeSnapshBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                SafeSnapshotHolder(ItemChatSafeSnapshotBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
 
             SYSTEM_SAFE_INSCRIPTION_TYPE -> {

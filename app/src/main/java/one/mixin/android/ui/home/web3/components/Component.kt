@@ -428,7 +428,7 @@ private fun Instructions(
         modifier = Modifier.height(200.dp)
     ) {
         items(instructions.size) { i ->
-            Instruction(instruction = instructions[i])
+            Instruction(instructions[i])
             Box(modifier = Modifier.height(8.dp))
         }
     }
@@ -446,36 +446,44 @@ private fun Instruction(
             .border(1.dp, MixinAppTheme.colors.backgroundDark, shape = RoundedCornerShape(8.dp))
             .padding(16.dp, 12.dp),
     ) {
-        Text(
-            text = instruction.programName,
-            fontSize = 16.sp,
-            style = TextStyle(
-                brush = Brush.linearGradient(
-                    colors = gradientColors
+        if (instruction.info != null) {
+            Text(
+                text = instruction.info,
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary,
+            )
+        } else {
+            Text(
+                text = instruction.programName,
+                fontSize = 16.sp,
+                style = TextStyle(
+                    brush = Brush.linearGradient(
+                        colors = gradientColors
+                    )
                 )
             )
-        )
-        Box(modifier = Modifier.height(12.dp))
-        Row(
-            modifier =
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = instruction.programId.formatPublicKey(20),
-                color = MixinAppTheme.colors.accent,
-                fontSize = 14.sp,
-            )
-            Box(modifier = Modifier.weight(1f))
-            Text(
-                text = instruction.instructionName,
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
-            )
-        }
-        instruction.items?.forEach { item ->
-            Box(modifier = Modifier.height(4.dp))
-            Item(item)
+            Box(modifier = Modifier.height(12.dp))
+            Row(
+                modifier =
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = instruction.programId.formatPublicKey(20),
+                    color = MixinAppTheme.colors.accent,
+                    fontSize = 14.sp,
+                )
+                Box(modifier = Modifier.weight(1f))
+                Text(
+                    text = instruction.instructionName,
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                )
+            }
+            instruction.items?.forEach { item ->
+                Box(modifier = Modifier.height(4.dp))
+                Item(item)
+            }
         }
     }
 }
@@ -642,4 +650,10 @@ fun SolanaParsedTxPreviewPreview() {
     val tokens = GsonHelper.customGson.fromJson(tokensData, Array<Web3Token>::class.java)
     parsedTx.tokens = tokens.associateBy { it.assetKey }
     SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+}
+
+@Preview
+@Composable
+fun InstructionPreview() {
+    Instruction(ParsedInstruction("", "", "", info = "cannot decode instruction for Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"))
 }

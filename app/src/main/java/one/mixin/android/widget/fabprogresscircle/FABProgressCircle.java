@@ -23,9 +23,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.FrameLayout;
-
 import androidx.core.view.ViewCompat;
-
 import one.mixin.android.R;
 import one.mixin.android.widget.fabprogresscircle.completefab.CompleteFABListener;
 import one.mixin.android.widget.fabprogresscircle.completefab.CompleteFABView;

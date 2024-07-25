@@ -13,7 +13,6 @@ import android.provider.Settings
 import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants

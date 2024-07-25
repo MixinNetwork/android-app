@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -77,6 +76,7 @@ fun AppCard(
     val screenWidthDp = configuration.screenWidthDp.dp
     val context = LocalContext.current
     val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
+    val titleSize = ((context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14) + 2).textDp)
 
     MixinAppTheme {
         Column(modifier = Modifier
@@ -86,39 +86,49 @@ fun AppCard(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = contentClick, onLongClick = contentLongClick
             )) {
-            CoilImage(
-                model = appCardData.coverUrl,
-                placeholder = R.drawable.bot_default,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1.0f)
-                    .wrapContentHeight()
-                    .padding(
-                        start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
-                            if (isLast) 6.dp else 7.dp
-                        } else 0.dp
-                    )
-                    .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-            )
+            if (!appCardData.coverUrl.isNullOrBlank()) {
+                CoilImage(
+                    model = appCardData.coverUrl,
+                    placeholder = R.drawable.bot_default,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1.0f)
+                        .wrapContentHeight()
+                        .padding(
+                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
+                                if (isLast) 6.dp else 7.dp
+                            } else 0.dp
+                        )
+                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
-            Column(modifier = Modifier.run {
+            Column(modifier = Modifier.fillMaxWidth().run {
                 if (isMe) {
                     padding(start = 10.dp, end = 16.dp)
                 } else {
                     padding(start = 16.dp, end = 10.dp)
                 }
             }) {
-                Text(
-                    text = appCardData.title ?: "",
-                    fontSize = textSize,
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                ClickableTextWithUrls(
-                    text = appCardData.description?:"", textSize, contentClick, contentLongClick, urlClick, urlLongClick
-                )
+                if (
+                    !appCardData.title.isNullOrBlank()
+                ) {
+                    Text(
+                        text = appCardData.title ?: "",
+                        fontSize = titleSize,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.W500
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                if (
+                    !appCardData.description.isNullOrEmpty()
+                ) {
+                    ClickableTextWithUrls(
+                        text = appCardData.description ?: "", textSize, contentClick, contentLongClick, urlClick, urlLongClick
+                    )
+                }
                 if (createdAt != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     TimeBubble(modifier = Modifier.align(Alignment.End), createdAt, isMe, status, isPin, isRepresentative, isSecret, isWhite)
@@ -133,7 +143,7 @@ private fun Int.textDp(density: Density): TextUnit = with(density) {
 }
 
 val Int.textDp: TextUnit
-    @Composable get() =  this.textDp(density = LocalDensity.current)
+    @Composable get() = this.textDp(density = LocalDensity.current)
 
 private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
 private const val LONG_CLICK_TIME = 200L

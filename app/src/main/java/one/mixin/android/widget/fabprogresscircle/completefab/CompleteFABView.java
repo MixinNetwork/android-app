@@ -29,7 +29,6 @@ import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
 import one.mixin.android.R;
 
 /**

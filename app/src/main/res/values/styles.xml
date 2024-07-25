@@ -101,8 +101,8 @@
         <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
 
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
-
     </style>
+
 
     <style name="AppTheme.PopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
         <item name="android:popupBackground">?attr/bg_white</item>
@@ -374,4 +374,66 @@
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">?attr/text_primary</item>
     </style>
+
+    <style name="AppTheme.DatePicker" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="android:textColorPrimary">?text_primary</item>
+        <item name="android:background">?bg_white</item>
+        <item name="materialCalendarHeaderLayout">@style/AppTheme.HeaderLayout</item>
+        <item name="materialCalendarStyle">@style/AppTheme.Calendar</item>
+        <item name="colorPrimary">?color_accent</item>
+        <item name="colorOnPrimary">?text_primary</item>
+        <item name="colorOnSurface">?text_assist</item>
+        <item name="textInputStyle">@style/AppTheme.TextInputLayout</item>
+    </style>
+
+    <style name="AppTheme.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxStrokeColor">?bg_window</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">0dp</item>
+        <item name="hintTextColor">?text_assist</item>
+    </style>
+
+    <style name="AppTheme.Calendar" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="rangeFillColor">#663D75E3</item>
+        <item name="dayTodayStyle">@style/AppTheme.CalendarDayTodayStyle</item>
+        <item name="daySelectedStyle">@style/AppTheme.DaySelectedStyle</item>
+        <item name="dayStyle">@style/AppTheme.DayStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AppTheme.DatePicker.PositiveButton.Dialog</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.DatePicker.NegativeButton.Dialog</item>
+        <item name="materialCalendarHeaderTitle">@style/AppTheme.DatePicker.NegativeButton.Dialog</item>
+
+    </style>
+
+    <style name="AppTheme.DatePicker.PositiveButton.Dialog" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/selector_blue_tv</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="AppTheme.CalendarHeader" parent="@style/Widget.MaterialComponents.MaterialCalendar.HeaderTitle">
+        <item name="android:textColor">?text_primary</item>
+    </style>
+
+    <style name="AppTheme.DatePicker.NegativeButton.Dialog" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">?attr/text_assist</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="AppTheme.CalendarDayTodayStyle" parent="Widget.MaterialComponents.MaterialCalendar">
+        <item name="itemFillColor">#AA3D75E3</item>
+        <item name="itemTextColor">#FFF</item>
+    </style>
+
+    <style name="AppTheme.HeaderLayout" parent="Widget.MaterialComponents.MaterialCalendar.HeaderLayout">
+        <item name="android:background">?bg_white</item>
+    </style>
+
+    <style name="AppTheme.DayStyle" parent="Widget.MaterialComponents.MaterialCalendar.Day">
+        <item name="itemTextColor">?text_primary</item>
+    </style>
+
+    <style name="AppTheme.DaySelectedStyle" parent="Widget.MaterialComponents.MaterialCalendar.Day.Selected">
+        <item name="itemFillColor">?color_accent</item>
+        <item name="itemTextColor">#FFF</item>
+    </style>
+
 </resources>

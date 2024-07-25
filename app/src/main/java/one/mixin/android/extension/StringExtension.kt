@@ -121,10 +121,12 @@ fun String.generateQRCode(
                 x = padding
                 y = padding
             }
+
             1 -> {
                 x = size - sideQuadSize * multiple - padding
                 y = padding
             }
+
             else -> {
                 x = padding
                 y = size - sideQuadSize * multiple - padding
@@ -323,8 +325,8 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(length: Int = 50): String {
-    if (this.length <= length) return this
+fun String.formatPublicKey(limit: Int = 50): String {
+    if (this.length <= limit) return this
     return substring(0, 8) + "..." + substring(length - 6, length)
 }
 
@@ -346,7 +348,7 @@ fun String.numberFormat8(): String {
 
     return try {
         val big = BigDecimal(this)
-        DecimalFormat(big.toPlainString().getPattern()).format(big)
+        DecimalFormat(",###.########").format(big)
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -388,7 +390,7 @@ fun BigDecimal.priceFormat(): String {
 
 fun BigDecimal.numberFormat8(): String {
     return try {
-        DecimalFormat(this.toPlainString().getPattern()).format(this)
+        DecimalFormat(",###.########").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
@@ -679,6 +681,7 @@ fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean 
         } catch (ignored: Exception) {
             null
         }
+
     val uri = toSchemeHostOrNull(this)
     return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
         ?.find { pattern -> uri.equals(pattern, true) } != null
@@ -744,7 +747,9 @@ fun String.isValidHex(): Boolean {
 }
 
 fun BigDecimal.currencyFormat(): String {
-    return if (this < BigDecimal("0.01")) {
+    return if (this == BigDecimal.ZERO) {
+        "$0"
+    } else if (this < BigDecimal("0.01")) {
         "< $0.01"
     } else {
         "≈ $${this.setScale(2, RoundingMode.HALF_UP)}"

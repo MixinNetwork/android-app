@@ -1,13 +1,13 @@
 buildscript {
 
     ext {
-        ext.fragmentVersion = '1.8.1'
-        ext.activity_version = '1.9.0'
-        ext.lifecycleVersion = '2.8.3'
+        ext.fragmentVersion = '1.8.2'
+        ext.activity_version = '1.9.1'
+        ext.lifecycleVersion = '2.8.4'
         ext.appcompatVersion = '1.7.0'
-        ext.pagingVersion = '3.3.0'
+        ext.pagingVersion = '3.3.1'
         ext.coilVersion = '2.7.0'
-        ext.collectionx = '1.4.1'
+        ext.collectionx = '1.4.2'
         ext.roomVersion = '2.6.1'
         ext.navigationVersion = '2.7.7'
         ext.workManagerVersion = '2.9.0'
@@ -38,7 +38,7 @@ buildscript {
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
         ext.kotlinVersion = '2.0.0'
-        ext.libphonenumberVersion = '8.13.41'
+        ext.libphonenumberVersion = '8.13.42'
         ext.coroutinesVersion = '1.8.1'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
@@ -105,7 +105,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20240303'
-        ext.composeVersion = '1.7.0-beta05'
+        ext.composeVersion = '1.7.0-beta06'
         ext.accompanistVersion = '0.34.0'
         ext.web3jVersion = '4.8.7-android'
 

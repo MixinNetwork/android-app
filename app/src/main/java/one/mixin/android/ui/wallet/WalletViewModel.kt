@@ -147,21 +147,17 @@ class WalletViewModel
         fun addresses(id: String) = tokenRepository.addresses(id)
 
         fun allSnapshots(
-            type: String? = null,
-            otherType: String? = null,
             initialLoadKey: Int? = 0,
-            orderByAmount: Boolean = false,
+            filterParams:FilterParams,
         ): LiveData<PagedList<SnapshotItem>> =
             LivePagedListBuilder(
-                tokenRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
+                tokenRepository.allSnapshots(filterParams),
                 PagedList.Config.Builder()
                     .setPrefetchDistance(PAGE_SIZE * 2)
                     .setPageSize(PAGE_SIZE)
                     .setEnablePlaceholders(true)
                     .build(),
-            )
-                .setInitialLoadKey(initialLoadKey)
-                .build()
+            ).setInitialLoadKey(initialLoadKey).build()
 
         suspend fun allPendingDeposit() = tokenRepository.allPendingDeposit()
 

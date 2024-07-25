@@ -4,7 +4,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.api.response.WithdrawalResponse
-import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.InscriptionCollection
@@ -53,7 +52,7 @@ interface TokenService {
     suspend fun getSnapshots(
         @Query("asset") assetId: String? = null,
         @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
+        @Query("limit") limit: Int = 300,
         @Query("opponent") opponent: String? = null,
         @Query("destination") destination: String? = null,
         @Query("tag") tag: String? = null,

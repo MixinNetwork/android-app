@@ -43,8 +43,8 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
-import one.mixin.android.web3.ChainType
 import one.mixin.android.vo.toMixAddress
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey

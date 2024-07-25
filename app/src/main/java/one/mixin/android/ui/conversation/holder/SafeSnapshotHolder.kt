@@ -5,16 +5,15 @@ import android.view.Gravity
 import android.widget.FrameLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemChatSafeSnapshBinding
+import one.mixin.android.databinding.ItemChatSafeSnapshotBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
-class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : BaseViewHolder(binding.root) {
+class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshotBinding) : BaseViewHolder(binding.root) {
     init {
         binding.chatLayout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()
     }
@@ -41,9 +40,9 @@ class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshBinding) : B
         if (!amount.isNullOrBlank()) {
             binding.billTv.text =
                 if (amount.startsWith('-')) {
-                    "-${amount.substring(1).numberFormat8()}"
+                    "-${amount.substring(1)}"
                 } else {
-                    amount.numberFormat8()
+                    amount
                 }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol

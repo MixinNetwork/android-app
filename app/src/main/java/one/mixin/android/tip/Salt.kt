@@ -3,11 +3,9 @@ package one.mixin.android.tip
 import android.content.Context
 import one.mixin.android.Constants
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.toHex
-import timber.log.Timber
 
 // legacy: hex
 // new   : hex, hex ...

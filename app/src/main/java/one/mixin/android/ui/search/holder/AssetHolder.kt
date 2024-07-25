@@ -7,7 +7,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -27,7 +26,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         binding.avatar.loadToken(asset)
         binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }
 
-        binding.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
+        binding.balance.text = asset.balance + " " + asset.symbol
         binding.balance.highLight(target)
         binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
         val chainNetwork = getChainNetwork(asset.assetId, asset.chainId, asset.assetKey)

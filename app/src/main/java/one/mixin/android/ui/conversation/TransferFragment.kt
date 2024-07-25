@@ -40,6 +40,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -70,11 +71,11 @@ import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.NetworkFeeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.UserTransactionBottomSheetFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -84,6 +85,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
@@ -198,8 +200,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         if (t is TransferBiometricItem && t.users.size == 1) {
             binding.titleView.rightIb.setOnClickListener {
-                UserTransactionBottomSheetFragment.newInstance(t.users.first().userId)
-                    .showNow(parentFragmentManager, UserTransactionBottomSheetFragment.TAG)
+                val u = t.users.first()
+                navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG)
             }
         } else {
             binding.titleView.rightIb.isVisible = false
