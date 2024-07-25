@@ -213,11 +213,7 @@ class SwapFragment : BaseFragment() {
                                     }
                                     .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
                             }, {
-                                val a = calcInput(true)
-                                inputText.value = a
-                                refreshQuote(a)
-                            }, {
-                                val a = calcInput(false)
+                                val a = calcInput()
                                 inputText.value = a
                                 refreshQuote(a)
                             }, {
@@ -545,15 +541,11 @@ class SwapFragment : BaseFragment() {
         outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
     }
 
-    private fun calcInput(half: Boolean): String {
+    private fun calcInput(): String {
         val from = this.fromToken ?: return ""
         val balance = from.balance ?: "0"
         val calc = fun(balance: BigDecimal): String {
-            return if (half) {
-                balance.divide(BigDecimal(2))
-            } else {
-                balance
-            }.setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
+            return balance.setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
         }
         var b = BigDecimal(balance)
         if (!from.isSolToken() || b <= BigDecimal(maxLeftAmount)) {
