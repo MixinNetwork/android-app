@@ -62,9 +62,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.ResponseError
+import one.mixin.android.api.response.Receiver
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -158,6 +160,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private var step by mutableStateOf(Step.Pending)
+
+    private var parsedLink: ParsedLink? = null
+    private var receiver: User? by mutableStateOf(null)
 
     private var errorInfo: String? by mutableStateOf(null)
 
@@ -298,7 +303,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             Box(modifier = Modifier.height(20.dp))
                             ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), self)
                             Box(modifier = Modifier.height(20.dp))
-                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), self)
+                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver)
                             Box(modifier = Modifier.height(16.dp))
                         }
 
@@ -370,6 +375,8 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
+
+            parseLink()
         }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -391,18 +398,31 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 
+    inner class ParsedLink(
+        val assetId: String,
+        val amount: String,
+        val receiverIds: List<String>,
+        val memo: String?,
+        val traceId: String,
+    )
+
+    private fun parseLink() = lifecycleScope.launch {
+        val assetId = requireNotNull(link.getQueryParameter("asset"))
+        val amount = requireNotNull(link.getQueryParameter("amount"))
+        val receiverId = requireNotNull(link.lastPathSegment)
+        receiver = bottomViewModel.refreshUser(receiverId)
+        val receiverIds = listOf(receiverId)
+        val memo = link.getQueryParameter("memo")
+        val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+        parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
+    }
+
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val parsedLink = this@SwapTransferBottomSheetDialogFragment.parsedLink ?: return@launch
                 step = Step.Sending
-                val assetId = link.getQueryParameter("asset")!!
-                val amount = link.getQueryParameter("amount")!!
-                val receiverId = link.lastPathSegment!!
-                bottomViewModel.refreshUser(receiverId) ?: throw IllegalArgumentException(getString(R.string.User_not_found))
-                val receiverIds = listOf(receiverId)
-                val memo = link.getQueryParameter("memo")
-                val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-                val response = bottomViewModel.kernelTransaction(assetId, receiverIds, 1.toByte(), amount, pin, traceId, memo)
+                val response = bottomViewModel.kernelTransaction(parsedLink.assetId, parsedLink.receiverIds, 1.toByte(), parsedLink.amount, pin, parsedLink.traceId, parsedLink.memo)
                 if (response.isSuccess) {
                     defaultSharedPreferences.putLong(
                         Constants.BIOMETRIC_PIN_CHECK,
@@ -527,7 +547,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 @Composable
 fun ItemUserContent(
     title: String,
-    user: User
+    user: User?,
 ) {
     Column(
         modifier =
@@ -542,21 +562,28 @@ fun ItemUserContent(
             maxLines = 1,
         )
         Box(modifier = Modifier.height(4.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CoilImage(
-                model = user.avatarUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier =
-                Modifier
-                    .size(18.dp)
-                    .clip(CircleShape),
+        if (user == null) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MixinAppTheme.colors.accent,
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "${user.fullName} (${user.identityNumber})",
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-            )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CoilImage(
+                    model = user.avatarUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier =
+                    Modifier
+                        .size(18.dp)
+                        .clip(CircleShape),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "${user.fullName} (${user.identityNumber})",
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                )
+            }
         }
     }
 }
