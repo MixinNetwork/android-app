@@ -36,6 +36,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -160,7 +161,7 @@ fun InputContent(
             if (valueText.value != BigDecimal.ZERO) {
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "$${valueText.value.toPlainString()}",
+                        text = "$${valueText.value.toPlainString().numberFormat8()}",
                         style =
                             TextStyle(
                                 fontSize = 12.sp,

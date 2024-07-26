@@ -61,6 +61,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.tip.wc.compose.Loading
 import java.math.BigDecimal
 
@@ -78,7 +79,6 @@ fun SwapPage(
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
     onShowSlippage: () -> Unit,
-    onHalf: () -> Unit,
     onMax: () -> Unit,
     onSwap: () -> Unit,
     pop: () -> Unit,
@@ -126,7 +126,7 @@ fun SwapPage(
                         }
                     },
                     headerCompose = {
-                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onHalf, onMax) {
+                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onMax) {
                             inputText.value = it
                             onInputChanged.invoke(it)
                         }
@@ -254,7 +254,6 @@ fun InputArea(
     title: String,
     readOnly: Boolean = false,
     selectClick: () -> Unit,
-    onHalf: (() -> Unit)? = null,
     onMax: (() -> Unit)? = null,
     onInputChanged: ((String) -> Unit)? = null,
 ) {
