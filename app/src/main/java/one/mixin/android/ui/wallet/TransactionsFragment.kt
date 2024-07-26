@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.view.isInvisible
+import androidx.compose.ui.graphics.Color
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -36,6 +36,7 @@ import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.util.viewBinding
@@ -304,9 +305,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                 currentType: Int,
             ) {
                 headerBinding.apply {
-                    groupInfoMemberTitleSort.setOnClickListener {
-                        showFiltersSheet()
-                    }
                     if (asset.collectionHash.isNullOrEmpty()) {
                         topRl.setOnClickListener {
                             AssetKeyBottomSheetDialogFragment.newInstance(asset)
@@ -325,45 +323,40 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                     }
                     root.post {
                         if (viewDestroyed()) return@post
-
                         bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
-                            height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
+                            height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height
                         }
+                    }
+                    marketView.setContent {
+                        LineChart(listOf(1.0f, 4.3f, 10f, 5.2f, 4.5f, 5.5f, 3.4f, 2.2f, 2.8f), Color(0xFF50BD5CL), false)
                     }
                     bottomRl.isVisible = show
                     when (currentType) {
                         R.id.filters_radio_all -> {
-                            groupInfoMemberTitle.setText(R.string.Transactions)
                             walletTransactionsEmpty.setText(R.string.No_transactions)
                         }
 
                         R.id.filters_radio_transfer -> {
-                            groupInfoMemberTitle.setText(R.string.Transfer)
                             walletTransactionsEmpty.setText(R.string.No_transactions)
                         }
 
                         R.id.filters_radio_deposit -> {
-                            groupInfoMemberTitle.setText(R.string.Deposit)
                             walletTransactionsEmpty.setText(R.string.No_deposits)
                         }
 
                         R.id.filters_radio_withdrawal -> {
-                            groupInfoMemberTitle.setText(R.string.Withdrawal)
                             walletTransactionsEmpty.setText(R.string.No_withdrawals)
                         }
 
                         R.id.filters_radio_fee -> {
-                            groupInfoMemberTitle.setText(R.string.Fee)
                             walletTransactionsEmpty.setText(R.string.No_fees)
                         }
 
                         R.id.filters_radio_rebate -> {
-                            groupInfoMemberTitle.setText(R.string.Rebate)
                             walletTransactionsEmpty.setText(R.string.No_rebates)
                         }
 
                         R.id.filters_radio_raw -> {
-                            groupInfoMemberTitle.setText(R.string.Raw)
                             walletTransactionsEmpty.setText(R.string.No_raws)
                         }
                     }
@@ -396,7 +389,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                             "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
                         }
                     avatar.loadToken(asset)
-                    contractIv.isInvisible = !asset.collectionHash.isNullOrEmpty()
                     avatar.setOnClickListener(
                         object : DebugClickListener() {
                             override fun onDebugClick() {
