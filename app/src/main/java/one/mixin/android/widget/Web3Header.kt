@@ -8,7 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWeb3HeaderBinding
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -43,7 +43,7 @@ class Web3Header : ConstraintLayout {
     }
 
     fun setText(string: String) {
-        _binding.totalTv.text = (BigDecimal(string).multiply(BigDecimal(Fiats.getRate())).numberFormat2())
+        _binding.totalTv.text = (BigDecimal(string).multiply(BigDecimal(Fiats.getRate())).formatTo2DecimalsWithCommas())
         _binding.symbol.text = Fiats.getSymbol()
     }
 

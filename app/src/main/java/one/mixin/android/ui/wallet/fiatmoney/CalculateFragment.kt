@@ -32,8 +32,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
+import one.mixin.android.extension.formatTo8DecimalsWithCommas
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
@@ -434,7 +434,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 } else {
                     primaryTv.text = getNumberFormat(value)
                     minorTv.text =
-                        "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
+                        "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).formatTo8DecimalsWithCommas()} ${asset.symbol}"
                 }
                 continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
@@ -450,7 +450,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
     }
 
     private fun getNumberFormat(value: String): String {
-        return value.numberFormat2().let {
+        return value.formatTo2DecimalsWithCommas().let {
             if (v.endsWith(".")) {
                 "$it."
             } else if (v.endsWith(".00")) {

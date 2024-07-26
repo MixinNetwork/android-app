@@ -29,7 +29,7 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
@@ -390,10 +390,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                             if (asset.fiat().toFloat() == 0f) {
                                 "≈ ${Fiats.getSymbol()}0.00"
                             } else {
-                                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                                "≈ ${Fiats.getSymbol()}${asset.fiat().formatTo2DecimalsWithCommas()}"
                             }
                         } catch (ignored: NumberFormatException) {
-                            "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                            "≈ ${Fiats.getSymbol()}${asset.fiat().formatTo2DecimalsWithCommas()}"
                         }
                     avatar.loadToken(asset)
                     contractIv.isInvisible = !asset.collectionHash.isNullOrEmpty()

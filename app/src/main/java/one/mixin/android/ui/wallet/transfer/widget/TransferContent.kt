@@ -8,8 +8,8 @@ import androidx.core.view.isVisible
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferContentBinding
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
+import one.mixin.android.extension.formatTo8DecimalsWithCommas
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
@@ -88,7 +88,7 @@ class TransferContent : LinearLayout {
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+        return "${value.formatTo2DecimalsWithCommas()} ${Fiats.getAccountCurrencyAppearance()}"
     }
 
     private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem): Pair<String, String> {
@@ -123,10 +123,10 @@ class TransferContent : LinearLayout {
         if (asset.assetId == feeAsset.assetId) {
             val totalAmount = value.plus(feeValue)
             val total = asset.priceFiat() * totalAmount
-            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+            return Pair("${totalAmount.formatTo8DecimalsWithCommas()} ${asset.symbol}", "${total.formatTo2DecimalsWithCommas()} ${Fiats.getAccountCurrencyAppearance()}")
         } else {
             val total = asset.priceFiat() * value + feeAsset.priceFiat() * feeValue
-            return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+            return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.formatTo2DecimalsWithCommas()} ${Fiats.getAccountCurrencyAppearance()}")
         }
     }
 

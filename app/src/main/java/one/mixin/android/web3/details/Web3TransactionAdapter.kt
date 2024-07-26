@@ -16,7 +16,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
@@ -122,7 +122,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                             inTv.textColorResource = R.color.wallet_pink
                             inTv.text = "-${outTransfer.amount}"
                             inSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).numberFormat2()}"
+                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).formatTo2DecimalsWithCommas()}"
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
                             outTv.isVisible = false
                         }
@@ -137,7 +137,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                             inTv.textColorResource = R.color.wallet_green
                             inTv.text = "+${inTransfer.amount}"
                             inSymbolTv.text = inTransfer.symbol
-                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(inTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(inTransfer.amount)).numberFormat2()}"
+                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(inTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(inTransfer.amount)).formatTo2DecimalsWithCommas()}"
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
                             outTv.isVisible = false
                         }
@@ -173,7 +173,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                             inTv.textColorResource = R.color.wallet_pink
                             inTv.text = "-${outTransfer.amount}"
                             inSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).numberFormat2()}"
+                            outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(outTransfer.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(outTransfer.amount)).formatTo2DecimalsWithCommas()}"
                             outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
                             outTv.isVisible = false
                         }
@@ -196,7 +196,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     inTv.textColorResource = R.color.wallet_pink
                     inTv.text = "-${transaction.fee.amount}"
                     inSymbolTv.text = transaction.fee.symbol
-                    outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).numberFormat2()}"
+                    outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).formatTo2DecimalsWithCommas()}"
                     outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
                     outTv.isVisible = false
                 }
@@ -217,7 +217,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
                     inTv.textColorResource = R.color.wallet_pink
                     inTv.text = "-${transaction.fee.amount}"
                     inSymbolTv.text = transaction.fee.symbol
-                    outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).numberFormat2()}"
+                    outSymbolTv.text = "${Fiats.getSymbol()}${BigDecimal(transaction.fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(transaction.fee.amount)).formatTo2DecimalsWithCommas()}"
                     outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
                     outTv.isVisible = false
                 }

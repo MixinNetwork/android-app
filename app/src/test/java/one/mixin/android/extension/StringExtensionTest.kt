@@ -33,13 +33,13 @@ class StringExtensionTest {
         val s6 = "1e-7"
         val s7 = "1e+8"
 
-        assertEquals("12,345", s1.numberFormat2())
-        assertEquals("0.12", s2.numberFormat2())
-        assertEquals("0.1", s3.numberFormat2())
-        assertEquals("0.11", s4.numberFormat2())
-        assertEquals("0", s5.numberFormat2())
-        assertEquals("0", s6.numberFormat2())
-        assertEquals("100,000,000", s7.numberFormat2())
+        assertEquals("12,345", s1.formatTo2DecimalsWithCommas())
+        assertEquals("0.12", s2.formatTo2DecimalsWithCommas())
+        assertEquals("0.1", s3.formatTo2DecimalsWithCommas())
+        assertEquals("0.11", s4.formatTo2DecimalsWithCommas())
+        assertEquals("0", s5.formatTo2DecimalsWithCommas())
+        assertEquals("0", s6.formatTo2DecimalsWithCommas())
+        assertEquals("100,000,000", s7.formatTo2DecimalsWithCommas())
     }
 
     @Test
@@ -60,21 +60,21 @@ class StringExtensionTest {
         val s14 = "1e-7"
         val s15 = "1e+8"
 
-        assertEquals("12,345,678,901", s1.numberFormat8())
-        assertEquals("123,456,789.1234567", s2.numberFormat8())
-        assertEquals("12,345.06", s3.numberFormat8())
-        assertEquals("0.00011231", s4.numberFormat8())
-        assertEquals("1,234,567.00101", s5.numberFormat8())
-        assertEquals("123.00011014", s6.numberFormat8())
-        assertEquals("123.00011142", s7.numberFormat8())
-        assertEquals("779.99640892", s8.numberFormat8())
-        assertEquals("1.00011231", s9.numberFormat8())
-        assertEquals("129.99641012", s10.numberFormat8())
-        assertEquals("-0.00000001", s11.numberFormat8())
-        assertEquals("-0", s12.numberFormat8())
-        assertEquals("0", s13.numberFormat8())
-        assertEquals("0.0000001", s14.numberFormat8())
-        assertEquals("100,000,000", s15.numberFormat8())
+        assertEquals("12,345,678,901", s1.formatTo8DecimalsWithCommas())
+        assertEquals("123,456,789.1234567", s2.formatTo8DecimalsWithCommas())
+        assertEquals("12,345.06", s3.formatTo8DecimalsWithCommas())
+        assertEquals("0.00011231", s4.formatTo8DecimalsWithCommas())
+        assertEquals("1,234,567.00101", s5.formatTo8DecimalsWithCommas())
+        assertEquals("123.00011014", s6.formatTo8DecimalsWithCommas())
+        assertEquals("123.00011142", s7.formatTo8DecimalsWithCommas())
+        assertEquals("779.99640892", s8.formatTo8DecimalsWithCommas())
+        assertEquals("1.00011231", s9.formatTo8DecimalsWithCommas())
+        assertEquals("129.99641012", s10.formatTo8DecimalsWithCommas())
+        assertEquals("-0.00000001", s11.formatTo8DecimalsWithCommas())
+        assertEquals("-0", s12.formatTo8DecimalsWithCommas())
+        assertEquals("0", s13.formatTo8DecimalsWithCommas())
+        assertEquals("0.0000001", s14.formatTo8DecimalsWithCommas())
+        assertEquals("100,000,000", s15.formatTo8DecimalsWithCommas())
     }
 
     @Test
@@ -106,13 +106,13 @@ class StringExtensionTest {
         val s6 = "1e-7"
         val s7 = "1e+8"
 
-        assertEquals("12,345.00", s1.priceFormat2())
-        assertEquals("0.12", s2.priceFormat2())
-        assertEquals("0.10", s3.priceFormat2())
-        assertEquals("0.11", s4.priceFormat2())
-        assertEquals("0.00", s5.priceFormat2())
-        assertEquals("0.00", s6.priceFormat2())
-        assertEquals("100,000,000.00", s7.priceFormat2())
+        assertEquals("12,345.00", s1.priceFormat2DecimalsWithCommas())
+        assertEquals("0.12", s2.priceFormat2DecimalsWithCommas())
+        assertEquals("0.10", s3.priceFormat2DecimalsWithCommas())
+        assertEquals("0.11", s4.priceFormat2DecimalsWithCommas())
+        assertEquals("0.00", s5.priceFormat2DecimalsWithCommas())
+        assertEquals("0.00", s6.priceFormat2DecimalsWithCommas())
+        assertEquals("100,000,000.00", s7.priceFormat2DecimalsWithCommas())
     }
 
     @Test

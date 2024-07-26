@@ -24,7 +24,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
@@ -398,7 +398,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private fun getNumberFormat(value: String): String {
-        return value.numberFormat2().let {
+        return value.formatTo2DecimalsWithCommas().let {
             if (v.endsWith(".")) {
                 "$it."
             } else if (v.endsWith(".00")) {

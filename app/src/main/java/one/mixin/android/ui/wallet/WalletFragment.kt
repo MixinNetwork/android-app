@@ -49,8 +49,8 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
+import one.mixin.android.extension.formatTo8DecimalsWithCommas
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
@@ -452,23 +452,23 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _headBinding?.apply {
             totalAsTv.text =
                 try {
-                    if (totalBTC.numberFormat8().toFloat() == 0f) {
+                    if (totalBTC.formatTo8DecimalsWithCommas().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        totalBTC.numberFormat8()
+                        totalBTC.formatTo8DecimalsWithCommas()
                     }
                 } catch (ignored: NumberFormatException) {
-                    totalBTC.numberFormat8()
+                    totalBTC.formatTo8DecimalsWithCommas()
                 }
             totalTv.text =
                 try {
-                    if (totalFiat.numberFormat2().toFloat() == 0f) {
+                    if (totalFiat.formatTo2DecimalsWithCommas().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        totalFiat.numberFormat2()
+                        totalFiat.formatTo2DecimalsWithCommas()
                     }
                 } catch (ignored: NumberFormatException) {
-                    totalFiat.numberFormat2()
+                    totalFiat.formatTo2DecimalsWithCommas()
                 }
             symbol.text = Fiats.getSymbol()
 

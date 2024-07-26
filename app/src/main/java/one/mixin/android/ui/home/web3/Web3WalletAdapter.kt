@@ -15,7 +15,7 @@ import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -167,20 +167,20 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                     token.balance
                 }
             symbolTv.text = token.symbol
-            balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
+            balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).formatTo2DecimalsWithCommas()}"
             val changePercent =
                 if (token.changePercent.isBlank()) {
                     BigDecimal.ZERO
                 } else {
                     BigDecimal(token.changePercent)
                 }
-            changeTv.text = "${changePercent.numberFormat2()}%"
+            changeTv.text = "${changePercent.formatTo2DecimalsWithCommas()}%"
             changeTv.textColorResource = if (changePercent >= BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
             if (token.price == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE
             } else {
-                priceTv.text = "${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).numberFormat2()}"
+                priceTv.text = "${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).formatTo2DecimalsWithCommas()}"
                 changeTv.visibility = View.VISIBLE
             }
         }

@@ -7,7 +7,7 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.formatTo8DecimalsWithCommas
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -36,9 +36,9 @@ class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseVie
         if (!amount.isNullOrBlank()) {
             binding.billTv.text =
                 if (amount.startsWith('-')) {
-                    "-${amount.substring(1).numberFormat8()}"
+                    "-${amount.substring(1).formatTo8DecimalsWithCommas()}"
                 } else {
-                    amount.numberFormat8()
+                    amount.formatTo8DecimalsWithCommas()
                 }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol

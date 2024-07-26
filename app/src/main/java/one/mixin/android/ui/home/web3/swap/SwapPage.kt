@@ -61,7 +61,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.tip.wc.compose.Loading
 import java.math.BigDecimal
 

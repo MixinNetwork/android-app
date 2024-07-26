@@ -13,7 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
@@ -104,7 +104,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
                     asset.balance.numberFormat()
                 }
             binding.symbolTv.text = asset.symbol
-            binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().formatTo2DecimalsWithCommas()}"
             if (asset.priceUsd == "0") {
                 binding.priceTv.setText(R.string.NA)
                 binding.changeTv.visibility = GONE
@@ -114,7 +114,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO
-                    binding.changeTv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    binding.changeTv.text = "${(changeUsd * BigDecimal(100)).formatTo2DecimalsWithCommas()}%"
                     binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                 }
             }

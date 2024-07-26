@@ -2,7 +2,7 @@ package one.mixin.android.ui.home.web3.components
 
 import androidx.room.ColumnInfo
 import java.math.BigDecimal
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.vo.Fiats
 
 class InscriptionState(
@@ -55,7 +55,7 @@ class InscriptionState(
                 } catch (e: NumberFormatException) {
                     BigDecimal.ZERO
                 }
-            return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+            return "${value.formatTo2DecimalsWithCommas()} ${Fiats.getAccountCurrencyAppearance()}"
         }
 
     val tokenTotal: String

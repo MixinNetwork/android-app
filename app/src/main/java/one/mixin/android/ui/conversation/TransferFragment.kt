@@ -42,8 +42,8 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
+import one.mixin.android.extension.formatTo8DecimalsWithCommas
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
@@ -598,9 +598,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
         bottomValue = value
         return "${if (swapped) {
-            value.numberFormat8()
+            value.formatTo8DecimalsWithCommas()
         } else {
-            value.numberFormat2()
+            value.formatTo2DecimalsWithCommas()
         }} $rightSymbol"
     }
 

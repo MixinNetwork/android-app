@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -28,7 +28,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
 
         binding.balance.text = asset.balance + " " + asset.symbol
         binding.balance.highLight(target)
-        binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+        binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().formatTo2DecimalsWithCommas()}"
         val chainNetwork = getChainNetwork(asset.assetId, asset.chainId, asset.assetKey)
         binding.networkTv.isVisible = chainNetwork != null
         if (chainNetwork != null) {
@@ -43,7 +43,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
             if (asset.changeUsd.isNotEmpty()) {
                 val changeUsd = BigDecimal(asset.changeUsd)
                 val isPositive = changeUsd > BigDecimal.ZERO
-                val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                val t = "${(changeUsd * BigDecimal(100)).formatTo2DecimalsWithCommas()}%"
                 binding.changeTv.text = if (isPositive) "+$t" else t
                 binding.changeTv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
             }

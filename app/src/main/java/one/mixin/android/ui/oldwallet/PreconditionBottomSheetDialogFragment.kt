@@ -25,7 +25,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -211,7 +211,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun showLargeAmountTip(t: TransferBiometricItem) {
         binding.titleTv.text = getString(R.string.Large_Amount_Confirmation)
         val fiatAmount =
-            (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
+            (BigDecimal(t.amount) * t.asset.priceFiat()).formatTo2DecimalsWithCommas()
         binding.warningTv.text =
             getString(
                 R.string.wallet_transaction_tip,

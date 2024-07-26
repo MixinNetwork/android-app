@@ -14,6 +14,8 @@ import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.text.style.BackgroundColorSpan
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -343,7 +345,7 @@ fun String.numberFormat(): String {
     }
 }
 
-fun String.numberFormat8(): String {
+fun String.formatTo8DecimalsWithCommas(): String {
     if (this.isEmpty()) return this
 
     return try {
@@ -356,7 +358,7 @@ fun String.numberFormat8(): String {
     }
 }
 
-fun String.numberFormat2(): String {
+fun String.formatTo2DecimalsWithCommas(): String {
     if (this.isEmpty()) return this
 
     return try {
@@ -369,7 +371,7 @@ fun String.numberFormat2(): String {
     }
 }
 
-fun String.priceFormat2(): String {
+fun String.priceFormat2DecimalsWithCommas(): String {
     return try {
         val big = BigDecimal(this)
         DecimalFormat(",##0.00").format(big)
@@ -382,13 +384,13 @@ fun String.priceFormat2(): String {
 
 fun BigDecimal.priceFormat(): String {
     return if (this.compareTo(BigDecimal.ONE) == 1 || this.compareTo(BigDecimal.ONE) == 0) {
-        priceFormat2()
+        priceFormat2DecimalsWithCommas()
     } else {
-        numberFormat8()
+        formatTo8DecimalsWithCommas()
     }
 }
 
-fun BigDecimal.numberFormat8(): String {
+fun BigDecimal.formatTo8DecimalsWithCommas(): String {
     return try {
         DecimalFormat(",###.########").format(this)
     } catch (e: NumberFormatException) {
@@ -398,7 +400,7 @@ fun BigDecimal.numberFormat8(): String {
     }
 }
 
-fun BigDecimal.priceFormat2(): String {
+fun BigDecimal.priceFormat2DecimalsWithCommas(): String {
     return try {
         DecimalFormat(",##0.00").format(this)
     } catch (e: NumberFormatException) {
@@ -412,7 +414,7 @@ fun String.stripAmountZero(): String {
     return BigDecimal(this).stripTrailingZeros().toPlainString()
 }
 
-fun BigDecimal.numberFormat2(): String {
+fun BigDecimal.formatTo2DecimalsWithCommas(): String {
     return try {
         DecimalFormat(",###.##").format(this)
     } catch (e: NumberFormatException) {
@@ -445,6 +447,7 @@ fun String.getPattern(count: Int = 8): String {
     return sb.toString()
 }
 
+@OptIn(UnstableApi::class)
 fun Long.formatMillis(): String {
     val formatBuilder = StringBuilder()
     val formatter = Formatter(formatBuilder, Locale.getDefault())

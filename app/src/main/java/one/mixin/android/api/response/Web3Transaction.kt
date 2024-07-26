@@ -10,7 +10,7 @@ import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.util.needsSpaceBetweenWords
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionDirection
@@ -305,36 +305,36 @@ data class Web3Transaction(
             return when (operationType) {
                 Web3TransactionType.Receive.value -> {
                     transfers.find { it.direction == Web3TransactionDirection.In.value }?.run {
-                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).formatTo2DecimalsWithCommas()}"
                     }
                 }
 
                 Web3TransactionType.Deposit.value -> {
                     transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
-                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).formatTo2DecimalsWithCommas()}"
                     }
                 }
 
                 Web3TransactionType.Trade.value -> {
                     transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
-                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).formatTo2DecimalsWithCommas()}"
                     }
                 }
 
                 Web3TransactionType.Send.value -> {
                     (transfers.find { it.direction == Web3TransactionDirection.Out.value } ?: transfers.find { it.direction == Web3TransactionDirection.Self.value })?.run {
-                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).formatTo2DecimalsWithCommas()}"
                     }
                 }
 
                 Web3TransactionType.Execute.value -> {
                     transfers.find { it.direction == Web3TransactionDirection.Out.value }?.run {
-                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(amount)).formatTo2DecimalsWithCommas()}"
                     }
                 }
 
                 else -> {
-                    "≈ ${Fiats.getSymbol()}${BigDecimal(fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(fee.amount)).numberFormat2()}"
+                    "≈ ${Fiats.getSymbol()}${BigDecimal(fee.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(fee.amount)).formatTo2DecimalsWithCommas()}"
                 }
             } ?: operationType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }

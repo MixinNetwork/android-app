@@ -10,7 +10,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.util.getChainNetwork
@@ -135,7 +135,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
             if (changeUsd.isNotEmpty()) {
                 val bigChangeUsd = BigDecimal(changeUsd)
                 val isPositive = bigChangeUsd > BigDecimal.ZERO
-                binding.changeTv.text = "${(bigChangeUsd * BigDecimal(100)).numberFormat2()}%"
+                binding.changeTv.text = "${(bigChangeUsd * BigDecimal(100)).formatTo2DecimalsWithCommas()}%"
                 binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
             }
         }

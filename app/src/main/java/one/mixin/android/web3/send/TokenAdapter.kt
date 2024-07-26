@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
@@ -80,7 +80,7 @@ class TokenHolder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(b
                 }
             symbolTv.text = token.symbol
             symbolTv.text = token.symbol
-            balanceAs.text = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}"
+            balanceAs.text = "≈ ${Fiats.getSymbol()}${token.fiat().formatTo2DecimalsWithCommas()}"
             if (token.priceUsd == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE
@@ -90,7 +90,7 @@ class TokenHolder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(b
                 if (token.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(token.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO
-                    changeTv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    changeTv.text = "${(changeUsd * BigDecimal(100)).formatTo2DecimalsWithCommas()}%"
                     changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                 }
             }

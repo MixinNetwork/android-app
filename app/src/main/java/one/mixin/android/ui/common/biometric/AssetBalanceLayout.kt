@@ -12,7 +12,7 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -74,5 +74,5 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
         "≈ ${Fiats.getSymbol()}${(
             BigDecimal(value) *
                 assetPrice
-        ).numberFormat2()}"
+        ).formatTo2DecimalsWithCommas()}"
 }

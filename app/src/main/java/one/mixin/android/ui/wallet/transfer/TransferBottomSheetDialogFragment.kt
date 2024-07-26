@@ -32,7 +32,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
@@ -282,7 +282,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (showLarge) {
                     val asset = t.asset ?: return@launch
                     val fiatAmount =
-                        (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
+                        (BigDecimal(t.amount) * asset.priceFiat()).formatTo2DecimalsWithCommas()
                     tips.add(
                         getString(
                             R.string.large_amount_reminder,
@@ -343,7 +343,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     return@launch
                 }
                 val fiatAmount =
-                    (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
+                    (BigDecimal(t.amount) * asset.priceFiat()).formatTo2DecimalsWithCommas()
                 val tips =
                     listOf<String>(
                         getString(
@@ -682,7 +682,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val t = this.t
         val asset = t.asset ?: return ""
         val pre = "${t.amount} ${asset.symbol}"
-        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()}"
+        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).formatTo2DecimalsWithCommas()}"
         return "$pre ($post)"
     }
 

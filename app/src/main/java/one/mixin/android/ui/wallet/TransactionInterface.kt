@@ -25,8 +25,8 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
+import one.mixin.android.extension.priceFormat2DecimalsWithCommas
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -199,11 +199,11 @@ interface TransactionInterface {
                     fragment.getString(R.string.value_then, fragment.getString(R.string.NA))
                 } else {
                     val amount =
-                        (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
+                        (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).formatTo2DecimalsWithCommas()
                     val pricePerUnit =
                         if (BuildConfig.DEBUG) {
                             "(${Fiats.getSymbol()}${
-                                ticker.priceFiat().priceFormat2()
+                                ticker.priceFiat().priceFormat2DecimalsWithCommas()
                             }/${snapshot.assetSymbol})"
                         } else {
                             ""
@@ -328,9 +328,9 @@ interface TransactionInterface {
                 )
             val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
             valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, if (snapshot.inscriptionHash.isNullOrEmpty()) asset.symbol else "", amountColor, symbolColor)
-            val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
+            val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).formatTo2DecimalsWithCommas()
             val pricePerUnit =
-                "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
+                "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2DecimalsWithCommas()}/${snapshot.assetSymbol})"
 
             valueAsTv.text =
                 fragment.getString(

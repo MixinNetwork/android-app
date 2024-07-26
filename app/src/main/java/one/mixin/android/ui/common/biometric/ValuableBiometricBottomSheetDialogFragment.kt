@@ -1,7 +1,7 @@
 package one.mixin.android.ui.common.biometric
 
 import one.mixin.android.R
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.formatTo2DecimalsWithCommas
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -29,7 +29,7 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem
         val t = getBiometricItem()
         val asset = t.asset ?: return ""
         val pre = "${t.amount} ${asset.symbol}"
-        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()}"
+        val post = "≈ ${Fiats.getSymbol()}${(BigDecimal(t.amount) * asset.priceFiat()).formatTo2DecimalsWithCommas()}"
         return "$pre ($post)"
     }
 
