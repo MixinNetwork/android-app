@@ -109,6 +109,10 @@ class Web3Token(
             price = price,
         )
     }
+
+    override fun getUnique(): String {
+        return if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey
+    }
 }
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
