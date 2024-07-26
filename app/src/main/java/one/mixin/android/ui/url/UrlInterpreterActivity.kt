@@ -43,6 +43,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val MULTISIGS = "multisigs"
         private const val SCHEME = "scheme"
         private const val MIXIN = "mixin.one"
+        private const val SWAP = "swap"
         const val WC = "wc"
 
         fun show(
@@ -112,7 +113,7 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP -> {
+            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP, SWAP -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
@@ -150,7 +151,7 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             MIXIN -> {
                 val path = uri.pathSegments.first()
-                if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true)) {
+                if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true) || path.equals(SWAP, true)) {
                     val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                 } else {

@@ -76,6 +76,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -814,10 +815,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                 }
             }
+        } else if (url.startsWith(Scheme.HTTPS_SWAP) || url.startsWith(Scheme.MIXIN_SWAP)) {
+            lifecycleScope.launch(errorHandler) {
+                handleSwapScheme(url.toUri())
+            }
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
-            val wcUri = convertWcLink(url.toString())
+            val wcUri = convertWcLink(url)
             if (wcUri != null && WalletConnect.isEnabled()) {
                 if (MixinApplication.get().topActivity is WebActivity) {
                     WalletConnect.connect(wcUri.toString())
@@ -937,6 +942,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         return true
+    }
+
+    private suspend fun handleSwapScheme(uri: Uri) {
+        val input = uri.getQueryParameter("input")
+        val output = uri.getQueryParameter("output")
+        val amount = uri.getQueryParameter("amount")
+        val tokenItems = linkViewModel.findAssetItemsWithBalance()
+        SwapActivity.show(requireContext(), ArrayList(tokenItems), input, output, amount)
+        dismiss()
     }
 
     private fun handleTipScheme(uri: Uri) {

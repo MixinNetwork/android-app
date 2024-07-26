@@ -124,6 +124,10 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<TokenItem>>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
+    suspend fun findAssetItemsWithBalance(): List<TokenItem>
+
     @Query("SELECT icon_url FROM tokens WHERE asset_id = :id")
     suspend fun getIconUrl(id: String): String?
 
