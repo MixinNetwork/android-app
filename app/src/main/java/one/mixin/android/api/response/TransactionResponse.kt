@@ -25,6 +25,7 @@ data class TransactionResponse(
     val senders: List<String>,
     val receivers: List<Receiver>?,
     val signers: List<String>?,
+    val revokedBy: String?,
     val extra: String,
     val state: String,
     @SerializedName("raw_transaction")

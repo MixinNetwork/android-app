@@ -245,6 +245,12 @@ class BottomSheetViewModel
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
+            withdrawalRequestResponse.data?.map { r ->
+                if (r.revokedBy != null) {
+                    Timber.e("Kernel Withdrawal($traceId): request transaction, Transfer is revoked by ${r.revokedBy}")
+                    throw IllegalArgumentException("Transfer is revoked by ${r.revokedBy}")
+                }
+            }
             val (withdrawalData, feeData) = getTransactionResult(withdrawalRequestResponse.data, traceId, feeTraceId)
             val withdrawalViews = withdrawalData.views!!.joinToString(",")
             val signWithdrawal = Kernel.signTx(withdrawalTx.raw, withdrawalUtxos.formatKeys, withdrawalViews, spendKey.toHex(), isDifferentFee)
@@ -407,6 +413,12 @@ class BottomSheetViewModel
                 Timber.e("Kernel Address Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
+            transactionResponse.data?.map { r ->
+                if (r.revokedBy != null) {
+                    Timber.e("Kernel Address Transaction($trace): request transaction, Transfer is revoked by ${r.revokedBy}")
+                    throw IllegalArgumentException("Transfer is revoked by ${r.revokedBy}")
+                }
+            }
             // Workaround with only the case of a single transfer
             val views = transactionResponse.data!!.first().views!!.joinToString(",")
             val keys = utxoWrapper.formatKeys
@@ -488,6 +500,12 @@ class BottomSheetViewModel
             } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
                 Timber.e("Kernel Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
+            }
+            transactionResponse.data?.map { r ->
+                if (r.revokedBy != null) {
+                    Timber.e("Kernel Transaction($trace): request transaction, Transfer is revoked by ${r.revokedBy}")
+                    throw IllegalArgumentException("Transfer is revoked by ${r.revokedBy}")
+                }
             }
             // Workaround with only the case of a single transfer
             val views = transactionResponse.data!!.first().views!!.joinToString(",")
