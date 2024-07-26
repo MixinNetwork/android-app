@@ -145,27 +145,27 @@ interface RouteService {
         @Path("query") query: String,
     ): MixinResponse<List<SwapToken>>
 
-    @POST("web3/stake/sol")
+    @POST("web3/stake")
     suspend fun stakeSol(
         @Body stakeRequest: StakeRequest,
     ): MixinResponse<StakeResponse>
 
-    @GET("web3/stake/sol/{account}")
+    @GET("web3/stake/{account}")
     suspend fun getStakeAccounts(
         @Path("account") account: String,
     ): MixinResponse<List<StakeAccount>>
 
-    @GET("web3/stake/sol/activation")
+    @GET("web3/stake/activation")
     suspend fun getStakeAccountActivations(
         @Query("accounts") accounts: String,
     ): MixinResponse<List<StakeAccountActivation>>
 
-    @GET("web3/stake/sol/validators")
+    @GET("web3/stake/validators")
     suspend fun getStakeValidators(
         @Query("votePubkeys") votePubkeys: String? = null,
     ): MixinResponse<List<Validator>>
 
-    @GET("web3/stake/sol/validators/search/{query}")
+    @GET("web3/stake/validators/search/{query}")
     suspend fun searchStakeValidators(
         @Path("query") query: String,
     ): MixinResponse<List<Validator>>
