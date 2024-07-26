@@ -325,7 +325,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             menu {
                 title = getString(R.string.Transactions)
                 action = {
-                    navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG)
+                    navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG, AllTransactionsFragment.TAG)
                     dismiss()
                 }
             }
