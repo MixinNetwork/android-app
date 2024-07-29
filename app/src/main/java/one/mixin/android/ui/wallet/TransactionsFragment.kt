@@ -38,6 +38,7 @@ import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.home.market.LineChart
+import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -93,9 +94,17 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
         binding.apply {
+            transactionsTitleLl.setOnClickListener {
+                view.navigate(
+                    R.id.action_transactions_fragment_to_all_transactions_fragment,
+                    Bundle().apply {
+                        putParcelable(ARGS_TOKEN, asset)
+                    },
+                )
+            }
+            transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
                 val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 60.dp
-                Timber.e("${requireContext().screenHeight()}  ${requireContext().statusBarHeight()} ${topLl.height} - ${marketRl.height}")
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }

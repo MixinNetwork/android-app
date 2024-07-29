@@ -20,6 +20,12 @@
             app:popExitAnim="@anim/slide_out_right" />
 
         <action
+            android:id="@+id/action_transactions_fragment_to_all_transactions_fragment"
+            app:destination="@id/all_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
             android:id="@+id/action_transactions_to_deposit"
             app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -58,6 +64,10 @@
         <argument
             android:name="args_user"
             app:argType="one.mixin.android.vo.UserItem" />
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
 
         <action
             android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"

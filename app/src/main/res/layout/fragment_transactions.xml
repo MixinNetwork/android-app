@@ -196,10 +196,45 @@
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
-                <one.mixin.android.ui.wallet.SnapshotLinearLayout
-                    android:id="@+id/transactions_rv"
+                <LinearLayout
+                    android:id="@+id/transactions_title_ll"
+                    android:layout_height="wrap_content"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/transactions_iv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="@dimen/margin16"
+                            android:layout_marginTop="20dp"
+                            android:src="@drawable/ic_arrow_right"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:id="@+id/transactions_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/transactions_iv"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_alignParentStart="true"
+                            android:textSize="14sp"
+                            android:text="@string/Transactions"
+                            android:textColor="?attr/text_assist"
+                            tools:ignore="RelativeOverlap" />
+                    </RelativeLayout>
+
+                    <one.mixin.android.ui.wallet.SnapshotLinearLayout
+                        android:id="@+id/transactions_rv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
 
                 <RelativeLayout
                     android:id="@+id/bottom_rl"
