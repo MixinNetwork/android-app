@@ -1522,7 +1522,6 @@
     <string name="Confirming_Transaction">Confirming Transaction</string>
     <string name="Transaction_Success">Transaction Success</string>
     <string name="Transaction_Failed">Transaction Failed</string>
-    <string name="Best_price">Best price</string>
     <string name="Slippage">Slippage</string>
     <string name="slippage_auto">Auto</string>
     <string name="slippage_auto_desc">Recommends the right slippage for different currencies to help you trade successfully</string>

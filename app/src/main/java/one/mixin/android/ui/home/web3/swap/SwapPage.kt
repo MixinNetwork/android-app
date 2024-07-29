@@ -149,33 +149,7 @@ fun SwapPage(
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
-                            Row(
-                                modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.Best_price),
-                                    maxLines = 1,
-                                    style =
-                                    TextStyle(
-                                        fontWeight = FontWeight.W400,
-                                        color = MixinAppTheme.colors.textAssist,
-                                    ),
-                                )
-                                Text(
-                                    text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
-                                    maxLines = 1,
-                                    style =
-                                    TextStyle(
-                                        fontWeight = FontWeight.W400,
-                                        color = MixinAppTheme.colors.textPrimary,
-                                    ),
-                                )
-                            }
+                            PriceInfo(fromToken, toToken, exchangeRate)
                             if (!fromToken.inMixin()) {
                                 SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
                             }
@@ -352,6 +326,53 @@ fun SwapPageScaffold(
         ) {
             body()
         }
+    }
+}
+
+@Composable
+private fun PriceInfo(
+    fromToken: SwapToken,
+    toToken: SwapToken?,
+    exchangeRate: Float,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    var isPriceReverse by remember { mutableStateOf(false) }
+    Row(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = if (isPriceReverse) {
+                "1 ${toToken?.symbol} ≈ ${1f / exchangeRate} ${fromToken.symbol}"
+            } else {
+                "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}"
+            },
+            maxLines = 1,
+            style =
+            TextStyle(
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textAssist,
+            ),
+        )
+        Icon(
+            modifier =
+            Modifier
+                .size(24.dp)
+                .rotate(90f)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                ) {
+                    isPriceReverse = !isPriceReverse
+                },
+            painter = painterResource(id = R.drawable.ic_switch),
+            contentDescription = null,
+            tint = MixinAppTheme.colors.icon,
+        )
     }
 }
 
