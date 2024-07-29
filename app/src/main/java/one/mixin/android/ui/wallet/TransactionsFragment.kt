@@ -6,14 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.ui.graphics.Color
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +19,7 @@ import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
@@ -39,7 +35,6 @@ import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
-import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -72,7 +67,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
-    private val adapter = SnapshotAdapter()
     lateinit var asset: TokenItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,11 +87,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 showBottom()
             }
         }
-        binding.transactionsRv.itemAnimator = null
-        binding.transactionsRv.adapter = adapter
-        binding.transactionsRv.layoutManager = LinearLayoutManager(requireContext())
-
-        adapter.listener = this@TransactionsFragment
 
 
         walletViewModel.snapshotsLimit(asset.assetId).observe(viewLifecycleOwner) { list ->
@@ -106,7 +95,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             } else {
                 0
             }
-            adapter.list = list
+            binding.transactionsRv.list = list
         }
 
         walletViewModel.assetItem(asset.assetId).observe(
@@ -128,7 +117,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun onDestroyView() {
-        adapter.listener = null
         _bottomBinding = null
         sendBottomSheet.release()
         super.onDestroyView()
@@ -235,12 +223,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             root.post {
                 if (viewDestroyed()) return@post
-                bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height
+                va.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - marketRl.height - 60.dp
                 }
             }
             marketView.setContent {
-                LineChart(listOf(1.0f, 4.3f, 10f, 5.2f, 4.5f, 5.5f, 3.4f, 2.2f, 2.8f), Color(0xFF50BD5CL), false)
+                LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), Color(0xFF50BD5CL), false)
             }
         }
     }

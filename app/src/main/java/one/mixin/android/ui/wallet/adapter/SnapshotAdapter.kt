@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.adapter
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
@@ -44,7 +43,7 @@ class SnapshotAdapter : RecyclerView.Adapter<SnapshotHolder>(),
         vh: SnapshotHeaderViewHolder,
         pos: Int,
     ) {
-        val time = getItem(pos)?.createdAt ?: return
+        val time = getItem(pos).createdAt ?: return
         vh.bind(time)
     }
 
@@ -52,7 +51,7 @@ class SnapshotAdapter : RecyclerView.Adapter<SnapshotHolder>(),
         holder: SnapshotHolder,
         position: Int,
     ) {
-        getItem(position)?.let {
+        getItem(position).let {
             holder.bind(it, listener)
             debugLongClick(
                 holder.itemView,
