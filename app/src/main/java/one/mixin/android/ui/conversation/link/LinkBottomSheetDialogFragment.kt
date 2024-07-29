@@ -305,7 +305,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     return@launch
                 }
                 val revokedBy = multisigs.revokedBy
-                if (revokedBy != null) {
+                if (!revokedBy.isNullOrBlank()) {
                     showError(getString(R.string.Multisig_Revoked))
                     return@launch
                 }
