@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.ui.graphics.Color
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -23,9 +24,11 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
@@ -33,6 +36,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.viewBinding
@@ -45,6 +49,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -87,15 +92,22 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 showBottom()
             }
         }
-
+        binding.apply {
+            bottomCard.post {
+                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 60.dp
+                Timber.e("${requireContext().screenHeight()}  ${requireContext().statusBarHeight()} ${topLl.height} - ${marketRl.height}")
+                bottomRl.updateLayoutParams {
+                    height = remainingHeight
+                }
+            }
+        }
 
         walletViewModel.snapshotsLimit(asset.assetId).observe(viewLifecycleOwner) { list ->
-            binding.va.displayedChild = if (list.isEmpty()) {
-                1
-            } else {
-                0
+            binding.apply {
+                transactionsRv.isVisible = list.isNotEmpty()
+                bottomRl.isVisible = list.isEmpty()
+                transactionsRv.list = list
             }
-            binding.transactionsRv.list = list
         }
 
         walletViewModel.assetItem(asset.assetId).observe(
@@ -220,12 +232,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     R.id.action_transactions_to_deposit,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) },
                 )
-            }
-            root.post {
-                if (viewDestroyed()) return@post
-                va.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - marketRl.height - 60.dp
-                }
             }
             marketView.setContent {
                 LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), Color(0xFF50BD5CL), false)
