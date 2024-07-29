@@ -305,6 +305,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                     return@launch
                 }
+                val revokedBy = multisigs.revokedBy
+                if (!revokedBy.isNullOrBlank()) {
+                    showError(getString(R.string.Multisig_Revoked))
+                    return@launch
+                }
                 var state: String = SignatureState.initial.name
                 multisigs.signers?.let { signers ->
                     when {
