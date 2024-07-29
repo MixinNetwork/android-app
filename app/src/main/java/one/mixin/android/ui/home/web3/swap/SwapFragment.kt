@@ -76,6 +76,9 @@ class SwapFragment : BaseFragment() {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
         const val ARGS_TOKEN_ITEMS = "args_token_items"
+        const val ARGS_INPUT = "args_input"
+        const val ARGS_OUTPUT = "args_output"
+        const val ARGS_AMOUNT = "args_amount"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -84,7 +87,12 @@ class SwapFragment : BaseFragment() {
 
         const val maxLeftAmount = 0.01
 
-        inline fun <reified T : Swappable> newInstance(tokens: List<T>): SwapFragment =
+        inline fun <reified T : Swappable> newInstance(
+            tokens: List<T>,
+            input: String? = null,
+            output: String? = null,
+            amount: String? = null,
+        ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
                     Web3Token::class -> {
@@ -94,6 +102,9 @@ class SwapFragment : BaseFragment() {
                         putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { addAll(tokens) })
                     }
                 }
+                input?.let { putString(ARGS_INPUT, it) }
+                output?.let { putString(ARGS_OUTPUT, it) }
+                amount?.let { putString(ARGS_AMOUNT, it) }
             }
     }
 
@@ -148,8 +159,9 @@ class SwapFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         lifecycleScope.launch {
-            setFromTo()
+            initFromTo()
             refreshTokens()
+            initAmount()
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -289,14 +301,24 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun setFromTo() {
-        (web3tokens ?: tokenItems)?.let {
-            if (it.isNotEmpty()) {
-                fromToken = it[0].toSwapToken()
+    private fun initFromTo() {
+        (web3tokens ?: tokenItems)?.let { tokens ->
+            val input = requireArguments().getString(ARGS_INPUT)
+            val output = requireArguments().getString(ARGS_OUTPUT)
+            if (tokens.isNotEmpty()) {
+                fromToken = input?.let { tokens.firstOrNull { t -> t.getUnique() == input }?.toSwapToken() } ?: tokens[0].toSwapToken()
             }
-            if (it.size > 1) {
-                toToken = it[1].toSwapToken()
+            if (tokens.size > 1) {
+                toToken = output?.let { tokens.firstOrNull { t -> t.getUnique() == output }?.toSwapToken() } ?: tokens[1].toSwapToken()
             }
+        }
+    }
+
+    private fun initAmount() {
+        val amount = requireArguments().getString(ARGS_AMOUNT)
+        if (amount?.toFloatOrNull() != null) {
+            inputText.value = amount
+            refreshQuote(amount)
         }
     }
 
