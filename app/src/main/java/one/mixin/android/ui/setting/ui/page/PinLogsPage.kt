@@ -165,14 +165,14 @@ private fun LogItem(log: LogResponse) {
                 fontSize = 12.sp,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(start = 16.dp),
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
         Box(modifier = Modifier.height(6.dp))
 
         Text(
             text = description.second,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
         )
 
@@ -180,7 +180,7 @@ private fun LogItem(log: LogResponse) {
 
         Text(
             text = log.ipAddress,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
         )
     }
@@ -216,7 +216,7 @@ private fun EmptyLayout() {
         Box(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(id = R.string.No_logs),
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
         )
     }
 }

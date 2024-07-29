@@ -80,7 +80,7 @@ private fun BlockedList(users: List<User>) {
                 modifier = Modifier.padding(16.dp),
                 text = stringResource(id = R.string.block_tip),
                 fontSize = 12.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
     }
@@ -107,7 +107,7 @@ private fun EmptyBlockedView() {
             Text(
                 text = stringResource(id = R.string.No_blocked_users),
                 fontSize = 16.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
     }

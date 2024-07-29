@@ -85,7 +85,7 @@ fun EmergencyContactPage() {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = stringResource(id = R.string.setting_emergency_content),
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
             )

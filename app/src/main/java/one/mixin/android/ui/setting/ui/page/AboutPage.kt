@@ -196,7 +196,7 @@ private fun VersionName() {
         }
     Text(
         text = "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}",
-        color = MixinAppTheme.colors.textSubtitle,
+        color = MixinAppTheme.colors.textAssist,
         fontSize = 10.sp,
     )
 }

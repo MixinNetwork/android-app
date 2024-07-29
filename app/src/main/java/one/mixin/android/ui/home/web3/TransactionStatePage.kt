@@ -180,7 +180,7 @@ private fun StateInfo(
                 style =
                     TextStyle(
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                     ),
             )
         } else {

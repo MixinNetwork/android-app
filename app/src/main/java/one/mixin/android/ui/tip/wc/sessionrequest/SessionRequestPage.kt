@@ -419,7 +419,7 @@ private fun Hint(hint: Hint) {
                                 Hint.SpeedUp -> R.string.speed_up_transaction_tip
                             },
                     ),
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }
@@ -441,7 +441,7 @@ fun FeeInfo(
     ) {
         Text(
             text = stringResource(id = R.string.network_fee).uppercase(),
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
         )
         Box(modifier = Modifier.height(4.dp))
@@ -459,7 +459,7 @@ fun FeeInfo(
                 Box(modifier = Modifier.height(4.dp))
                 Text(
                     text = fee.currencyFormat(),
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                     fontSize = 14.sp,
                 )
             }

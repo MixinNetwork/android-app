@@ -149,7 +149,7 @@ private fun ConnectionItem(
                 textStyle =
                     TextStyle(
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                     ),
                 overflow = TextOverflow.Ellipsis,
                 target = highlight,
@@ -176,13 +176,13 @@ private fun EmptyLayout() {
                 modifier = Modifier.size(42.dp),
                 painter = painterResource(id = R.drawable.ic_authentication),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(MixinAppTheme.colors.textSubtitle),
+                colorFilter = ColorFilter.tint(MixinAppTheme.colors.textAssist),
             )
             Box(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(id = R.string.NO_DAPP),
                 fontSize = 16.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
     }

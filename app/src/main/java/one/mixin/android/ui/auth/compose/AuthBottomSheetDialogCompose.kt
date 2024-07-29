@@ -266,7 +266,7 @@ fun ScopesContent(
                     Modifier
                         .align(CenterHorizontally),
                 activeColor = MixinAppTheme.colors.accent,
-                inactiveColor = MixinAppTheme.colors.backgroundGray,
+                inactiveColor = MixinAppTheme.colors.backgroundGrayLight,
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
