@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.web3.StakeAction
 import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
@@ -80,7 +81,7 @@ class UnstakeFragment : BaseFragment() {
             isLoading = true
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
                 payer = JsSigner.solanaAddress,
-                amount = stakeAccount.account.lamports,
+                amount = stakeAccount.account.lamports.solLamportToAmount().toPlainString(),
                 action = if (stakeActivation.state.isActiveState()) StakeAction.deactive.name else StakeAction.withdraw.name,
                 pubkey = stakeAccount.pubkey,
             ))

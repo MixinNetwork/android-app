@@ -26,6 +26,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -178,17 +179,20 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         binding.transactionsRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.transactionsRv.adapter = adapter
+        web3ViewModel // keep init
         lifecycleScope.launch {
             binding.progress.isVisible = true
             handleMixinResponse(invokeNetwork = {
                 web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId, token.assetKey)
             }, successBlock = { result ->
-                if (isAdded) adapter.transactions = result.data ?: emptyList()
+                if (!viewDestroyed()) adapter.transactions = result.data ?: emptyList()
             }, endBlock = {
-                if (isAdded) binding.progress.isVisible = false
+                if (!viewDestroyed()) binding.progress.isVisible = false
             })
+        }
 
-            if (token.isSolToken()) {
+        if (token.isSolToken()) {
+            lifecycleScope.launch {
                 getStakeAccounts(address)
             }
         }

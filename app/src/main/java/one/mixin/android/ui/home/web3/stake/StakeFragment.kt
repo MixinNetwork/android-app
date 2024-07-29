@@ -85,12 +85,10 @@ class StakeFragment : BaseFragment() {
     private fun onStake(validator: Validator) {
         lifecycleScope.launch {
             isLoading = true
-            val amount =
-                try {
-                    BigDecimal(amountText).multiply(BigDecimal.TEN.pow(9)).toLong()
-                } catch (e: Exception) {
-                    return@launch
-                }
+            val amount = amountText
+            if (amount.isBlank() || amount.toFloatOrNull() == null) {
+                return@launch
+            }
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
                 payer = JsSigner.solanaAddress,
                 amount = amount,
