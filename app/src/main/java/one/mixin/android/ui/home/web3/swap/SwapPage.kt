@@ -29,6 +29,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -73,6 +74,7 @@ fun SwapPage(
     outputText: String,
     exchangeRate: Float,
     slippageBps: Int,
+    quoteCountDown: Float,
     errorInfo: String?,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
@@ -149,7 +151,7 @@ fun SwapPage(
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
-                            PriceInfo(fromToken, toToken, exchangeRate)
+                            PriceInfo(fromToken, toToken, exchangeRate, quoteCountDown)
                             if (!fromToken.inMixin()) {
                                 SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
                             }
@@ -334,6 +336,7 @@ private fun PriceInfo(
     fromToken: SwapToken,
     toToken: SwapToken?,
     exchangeRate: Float,
+    quoteCountDown: Float,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var isPriceReverse by remember { mutableStateOf(false) }
@@ -345,19 +348,31 @@ private fun PriceInfo(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = if (isPriceReverse) {
-                "1 ${toToken?.symbol} ≈ ${1f / exchangeRate} ${fromToken.symbol}"
-            } else {
-                "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}"
-            },
-            maxLines = 1,
-            style =
-            TextStyle(
-                fontWeight = FontWeight.W400,
-                color = MixinAppTheme.colors.textAssist,
-            ),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (isPriceReverse) {
+                    "1 ${toToken?.symbol} ≈ ${1f / exchangeRate} ${fromToken.symbol}"
+                } else {
+                    "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}"
+                },
+                maxLines = 1,
+                style =
+                TextStyle(
+                    fontWeight = FontWeight.W400,
+                    color = MixinAppTheme.colors.textAssist,
+                ),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            CircularProgressIndicator(
+                progress = quoteCountDown,
+                modifier = Modifier.size(12.dp),
+                strokeWidth = 2.dp,
+                color = MixinAppTheme.colors.textPrimary,
+                backgroundColor = MixinAppTheme.colors.textAssist,
+            )
+        }
         Icon(
             modifier =
             Modifier
