@@ -362,6 +362,8 @@ class TokenRepository
                     ),
             ).liveData
 
+        fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
+
         fun snapshotsFromDb(
             id: String,
             type: String? = null,

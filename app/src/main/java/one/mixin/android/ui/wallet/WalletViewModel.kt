@@ -77,6 +77,8 @@ class WalletViewModel
             tokenRepository.snapshots(assetId, type, otherType, orderByAmount)
                 .cachedIn(viewModelScope)
 
+        fun snapshotsLimit(id:String) = tokenRepository.snapshotsLimit(id)
+
         fun snapshotsFromDb(
             id: String,
             type: String? = null,
