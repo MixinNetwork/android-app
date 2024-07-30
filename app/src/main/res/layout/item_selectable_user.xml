@@ -16,8 +16,8 @@
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_toEndOf="@id/cb"
         android:layout_marginStart="@dimen/margin16"
         android:layout_marginEnd="@dimen/margin16"
@@ -38,6 +38,8 @@
         android:layout_marginBottom="2dp"
         android:maxWidth="240dp"
         android:singleLine="true"
+        android:textSize="16sp"
+        android:ellipsize="end"
         android:textColor="?attr/text_primary"
         tools:text="name"/>
 
@@ -74,7 +76,7 @@
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textColor="?attr/text_assist"
         android:layout_marginEnd="@dimen/margin16"/>
 </RelativeLayout>
