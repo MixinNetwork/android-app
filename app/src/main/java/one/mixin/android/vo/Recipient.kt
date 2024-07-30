@@ -7,19 +7,22 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.SerialName
 
 interface Recipient
 
 data class AddressItem(
     @ColumnInfo(name = "address_id")
+    @SerializedName("address_id")
     val id: String,
     @ColumnInfo(name = "label")
+    @SerializedName("label")
     val label: String,
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
-    @SerialName("icon_url")
     val iconUrl: String,
+    @ColumnInfo(name = "chain_icon_url")
+    @SerializedName("chain_icon_url")
+    val chainIconUrl: String,
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,
