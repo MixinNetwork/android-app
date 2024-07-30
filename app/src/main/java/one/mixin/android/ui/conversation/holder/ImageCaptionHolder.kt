@@ -10,11 +10,8 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageCaptionBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.round
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
@@ -22,11 +19,9 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import kotlin.math.min
 
@@ -278,11 +273,11 @@ class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
         val dataHeight = messageItem.mediaHeight
         val width = mediaWidth - dp6
         if (dataWidth!! <= 0 || dataHeight!! <= 0) {
-            binding.chatImage.layoutParams.width = width
-            binding.chatImage.layoutParams.height = width
+            binding.chatImageLayout.layoutParams.width = width
+            binding.chatImageLayout.layoutParams.height = width
         } else {
-            binding.chatImage.layoutParams.width = width
-            binding.chatImage.layoutParams.height = min(width * dataHeight / dataWidth, mediaHeight)
+            binding.chatImageLayout.layoutParams.width = width
+            binding.chatImageLayout.layoutParams.height = min(width * dataHeight / dataWidth, mediaHeight)
         }
         binding.chatImage.loadImage(messageItem.absolutePath(), null, base64Holder = messageItem.thumbImage)
 
