@@ -63,7 +63,7 @@ fun MobileContactPage() {
             Text(
                 modifier = Modifier.padding(horizontal = 20.dp),
                 text = stringResource(R.string.syncs_contact_hint),
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
             Box(modifier = Modifier.height(32.dp))

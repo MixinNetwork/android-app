@@ -175,7 +175,7 @@ fun MessageSettingTips(title: String) {
     Text(
         text = title,
         fontSize = 12.sp,
-        color = MixinAppTheme.colors.textSubtitle,
+        color = MixinAppTheme.colors.textAssist,
         modifier =
             Modifier.padding(
                 start = 16.dp,

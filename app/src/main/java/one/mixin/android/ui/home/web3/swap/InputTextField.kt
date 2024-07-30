@@ -86,7 +86,7 @@ fun InputContent(
                             TextStyle(
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Light,
-                                color = MixinAppTheme.colors.textSubtitle,
+                                color = MixinAppTheme.colors.textAssist,
                             ),
                     )
                 }
@@ -166,7 +166,7 @@ fun InputContent(
                             TextStyle(
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Light,
-                                color = MixinAppTheme.colors.textSubtitle,
+                                color = MixinAppTheme.colors.textAssist,
                             ),
                     )
                 }

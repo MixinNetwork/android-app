@@ -69,7 +69,7 @@ fun SearchTextField(
             Box(modifier = Modifier.width(16.dp))
             Icon(
                 painter = painterResource(id = R.drawable.ic_search),
-                tint = MixinAppTheme.colors.textSubtitle,
+                tint = MixinAppTheme.colors.textAssist,
                 contentDescription = null,
             )
             Box(modifier = Modifier.width(8.dp))
@@ -79,7 +79,7 @@ fun SearchTextField(
                     Text(
                         text = hint,
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                     )
                 }
             }

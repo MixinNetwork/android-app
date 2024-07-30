@@ -109,7 +109,7 @@ fun SettingTile(
             ProvideTextStyle(
                 value =
                     TextStyle(
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                         fontSize = 13.sp,
                     ),
             ) {
@@ -125,7 +125,7 @@ fun SettingTile(
                         .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
                 text = description,
                 fontSize = 13.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
     }

@@ -77,7 +77,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:textColor="?attr/text_assist"
+            android:textColor="?attr/text_minor"
             android:gravity="center_horizontal"
             android:maxLines="2"
             android:lines="2"

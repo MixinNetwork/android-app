@@ -76,7 +76,7 @@ fun PinSettingPage() {
                 textStyle =
                     TextStyle(
                         fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.Center,
                     ),
                 onClick = {
@@ -233,7 +233,7 @@ fun PinSettingPage() {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
             fontSize = 13.sp,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
         )
 
         Box(modifier = Modifier.height(16.dp))

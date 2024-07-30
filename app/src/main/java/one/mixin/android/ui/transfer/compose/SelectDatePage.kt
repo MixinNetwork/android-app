@@ -127,7 +127,7 @@ fun SelectDatePage(
                         .padding(16.dp)
                         .animateContentSize()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MixinAppTheme.colors.backgroundGray),
+                        .background(MixinAppTheme.colors.backgroundGrayLight),
             ) {
                 SelectItem(stringResource(id = R.string.all_time), !dateSelect) {
                     dateSelect = false
@@ -203,7 +203,7 @@ fun Tile(
             ProvideTextStyle(
                 value =
                     TextStyle(
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                         fontSize = 13.sp,
                     ),
             ) {

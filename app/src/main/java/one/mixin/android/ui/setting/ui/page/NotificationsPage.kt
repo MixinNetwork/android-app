@@ -213,7 +213,7 @@ private fun NotificationItem(
             ProvideTextStyle(
                 value =
                     TextStyle(
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                         fontSize = 13.sp,
                     ),
             ) {
@@ -229,7 +229,7 @@ private fun NotificationItem(
                         .padding(start = 16.dp, top = 8.dp, bottom = 16.dp, end = 16.dp),
                 text = description,
                 fontSize = 13.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
     }
@@ -503,7 +503,7 @@ private fun EditDialog(
                     Text(
                         text = hint,
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                     )
                 }
             }
@@ -513,7 +513,7 @@ private fun EditDialog(
                         Modifier
                             .height(1.5.dp)
                             .fillMaxWidth()
-                            .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textSubtitle),
+                            .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist),
                 )
             }
         }

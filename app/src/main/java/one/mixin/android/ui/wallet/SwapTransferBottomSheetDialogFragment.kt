@@ -276,7 +276,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 textAlign = TextAlign.Center,
                                 style =
                                 TextStyle(
-                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.W400,
                                 ),
@@ -555,7 +555,7 @@ fun ItemUserContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -604,7 +604,7 @@ fun ItemPriceContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -652,7 +652,7 @@ fun AssetChanges(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -680,7 +680,7 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = outAsset.chainName ?: "",
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }
@@ -708,7 +708,7 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = inAsset.chainName ?: "",
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }

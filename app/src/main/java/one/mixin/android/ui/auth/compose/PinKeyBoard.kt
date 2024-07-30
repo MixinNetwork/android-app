@@ -179,7 +179,7 @@ fun PinKeyBoard(
                             Modifier
                                 .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp)
                                 .background(
-                                    color = MixinAppTheme.colors.backgroundGray,
+                                    color = MixinAppTheme.colors.backgroundGrayLight,
                                     shape = RoundedCornerShape(8.dp),
                                 )
                                 .padding(horizontal = 20.dp, vertical = 10.dp),

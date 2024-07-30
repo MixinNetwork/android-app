@@ -330,7 +330,7 @@ private fun AppearanceItem(
             text = value,
             style =
                 TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                 ),
         )
     }
