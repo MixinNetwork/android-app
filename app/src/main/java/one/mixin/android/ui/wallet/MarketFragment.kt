@@ -14,6 +14,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.TokenItem
@@ -46,7 +47,11 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         binding.titleView.apply {
-            titleTv.text = asset.name
+            val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+            if (sub != null)
+                setSubTitle(asset.name, sub)
+            else
+                titleTv.text = asset.name
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         }
         binding.apply {

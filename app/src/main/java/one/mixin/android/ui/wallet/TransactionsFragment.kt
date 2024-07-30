@@ -38,6 +38,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -84,7 +85,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         binding.titleView.apply {
-            titleTv.text = asset.name
+            val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+            if (sub != null)
+                setSubTitle(asset.name, sub)
+            else
+                titleTv.text = asset.name
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()

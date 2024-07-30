@@ -83,22 +83,6 @@ fun LineChart(dataPoints: List<Float>, color:Color, enableGestures: Boolean) {
             style = Stroke(width = 4f)
         )
 
-
-        if (enableGestures) {
-            val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
-            val numberOfHorizontalLines = 4
-            for (i in 0..numberOfHorizontalLines) {
-                val y = i * size.height / (numberOfHorizontalLines)
-                drawLine(
-                    color = Color.Gray.copy(alpha = 0.7f),
-                    start = Offset(0f, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = 2f,
-                    pathEffect = dashPathEffect
-                )
-            }
-        }
-
         if (highlightPointIndex != -1) {
             val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
             drawLine(
