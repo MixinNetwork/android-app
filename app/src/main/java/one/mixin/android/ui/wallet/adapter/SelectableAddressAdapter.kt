@@ -5,7 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemGroupFriendBinding
+import one.mixin.android.databinding.ItemSelectableAddressBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.MultiSelectRecipientsListBottomSheetDialogFragment
 import one.mixin.android.vo.AddressItem
@@ -19,7 +20,7 @@ class SelectableAddressAdapter(private val selectedUsers: MutableList<Recipient>
         parent: ViewGroup,
         viewType: Int,
     ): SearchAddressViewHolder {
-        return SearchAddressViewHolder(ItemGroupFriendBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        return SearchAddressViewHolder(ItemSelectableAddressBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(
@@ -29,15 +30,17 @@ class SelectableAddressAdapter(private val selectedUsers: MutableList<Recipient>
         getItem(position)?.let { holder.bind(it, selectedUsers, callback) }
     }
 
-    inner class SearchAddressViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class SearchAddressViewHolder(val binding: ItemSelectableAddressBinding) : RecyclerView.ViewHolder(binding.root) {
+
         fun bind(
             address: AddressItem,
             selectedRecipients: MutableList<Recipient>,
             callback: WalletSearchAddressCallback? = null,
         ) {
-            binding.normal.text = address.label
-            binding.mixinIdTv.text = address.displayAddress()
-            binding.avatar.loadUrl(address.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.label.text = address.label
+            binding.addressTv.text = address.displayAddress()
+            binding.avatar.bg.loadImage(address.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.badge.loadImage(address.chainIconUrl, R.drawable.ic_avatar_place_holder)
             binding.cb.isChecked = selectedRecipients.contains(address)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
