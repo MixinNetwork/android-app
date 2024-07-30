@@ -224,6 +224,15 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
     }
 
+    override fun onMoreClick() {
+        view?.navigate(
+            R.id.action_transactions_fragment_to_all_transactions_fragment,
+            Bundle().apply {
+                putParcelable(ARGS_TOKEN, asset)
+            },
+        )
+    }
+
     private fun bindHeader(){
         binding.apply {
             if (asset.collectionHash.isNullOrEmpty()) {

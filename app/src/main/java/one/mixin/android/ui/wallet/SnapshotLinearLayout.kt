@@ -36,8 +36,7 @@ class SnapshotLinearLayout @JvmOverloads constructor(
     private fun updateViews() {
         removeAllViews()
         var currentId: Long? = null
-        list.forEach { item ->
-
+        list.take(20).forEach{ item ->
             val id = getHeaderId(item)
             if (id != currentId) {
                 currentId = id
@@ -58,6 +57,14 @@ class SnapshotLinearLayout @JvmOverloads constructor(
                     context.getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, item.snapshotId))
                 },
             )
+            addView(itemView)
+        }
+        if (list.size > 20) {
+            val itemView = LayoutInflater.from(context)
+                .inflate(R.layout.item_wallet_transactions_more, this, false)
+            itemView.setOnClickListener {
+                listener?.onMoreClick()
+            }
             addView(itemView)
         }
     }

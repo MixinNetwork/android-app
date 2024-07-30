@@ -1603,4 +1603,5 @@
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
     <string name="Balance">Balance</string>
     <string name="Market">Market</string>
+    <string name="view_all">View All</string>
 </resources>

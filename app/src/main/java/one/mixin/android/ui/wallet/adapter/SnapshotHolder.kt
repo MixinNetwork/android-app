@@ -144,4 +144,6 @@ interface OnSnapshotListener {
     fun <T> onNormalItemClick(item: T)
 
     fun onUserClick(userId: String)
+
+    fun onMoreClick()
 }

@@ -219,6 +219,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
+    override fun onMoreClick() {
+        // Do noting
+    }
+
     override fun onApplyClick() {
         // Do noting
     }

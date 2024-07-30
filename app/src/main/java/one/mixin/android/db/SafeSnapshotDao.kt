@@ -35,7 +35,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 20")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 21")
     fun snapshotsLimit(assetId: String): LiveData<List<SnapshotItem>>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
