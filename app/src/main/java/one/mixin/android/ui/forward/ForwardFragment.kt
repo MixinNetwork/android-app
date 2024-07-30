@@ -442,6 +442,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                             sender,
                             shareImageData.url,
                             shareImageData.attachmentExtra,
+                            m.caption,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_IMAGE,
@@ -498,6 +499,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                             sender,
                             videoData.url,
                             videoData.attachmentExtra,
+                            null,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_VIDEO,
@@ -518,6 +520,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                             sender,
                             dataMessagePayload.url,
                             dataMessagePayload.attachmentExtra,
+                            null,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_DATA,
@@ -537,6 +540,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                             sender,
                             audioData.url,
                             audioData.attachmentExtra,
+                            null,
                             {
                                 encryptCategory.toCategory(
                                     MessageCategory.PLAIN_AUDIO,
@@ -585,6 +589,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         sender: User,
         mediaUrl: String?,
         attachmentExtraString: String?,
+        caption: String? = null,
         getCategory: () -> String,
         fallbackAction: suspend () -> Unit,
     ) = withContext(Dispatchers.IO) {
@@ -608,7 +613,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 fallbackAction.invoke()
                 return@withContext
             }
-            val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra, message)
+            val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra, message, caption)
             if (newMessage == null) {
                 fallbackAction.invoke()
                 return@withContext
@@ -702,6 +707,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         category: String,
         attachmentExtra: AttachmentExtra,
         message: Message,
+        caption: String? = null
     ): Message? {
         try {
             val messageId = UUID.randomUUID().toString()
@@ -745,6 +751,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 nowInUtc(),
                 name = message.name,
                 mediaWaveform = message.mediaWaveform,
+                caption = caption
             )
         } catch (e: Exception) {
             return null

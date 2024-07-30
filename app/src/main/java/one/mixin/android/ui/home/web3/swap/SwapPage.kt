@@ -61,7 +61,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.tip.wc.compose.Loading
 import java.math.BigDecimal
 
@@ -109,7 +108,7 @@ fun SwapPage(
                                     .height(40.dp)
                                     .clip(CircleShape)
                                     .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .background(MixinAppTheme.colors.backgroundGrayLight)
                                     .clickable {
                                         isReverse = !isReverse
                                         switch.invoke()
@@ -147,7 +146,7 @@ fun SwapPage(
                                     if (exchangeRate == 0f) 0f else 1f,
                                 )
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(MixinAppTheme.colors.backgroundGray)
+                                .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
                             Row(
@@ -164,7 +163,7 @@ fun SwapPage(
                                     style =
                                     TextStyle(
                                         fontWeight = FontWeight.W400,
-                                        color = MixinAppTheme.colors.textSubtitle,
+                                        color = MixinAppTheme.colors.textAssist,
                                     ),
                                 )
                                 Text(
@@ -188,7 +187,7 @@ fun SwapPage(
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(MixinAppTheme.colors.backgroundGray)
+                                .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
                             Text(
@@ -216,7 +215,7 @@ fun SwapPage(
                             },
                             colors =
                                 ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
+                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                                 ),
                             shape = RoundedCornerShape(32.dp),
                             contentPadding = PaddingValues(vertical = 16.dp),
@@ -236,7 +235,7 @@ fun SwapPage(
                             } else {
                                 Text(
                                     text = if (checkBalance == false) "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                    color = if (checkBalance != true) MixinAppTheme.colors.textSubtitle else Color.White,
+                                    color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
                                 )
                             }
                         }
@@ -263,7 +262,7 @@ fun InputArea(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(12.dp))
-                .background(MixinAppTheme.colors.backgroundGray)
+                .background(MixinAppTheme.colors.backgroundGrayLight)
                 .padding(20.dp, 20.dp, 20.dp, if (readOnly) 20.dp else 10.dp),
     ) {
         Row(
@@ -271,7 +270,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
+                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.width(4.dp))
                 CoilImage(
                     model = token?.chain?.icon ?: "",
@@ -285,7 +284,7 @@ fun InputArea(
                 if (token == null) {
                     Text(text = stringResource(id = R.string.select_token), fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
                 } else {
-                    Text(text = token.chain.name, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
+                    Text(text = token.chain.name, fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -387,7 +386,7 @@ private fun SlippageInfo(
             style =
                 TextStyle(
                     fontWeight = FontWeight.W400,
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                 ),
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -403,7 +402,7 @@ private fun SlippageInfo(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = MixinAppTheme.colors.textSubtitle,
+                tint = MixinAppTheme.colors.textAssist,
             )
         }
     }

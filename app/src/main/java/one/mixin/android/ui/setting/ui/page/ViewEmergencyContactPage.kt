@@ -71,7 +71,7 @@ fun ViewEmergencyContactPage(user: User) {
                 text = stringResource(id = R.string.contact_mixin_id, user.identityNumber),
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
             )
             Box(modifier = Modifier.height(42.dp))
@@ -87,7 +87,7 @@ fun ViewEmergencyContactPage(user: User) {
             textStyle =
                 TextStyle(
                     fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                 ),
         ) {
             context.openUrl(Constants.HelpLink.EMERGENCY)

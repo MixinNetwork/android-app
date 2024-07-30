@@ -246,6 +246,7 @@ class SendAttachmentMessageJob(
                 duration,
                 waveform,
                 createdAt = attachResponse.created_at,
+                caption = message.caption
             )
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()

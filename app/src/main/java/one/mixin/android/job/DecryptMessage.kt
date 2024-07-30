@@ -742,6 +742,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             data.status,
                             quoteMessageItem?.messageId,
                             quoteMessageItem.toJson(),
+                            mediaData.caption
                         )
                     }
                 insertMessage(message, data)
