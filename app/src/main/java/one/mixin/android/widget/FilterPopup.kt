@@ -89,36 +89,30 @@ class FilterPopup @JvmOverloads constructor(
         }
 
         binding.iconGroup.isVisible = true
-        when (recipients.size) {
-            1 -> {
-                binding.icon1.isVisible = true
-                binding.icon2.isVisible = false
-                binding.icon3.isVisible = false
-                val item = recipients[0]
-                loadIcon(binding.icon1, item)
-                if (item is UserItem) {
-                    setTitle(item.fullName)
-                } else if (item is AddressItem) {
-                    setTitle(item.formatAddress())
-                }
-            }
 
-            else -> {
-                binding.icon1.isVisible = true
-                binding.icon2.isVisible = recipients.size > 1
-                binding.icon3.isVisible = recipients.size > 2
+        // Hide all icons initially
+        val icons = listOf(
+            binding.icon1, binding.icon2, binding.icon3, binding.icon4, binding.icon5,
+            binding.icon6, binding.icon7, binding.icon8, binding.icon9, binding.icon10
+        )
+        icons.forEach { it.isVisible = false }
 
-                if (recipients.isNotEmpty()) {
-                    loadIcon(binding.icon1, recipients[0])
-                }
-                if (recipients.size > 1) {
-                    loadIcon(binding.icon2, recipients[1])
-                }
-                if (recipients.size > 2) {
-                    loadIcon(binding.icon3, recipients[2])
-                }
-                setTitle(context.getString(R.string.number_of_recipients, recipients.size))
+        val count = recipients.size.coerceAtMost(10)
+
+        for (i in 0 until count) {
+            icons[i].isVisible = true
+            loadIcon(icons[i], recipients[i])
+        }
+
+        if (count == 1) {
+            val item = recipients[0]
+            if (item is UserItem) {
+                setTitle(item.fullName)
+            } else if (item is AddressItem) {
+                setTitle(item.formatAddress())
             }
+        } else {
+            setTitle(context.getString(R.string.number_of_recipients, recipients.size))
         }
     }
 

@@ -24,12 +24,14 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
             app:border_width="1dp" />
 
         <one.mixin.android.widget.AvatarView
             android:id="@+id/icon_2"
             android:layout_width="20dp"
             android:layout_height="20dp"
+            app:border_text_size="14sp"
             app:border_color="?attr/bg_white"
             app:border_width="1dp"
             android:layout_marginStart="10dp" />
@@ -38,9 +40,73 @@
             android:id="@+id/icon_3"
             android:layout_width="20dp"
             android:layout_height="20dp"
+            app:border_text_size="14sp"
             app:border_color="?attr/bg_white"
             app:border_width="1dp"
             android:layout_marginStart="20dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_4"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="30dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_5"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="40dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_6"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="50dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_7"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="60dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_8"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="70dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_9"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="80dp" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/icon_10"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:border_color="?attr/bg_white"
+            app:border_text_size="14sp"
+            app:border_width="1dp"
+            android:layout_marginStart="90dp" />
 
     </FrameLayout>
 
