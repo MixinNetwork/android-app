@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemGroupFriendBinding
+import one.mixin.android.databinding.ItemSelectableUserBinding
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.vo.Recipient
@@ -19,7 +19,7 @@ class SelectableUserAdapter(private val selectedUsers: MutableList<Recipient>) :
         parent: ViewGroup,
         viewType: Int,
     ): SearchUserViewHolder {
-        return SearchUserViewHolder(ItemGroupFriendBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        return SearchUserViewHolder(ItemSelectableUserBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(
@@ -29,7 +29,7 @@ class SelectableUserAdapter(private val selectedUsers: MutableList<Recipient>) :
         getItem(position)?.let { holder.bind(it, selectedUsers, callback) }
     }
 
-    inner class SearchUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class SearchUserViewHolder(val binding: ItemSelectableUserBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             user: UserItem,
             selectedRecipients: MutableList<Recipient>,
