@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical|end"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginEnd="-40dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:id="@+id/chat_msg_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="1.5dp"
+        tools:ignore="UselessParent">
+
+        <TextView
+            android:id="@+id/chat_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="1.5dp"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            android:minWidth="30dp"
+            android:textColor="#19BEF1"
+            android:textSize="14sp" />
+
+        <FrameLayout
+            android:id="@+id/chat_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp">
+
+            <one.mixin.android.widget.CaptionLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <one.mixin.android.widget.QuoteView
+                    android:id="@+id/chat_quote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <FrameLayout
+                    android:id="@+id/chat_image_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/chat_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null" />
+
+                    <one.mixin.android.widget.CircleProgress
+                        android:id="@+id/progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        app:progressColor="@color/white"
+                        app:progressWidth="1.5dp"
+                        app:shadowColor="@color/black_70"
+                        app:size="40dp" />
+
+                    <LinearLayout
+                        android:id="@+id/chat_warning"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        tools:ignore="UseCompoundDrawables">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_expired"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="@string/Expired"
+                            android:textColor="@color/text_white" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <one.mixin.android.widget.MessageLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <one.mixin.android.widget.linktext.AutoLinkTextView
+                        android:id="@+id/chat_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp"
+                        tools:text="message" />
+
+                    <one.mixin.android.widget.bubble.TimeBubble
+                        android:id="@+id/chat_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </one.mixin.android.widget.MessageLayout>
+
+            </one.mixin.android.widget.CaptionLayout>
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>
