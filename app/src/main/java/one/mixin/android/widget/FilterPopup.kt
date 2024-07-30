@@ -45,7 +45,7 @@ class FilterPopup @JvmOverloads constructor(
         binding.title.text = text
     }
 
-    fun updateTokens( @StringRes strRes: Int,tokens: List<TokenItem>?) {
+    fun updateTokens(@StringRes strRes: Int, tokens: List<TokenItem>?) {
         if (tokens.isNullOrEmpty()) {
             binding.iconGroup.isVisible = false
             setTitle(strRes)
@@ -53,31 +53,26 @@ class FilterPopup @JvmOverloads constructor(
         }
 
         binding.iconGroup.isVisible = true
-        when (tokens.size) {
-            1 -> {
-                binding.icon1.isVisible = true
-                binding.icon2.isVisible = false
-                binding.icon3.isVisible = false
-                binding.icon1.loadUrl(tokens[0].iconUrl, holder = R.drawable.ic_avatar_place_holder)
-                setTitle(tokens[0].symbol)
-            }
-            else -> {
-                binding.icon1.isVisible = true
-                binding.icon2.isVisible = tokens.size > 1
-                binding.icon3.isVisible = tokens.size > 2
 
-                if (tokens.isNotEmpty()) {
-                    binding.icon1.loadUrl(tokens[0].iconUrl, holder = R.drawable.ic_avatar_place_holder)
-                }
-                if (tokens.size > 1) {
-                    binding.icon2.loadUrl(tokens[1].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+        // Hide all icons initially
+        val icons = listOf(
+            binding.icon1, binding.icon2, binding.icon3, binding.icon4, binding.icon5,
+            binding.icon6, binding.icon7, binding.icon8, binding.icon9, binding.icon10
+        )
+        icons.forEach { it.isVisible = false }
 
-                }
-                if (tokens.size > 2) {
-                    binding.icon3.loadUrl(tokens[2].iconUrl, holder = R.drawable.ic_avatar_place_holder)
-                }
-                setTitle(context.getString(R.string.number_of_assets, tokens.size))
-            }
+        val count = tokens.size.coerceAtMost(10)
+
+        for (i in 0 until count) {
+            icons[i].isVisible = true
+            icons[i].loadUrl(tokens[i].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+        }
+
+        if (count == 1) {
+            val item = tokens[0]
+            setTitle(item.symbol)
+        } else {
+            setTitle(context.getString(R.string.number_of_assets, tokens.size))
         }
     }
 
