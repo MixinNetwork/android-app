@@ -131,7 +131,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="@dimen/margin16"
                         android:layout_marginTop="20dp"
-                        android:src="@drawable/ic_arrow_right"
+                        android:src="@drawable/ic_arrow_gray_right"
                         tools:ignore="ContentDescription" />
 
                     <TextView
@@ -193,7 +193,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="20dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 

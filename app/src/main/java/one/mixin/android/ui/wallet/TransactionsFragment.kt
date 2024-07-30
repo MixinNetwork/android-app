@@ -106,7 +106,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
-                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 60.dp
+                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 50.dp
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }

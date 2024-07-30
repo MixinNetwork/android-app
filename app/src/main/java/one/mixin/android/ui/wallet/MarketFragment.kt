@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.graphics.Color
@@ -40,6 +41,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         asset = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)!!
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -60,7 +62,33 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             market.setContent {
                 LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), Color(0xFF50BD5CL), true)
             }
+
+            // Todo real data
+            marketHigh.text = "\$3,196.59"
+            marketLow.text = "\$2,810.00"
+            marketVolC.text = "\$3,196.59"
+            marketVolU.text = "2.47B"
+            balance.text = "\$3309.21"
+            value.text = "\$3309.21"
+            rise.text = "+2.34%"
+
+            name.text = asset.name
+            symbol.text = asset.symbol
+            chain.text = asset.chainName
+
+            introduction.text = "Ethereum was created in 2015 by Vitalik Buterin, a Russian-Canadian programmer. The platform is based on the principle of decentralization, which means that it is not controlled by any single entity"
+
+            address.text = asset.assetKey
+
+            marketCap.text = "$343.75B"
+            circulationSupply.text = "120.2M ETH"
+            totalSupply.text = "120.2M ETH"
+            issueDate.text = "2024-07-24"
+            issuePrice.text = "$0.308"
+            highValue.text = "$4,891.7047"
+            highTime.text = "2021-11-16"
+            lowValue.text = "$0.420897"
+            lowTime.text = "2015-11-16"
         }
     }
-
 }

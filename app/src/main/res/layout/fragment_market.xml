@@ -151,7 +151,6 @@
                         android:id="@+id/market_low"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$2,810.00"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
                         android:layout_marginEnd="16dp"
@@ -174,7 +173,6 @@
                         android:id="@+id/market_high"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$3,196.59"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
                         android:layout_below="@id/market_high_title"
@@ -197,7 +195,6 @@
                         android:id="@+id/market_vol_u"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2.47B"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
                         android:layout_marginEnd="16dp"
@@ -221,7 +218,6 @@
                         android:id="@+id/market_vol_c"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$3,196.59"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
                         android:layout_below="@id/market_vol_c_title"
@@ -253,7 +249,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="@dimen/margin16"
                         android:layout_marginTop="20dp"
-                        android:src="@drawable/ic_arrow_right"
+                        android:src="@drawable/ic_arrow_gray_right"
                         tools:ignore="ContentDescription" />
 
                     <TextView
@@ -280,7 +276,6 @@
                         android:textIsSelectable="true"
                         android:textFontWeight="500"
                         android:textSize="18sp"
-                        android:text="$3309.21"
                         android:textColor="?attr/text_primary"
                         tools:ignore="RelativeOverlap" />
 
@@ -311,7 +306,6 @@
                         android:layout_marginEnd="12dp"
                         android:textIsSelectable="true"
                         android:textSize="14sp"
-                        android:text="$3309.21"
                         android:textColor="?attr/text_remarks"
                         tools:ignore="RelativeOverlap" />
 
@@ -326,7 +320,6 @@
                         android:layout_marginBottom="@dimen/margin16"
                         android:layout_alignParentEnd="true"
                         android:textSize="14sp"
-                        android:text="+2.34%"
                         android:textColor="@color/wallet_green" />
 
                 </RelativeLayout>
@@ -339,7 +332,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="20dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
@@ -353,7 +346,6 @@
                     android:paddingTop="20dp"
                     android:paddingBottom="20dp">
 
-
                     <!-- Name -->
                     <TextView
                         android:layout_width="wrap_content"
@@ -363,9 +355,9 @@
                         android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ether"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -380,9 +372,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/symbol"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ETH"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -397,9 +389,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/chain"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ethereum"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -414,9 +406,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/introduction"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ethereum was created in 2015 by Vitalik Buterin, a Russian-Canadian programmer. The platform is based on the principle of decentralization, which means that it is not controlled by any single entity."
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -431,9 +423,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/address"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0x0000000000000000000000000000000000000000"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -456,9 +448,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/market_cap"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$343.75B"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -473,9 +465,10 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/circulation_supply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="120.2M ETH"
+
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -490,9 +483,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/total_supply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="120.2M ETH"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -507,9 +500,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/issue_date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2024-07-24"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -524,9 +517,9 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/issue_price"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$0.308"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -541,17 +534,17 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/high_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$4,891.7047"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
 
                     <TextView
+                        android:id="@+id/high_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2021-11-16"
                         android:textColor="?attr/text_assist"
                         android:textSize="16sp"
                         android:layout_marginTop="6dp" />
@@ -566,17 +559,18 @@
                         android:layout_marginTop="20dp" />
 
                     <TextView
+                        android:id="@+id/low_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="$0.420897"
+
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
 
                     <TextView
+                        android:id="@+id/low_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2015-11-16"
                         android:textColor="?attr/text_assist"
                         android:textSize="16sp"
                         android:layout_marginTop="6dp" />
