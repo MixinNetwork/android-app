@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.isVisible
@@ -36,7 +35,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -50,7 +48,6 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -108,6 +105,14 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }
+            }
+            marketRl.setOnClickListener {
+                view.navigate(
+                    R.id.action_transactions_to_market,
+                    Bundle().apply {
+                        putParcelable(ARGS_TOKEN, asset)
+                    },
+                )
             }
         }
 

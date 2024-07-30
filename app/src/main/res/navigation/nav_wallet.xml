@@ -48,6 +48,22 @@
             app:destination="@id/utxo_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_transactions_to_market"
+            app:destination="@id/market_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/market_fragment"
+        android:name="one.mixin.android.ui.wallet.MarketFragment"
+        tools:layout="@layout/fragment_market">
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
     </fragment>
 
     <fragment
