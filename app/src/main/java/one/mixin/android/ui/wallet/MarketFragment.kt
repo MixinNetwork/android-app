@@ -60,7 +60,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             market.setContent {
-                LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), Color(0xFF50BD5CL), true)
+                LineChart(listOf(3119.10f, 3219.3f, 3301.02f, 3250.2f, 3270.8f, 3240.2f, 3110.5f, 3201.5f, 3500.0f, 3421.2f, 3321.5f, 3214.5f, 3321.54f), Color(0xFF50BD5CL), true)
             }
 
             // Todo real data
