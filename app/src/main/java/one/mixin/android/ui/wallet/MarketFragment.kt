@@ -3,13 +3,21 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -17,8 +25,10 @@ import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -68,9 +78,29 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             marketLow.text = "\$2,810.00"
             marketVolC.text = "\$3,196.59"
             marketVolU.text = "2.47B"
-            balance.text = "\$3309.21"
-            value.text = "\$3309.21"
-            rise.text = "+2.34%"
+            balance.text = asset.balance
+            value.text = try {
+                if (asset.fiat().toFloat() == 0f) {
+                    "≈ ${Fiats.getSymbol()}0.00"
+                } else {
+                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                }
+            } catch (ignored: NumberFormatException) {
+                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            }
+            if (asset.priceUsd == "0") {
+                rise.visibility = GONE
+            } else {
+                rise.visibility = VISIBLE
+                if (asset.changeUsd.isNotEmpty()) {
+                    val changeUsd = BigDecimal(asset.changeUsd)
+                    val isPositive = changeUsd > BigDecimal.ZERO
+                    rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    priceRise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                    priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                }
+            }
 
             name.text = asset.name
             symbol.text = asset.symbol
@@ -89,6 +119,17 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             highTime.text = "2021-11-16"
             lowValue.text = "$0.420897"
             lowTime.text = "2015-11-16"
+        }
+        lifecycleScope.launch {
+            val pirces = walletViewModel.priceHistory(asset.assetId, "1D")
+            if (pirces.isSuccess) {
+                pirces.data?.map {
+                    it.price.toFloat()
+                }
+            }
+            walletViewModel.price(asset.assetId).data?.let {
+                binding.priceValue.text = "\$${it.price.numberFormat2()}"
+            }
         }
     }
 }

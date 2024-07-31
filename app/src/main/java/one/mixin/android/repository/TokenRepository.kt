@@ -107,6 +107,9 @@ import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
 import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -1021,4 +1024,13 @@ class TokenRepository
         }
 
     fun allAddresses(): LiveData<List<AddressItem>> = addressDao.allAddresses()
+
+    suspend fun priceHistory(
+        assetId: String,
+        type: String,
+    ) = routeService.priceHistory(assetId, type)
+
+    suspend fun price(
+        assetId: String,
+    ) = routeService.price(assetId)
 }

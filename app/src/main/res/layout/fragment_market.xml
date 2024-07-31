@@ -65,7 +65,6 @@
                             android:id="@+id/price_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="$3,598.56"
                             android:textSize="22sp"
                             android:layout_below="@id/price"
                             android:textFontWeight="500"
@@ -77,7 +76,6 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/price_value"
                             android:layout_marginTop="8dp"
-                            android:text="+0.09%"
                             android:textSize="14sp"
                             android:textColor="@color/wallet_green" />
                     </RelativeLayout>
