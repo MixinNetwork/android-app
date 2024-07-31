@@ -525,6 +525,11 @@ class ChatHistoryAdapter(
         }
     }
 
+    override fun isButtonGroup(position: Int): Boolean {
+        val currentItem = getItem(position)
+        return currentItem?.isAppCard() == true && !currentItem.appCardData?.actions.isNullOrEmpty()
+    }
+
     override fun isLast(position: Int): Boolean {
         val currentItem = getItem(position) ?: return false
         val nextItem = next(position)
