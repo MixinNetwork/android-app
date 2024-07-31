@@ -33,6 +33,7 @@
                 android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
+                app:cardBackgroundColor="?attr/bg_white"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
@@ -65,6 +66,7 @@
                             android:layout_marginStart="@dimen/margin16"
                             android:layout_alignParentStart="true"
                             android:textSize="14sp"
+                            android:textColor="?attr/text_assist"
                             android:text="@string/Balance"
                             tools:ignore="RelativeOverlap" />
 
@@ -116,6 +118,7 @@
                 android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
+                app:cardBackgroundColor="?attr/bg_white"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
@@ -195,6 +198,7 @@
                 android:layout_marginBottom="20dp"
                 android:paddingBottom="10dp"
                 android:visibility="gone"
+                app:cardBackgroundColor="?attr/bg_white"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
