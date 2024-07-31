@@ -94,6 +94,8 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
+import one.mixin.android.vo.isAppButtonGroup
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -853,6 +855,11 @@ class MessageAdapter(
         } else {
             false
         }
+    }
+
+    override fun isButtonGroup(position: Int): Boolean {
+        val currentItem = getItem(position)
+        return currentItem?.isAppCard() == true && !currentItem.appCardData?.actions.isNullOrEmpty()
     }
 
     override fun isLast(position: Int): Boolean {
