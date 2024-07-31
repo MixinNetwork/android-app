@@ -447,7 +447,7 @@ private fun InputAction(
             Modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
-                .border(1.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist, RoundedCornerShape(12.dp))
+                .border(0.7.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist, RoundedCornerShape(12.dp))
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
