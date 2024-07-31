@@ -88,7 +88,7 @@ class MixinHeadersDecoration private constructor(
             }
         }
         if (!mAdapter.isListLast(itemPosition)) {
-            if (mAdapter.isLast(itemPosition)) {
+            if (mAdapter.isLast(itemPosition) || mAdapter.isButtonGroup(itemPosition)) {
                 outRect.bottom = view.context.dpToPx(6f)
             }
         }

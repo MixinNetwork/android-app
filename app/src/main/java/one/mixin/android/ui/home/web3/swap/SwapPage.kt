@@ -246,7 +246,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
+                Text(text = title, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.width(4.dp))
                 CoilImage(
                     model = token?.chain?.icon ?: "",
@@ -258,23 +258,24 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 if (token == null) {
-                    Text(text = stringResource(id = R.string.select_token), fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
+                    Text(text = stringResource(id = R.string.select_token), fontSize = 12.sp, color = MixinAppTheme.colors.textMinor)
                 } else {
-                    Text(text = token.chain.name, fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
+                    Text(text = token.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_web3_wallet),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
+                    tint = MixinAppTheme.colors.textAssist,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = token?.balance ?: "0",
                     style =
                         TextStyle(
-                            color = MixinAppTheme.colors.textMinor,
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
                             textAlign = TextAlign.End,
                         ),
                 )
@@ -482,7 +483,7 @@ private fun InputAction(
             Modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
-                .border(1.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor, RoundedCornerShape(12.dp))
+                .border(0.7.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist, RoundedCornerShape(12.dp))
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
@@ -496,8 +497,7 @@ private fun InputAction(
             style =
                 TextStyle(
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor,
+                    color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
                 ),
         )
     }
