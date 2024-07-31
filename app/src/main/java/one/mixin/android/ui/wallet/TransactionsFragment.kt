@@ -49,6 +49,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -267,7 +268,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 )
             }
             marketView.setContent {
-                LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), Color(0xFF50BD5CL), false)
+                val changeUsd = BigDecimal(asset.changeUsd)
+                val isPositive = changeUsd > BigDecimal.ZERO
+                LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), isPositive, false)
             }
         }
     }

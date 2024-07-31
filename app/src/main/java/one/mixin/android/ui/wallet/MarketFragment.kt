@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
@@ -30,6 +31,7 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import javax.inject.Inject
+import kotlin.random.Random
 
 @AndroidEntryPoint
 class MarketFragment : BaseFragment(R.layout.fragment_market) {
@@ -57,6 +59,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        val changeUsd = BigDecimal(asset.changeUsd)
+        val isPositive = changeUsd > BigDecimal.ZERO
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
@@ -69,8 +73,37 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         binding.apply {
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            radioGroup.setOnCheckedChangeListener { _, checkedId ->
+                when (checkedId) {
+                    R.id.radio_1h -> market.setContent {
+                        LineChart(generateRandomFloatList(), isPositive, true)
+                    }
+
+                    R.id.radio_1d -> market.setContent {
+                        LineChart(generateRandomFloatList(), isPositive, true)
+                    }
+
+                    R.id.radio_1w -> market.setContent {
+                        LineChart(generateRandomFloatList(), isPositive, true)
+                    }
+
+                    R.id.radio_1m -> market.setContent {
+                        LineChart(generateRandomFloatList(), isPositive, true)
+                    }
+
+                    R.id.radio_1y -> market.setContent {
+                        LineChart(generateRandomFloatList(), isPositive, true)
+                    }
+
+                    else -> market.setContent {
+                        LineChart(generateRandomFloatList(), isPositive, true)
+                    }
+
+                }
+            }
+
             market.setContent {
-                LineChart(listOf(3119.10f, 3219.3f, 3301.02f, 3250.2f, 3270.8f, 3240.2f, 3110.5f, 3201.5f, 3500.0f, 3421.2f, 3321.5f, 3214.5f, 3321.54f), Color(0xFF50BD5CL), true)
+                LineChart(generateRandomFloatList(), isPositive, true)
             }
 
             // Todo real data
@@ -131,5 +164,18 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 binding.priceValue.text = "\$${it.price.numberFormat2()}"
             }
         }
+    }
+
+    private fun generateRandomFloatList(input: Float = asset.priceFiat().toFloat()): List<Float> {
+        val randomList = mutableListOf<Float>()
+        val min = input * 0.5f
+        val max = input * 1.5f
+
+        repeat(20) {
+            val randomValue = Random.nextFloat() * (max - min) + min
+            randomList.add(randomValue)
+        }
+
+        return randomList
     }
 }
