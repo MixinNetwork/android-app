@@ -321,10 +321,10 @@ fun PinKeyBoard(
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_secret_tip),
                                         contentDescription = null,
-                                        tint = MixinAppTheme.colors.textMinor,
+                                        tint = MixinAppTheme.colors.textAssist,
                                     )
                                     Text(
-                                        color = MixinAppTheme.colors.textMinor,
+                                        color = MixinAppTheme.colors.textAssist,
                                         text = stringResource(id = R.string.Secured_by_TIP),
                                         fontSize = 12.sp,
                                     )
