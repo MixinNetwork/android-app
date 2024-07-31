@@ -96,6 +96,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
         binding.apply {
+            // marketRl.isVisible = false
             transactionsTitleLl.setOnClickListener {
                 view.navigate(
                     R.id.action_transactions_fragment_to_all_transactions_fragment,
@@ -106,7 +107,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
+                bottomCard.isVisible = false
                 val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 50.dp
+
+                // bottomCard.isVisible = true
+                // val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }
