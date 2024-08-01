@@ -1569,4 +1569,5 @@
     <string name="Market">行情</string>
     <string name="view_all">查看所有</string>
     <string name="My_Balance">My Balance</string>
+    <string name="swap_not_supported">不支持 %1$s 闪兑，已切换</string>
 </resources>
