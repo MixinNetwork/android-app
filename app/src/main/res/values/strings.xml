@@ -1601,5 +1601,5 @@
     <string name="swap_failed">Swap Failed</string>
     <string name="swap_inner_desc">The signature request from Mixin Messenger.</string>
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
-    <string name="All_Network">All network</string>
+    <string name="All_Networks">All networks</string>
 </resources>
