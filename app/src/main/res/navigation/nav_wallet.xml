@@ -17,43 +17,57 @@
             android:id="@+id/action_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
 
         <action
             android:id="@+id/action_transactions_fragment_to_all_transactions_fragment"
             app:destination="@id/all_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
 
         <action
             android:id="@+id/action_transactions_to_deposit"
             app:destination="@id/deposit_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
             android:id="@+id/action_transactions_to_single_friend_select"
             app:destination="@id/single_friend_select_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
             android:id="@+id/action_transactions_to_address_management"
             app:destination="@id/address_management_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
             android:id="@+id/action_transactions_to_utxo"
             app:destination="@id/utxo_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
 
         <action
             android:id="@+id/action_transactions_to_market"
             app:destination="@id/market_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
     </fragment>
 
     <fragment
