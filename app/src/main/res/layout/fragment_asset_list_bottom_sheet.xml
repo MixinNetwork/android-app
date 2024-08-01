@@ -93,6 +93,7 @@
                 android:button="@null"
                 android:text="@string/All_Networks"
                 android:checked="true"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -103,6 +104,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Ethereum"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -113,6 +115,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Solana"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -123,6 +126,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Tron"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -133,6 +137,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/BSC"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -143,6 +148,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Polygon"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
         </RadioGroup>
