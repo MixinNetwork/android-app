@@ -4,15 +4,17 @@ import androidx.room.ColumnInfo
 import java.math.BigDecimal
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.Treasury
 
 class InscriptionState(
     @ColumnInfo(name = "name")
     val name: String?,
     @ColumnInfo(name = "sequence")
     val sequence: Long?,
-    // Note: The value of 'amount' might not be accurate as it is not calculated using the backend.
     @ColumnInfo(name = "amount")
     val amount: String?,
+    @ColumnInfo(name = "unit")
+    val unit: String?,
     @ColumnInfo(name = "symbol")
     val symbol: String?,
     @ColumnInfo(name = "price_usd")
@@ -28,6 +30,8 @@ class InscriptionState(
     val owner: String?,
     @ColumnInfo(name = "traits")
     val traits: String?,
+    @ColumnInfo(name = "treasury")
+    val treasury: Treasury?,
 ) {
     val isText: Boolean
         get() = contentType?.startsWith("text", true) == true
@@ -38,6 +42,18 @@ class InscriptionState(
                 "#$sequence"
             } else {
                 ""
+            }
+        }
+
+    private val perAmount: String?
+        get() {
+            return if (amount != null) null
+            else if (treasury != null && unit != null) {
+                kotlin.runCatching {
+                    BigDecimal(unit).multiply(BigDecimal.ONE.subtract(BigDecimal(treasury.ratio))).toPlainString()
+                }.getOrNull()
+            } else {
+                unit
             }
         }
 
@@ -60,6 +76,6 @@ class InscriptionState(
 
     val tokenTotal: String
         get() {
-            return "$amount ${symbol ?: ""}"
+            return "$perAmount ${symbol ?: ""}"
         }
 }
