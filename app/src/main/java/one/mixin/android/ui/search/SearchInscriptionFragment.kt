@@ -125,24 +125,21 @@ class SearchInscriptionFragment : BaseFragment(R.layout.fragment_search_inscript
     }
 
     private suspend fun refreshRecentUsedApps() {
-        val apps =
-            withContext(Dispatchers.IO) {
-                var botsList =
-                    defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
-                        ?: return@withContext null
-                if (botsList.size == 1 && !botsList[0].isUUID()) {
-                    getPreviousVersionBotsList()?.let {
-                        botsList = it
-                    }
-                }
-                if (botsList.isEmpty()) return@withContext null
-                val result = searchViewModel.findBotsByIds(botsList.take(RECENT_USED_BOTS_MAX_COUNT).toSet())
-                if (result.isEmpty()) return@withContext null
-                result.sortedBy {
-                    botsList.indexOf(it.appId)
-                }
+        var botsList =
+            defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
+                ?: return
+        if (botsList.size == 1 && !botsList[0].isUUID()) {
+            getPreviousVersionBotsList()?.let {
+                botsList = it
             }
-        recentUsedBots = apps
+        }
+        if (botsList.isEmpty()) return
+        val result = searchViewModel.findBotsByIds(botsList.take(RECENT_USED_BOTS_MAX_COUNT).toSet())
+        if (result.isEmpty()) return
+        result.sortedBy {
+            botsList.indexOf(it.appId)
+        }
+        recentUsedBots = result
     }
 
     private var recentUsedBots: List<User>? = null
