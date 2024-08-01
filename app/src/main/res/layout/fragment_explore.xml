@@ -89,6 +89,7 @@
                 android:button="@null"
                 android:checked="true"
                 android:text="@string/bots_title"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -99,6 +100,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Ethereum"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
@@ -109,6 +111,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Solana"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
         </RadioGroup>

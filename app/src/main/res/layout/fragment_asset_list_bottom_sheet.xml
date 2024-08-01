@@ -64,17 +64,18 @@
             android:visibility="invisible" />
     </RelativeLayout>
 
-    <LinearLayout
+    <HorizontalScrollView
         android:id="@+id/radio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_below="@id/search_view"
         android:background="?attr/bg_white"
+        android:scrollbars="none"
         android:visibility="gone">
 
         <RadioGroup
-            android:id="@+id/radio_group_explore"
+            android:id="@+id/radio_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -84,6 +85,29 @@
             android:paddingBottom="12dp">
 
             <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/All_Networks"
+                android:checked="true"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_eth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Ethereum"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_solana"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -91,11 +115,44 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Solana"
-                android:checked="true"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_tron"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Tron"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_bsc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/BSC"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_polygon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Polygon"
+                android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
         </RadioGroup>
-    </LinearLayout>
+    </HorizontalScrollView>
 
     <ViewAnimator
         android:id="@+id/rv_va"

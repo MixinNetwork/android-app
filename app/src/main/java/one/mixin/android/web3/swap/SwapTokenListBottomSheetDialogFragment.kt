@@ -13,6 +13,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ChainId.BinanceSmartChain
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -69,9 +74,47 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         binding.apply {
-            radio.isVisible = !inMixin()
             assetRv.adapter = adapter
             adapter.tokens = tokens!!
+            radio.isVisible = true
+            if (!inMixin()) { // only solana network
+                radioSolana.isChecked = true
+                radioAll.isVisible = false
+                radioEth.isVisible = false
+                radioTron.isVisible = false
+                radioBsc.isVisible = false
+                radioPolygon.isVisible = false
+            } else {
+                radioAll.isChecked = true
+                radioGroup.setOnCheckedChangeListener { _, id ->
+                    currentChain = when (id) {
+                        R.id.radio_eth -> {
+                            ETHEREUM_CHAIN_ID
+                        }
+
+                        R.id.radio_solana -> {
+                            SOLANA_CHAIN_ID
+                        }
+
+                        R.id.radio_tron -> {
+                            TRON_CHAIN_ID
+                        }
+
+                        R.id.radio_bsc -> {
+                            BinanceSmartChain
+                        }
+
+                        R.id.radio_polygon -> {
+                            Polygon
+                        }
+
+                        else -> {
+                            null
+                        }
+                    }
+                    filter(searchEt.et.text?.toString() ?: "")
+                }
+            }
             searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
@@ -99,9 +142,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private var searchJob: Job? = null
 
+    private var currentChain: String? = null
+
     private fun filter(s: String) =
         lifecycleScope.launch {
-            if (s.isBlank()) {
+            if (s.isBlank() && currentChain == null) {
                 adapter.tokens = tokens!!
                 if (tokens.isNullOrEmpty()) {
                     binding.rvVa.displayedChild = 2
@@ -112,7 +157,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             val assetList =
                 tokens?.filter {
-                    it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+                    it.chain.chainId == currentChain && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
                 }?.toMutableList() ?: mutableListOf()
 
             val total = if (inMixin()) {
