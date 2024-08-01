@@ -1486,7 +1486,6 @@
     <string name="Confirming_Transaction">正在确认交易</string>
     <string name="Transaction_Success">交易成功</string>
     <string name="Transaction_Failed">交易失败</string>
-    <string name="Best_price">最优价格</string>
     <string name="Slippage">滑点</string>
     <string name="slippage_auto">自动</string>
     <string name="slippage_auto_desc">根据不同币种推荐合适的滑点，帮助你交易成功</string>

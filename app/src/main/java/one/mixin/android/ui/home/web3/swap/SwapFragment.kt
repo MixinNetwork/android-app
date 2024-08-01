@@ -118,6 +118,7 @@ class SwapFragment : BaseFragment() {
     private var inputText = mutableStateOf("")
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
+    private var quoteCountDown: Float by mutableFloatStateOf(0f)
     private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private var errorInfo: String? = null
@@ -198,7 +199,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, errorInfo, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, quoteCountDown, errorInfo, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -516,7 +517,10 @@ class SwapFragment : BaseFragment() {
                 quoteJob =
                     lifecycleScope.launch {
                         quote(text)
-                        delay(10.seconds)
+                        repeat(100) { t ->
+                            quoteCountDown = t / 100f
+                            delay(.1.seconds)
+                        }
                         refreshQuote(text)
                     }
             }
@@ -551,16 +555,20 @@ class SwapFragment : BaseFragment() {
         ) ?: return
 
         quoteResp = resp
-        val inValue = fromToken?.realAmount(resp.inAmount)
-        val outValue = toToken?.realAmount(resp.outAmount)
+        updateExchangeRate(resp.inAmount, resp.outAmount)
+        slippage = resp.slippage
+        outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
+    }
+
+    private fun updateExchangeRate(inAmount: String, outAmount: String) {
+        val inValue = fromToken?.realAmount(inAmount)
+        val outValue = toToken?.realAmount(outAmount)
         exchangeRate =
             if (inValue == null || outValue == null || inValue == BigDecimal.ZERO || outValue == BigDecimal.ZERO) {
                 0f
             } else {
                 outValue.divide(inValue, RoundingMode.CEILING).toFloat()
             }
-        slippage = resp.slippage
-        outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
     }
 
     private fun calcInput(): String {
