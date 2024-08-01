@@ -1,13 +1,16 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import androidx.core.view.isVisible
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageCaptionBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.renderMessage
@@ -34,6 +37,14 @@ class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
+        binding.root.context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).apply {
+            if (this != 14) {
+                val textSize = this.toFloat()
+                binding.chatTime.changeSize(textSize - 4f)
+                binding.chatName.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+                binding.chatTv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize)
+            }
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -163,14 +174,7 @@ class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
         } else {
             binding.chatTv.text = messageItem.caption
         }
-        binding.chatTime.load(
-            isMe,
-            messageItem.createdAt,
-            messageItem.status,
-            isPin = messageItem.isPin ?: false,
-            isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
-        )
+
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -282,6 +286,14 @@ class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
         binding.chatImage.loadImage(messageItem.absolutePath(), null, base64Holder = messageItem.thumbImage)
 
         val isMe = meId == messageItem.userId
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            isPin = messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName

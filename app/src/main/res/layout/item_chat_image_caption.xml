@@ -113,6 +113,8 @@
                         android:layout_gravity="start"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
+                        android:paddingStart="1.5dp"
+                        android:paddingEnd="1.5dp"
                         tools:text="message" />
 
                     <one.mixin.android.widget.bubble.TimeBubble
