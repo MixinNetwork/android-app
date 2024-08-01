@@ -174,14 +174,7 @@ class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
         } else {
             binding.chatTv.text = messageItem.caption
         }
-        binding.chatTime.load(
-            isMe,
-            messageItem.createdAt,
-            messageItem.status,
-            isPin = messageItem.isPin ?: false,
-            isRepresentative = isRepresentative,
-            isSecret = messageItem.isSecret(),
-        )
+
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -293,6 +286,14 @@ class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
         binding.chatImage.loadImage(messageItem.absolutePath(), null, base64Holder = messageItem.thumbImage)
 
         val isMe = meId == messageItem.userId
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            isPin = messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
