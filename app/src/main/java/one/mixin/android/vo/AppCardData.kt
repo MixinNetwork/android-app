@@ -1,7 +1,10 @@
 package one.mixin.android.vo
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Parcelable
+import androidx.core.graphics.drawable.toBitmap
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -9,6 +12,9 @@ import one.mixin.android.Constants.Scheme.HTTPS_SEND
 import one.mixin.android.Constants.Scheme.MIXIN_SEND
 import one.mixin.android.Constants.Scheme.SEND
 import one.mixin.android.crypto.Base64
+import one.mixin.android.extension.toDrawable
+import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
+import kotlin.math.max
 
 @Parcelize
 data class AppCardData(
@@ -18,6 +24,8 @@ data class AppCardData(
     val iconUrl: String?,
     @SerializedName("cover_url")
     val coverUrl: String?,
+    @SerializedName("cover")
+    val cover: Cover?,
     var title: String?,
     var description: String?,
     val action: String?,
@@ -100,5 +108,29 @@ data class ActionButtonData(
     val sendLink:Boolean
         get() {
             return action.isValidSendUrl()
+        }
+}
+
+@Parcelize
+data class Cover(
+    val height: Int,
+    val width: Int,
+    @SerializedName("mime_type")
+    val mimeType: String,
+    val url: String,
+    val thumbnail: String
+) : Parcelable {
+    @IgnoredOnParcel
+    val radio: Float
+        get() {
+            return kotlin.runCatching {
+                max(width.toFloat() / height, 1.5f)
+            }.getOrNull() ?: 1f
+        }
+
+    @IgnoredOnParcel
+    val thumbnailDrawable: Bitmap?
+        get() {
+            return thumbnail.toDrawable(width, height)?.toBitmap()
         }
 }

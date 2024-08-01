@@ -102,15 +102,33 @@ fun AppCard(
                         )
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                 )
+            } else if (appCardData.cover != null) {
+                CoilImage(
+                    model = appCardData.cover.url,
+                    placeholder = appCardData.cover.thumbnailDrawable,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(appCardData.cover.radio)
+                        .wrapContentHeight()
+                        .padding(
+                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
+                                if (isLast) 6.dp else 7.dp
+                            } else 0.dp
+                        )
+                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Column(modifier = Modifier.fillMaxWidth().run {
-                if (isMe) {
-                    padding(start = 10.dp, end = 16.dp)
-                } else {
-                    padding(start = 16.dp, end = 10.dp)
-                }
-            }) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .run {
+                    if (isMe) {
+                        padding(start = 10.dp, end = 16.dp)
+                    } else {
+                        padding(start = 16.dp, end = 10.dp)
+                    }
+                }) {
                 if (
                     !appCardData.title.isNullOrBlank()
                 ) {
