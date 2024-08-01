@@ -1459,6 +1459,7 @@
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>
     <string name="Solana">Solana</string>
+    <string name="Tron">Tron</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access dApps and DeFi projects.</string>
@@ -1600,4 +1601,5 @@
     <string name="swap_failed">Swap Failed</string>
     <string name="swap_inner_desc">The signature request from Mixin Messenger.</string>
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
+    <string name="All_Network">All network</string>
 </resources>
