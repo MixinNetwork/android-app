@@ -76,7 +76,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             assetRv.adapter = adapter
             adapter.tokens = tokens!!
-            if (!inMixin()) {
+            radio.isVisible = true
+            if (!inMixin()) { // only solana network
                 radioSolana.isChecked = true
                 radioAll.isVisible = false
                 radioEth.isVisible = false

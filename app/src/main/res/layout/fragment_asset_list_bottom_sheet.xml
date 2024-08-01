@@ -71,7 +71,8 @@
         android:orientation="vertical"
         android:layout_below="@id/search_view"
         android:background="?attr/bg_white"
-        android:scrollbars="none">
+        android:scrollbars="none"
+        android:visibility="gone">
 
         <RadioGroup
             android:id="@+id/radio_group"
