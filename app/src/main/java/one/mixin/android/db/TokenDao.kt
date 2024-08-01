@@ -87,6 +87,10 @@ interface TokenDao : BaseDao<Token> {
     fun assetItems(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
+    suspend fun allAssetItems(): List<TokenItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
     fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>>
 

@@ -42,14 +42,14 @@ class SnapshotLinearLayout @JvmOverloads constructor(
                 currentId = id
                 val headerView = LayoutInflater.from(context)
                     .inflate(R.layout.item_transaction_header, this, false)
-                val headerHolder = SnapshotHeaderViewHolder(headerView)
+                val headerHolder = SnapshotHeaderViewHolder(headerView, true)
                 headerHolder.bind(item.createdAt)
                 addView(headerView)
             }
 
             val itemView = LayoutInflater.from(context)
                 .inflate(R.layout.item_wallet_transactions, this, false)
-            val holder = SnapshotHolder(itemView)
+            val holder = SnapshotHolder(itemView, true)
             holder.bind(item, listener)
             debugLongClick(
                 itemView,

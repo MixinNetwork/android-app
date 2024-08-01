@@ -21,6 +21,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
@@ -35,6 +36,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.LineChart
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.getChainName
@@ -96,6 +98,14 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
         binding.apply {
+            sendReceiveView.enableSwap()
+            sendReceiveView.swap.setOnClickListener {
+                lifecycleScope.launch {
+                    val assets = walletViewModel.allAssetItems()
+                    navTo(SwapFragment.newInstance(assets, input = asset.assetId), SwapFragment.TAG)
+                }
+            }
+            // hide market
             marketRl.isVisible = false
             transactionsTitleLl.setOnClickListener {
                 view.navigate(
@@ -108,7 +118,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
                 bottomCard.isVisible = true
-                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
+                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 50.dp
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }

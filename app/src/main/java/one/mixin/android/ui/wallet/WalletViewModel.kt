@@ -243,6 +243,8 @@ class WalletViewModel
 
         suspend fun assetItems() = tokenRepository.assetItems()
 
+        suspend fun allAssetItems() = tokenRepository.allAssetItems()
+
         suspend fun fuzzySearchAssets(query: String?): List<TokenItem>? =
             if (query.isNullOrBlank()) {
                 null

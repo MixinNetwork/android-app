@@ -448,6 +448,8 @@ class TokenRepository
 
         fun assetItems() = tokenDao.assetItems()
 
+        suspend fun allAssetItems() = tokenDao.allAssetItems()
+
         fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
