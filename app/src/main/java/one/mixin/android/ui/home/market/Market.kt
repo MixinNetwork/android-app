@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.market
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -13,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -56,10 +59,23 @@ fun Market(type: String, assetId: String, isPositive: Boolean) {
             }
 
             is Result.Success -> {
-                LineChart(response.data, isPositive, true)
+                // Todo retry
+                if (response.data.isEmpty()){
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFFD9D9D9), Color(0x33D9D9D9)))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Price data unavailable", color = MixinAppTheme.colors.textRemarks)
+                    }
+                } else {
+                    LineChart(response.data, isPositive, true)
+                }
             }
 
             is Result.Error -> {
+                // Todo retry
                 Text(text = "Error: ${response.exception.message}")
             }
         }

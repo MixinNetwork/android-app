@@ -8,6 +8,7 @@ import android.view.View.VISIBLE
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
@@ -154,8 +155,10 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     issuePrice.text = "$0.308"
 
                     highValue.text = it.ath
+                    highTime.isVisible = true
                     highTime.text = it.athDate
                     lowValue.text = it.atl
+                    lowTime.isVisible = true
                     lowTime.text = it.atlDate
                 }
             }

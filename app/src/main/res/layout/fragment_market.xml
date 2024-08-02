@@ -69,7 +69,8 @@
                             android:textSize="22sp"
                             android:layout_below="@id/price"
                             android:textFontWeight="500"
-                            android:textColor="?attr/text_minor" />
+                            android:textColor="?attr/text_minor"
+                            android:text="@string/NA"/>
 
                         <TextView
                             android:id="@+id/price_rise"
@@ -150,7 +151,8 @@
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_low_title"
-                        android:layout_marginTop="11dp" />
+                        android:layout_marginTop="11dp"
+                        android:text="@string/NA"/>
 
                     <TextView
                         android:id="@+id/market_high_title"
@@ -171,7 +173,8 @@
                         android:textSize="14sp"
                         android:layout_below="@id/market_high_title"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp" />
+                        android:layout_marginTop="11dp"
+                        android:text="@string/NA"/>
 
                     <TextView
                         android:id="@+id/market_vol_u_title"
@@ -195,7 +198,8 @@
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_vol_u_title"
                         android:layout_marginTop="11dp"
-                        android:layout_marginBottom="28dp" />
+                        android:layout_marginBottom="28dp"
+                        android:text="@string/NA"/>
 
                     <TextView
                         android:id="@+id/market_vol_c_title"
@@ -216,7 +220,8 @@
                         android:textSize="14sp"
                         android:layout_below="@id/market_vol_c_title"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp" />
+                        android:layout_marginTop="11dp"
+                        android:text="@string/NA"/>
 
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
@@ -331,7 +336,6 @@
                 app:cardBackgroundColor="?attr/bg_white"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -449,7 +453,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="@string/NA"/>
 
                     <!-- Circulation Supply -->
                     <TextView
@@ -464,7 +469,7 @@
                         android:id="@+id/circulation_supply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-
+                        android:text="@string/NA"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -484,7 +489,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="@string/NA"/>
 
                     <!-- Issue Date -->
                     <TextView
@@ -501,7 +507,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="@string/NA"/>
 
                     <!-- Issue Price -->
                     <TextView
@@ -518,7 +525,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="@string/NA" />
 
                     <!-- All Time High -->
                     <TextView
@@ -535,7 +543,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="@string/NA" />
 
                     <TextView
                         android:id="@+id/high_time"
@@ -543,7 +552,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_assist"
                         android:textSize="16sp"
-                        android:layout_marginTop="6dp" />
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
 
                     <!-- All Time Low -->
                     <TextView
@@ -558,7 +568,7 @@
                         android:id="@+id/low_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-
+                        android:text="@string/NA"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -569,7 +579,8 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_assist"
                         android:textSize="16sp"
-                        android:layout_marginTop="6dp" />
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone"/>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
