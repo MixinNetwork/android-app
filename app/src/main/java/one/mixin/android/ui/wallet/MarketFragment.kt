@@ -24,6 +24,7 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.market.Price
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -70,43 +71,38 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
-                when (checkedId) {
-                    R.id.radio_1h -> market.setContent {
-                        LineChart(generateRandomFloatList(), isPositive, true)
-                    }
+                val type =
+                    when (checkedId) {
+                        R.id.radio_1h -> {
+                            "1H"
+                        }
 
-                    R.id.radio_1d -> market.setContent {
-                        LineChart(generateRandomFloatList(), isPositive, true)
-                    }
+                        R.id.radio_1d -> {
+                            "1D"
+                        }
 
-                    R.id.radio_1w -> market.setContent {
-                        LineChart(generateRandomFloatList(), isPositive, true)
-                    }
+                        R.id.radio_1w -> {
+                            "1W"
+                        }
 
-                    R.id.radio_1m -> market.setContent {
-                        LineChart(generateRandomFloatList(), isPositive, true)
-                    }
+                        R.id.radio_1m -> {
+                            "1M"
+                        }
 
-                    R.id.radio_1y -> market.setContent {
-                        LineChart(generateRandomFloatList(), isPositive, true)
-                    }
+                        R.id.radio_1y -> {
+                            "YTD"
+                        }
 
-                    else -> market.setContent {
-                        LineChart(generateRandomFloatList(), isPositive, true)
+                        else -> {
+                            "ALL"
+                        }
                     }
-
+                lifecycleScope.launch {
+                    loadPriceHistory(type)?.let { loadPriceHistory(it,isPositive)}
                 }
             }
 
-            market.setContent {
-                LineChart(generateRandomFloatList(), isPositive, true)
-            }
 
-            // Todo real data
-            marketHigh.text = "\$3,196.59"
-            marketLow.text = "\$2,810.00"
-            marketVolC.text = "\$3,196.59"
-            marketVolU.text = "2.47B"
             balance.text = asset.balance
             value.text = try {
                 if (asset.fiat().toFloat() == 0f) {
@@ -135,43 +131,44 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             symbol.text = asset.symbol
             chain.text = asset.chainName
 
+            // Todo real data
             introduction.text = "Ethereum was created in 2015 by Vitalik Buterin, a Russian-Canadian programmer. The platform is based on the principle of decentralization, which means that it is not controlled by any single entity"
-
             address.text = asset.assetKey
-
-            marketCap.text = "$343.75B"
-            circulationSupply.text = "120.2M ETH"
-            totalSupply.text = "120.2M ETH"
-            issueDate.text = "2024-07-24"
-            issuePrice.text = "$0.308"
-            highValue.text = "$4,891.7047"
-            highTime.text = "2021-11-16"
-            lowValue.text = "$0.420897"
-            lowTime.text = "2015-11-16"
         }
         lifecycleScope.launch {
-            val pirces = walletViewModel.priceHistory(asset.assetId, "1D")
-            if (pirces.isSuccess) {
-                pirces.data?.map {
-                    it.price.toFloat()
+            walletViewModel.price(asset.assetId).data?.let {
+                binding.apply {
+                    priceValue.text = "\$${it.currentPrice.numberFormat2()}"
+                    marketHigh.text = "\$${it.high24h}"
+                    marketLow.text = "\$${it.low24h}"
+                    marketVolC.text = "\$3,196.59"
+                    marketVolU.text = "2.47B"
+                    marketCap.text = "$343.75B"
+                    circulationSupply.text = "${it.circulatingSupply} ${asset.symbol}"
+                    totalSupply.text = "${it.totalSupply} ${asset.symbol}"
+                    issueDate.text = "2024-07-24"
+                    issuePrice.text = "$0.308"
+
+                    highValue.text = it.ath
+                    highTime.text = it.athDate
+                    lowValue.text = it.atl
+                    lowTime.text = it.atlDate
                 }
             }
-            walletViewModel.price(asset.assetId).data?.let {
-                binding.priceValue.text = "\$${it.price.numberFormat2()}"
-            }
+        }
+
+        lifecycleScope.launch {
+            loadPriceHistory("1D")?.let { loadPriceHistory(it,isPositive)}
+        }
+    }
+    private fun loadPriceHistory(list:List<Float>, isPositive:Boolean){
+        binding.market.setContent {
+            LineChart(list, isPositive, true)
         }
     }
 
-    private fun generateRandomFloatList(input: Float = asset.priceFiat().toFloat()): List<Float> {
-        val randomList = mutableListOf<Float>()
-        val min = input * 0.5f
-        val max = input * 1.5f
-
-        repeat(20) {
-            val randomValue = Random.nextFloat() * (max - min) + min
-            randomList.add(randomValue)
-        }
-
-        return randomList
+    private suspend fun loadPriceHistory(type:String): List<Float>? {
+        val response = walletViewModel.priceHistory(asset.assetId, type)
+        return response.data?.map { it.price.toFloat() }
     }
 }
