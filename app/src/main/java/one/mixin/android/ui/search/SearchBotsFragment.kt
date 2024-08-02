@@ -133,6 +133,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
     private suspend fun refreshRecentUsedApps() {
         val apps =
             withContext(Dispatchers.IO) {
+                if (viewDestroyed()) return@withContext null
                 var botsList =
                     defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
                         ?: return@withContext null

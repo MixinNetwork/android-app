@@ -6,7 +6,7 @@
                 <shape android:shape="rectangle">
                     <corners android:radius="20dp" />
                     <stroke android:color="@color/color_gray" android:width="1dp" />
-                    <padding android:left="12dp" android:right="12dp" android:top="10dp" android:bottom="10dp" />
+                    <padding android:left="12dp" android:right="12dp" android:top="9dp" android:bottom="9dp" />
                 </shape>
             </item>
         </ripple>
@@ -18,7 +18,7 @@
                     <corners android:radius="20dp" />
                     <stroke android:color="@color/colorAccent" android:width="1dp" />
                     <solid android:color="?attr/bg_clip" />
-                    <padding android:left="12dp" android:right="12dp" android:top="10dp" android:bottom="10dp" />
+                    <padding android:left="12dp" android:right="12dp" android:top="9dp" android:bottom="9dp" />
                 </shape>
             </item>
         </ripple>
