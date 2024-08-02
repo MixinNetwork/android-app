@@ -5,7 +5,11 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.fragment.app.viewModels
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -19,6 +23,8 @@ import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.LineChart
+import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
@@ -50,6 +56,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         asset = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)!!
     }
 
+    val typeState = mutableStateOf("1D")
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
@@ -71,11 +79,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
-                val type =
+                typeState.value =
                     when (checkedId) {
-                        R.id.radio_1h -> {
-                            "1H"
-                        }
 
                         R.id.radio_1d -> {
                             "1D"
@@ -97,12 +102,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                             "ALL"
                         }
                     }
-                lifecycleScope.launch {
-                    loadPriceHistory(type)?.let { loadPriceHistory(it,isPositive)}
-                }
             }
-
-
             balance.text = asset.balance
             value.text = try {
                 if (asset.fiat().toFloat() == 0f) {
@@ -134,11 +134,15 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             // Todo real data
             introduction.text = "Ethereum was created in 2015 by Vitalik Buterin, a Russian-Canadian programmer. The platform is based on the principle of decentralization, which means that it is not controlled by any single entity"
             address.text = asset.assetKey
+
+            market.setContent {
+                Market(typeState.value, asset.assetId, isPositive)
+            }
         }
         lifecycleScope.launch {
             walletViewModel.price(asset.assetId).data?.let {
                 binding.apply {
-                    priceValue.text = "\$${it.currentPrice.numberFormat2()}"
+                    priceValue.text = "\$${it.currentPrice}"
                     marketHigh.text = "\$${it.high24h}"
                     marketLow.text = "\$${it.low24h}"
                     marketVolC.text = "\$3,196.59"
@@ -156,19 +160,5 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 }
             }
         }
-
-        lifecycleScope.launch {
-            loadPriceHistory("1D")?.let { loadPriceHistory(it,isPositive)}
-        }
-    }
-    private fun loadPriceHistory(list:List<Float>, isPositive:Boolean){
-        binding.market.setContent {
-            LineChart(list, isPositive, true)
-        }
-    }
-
-    private suspend fun loadPriceHistory(type:String): List<Float>? {
-        val response = walletViewModel.priceHistory(asset.assetId, type)
-        return response.data?.map { it.price.toFloat() }
     }
 }

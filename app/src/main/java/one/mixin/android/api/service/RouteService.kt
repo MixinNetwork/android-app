@@ -148,7 +148,7 @@ interface RouteService {
         @Query("type") type: String,
     ): MixinResponse<List<Price>>
 
-    @GET("markets/{id}/price")
+    @GET("markets/{id}")
     suspend fun price(
         @Path("id") assetId: String,
     ): MixinResponse<PriceResponse>

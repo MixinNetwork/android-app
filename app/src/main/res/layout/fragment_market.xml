@@ -93,11 +93,6 @@
                         android:gravity="center">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_1h"
-                            style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="1H" />
-
-                        <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/radio_1d"
                             style="@style/AppTheme.RadioButtonDateStyle"
                             android:text="1D"

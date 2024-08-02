@@ -138,7 +138,7 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
                 }
             }
 
-            if (highlightPointIndex != -1) {
+            if (highlightPointIndex >= 0 && highlightPointIndex <= dataPoints.size) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
                 val xPosition = highlightPointIndex * spacing
                 val yPosition = (dataPoints[highlightPointIndex] * canvasSize.height)
