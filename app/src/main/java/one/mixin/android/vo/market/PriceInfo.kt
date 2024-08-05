@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
 )
 data class PriceInfo(
     @PrimaryKey
-    @SerializedName("asset_id")
+    @SerializedName("key")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
     @SerializedName("current_price")

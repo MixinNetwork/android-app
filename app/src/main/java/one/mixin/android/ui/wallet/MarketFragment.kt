@@ -22,6 +22,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPriceInfoJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.home.market.Market
@@ -67,7 +68,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         super.onViewCreated(view, savedInstanceState)
         val changeUsd = BigDecimal(asset.changeUsd)
         val isPositive = changeUsd > BigDecimal.ZERO
-        jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
+        jobManager.addJobInBackground(RefreshPriceInfoJob(asset.assetId))
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -140,27 +141,30 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 Market(typeState.value, asset.assetId, isPositive)
             }
         }
-        lifecycleScope.launch {
-            walletViewModel.price(asset.assetId).data?.let {
+
+        walletViewModel.priceInfo(asset.assetId).observe(this.viewLifecycleOwner) { info->
+            if (info != null) {
                 binding.apply {
-                    priceValue.text = "\$${it.currentPrice}"
-                    marketHigh.text = "\$${it.high24h}"
-                    marketLow.text = "\$${it.low24h}"
+                    priceValue.text = "\$${info.currentPrice}"
+                    marketHigh.text = "\$${info.high24h}"
+                    marketLow.text = "\$${info.low24h}"
                     marketVolC.text = "\$3,196.59"
                     marketVolU.text = "2.47B"
                     marketCap.text = "$343.75B"
-                    circulationSupply.text = "${it.circulatingSupply} ${asset.symbol}"
-                    totalSupply.text = "${it.totalSupply} ${asset.symbol}"
+                    circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
+                    totalSupply.text = "${info.totalSupply} ${asset.symbol}"
                     issueDate.text = "2024-07-24"
                     issuePrice.text = "$0.308"
 
-                    highValue.text = it.ath
+                    highValue.text = info.ath
                     highTime.isVisible = true
-                    highTime.text = it.athDate
-                    lowValue.text = it.atl
+                    highTime.text = info.athDate
+                    lowValue.text = info.atl
                     lowTime.isVisible = true
-                    lowTime.text = it.atlDate
+                    lowTime.text = info.atlDate
                 }
+            } else {
+                // Todo
             }
         }
     }
