@@ -152,7 +152,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_low_title"
                         android:layout_marginTop="11dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                     <TextView
                         android:id="@+id/market_high_title"
@@ -174,7 +174,7 @@
                         android:layout_below="@id/market_high_title"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="11dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                     <TextView
                         android:id="@+id/market_vol_u_title"
@@ -199,7 +199,7 @@
                         android:layout_below="@id/market_vol_u_title"
                         android:layout_marginTop="11dp"
                         android:layout_marginBottom="28dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                     <TextView
                         android:id="@+id/market_vol_c_title"
@@ -221,7 +221,7 @@
                         android:layout_below="@id/market_vol_c_title"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="11dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
@@ -454,7 +454,7 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                     <!-- Circulation Supply -->
                     <TextView
@@ -469,7 +469,7 @@
                         android:id="@+id/circulation_supply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/NA"
+                        android:text="N_A"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
@@ -490,7 +490,7 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                     <!-- Issue Date -->
                     <TextView
@@ -508,7 +508,7 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/NA"/>
+                        android:text="N_A"/>
 
                     <!-- Issue Price -->
                     <TextView
@@ -526,7 +526,7 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/NA" />
+                        android:text="N_A" />
 
                     <!-- All Time High -->
                     <TextView
@@ -544,7 +544,7 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/NA" />
+                        android:text="N_A" />
 
                     <TextView
                         android:id="@+id/high_time"
@@ -568,7 +568,7 @@
                         android:id="@+id/low_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/NA"
+                        android:text="N_A"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />

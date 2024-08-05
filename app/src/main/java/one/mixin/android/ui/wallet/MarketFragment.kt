@@ -58,7 +58,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         asset = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)!!
     }
 
-    val typeState = mutableStateOf("1D")
+    private val typeState = mutableStateOf("1D")
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
@@ -120,8 +120,6 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             } else {
                 rise.visibility = VISIBLE
                 if (asset.changeUsd.isNotEmpty()) {
-                    val changeUsd = BigDecimal(asset.changeUsd)
-                    val isPositive = changeUsd > BigDecimal.ZERO
                     rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                     priceRise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                     rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
@@ -148,13 +146,13 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     priceValue.text = "\$${info.currentPrice}"
                     marketHigh.text = "\$${info.high24h}"
                     marketLow.text = "\$${info.low24h}"
-                    marketVolC.text = "\$3,196.59"
-                    marketVolU.text = "2.47B"
-                    marketCap.text = "$343.75B"
+                    marketVolC.text = getString(R.string.N_A)
+                    marketVolU.text = getString(R.string.N_A)
+                    marketCap.text = getString(R.string.N_A)
                     circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
                     totalSupply.text = "${info.totalSupply} ${asset.symbol}"
-                    issueDate.text = "2024-07-24"
-                    issuePrice.text = "$0.308"
+                    issueDate.text = getString(R.string.N_A)
+                    issuePrice.text = getString(R.string.N_A)
 
                     highValue.text = info.ath
                     highTime.isVisible = true

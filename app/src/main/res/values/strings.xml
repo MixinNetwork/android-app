@@ -653,6 +653,7 @@
     <string name="My_favorite_bots">My Favorite Bots</string>
     <string name="My_Stickers">My Stickers</string>
     <string name="NA">N/A</string>
+    <string name="N_A" translatable="false">N/A</string>
     <string name="Name">Name</string>
     <string name="need_background_permission">Requires start in background permission to continue.</string>
     <string name="need_camera_permission">Requires camera permission to continue.</string>
