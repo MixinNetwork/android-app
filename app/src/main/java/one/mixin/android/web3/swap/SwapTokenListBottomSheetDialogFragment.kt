@@ -157,7 +157,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             val assetList =
                 tokens?.filter {
-                    it.chain.chainId == currentChain && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
+                    ((currentChain != null && it.chain.chainId == currentChain) || currentChain == null) && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
                 }?.toMutableList() ?: mutableListOf()
 
             val total = if (inMixin()) {
