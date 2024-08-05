@@ -230,8 +230,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                             CoilImage(
                                                 model = inAsset.iconUrl,
                                                 placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier =
-                                                Modifier
+                                                modifier = Modifier
+                                                    .size(67.dp)
+                                                    .align(Alignment.Center)
                                                     .clip(CircleShape)
                                             )
                                         }
@@ -245,9 +246,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                             CoilImage(
                                                 model = outAsset.iconUrl,
                                                 placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier =
-                                                Modifier
-                                                    .clip(CircleShape)
+                                                modifier = Modifier.size(67.dp).align(Alignment.Center).clip(CircleShape)
                                             )
                                         }
                                     }
