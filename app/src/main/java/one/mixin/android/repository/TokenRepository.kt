@@ -47,6 +47,7 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
@@ -137,6 +138,7 @@ class TokenRepository
         private val outputDao: OutputDao,
         private val userDao: UserDao,
         private val inscriptionDao: InscriptionDao,
+        private val historyPriceDao: HistoryPriceDao,
         private val inscriptionCollectionDao: InscriptionCollectionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
@@ -1035,4 +1037,6 @@ class TokenRepository
     suspend fun price(
         assetId: String,
     ) = routeService.price(assetId)
+
+    fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 }

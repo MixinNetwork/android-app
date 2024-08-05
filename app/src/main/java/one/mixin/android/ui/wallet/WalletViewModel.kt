@@ -387,4 +387,6 @@ class WalletViewModel
         suspend fun price(
             assetId: String,
         ) = tokenRepository.price(assetId)
+
+        fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
     }

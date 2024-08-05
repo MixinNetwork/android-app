@@ -198,4 +198,12 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideInscriptionDao(db: MixinDatabase) = db.inscriptionDao()
+
+    @Singleton
+    @Provides
+    fun provideHistoryPriceDao(db: MixinDatabase) = db.historyPriceDao()
+
+    @Singleton
+    @Provides
+    fun priceInfoDao(db: MixinDatabase) = db.priceInfoDao()
 }

@@ -31,11 +31,13 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.LineChart
+import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -86,6 +88,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
+        jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -106,7 +109,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 }
             }
             // hide market
-            marketRl.isVisible = false
+            // marketRl.isVisible = false
             transactionsTitleLl.setOnClickListener {
                 view.navigate(
                     R.id.action_transactions_fragment_to_all_transactions_fragment,
@@ -118,7 +121,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
                 bottomCard.isVisible = true
-                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 50.dp
+                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }
@@ -276,7 +279,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             marketView.setContent {
                 val changeUsd = BigDecimal(asset.changeUsd)
                 val isPositive = changeUsd > BigDecimal.ZERO
-                LineChart(listOf(1.0f, 2.3f, 2.0f, 6.2f, 7.8f, 5.2f, 4.5f, 5.5f, 5.0f, 4.2f, 3.5f, 4.5f, 4.0f), isPositive, false)
+                Market( asset.assetId, isPositive)
             }
         }
     }

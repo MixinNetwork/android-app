@@ -21,6 +21,7 @@ import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
@@ -40,6 +41,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.FavoriteAppDao
+import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
@@ -53,6 +55,7 @@ import one.mixin.android.db.OutputDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.PriceInfoDao
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -146,6 +149,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var utxoService: UtxoService
+
+    @Inject
+    @Transient
+    lateinit var routeService: RouteService
 
     @Inject
     @Transient
@@ -298,6 +305,14 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var inscriptionDao: InscriptionDao
+
+    @Inject
+    @Transient
+    lateinit var priceInfoDao: PriceInfoDao
+
+    @Inject
+    @Transient
+    lateinit var historyPriceDao: HistoryPriceDao
 
     @Inject
     @Transient

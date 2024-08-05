@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,10 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.HistoryPrice
 
 sealed class Result<out T> {
     data object Loading : Result<Nothing>()
@@ -28,7 +35,33 @@ sealed class Result<out T> {
 }
 
 @Composable
+fun Market(assetId: String, isPositive: Boolean) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val viewModel = hiltViewModel<WalletViewModel>()
+    val liveData = viewModel.historyPriceById(assetId)
+    val historyPrices =
+        remember {
+            mutableStateOf<HistoryPrice?>(null)
+        }
+    DisposableEffect(assetId, lifecycleOwner) {
+        val observer =
+            Observer<HistoryPrice?> {
+                historyPrices.value = it
+            }
+        liveData.observe(lifecycleOwner, observer)
+        onDispose { liveData.removeObserver(observer) }
+    }
+    if (historyPrices.value != null) {
+        val data = historyPrices.value!!.data.map {
+            it.price.toFloat()
+        }
+        LineChart(data, isPositive, false)
+    }
+}
+
+@Composable
 fun Market(type: String, assetId: String, isPositive: Boolean) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<WalletViewModel>()
     var responseState by remember { mutableStateOf<Result<List<Float>>>(Result.Loading) }
 
@@ -37,9 +70,9 @@ fun Market(type: String, assetId: String, isPositive: Boolean) {
         responseState = try {
             val data = viewModel.priceHistory(assetId, type)
             if (data.isSuccess) {
-                Result.Success(data.data!!.map { it.price.toFloat() })
+                Result.Success(data.data!!.data.map { it.price.toFloat() })
             } else {
-                Result.Error(Exception(data.errorDescription))
+                Result.Error(Exception(context.getMixinErrorStringByCode(data.errorCode, data.errorDescription)))
             }
         } catch (e: Exception) {
             Result.Error(e)

@@ -19,8 +19,9 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Price
-import one.mixin.android.vo.market.PriceResponse
+import one.mixin.android.vo.market.PriceInfo
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
@@ -146,10 +147,10 @@ interface RouteService {
     suspend fun priceHistory(
         @Path("id") assetId: String,
         @Query("type") type: String,
-    ): MixinResponse<List<Price>>
+    ): MixinResponse<HistoryPrice>
 
     @GET("markets/{id}")
     suspend fun price(
         @Path("id") assetId: String,
-    ): MixinResponse<PriceResponse>
+    ): MixinResponse<PriceInfo>
 }
