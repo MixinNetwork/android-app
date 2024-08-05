@@ -78,6 +78,8 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        // Trigger ViewModel initialization without executing any code
+        searchViewModel
         view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
