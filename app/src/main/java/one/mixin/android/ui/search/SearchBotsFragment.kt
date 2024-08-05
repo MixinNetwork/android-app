@@ -13,11 +13,9 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.R
@@ -80,6 +78,8 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        // Trigger ViewModel initialization without executing any code
+        searchViewModel
         view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
@@ -131,25 +131,21 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
     }
 
     private suspend fun refreshRecentUsedApps() {
-        val apps =
-            withContext(Dispatchers.IO) {
-                if (viewDestroyed()) return@withContext null
-                var botsList =
-                    defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
-                        ?: return@withContext null
-                if (botsList.size == 1 && !botsList[0].isUUID()) {
-                    getPreviousVersionBotsList()?.let {
-                        botsList = it
-                    }
-                }
-                if (botsList.isEmpty()) return@withContext null
-                val result = searchViewModel.findBotsByIds(botsList.take(RECENT_USED_BOTS_MAX_COUNT).toSet())
-                if (result.isEmpty()) return@withContext null
-                result.sortedBy {
-                    botsList.indexOf(it.appId)
-                }
+        var botsList =
+            defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
+                ?: return
+        if (botsList.size == 1 && !botsList[0].isUUID()) {
+            getPreviousVersionBotsList()?.let {
+                botsList = it
             }
-        recentUsedBots = apps
+        }
+        if (botsList.isEmpty()) return
+        val result = searchViewModel.findBotsByIds(botsList.take(RECENT_USED_BOTS_MAX_COUNT).toSet())
+        if (result.isEmpty()) return
+        result.sortedBy {
+            botsList.indexOf(it.appId)
+        }
+        recentUsedBots = result
     }
 
     private var recentUsedBots: List<User>? = null
