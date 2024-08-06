@@ -25,23 +25,31 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.forEachWithIndex
+import timber.log.Timber
 
-fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, maxRange: Float = 0.9f): List<Float> {
-    if (values.isEmpty()) return emptyList()
+fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Float = 0.82f): Triple<List<Float>, Int, Int> {
+    if (values.isEmpty()) return Triple(emptyList(), -1, -1)
 
     val minValue = values.minOrNull() ?: 0f
     val maxValue = values.maxOrNull() ?: 0f
 
-    return values.map { value ->
+    val minIndex = values.indexOf(minValue)
+    val maxIndex = values.indexOf(maxValue)
+
+    val normalizedValues = values.map { value ->
         val normalizedValue = (value - minValue) / (maxValue - minValue) * (maxRange - minRange) + minRange
         1f - normalizedValue
     }
+
+    return Triple(normalizedValues, minIndex, maxIndex)
 }
 
 @Composable
 fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boolean) {
-    val dataPoints = normalizeValues(dataPointsData)
+    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData)
     MixinAppTheme {
         val color = if (trend) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
         val textPrimary = MixinAppTheme.colors.textPrimary
@@ -126,15 +134,133 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
 
                     drawCircle(
                         color = Color.White,
-                        radius = 12f,
+                        radius = 10f,
                         center = circleCenter
                     )
 
                     drawCircle(
                         color = color,
-                        radius = 10f,
+                        radius = 8f,
                         center = circleCenter
                     )
+                }
+                if (enableGestures && minIndex != -1 && maxIndex != -1) {
+                    val minCircleCenter = Offset(
+                        minIndex * spacing,
+                        size.height * dataPoints[minIndex]
+                    )
+
+                    val maxCircleCenter = Offset(
+                        maxIndex * spacing,
+                        size.height * dataPoints[maxIndex]
+                    )
+
+                    if (highlightPointIndex != minIndex) {
+                        drawCircle(
+                            color = Color.White,
+                            radius = 10f,
+                            center = minCircleCenter
+                        )
+                        drawCircle(
+                            color = color,
+                            radius = 8f,
+                            center = minCircleCenter
+                        )
+                    }
+                    if (highlightPointIndex != maxIndex) {
+                        drawCircle(
+                            color = Color.White,
+                            radius = 10f,
+                            center = maxCircleCenter
+                        )
+                        drawCircle(
+                            color = color,
+                            radius = 8f,
+                            center = maxCircleCenter
+                        )
+                    }
+                }
+            }
+
+            if (enableGestures && minIndex != -1 && maxIndex != -1) {
+                val spacing = canvasSize.width / (dataPoints.size - 1)
+                val minXPosition = minIndex * spacing
+                val minYPosition = canvasSize.height * dataPoints[minIndex]
+                val maxXPosition = maxIndex * spacing
+                val maxYPosition = canvasSize.height * dataPoints[maxIndex]
+
+                SubcomposeLayout { constraints ->
+                    val minText = "${dataPointsData[minIndex]}"
+                    val maxText = "${dataPointsData[maxIndex]}"
+
+                    // Measure min text
+                    val minTextPlaceable = subcompose("minText") {
+                        Text(
+                            text = minText,
+                            fontSize = 12.sp,
+                            color = color,
+                        )
+                    }.map { it.measure(constraints) }
+
+                    // Measure max text
+                    val maxTextPlaceable = subcompose("maxText") {
+                        Text(
+                            text = maxText,
+                            fontSize = 12.sp,
+                            color = color,
+                        )
+                    }.map { it.measure(constraints) }
+
+                    val minTextWidth = minTextPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
+                    val minTextHeight = minTextPlaceable.maxByOrNull { it.height }?.height?.toFloat() ?: 0f
+
+                    val maxTextWidth = maxTextPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
+                    val maxTextHeight = maxTextPlaceable.maxByOrNull { it.height }?.height?.toFloat() ?: 0f
+
+                    // Adjust positions
+                    val minXPositionAdjusted = if (canvasSize.width > minTextWidth) {
+                        (minXPosition - minTextWidth / 2).coerceIn(0f, canvasSize.width - minTextWidth)
+                    } else {
+                        0f
+                    }
+                    val minYPositionAdjusted = (minYPosition).let {
+                        if (it + minTextHeight > canvasSize.height) {
+                            minYPosition - minTextHeight
+                        } else {
+                            it
+                        }
+                    }
+
+                    val maxXPositionAdjusted = if (canvasSize.width > maxTextWidth) {
+                        (maxXPosition - maxTextWidth / 2).coerceIn(0f, canvasSize.width - maxTextWidth)
+                    } else {
+                        0f
+                    }
+                    val maxYPositionAdjusted = (maxYPosition - maxTextHeight).let {
+                        if (it < 0) {
+                            maxYPosition + maxTextHeight
+                        } else {
+                            it
+                        }
+                    }
+
+                    layout(constraints.maxWidth, constraints.maxHeight) {
+                        // Place min text
+                        minTextPlaceable.forEach { placeable ->
+                            placeable.place(
+                                x = minXPositionAdjusted.toInt(),
+                                y = minYPositionAdjusted.toInt()
+                            )
+                        }
+
+                        // Place max text
+                        maxTextPlaceable.forEach { placeable ->
+                            placeable.place(
+                                x = maxXPositionAdjusted.toInt(),
+                                y = maxYPositionAdjusted.toInt()
+                            )
+                        }
+                    }
                 }
             }
 
@@ -156,6 +282,7 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
                         ) {
                             Text(
                                 text = text,
+                                fontSize = 14.sp,
                                 color = textPrimary,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
