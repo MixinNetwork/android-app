@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.components
 import androidx.room.ColumnInfo
 import java.math.BigDecimal
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.Treasury
 
@@ -50,7 +51,7 @@ class InscriptionState(
             return if (amount != null) null
             else if (treasury != null && unit != null) {
                 kotlin.runCatching {
-                    BigDecimal(unit).multiply(BigDecimal.ONE.subtract(BigDecimal(treasury.ratio))).toPlainString()
+                    BigDecimal(unit).multiply(BigDecimal.ONE.subtract(BigDecimal(treasury.ratio))).numberFormat8()
                 }.getOrNull()
             } else {
                 unit
