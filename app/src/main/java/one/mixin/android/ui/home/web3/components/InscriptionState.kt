@@ -12,8 +12,6 @@ class InscriptionState(
     val name: String?,
     @ColumnInfo(name = "sequence")
     val sequence: Long?,
-    @ColumnInfo(name = "amount")
-    val amount: String?,
     @ColumnInfo(name = "unit")
     val unit: String?,
     @ColumnInfo(name = "symbol")
