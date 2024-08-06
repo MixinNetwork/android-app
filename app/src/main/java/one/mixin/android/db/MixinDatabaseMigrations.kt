@@ -473,8 +473,8 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
-        val MIGRATION_56_57: Migration =
-            object : Migration(56, 57) {
+        val MIGRATION_57_58: Migration =
+            object : Migration(57, 58) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `price_info` (`asset_id` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `history_prices` (`asset_id` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, PRIMARY KEY(`asset_id`, `type`))")
