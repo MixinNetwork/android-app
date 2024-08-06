@@ -3,9 +3,13 @@ package one.mixin.android.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.vo.safe.Treasury
+import java.math.BigDecimal
 
 @Parcelize
 @Entity(tableName = "inscription_collections")
@@ -41,4 +45,17 @@ data class InscriptionCollection(
     @ColumnInfo(name = "kernel_asset_id")
     @SerializedName("kernel_asset_id")
     val kernelAssetId: String?,
-) : Parcelable
+    @ColumnInfo("treasury")
+    @SerializedName("treasury")
+    val treasury: Treasury?
+) : Parcelable {
+    @get:Ignore
+    @IgnoredOnParcel
+    val preAmount: BigDecimal?
+        get() {
+            return kotlin.runCatching {
+                return if (treasury == null) BigDecimal(unit)
+                else BigDecimal(unit).multiply(BigDecimal.ONE.subtract(BigDecimal(treasury.ratio)))
+            }.getOrNull()
+        }
+}

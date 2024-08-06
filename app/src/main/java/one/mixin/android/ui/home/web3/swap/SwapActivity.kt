@@ -21,14 +21,12 @@ class SwapActivity : BaseActivity(){
     companion object {
         fun show(
             context: Context,
-            tokenItems: ArrayList<TokenItem>,
             input: String?,
             output: String?,
             amount: String?,
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
-                    putParcelableArrayListExtra(ARGS_TOKEN_ITEMS, tokenItems)
                     input?.let { putExtra(ARGS_INPUT, it) }
                     output?.let { putExtra(ARGS_OUTPUT, it) }
                     amount?.let { putExtra(ARGS_AMOUNT, it) }
@@ -43,9 +41,8 @@ class SwapActivity : BaseActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        val tokenItems = requireNotNull(intent.getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)) { "required tokenItems can not be null" }
-        val swapFragment = SwapFragment.newInstance(
-            tokenItems,
+        val swapFragment = SwapFragment.newInstance<TokenItem>(
+            null,
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),

@@ -96,6 +96,7 @@ import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
 import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
+import one.mixin.android.job.InscriptionCollectionMigrationJob
 import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
@@ -464,6 +465,10 @@ class MainActivity : BlazeBaseActivity() {
 
             PropertyHelper.checkInscriptionMigrated {
                 jobManager.addJobInBackground(InscriptionMigrationJob())
+            }
+
+            PropertyHelper.checkInscriptionCollectionMigrated {
+                jobManager.addJobInBackground(InscriptionCollectionMigrationJob())
             }
 
             jobManager.addJobInBackground(RefreshContactJob())

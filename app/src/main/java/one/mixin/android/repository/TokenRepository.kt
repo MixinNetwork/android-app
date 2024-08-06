@@ -10,8 +10,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.liveData
 import androidx.room.withTransaction
-import androidx.sqlite.db.SimpleSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -55,7 +53,6 @@ import one.mixin.android.db.OutputDao
 import one.mixin.android.db.PriceInfoDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
-import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
@@ -453,6 +450,8 @@ class TokenRepository
         fun assetItems() = tokenDao.assetItems()
 
         suspend fun allAssetItems() = tokenDao.allAssetItems()
+
+        suspend fun findTokenItems() = tokenDao.findTokenItems()
 
         fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 
