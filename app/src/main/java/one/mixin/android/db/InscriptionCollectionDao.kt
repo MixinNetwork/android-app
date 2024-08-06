@@ -11,4 +11,7 @@ interface InscriptionCollectionDao : BaseDao<InscriptionCollection> {
 
     @Query("SELECT * FROM inscription_collections WHERE collection_hash = :collectionHash")
     suspend fun findInscriptionCollectionByHash(collectionHash: String): InscriptionCollection?
+
+    @Query("SELECT collection_hash FROM inscription_collections")
+    suspend fun allCollectionHash(): List<String>
 }

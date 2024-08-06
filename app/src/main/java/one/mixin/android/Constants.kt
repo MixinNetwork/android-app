@@ -92,6 +92,7 @@ object Constants {
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
             const val PREF_MIGRATION_INSCRIPTION = "pref_migration_inscription"
+            const val PREF_MIGRATION_COLLECTION = "pref_migration_inscription_collection"
         }
 
         object ChainAddress {
@@ -147,7 +148,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 56
+        const val CURRENT_VERSION = 57
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
