@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -152,6 +153,9 @@ class ConversationActivity : BlazeBaseActivity() {
                         startParam,
                     ),
                 )
+                if (context !is Activity){
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
             }.run {
                 context.startActivity(this)
             }

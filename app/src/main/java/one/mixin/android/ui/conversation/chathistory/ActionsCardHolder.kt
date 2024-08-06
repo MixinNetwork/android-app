@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.maxCardWidth
 import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.AppCard
@@ -61,6 +62,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
 
                 },
                 contentLongClick = {
+                    itemView.context.heavyClickVibrate()
                     onItemListener.onMenu(binding.chatJump, messageItem)
                 },
                 urlClick = { url ->

@@ -10,6 +10,7 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionsCardBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.maxCardWidth
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -90,6 +91,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 contentClick = contentClick,
                 contentLongClick = {
                     if (!hasSelect) {
+                        itemView.context.heavyClickVibrate()
                         onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                     } else {
                         onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
