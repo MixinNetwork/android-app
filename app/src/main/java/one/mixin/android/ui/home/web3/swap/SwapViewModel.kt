@@ -58,4 +58,6 @@ class SwapViewModel
         suspend fun findToken(assetId: String): TokenItem? {
            return tokenRepository.findAssetItemById(assetId)
         }
+
+        suspend fun findTokenItems() = tokenRepository.findTokenItems()
 }
