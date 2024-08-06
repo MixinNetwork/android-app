@@ -6,13 +6,11 @@ import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 

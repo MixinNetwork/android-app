@@ -24,7 +24,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.WalletViewModel
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.HistoryPrice
 

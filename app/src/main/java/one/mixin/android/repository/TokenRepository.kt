@@ -106,9 +106,6 @@ import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -450,8 +447,6 @@ class TokenRepository
         fun assetItems() = tokenDao.assetItems()
 
         suspend fun allAssetItems() = tokenDao.allAssetItems()
-
-        suspend fun findTokenItems() = tokenDao.findTokenItems()
 
         fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 

@@ -5,38 +5,27 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColorResource
-import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPriceInfoJob
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.market.LineChart
 import one.mixin.android.ui.home.market.Market
-import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.assetIdToAsset
-import one.mixin.android.vo.market.Price
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import javax.inject.Inject
-import kotlin.random.Random
 
 @AndroidEntryPoint
 class MarketFragment : BaseFragment(R.layout.fragment_market) {

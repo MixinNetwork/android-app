@@ -312,7 +312,7 @@ class SwapFragment : BaseFragment() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
         if (swappable.isNullOrEmpty()) {
-            swappable = swapViewModel.findTokenItems()
+            swappable = swapViewModel.allAssetItems()
             tokenItems = swappable
         }
         swappable.let { tokens ->

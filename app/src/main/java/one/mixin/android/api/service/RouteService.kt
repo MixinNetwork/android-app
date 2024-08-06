@@ -20,7 +20,6 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.market.HistoryPrice
-import one.mixin.android.vo.market.Price
 import one.mixin.android.vo.market.PriceInfo
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
