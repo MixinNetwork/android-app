@@ -94,6 +94,9 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                         }
                     }
             }
+            balanceRl.setOnClickListener {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
             balance.text = asset.balance
             value.text = try {
                 if (asset.fiat().toFloat() == 0f) {

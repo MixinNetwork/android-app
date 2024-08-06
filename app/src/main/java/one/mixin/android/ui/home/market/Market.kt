@@ -3,7 +3,9 @@ package one.mixin.android.ui.home.market
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -18,10 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -91,15 +95,16 @@ fun Market(type: String, assetId: String, isPositive: Boolean) {
             }
 
             is Result.Success -> {
-                // Todo retry
-                if (response.data.isEmpty()){
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFFD9D9D9), Color(0x33D9D9D9)))),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Price data unavailable", color = MixinAppTheme.colors.textRemarks)
+                if (response.data.isEmpty()) {
+                    MixinAppTheme {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFFD9D9D9), Color(0x33D9D9D9)))),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = stringResource(R.string.Price_data_unavailable), color = MixinAppTheme.colors.textRemarks)
+                        }
                     }
                 } else {
                     LineChart(response.data, isPositive, true)
@@ -107,8 +112,13 @@ fun Market(type: String, assetId: String, isPositive: Boolean) {
             }
 
             is Result.Error -> {
-                // Todo retry
-                Text(text = "Error: ${response.exception.message}")
+                MixinAppTheme {
+                    Box(modifier = Modifier
+                        .wrapContentSize()
+                        .padding(20.dp)) {
+                        Text(text = response.exception.message ?: stringResource(R.string.Unknown), color = MixinAppTheme.colors.textPrimary)
+                    }
+                }
             }
         }
     }

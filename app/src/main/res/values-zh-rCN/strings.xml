@@ -1570,4 +1570,5 @@
     <string name="My_Balance">My Balance</string>
     <string name="swap_not_supported">不支持 %1$s 闪兑，已切换</string>
     <string name="All_Networks">全部网络</string>
+    <string name="Price_data_unavailable">价格数据不可用</string>
 </resources>

@@ -1608,4 +1608,5 @@
     <string name="My_Balance">My Balance</string>
     <string name="swap_not_supported">%1$s swap is not supported, it has been replaced</string>
     <string name="All_Networks">All networks</string>
+    <string name="Price_data_unavailable">Price data unavailable</string>
 </resources>
