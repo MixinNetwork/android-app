@@ -17,9 +17,9 @@ class PriceListConverter {
     }
 
     @TypeConverter
-    fun converterDate(list: List<Price>?): String =
+    fun converterDate(list: List<Price>?): String? =
         if (list.isNullOrEmpty()) {
-            ""
+            null
         } else {
             GsonHelper.customGson.toJson(list)
         }
