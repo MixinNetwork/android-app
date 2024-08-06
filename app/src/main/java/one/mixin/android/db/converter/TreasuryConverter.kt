@@ -12,7 +12,8 @@ class TreasuryConverter {
     }
 
     @TypeConverter
-    fun converterData(status: Treasury?): String? {
-        return GsonHelper.customGson.toJson(status)
+    fun converterData(treasury: Treasury?): String? {
+        if (treasury == null) return null
+        return GsonHelper.customGson.toJson(treasury)
     }
 }

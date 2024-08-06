@@ -12,8 +12,6 @@ class InscriptionState(
     val name: String?,
     @ColumnInfo(name = "sequence")
     val sequence: Long?,
-    @ColumnInfo(name = "amount")
-    val amount: String?,
     @ColumnInfo(name = "unit")
     val unit: String?,
     @ColumnInfo(name = "symbol")
@@ -48,13 +46,12 @@ class InscriptionState(
 
     private val perAmount: String?
         get() {
-            return if (amount != null) null
-            else if (treasury != null && unit != null) {
+            return if (treasury != null && unit != null) {
                 kotlin.runCatching {
                     BigDecimal(unit).multiply(BigDecimal.ONE.subtract(BigDecimal(treasury.ratio))).numberFormat8()
                 }.getOrNull()
             } else {
-                unit
+                unit?.numberFormat8()
             }
         }
 
@@ -75,8 +72,9 @@ class InscriptionState(
             return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
         }
 
-    val tokenTotal: String
+    val tokenTotal: String?
         get() {
+            if (perAmount == null) return null
             return "$perAmount ${symbol ?: ""}"
         }
 }
