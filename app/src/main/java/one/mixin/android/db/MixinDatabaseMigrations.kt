@@ -479,6 +479,14 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("ALTER TABLE `inscription_collections` ADD COLUMN `treasury` TEXT")
                 }
             }
+
+        val MIGRATION_58_57: Migration =
+            object : Migration(58, 57) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DROP TABLE IF EXISTS `price_info`")
+                    db.execSQL("DROP TABLE IF EXISTS `history_prices`")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
