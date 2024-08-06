@@ -182,7 +182,7 @@ fun SwapPage(
                     val focusManager = LocalFocusManager.current
                     if (inputText.value.isNotEmpty()) {
                         Button(
-                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
                             enabled = !isLoading && checkBalance == true,
                             onClick = {
                                 keyboardController?.hide()
