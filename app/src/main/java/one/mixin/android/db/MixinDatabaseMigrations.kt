@@ -484,6 +484,7 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(58, 57) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("DROP TABLE IF EXISTS `price_info`")
+                    db.execSQL("DROP TABLE IF EXISTS `markets`")
                     db.execSQL("DROP TABLE IF EXISTS `history_prices`")
                 }
             }
