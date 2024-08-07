@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 @Entity(
-    tableName = "price_info",
+    tableName = "markets",
 )
-data class PriceInfo(
+data class Market(
     @PrimaryKey
     @SerializedName("key")
     @ColumnInfo(name = "asset_id")

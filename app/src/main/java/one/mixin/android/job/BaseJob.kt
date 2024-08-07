@@ -55,7 +55,7 @@ import one.mixin.android.db.OutputDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
-import one.mixin.android.db.PriceInfoDao
+import one.mixin.android.db.MarketDao
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -308,7 +308,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var priceInfoDao: PriceInfoDao
+    lateinit var marketDao: MarketDao
 
     @Inject
     @Transient

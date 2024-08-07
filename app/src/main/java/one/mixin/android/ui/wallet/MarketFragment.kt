@@ -16,7 +16,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshPriceInfoJob
+import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
@@ -57,7 +57,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         super.onViewCreated(view, savedInstanceState)
         val changeUsd = BigDecimal(asset.changeUsd)
         val isPositive = changeUsd > BigDecimal.ZERO
-        jobManager.addJobInBackground(RefreshPriceInfoJob(asset.assetId))
+        jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -132,7 +132,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             }
         }
 
-        walletViewModel.priceInfo(asset.assetId).observe(this.viewLifecycleOwner) { info->
+        walletViewModel.marketById(asset.assetId).observe(this.viewLifecycleOwner) { info->
             if (info != null) {
                 binding.apply {
                     priceValue.text = "\$${info.currentPrice}"

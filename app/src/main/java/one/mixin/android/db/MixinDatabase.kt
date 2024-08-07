@@ -110,7 +110,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.HistoryPrice
-import one.mixin.android.vo.market.PriceInfo
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -166,7 +166,7 @@ import kotlin.math.min
         (RawTransaction::class),
         (InscriptionCollection::class),
         (InscriptionItem::class),
-        (PriceInfo::class),
+        (Market::class),
         (HistoryPrice::class),
     ],
     version = CURRENT_VERSION,
@@ -253,7 +253,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun historyPriceDao(): HistoryPriceDao
 
-    abstract fun priceInfoDao(): PriceInfoDao
+    abstract fun marketDao(): MarketDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
@@ -205,5 +206,5 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun priceInfoDao(db: MixinDatabase) = db.priceInfoDao()
+    fun priceMarketDao(db: MixinDatabase) = db.marketDao()
 }
