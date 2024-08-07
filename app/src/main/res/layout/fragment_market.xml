@@ -174,53 +174,7 @@
                         android:layout_below="@id/market_high_title"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="11dp"
-                        android:text="@string/N_A"/>
-
-                    <TextView
-                        android:id="@+id/market_vol_u_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="24H VOL(USDT)"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="16dp"
-                        android:layout_below="@id/market_high"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/market_vol_u"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_below="@id/market_vol_u_title"
-                        android:layout_marginTop="11dp"
-                        android:layout_marginBottom="28dp"
-                        android:text="@string/N_A"/>
-
-                    <TextView
-                        android:id="@+id/market_vol_c_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="24H VOL(ETH)"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_marginStart="16dp"
-                        android:layout_below="@id/market_high"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/market_vol_c"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:layout_below="@id/market_vol_c_title"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp"
+                        android:layout_marginBottom="20dp"
                         android:text="@string/N_A"/>
 
                 </RelativeLayout>
@@ -348,9 +302,10 @@
 
                     <!-- Name -->
                     <TextView
+                        android:id="@+id/name_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="NAME"
+                        android:text="@string/Name"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
 
@@ -364,9 +319,10 @@
 
                     <!-- Symbol -->
                     <TextView
+                        android:id="@+id/symbol_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="SYMBOL"
+                        android:text="@string/Symbol"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />
@@ -381,9 +337,10 @@
 
                     <!-- Chain -->
                     <TextView
+                        android:id="@+id/chain_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CHAIN"
+                        android:text="@string/Chain"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />
@@ -396,28 +353,12 @@
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
 
-                    <!-- Introduction -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="INTRODUCTION"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/introduction"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
-
                     <!-- Contract Address -->
                     <TextView
+                        android:id="@+id/contact_address_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CONTRACT ADDRESS"
+                        android:text="@string/Contract_Address"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />
@@ -433,34 +374,18 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Contract address is NOT a deposit address!"
+                        android:text="@string/address_warning"
                         android:textColor="@color/wallet_pink"
                         android:textSize="12sp"
                         android:layout_marginTop="8dp" />
 
-                    <!-- Market Cap -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="MARKET CAP"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/market_cap"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/N_A"/>
 
                     <!-- Circulation Supply -->
                     <TextView
+                        android:id="@+id/circulation_supply_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="CIRCULATION SUPPLY"
+                        android:text="@string/Circulation_Supply"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />
@@ -476,9 +401,10 @@
 
                     <!-- Total Supply -->
                     <TextView
+                        android:id="@+id/total_supply_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="TOTAL SUPPLY"
+                        android:text="@string/Total_Supply"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />
@@ -492,47 +418,12 @@
                         android:layout_marginTop="8dp"
                         android:text="@string/N_A"/>
 
-                    <!-- Issue Date -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ISSUE DATE"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/issue_date"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/N_A"/>
-
-                    <!-- Issue Price -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ISSUE PRICE"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/issue_price"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/N_A" />
-
                     <!-- All Time High -->
                     <TextView
+                        android:id="@+id/all_time_high_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ALL TIME HIGH"
+                        android:text="@string/All_Time_High"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />
@@ -557,9 +448,10 @@
 
                     <!-- All Time Low -->
                     <TextView
+                        android:id="@+id/all_time_low_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ALL TIME LOW"
+                        android:text="@string/All_Time_Low"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp"
                         android:layout_marginTop="20dp" />

@@ -1602,11 +1602,18 @@
     <string name="swap_failed">Swap Failed</string>
     <string name="swap_inner_desc">The signature request from Mixin Messenger.</string>
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
+    <string name="swap_not_supported">%1$s swap is not supported, it has been replaced</string>
+    <string name="Price_data_unavailable">Price data unavailable</string>
     <string name="Balance">Balance</string>
     <string name="Market">Market</string>
     <string name="view_all">View All</string>
     <string name="My_Balance">My Balance</string>
-    <string name="swap_not_supported">%1$s swap is not supported, it has been replaced</string>
     <string name="All_Networks">All networks</string>
-    <string name="Price_data_unavailable">Price data unavailable</string>
+    <string name="Introduction">Introduction</string>
+    <string name="Contract_Address">Contract Address</string>
+    <string name="All_Time_Low">All Time Low</string>
+    <string name="All_Time_High">All Time High</string>
+    <string name="Circulation_Supply">Circulation Supply</string>
+    <string name="Total_Supply">Total Supply</string>警告
+    <string name="address_warning">Contract address is NOT a deposit address!</string>
 </resources>

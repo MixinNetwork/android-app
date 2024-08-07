@@ -3,6 +3,8 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -28,6 +30,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
@@ -88,6 +91,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
+        val changeUsd = BigDecimal(asset.changeUsd)
+        val isPositive = changeUsd > BigDecimal.ZERO
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -107,8 +112,25 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     navTo(SwapFragment.newInstance(assets, input = asset.assetId), SwapFragment.TAG)
                 }
             }
-            // hide market
-            // marketRl.isVisible = false
+            marketTitle.setText(getString(R.string.Market).uppercase())
+            value.text = try {
+                if (asset.fiat().toFloat() == 0f) {
+                    "≈ ${Fiats.getSymbol()}0.00"
+                } else {
+                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                }
+            } catch (ignored: NumberFormatException) {
+                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            }
+            if (asset.priceUsd == "0") {
+                rise.visibility = GONE
+            } else {
+                rise.visibility = VISIBLE
+                if (asset.changeUsd.isNotEmpty()) {
+                    rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                }
+            }
             transactionsTitleLl.setOnClickListener {
                 view.navigate(
                     R.id.action_transactions_fragment_to_all_transactions_fragment,
@@ -148,7 +170,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         ) { assetItem ->
             assetItem?.let {
                 asset = it
-                bindHeader()
+                bindHeader(isPositive)
             }
         }
 
@@ -257,7 +279,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         )
     }
 
-    private fun bindHeader(){
+    private fun bindHeader(isPositive: Boolean) {
         binding.apply {
             if (asset.collectionHash.isNullOrEmpty()) {
                 topRl.setOnClickListener {
@@ -276,9 +298,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 )
             }
             marketView.setContent {
-                val changeUsd = BigDecimal(asset.changeUsd)
-                val isPositive = changeUsd > BigDecimal.ZERO
-                Market( asset.assetId, isPositive)
+                Market(asset.assetId, isPositive)
             }
         }
     }

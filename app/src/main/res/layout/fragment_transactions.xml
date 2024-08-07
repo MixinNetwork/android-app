@@ -159,7 +159,7 @@
                         android:textIsSelectable="true"
                         android:textFontWeight="500"
                         android:textSize="18sp"
-                        android:text="$3309.21"
+                        android:text="@string/N_A"
                         android:textColor="?attr/text_primary"
                         tools:ignore="RelativeOverlap" />
 
@@ -173,7 +173,7 @@
                         android:layout_marginTop="4dp"
                         android:layout_marginBottom="@dimen/margin16"
                         android:layout_alignParentStart="true"
-                        android:text="+2.34%"
+                        android:text="@string/N_A"
                         android:textColor="@color/wallet_green" />
 
                     <androidx.compose.ui.platform.ComposeView

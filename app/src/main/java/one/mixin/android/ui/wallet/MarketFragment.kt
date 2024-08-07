@@ -14,6 +14,7 @@ import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -58,15 +59,23 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         val changeUsd = BigDecimal(asset.changeUsd)
         val isPositive = changeUsd > BigDecimal.ZERO
         jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
-        binding.titleView.apply {
-            val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
-            if (sub != null)
-                setSubTitle(asset.name, sub)
-            else
-                titleTv.text = asset.name
-            leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-        }
         binding.apply {
+            titleView.apply {
+                val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+                if (sub != null)
+                    setSubTitle(asset.name, sub)
+                else
+                    titleTv.text = asset.name
+                leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            }
+            nameTitle.setText(getString(R.string.Name).uppercase())
+            symbolTitle.setText(getString(R.string.Symbol).uppercase())
+            chainTitle.setText(getString(R.string.Chain).uppercase())
+            contactAddressTitle.setText(getString(R.string.Contract_Address).uppercase())
+            circulationSupplyTitle.setText(getString(R.string.Circulation_Supply).uppercase())
+            totalSupply.setText(getString(R.string.Total_Supply).uppercase())
+            allTimeLowTitle.setText(getString(R.string.All_Time_Low).uppercase())
+            allTimeHighTitle.setText(getString(R.string.All_Time_High).uppercase())
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -122,11 +131,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             name.text = asset.name
             symbol.text = asset.symbol
             chain.text = asset.chainName
-
-            // Todo real data
-            introduction.text = "Ethereum was created in 2015 by Vitalik Buterin, a Russian-Canadian programmer. The platform is based on the principle of decentralization, which means that it is not controlled by any single entity"
             address.text = asset.assetKey
-
             market.setContent {
                 Market(typeState.value, asset.assetId, isPositive)
             }
@@ -135,16 +140,11 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         walletViewModel.marketById(asset.assetId).observe(this.viewLifecycleOwner) { info->
             if (info != null) {
                 binding.apply {
-                    priceValue.text = "\$${info.currentPrice}"
-                    marketHigh.text = "\$${info.high24h}"
-                    marketLow.text = "\$${info.low24h}"
-                    marketVolC.text = getString(R.string.N_A)
-                    marketVolU.text = getString(R.string.N_A)
-                    marketCap.text = getString(R.string.N_A)
+                    priceValue.text = "\$${info.currentPrice.numberFormat8()}"
+                    marketHigh.text = "\$${info.high24h.numberFormat8()}"
+                    marketLow.text = "\$${info.low24h.numberFormat8()}"
                     circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
                     totalSupply.text = "${info.totalSupply} ${asset.symbol}"
-                    issueDate.text = getString(R.string.N_A)
-                    issuePrice.text = getString(R.string.N_A)
 
                     highValue.text = info.ath
                     highTime.isVisible = true
