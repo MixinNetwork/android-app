@@ -9,12 +9,12 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
-    id "org.jetbrains.kotlin.plugin.compose" version "2.0.0"
+    id "org.jetbrains.kotlin.plugin.compose" version "2.0.10"
 }
 
 def versionMajor = 1
 def versionMinor = 10
-def versionPatch = 0
+def versionPatch = 1
 def versionBuild = 0
 
 android {
@@ -36,6 +36,7 @@ android {
             exclude 'META-INF/*.kotlin_module'
             exclude 'META-INF/*.version'
             exclude 'META-INF/DISCLAIMER'
+            exclude 'META-INF/NOTICE.md'
 
             // https://issuetracker.google.com/issues/127691101 explains bug but the solution is deprecated
             // https://issuetracker.google.com/issues/174695257
