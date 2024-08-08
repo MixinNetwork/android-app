@@ -297,32 +297,28 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(8.dp))
                                         Text(text = inscription.name ?: "", fontSize = 16.sp, color = Color.White)
 
-                                        Box(modifier = Modifier.height(20.dp))
-                                        Box(Modifier.fillMaxWidth()) {
-                                            Column {
-                                                Text(text = stringResource(id = R.string.Token).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
-                                                Box(modifier = Modifier.height(8.dp))
-                                                Text(text = inscription.tokenTotal, fontSize = 16.sp, color = Color.White)
-                                                Box(modifier = Modifier.height(5.dp))
-                                                Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
+                                        if (inscription.tokenTotal != null) {
+                                            Box(modifier = Modifier.height(20.dp))
+                                            Box(Modifier.fillMaxWidth()) {
+                                                Column {
+                                                    Text(text = stringResource(id = R.string.Token).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
+                                                    Box(modifier = Modifier.height(8.dp))
+                                                    Text(text = inscription.tokenTotal ?: "", fontSize = 16.sp, color = Color.White)
+                                                    Box(modifier = Modifier.height(5.dp))
+                                                    Text(text = inscription.valueAs, fontSize = 14.sp, color = Color(0xFF999999))
+                                                }
+
+                                                CoilImage(
+                                                    model = ImageRequest.Builder(LocalContext.current).data(inscription.iconUrl).transformations(CoilRoundedHexagonTransformation()).build(),
+                                                    modifier = Modifier
+                                                        .align(Alignment.CenterEnd)
+                                                        .width(20.dp)
+                                                        .height(20.dp)
+                                                        .clip(RoundedCornerShape(4.dp)),
+                                                    placeholder = R.drawable.ic_inscription_icon,
+                                                )
                                             }
-
-                                            CoilImage(
-                                                model =
-                                                    ImageRequest.Builder(LocalContext.current)
-                                                        .data(inscription.iconUrl)
-                                                        .transformations(CoilRoundedHexagonTransformation())
-                                                        .build(),
-                                                modifier =
-                                                Modifier
-                                                    .align(Alignment.CenterEnd)
-                                                    .width(20.dp)
-                                                    .height(20.dp)
-                                                    .clip(RoundedCornerShape(4.dp)),
-                                                placeholder = R.drawable.ic_inscription_icon,
-                                            )
                                         }
-
                                         Box(modifier = Modifier.height(20.dp))
                                         Text(text = stringResource(id = R.string.Content_type).uppercase(), fontSize = 16.sp, color = Color(0xFF999999))
                                         Box(modifier = Modifier.height(8.dp))
