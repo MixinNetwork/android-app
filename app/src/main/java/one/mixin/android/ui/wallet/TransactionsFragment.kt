@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.AssetId.TRC20_USDT_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
@@ -27,6 +28,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -36,6 +38,7 @@ import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.util.viewBinding
@@ -322,6 +325,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
                             R.id.action_transactions_to_deposit,
                             Bundle().apply { putParcelable(ARGS_ASSET, asset) },
                         )
+                    }
+                    sendReceiveView.enableSwap()
+                    sendReceiveView.swap.setOnClickListener {
+                        navTo(SwapFragment.newInstance<TokenItem>(
+                            input = asset.assetId,
+                            output = if (asset.assetId != TRC20_USDT_ASSET_ID) TRC20_USDT_ASSET_ID else null,
+                        ), SwapFragment.TAG)
                     }
                     root.post {
                         if (viewDestroyed()) return@post

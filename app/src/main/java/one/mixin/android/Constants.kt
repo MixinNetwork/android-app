@@ -223,6 +223,7 @@ object Constants {
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
         const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
         const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
+        const val TRC20_USDT_ASSET_ID = "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b"
     }
 
     object Mute {
