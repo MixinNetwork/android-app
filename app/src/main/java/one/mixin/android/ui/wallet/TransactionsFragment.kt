@@ -112,7 +112,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     navTo(SwapFragment.newInstance(assets, input = asset.assetId), SwapFragment.TAG)
                 }
             }
-            marketTitle.setText(getString(R.string.Market).uppercase())
             value.text = try {
                 if (asset.fiat().toFloat() == 0f) {
                     "≈ ${Fiats.getSymbol()}0.00"
