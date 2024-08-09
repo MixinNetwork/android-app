@@ -1602,4 +1602,26 @@
     <string name="swap_inner_desc">The signature request from Mixin Messenger.</string>
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
     <string name="All_Networks">All networks</string>
+    <string name="Stake">Stake</string>
+    <string name="Stake_SOL">Stake SOL</string>
+    <string name="Select_Validator">Select Validator</string>
+    <string name="Start_Staking">Start Staking</string>
+    <string name="stake_choose_amount">Choose how much SOL you\'d like to stake with this validator.</string>
+    <string name="Validator">Validator</string>
+    <string name="Estimated_APY">Estimated APY</string>
+    <string name="Commission">Commission</string>
+    <string name="Total_Stake">Total Stake</string>
+    <string name="Staking">Staking</string>
+    <string name="Your_Stake">Your Stake</string>
+    <string name="Activating">Activating</string>
+    <string name="Unstake">Unstake</string>
+    <string name="Withdraw_Stake">Withdraw Stake</string>
+    <string name="Balance">Balance</string>
+    <string name="unstake_hint">Your SOL is currently staked with a validator. You\'ll need to unstake to access these funds.</string>
+    <string name="Rent_Reserve">Rent Reserve</string>
+    <string name="Active_Stake">Active Stake</string>
+    <string name="Lookup_Until">Lookup Until</string>
+    <string name="Last_Reward">Last Reward</string>
+    <string name="last_reward_hint">This is the most recent reward you earned for staking. You are rewarded 3 days.</string>
+    <string name="No_balance_change_detected">No balance change detected</string>
 </resources>

@@ -35,6 +35,18 @@
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/stake_sol_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Stake_SOL"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
         android:id="@+id/copy"
         android:layout_width="match_parent"
         android:layout_height="56dp"

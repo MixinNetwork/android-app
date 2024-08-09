@@ -10,7 +10,9 @@ data class ParsedTx(
     val instructions: List<ParsedInstruction>,
 
     var tokens: Map<String, Web3Token>? = null,
-)
+) {
+    fun noBalanceChange(): Boolean = instructions.isNotEmpty() && balanceChanges.isNullOrEmpty()
+}
 
 data class BalanceChange(
     @SerializedName("address")

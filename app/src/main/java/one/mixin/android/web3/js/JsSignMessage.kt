@@ -52,7 +52,7 @@ class JsSignMessage(
 }
 
 enum class SolanaTxSource {
-    InnerTransfer, InnerSwap, Web, Link, WalletConnect;
+    InnerTransfer, InnerSwap, InnerStake, Web, Link, WalletConnect;
 
-    fun isInnerTx() = this == InnerTransfer || this == InnerSwap
+    fun isInnerTx() = this == InnerTransfer || this == InnerSwap || this == InnerStake
 }

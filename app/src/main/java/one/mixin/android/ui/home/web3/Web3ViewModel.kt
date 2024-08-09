@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Account
@@ -21,6 +22,7 @@ import one.mixin.android.api.response.copy
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.getChainIdFromName
 import one.mixin.android.api.response.isSolToken
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.repository.AccountRepository
@@ -390,6 +392,15 @@ class Web3ViewModel
                 Timber.e(e)
             }
             return OwnerState()
+        }
+
+        suspend fun getStakeAccounts(account: String): List<StakeAccount>? {
+            return handleMixinResponse(
+                invokeNetwork = { assetRepository.getStakeAccounts(account) },
+                successBlock = {
+                    it.data
+                }
+            )
         }
 
         companion object {

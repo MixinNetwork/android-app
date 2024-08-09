@@ -6,11 +6,14 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.isSolToken
 import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -33,6 +36,10 @@ class Web3TokenHeader : ConstraintLayout {
         _binding.more.setOnClickListener {
             onClickAction?.invoke(it.id)
         }
+        _binding.stake.root.updateLayoutParams<LayoutParams> {
+            topToBottom = _binding.more.id
+        }
+        _binding.stake.iconVa.displayedChild = 0
     }
 
     fun enableSwap() {
@@ -66,5 +73,24 @@ class Web3TokenHeader : ConstraintLayout {
             }
         _binding.value.text = "≈ ${Fiats.getSymbol()}${(BigDecimal(token.price).multiply(BigDecimal(token.balance)).multiply(BigDecimal(Fiats.getRate())).numberFormat2())}"
         _binding.symbol.text = token.symbol
+        _binding.stake.root.isVisible = token.isSolToken()
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun showStake(stakeAccountSummary: StakeAccountSummary?) {
+        _binding.stake.apply {
+            if (stakeAccountSummary == null) {
+                _binding.stake.iconVa.displayedChild = 0
+                amountTv.text = "0 SOL"
+                countTv.text = "0 account"
+            } else {
+                _binding.stake.iconVa.displayedChild = 1
+                amountTv.text = "${stakeAccountSummary.amount} SOL"
+                countTv.text = "${stakeAccountSummary.count} account"
+                stakeRl.setOnClickListener {
+                    onClickAction?.invoke(_binding.stake.stakeRl.id)
+                }
+            }
+        }
     }
 }
