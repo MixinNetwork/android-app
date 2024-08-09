@@ -209,9 +209,8 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                     )
             resetButton.setOnClickListener {
                 selectedRecipients.clear()
-                addressesAdapter.notifyDataSetChanged()
-                userAdapter.notifyDataSetChanged()
-                groupAdapter.notifyDataSetChanged()
+                onMultiSelectRecipientListener?.onRecipientSelect(null)
+                dismiss()
             }
             applyButton.setOnClickListener {
                 onMultiSelectRecipientListener?.onRecipientSelect(selectedRecipients.toList())
