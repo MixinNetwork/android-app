@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
@@ -33,6 +34,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 21")
+    fun snapshotsLimit(assetId: String): LiveData<List<SnapshotItem>>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 57,
-    "identityHash": "19e5c81362440dc0c433d9b10472097d",
+    "version": 58,
+    "identityHash": "9a308bba59dd2dae629ec47f207cdbab",
     "entities": [
       {
         "tableName": "users",
@@ -2883,7 +2883,7 @@
       },
       {
         "tableName": "inscription_collections",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `description` TEXT, `kernel_asset_id` TEXT, PRIMARY KEY(`collection_hash`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `description` TEXT, `kernel_asset_id` TEXT, `treasury` TEXT, PRIMARY KEY(`collection_hash`))",
         "fields": [
           {
             "fieldPath": "collectionHash",
@@ -2942,6 +2942,12 @@
           {
             "fieldPath": "kernelAssetId",
             "columnName": "kernel_asset_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "treasury",
+            "columnName": "treasury",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -3036,7 +3042,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "price_info",
+        "tableName": "markets",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
@@ -3206,7 +3212,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '19e5c81362440dc0c433d9b10472097d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9a308bba59dd2dae629ec47f207cdbab')"
     ]
   }
 }

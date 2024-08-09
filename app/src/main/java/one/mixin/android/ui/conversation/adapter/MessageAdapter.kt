@@ -94,7 +94,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
-import one.mixin.android.vo.isAppButtonGroup
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage

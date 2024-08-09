@@ -2,11 +2,11 @@ package one.mixin.android.ui.home.bot
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import javax.inject.Inject
 
 @HiltViewModel
 class BotManagerViewModel

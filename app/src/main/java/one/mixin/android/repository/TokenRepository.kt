@@ -45,10 +45,12 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
+import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
+import one.mixin.android.db.MarketDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TokenDao
@@ -132,6 +134,8 @@ class TokenRepository
         private val userDao: UserDao,
         private val inscriptionDao: InscriptionDao,
         private val inscriptionCollectionDao: InscriptionCollectionDao,
+        private val historyPriceDao: HistoryPriceDao,
+        private val marketDao: MarketDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -359,6 +363,8 @@ class TokenRepository
                     ),
             ).liveData
 
+        fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
+
         fun snapshotsFromDb(
             id: String,
             type: String? = null,
@@ -440,7 +446,7 @@ class TokenRepository
 
         fun assetItems() = tokenDao.assetItems()
 
-        suspend fun findTokenItems() = tokenDao.findTokenItems()
+        suspend fun allAssetItems() = tokenDao.allAssetItems()
 
         fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
 
@@ -1018,4 +1024,15 @@ class TokenRepository
         }
 
     fun allAddresses(): LiveData<List<AddressItem>> = addressDao.allAddresses()
+
+    suspend fun priceHistory(
+        assetId: String,
+        type: String,
+    ) = routeService.priceHistory(assetId, type)
+
+    fun marketById(
+        assetId: String,
+    ) = marketDao.marketById(assetId)
+
+    fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 }

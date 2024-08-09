@@ -25,7 +25,6 @@ import one.mixin.android.ui.wallet.adapter.SelectableTokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedTokenAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchTokenItemCallback
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit

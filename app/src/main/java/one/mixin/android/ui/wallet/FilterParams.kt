@@ -6,14 +6,12 @@ import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
-import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.vo.safe.TokenItem
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
-import timber.log.Timber
 
 class FilterParams(
     var order: SortOrder = SortOrder.Recent,

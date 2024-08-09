@@ -77,6 +77,8 @@ class WalletViewModel
             tokenRepository.snapshots(assetId, type, otherType, orderByAmount)
                 .cachedIn(viewModelScope)
 
+        fun snapshotsLimit(id:String) = tokenRepository.snapshotsLimit(id)
+
         fun snapshotsFromDb(
             id: String,
             type: String? = null,
@@ -241,6 +243,8 @@ class WalletViewModel
 
         suspend fun assetItems() = tokenRepository.assetItems()
 
+        suspend fun allAssetItems() = tokenRepository.allAssetItems()
+
         suspend fun fuzzySearchAssets(query: String?): List<TokenItem>? =
             if (query.isNullOrBlank()) {
                 null
@@ -374,4 +378,15 @@ class WalletViewModel
             state,
             asset,
         )
+
+        suspend fun priceHistory(
+            assetId: String,
+            type: String,
+        ) = tokenRepository.priceHistory(assetId, type)
+
+        fun marketById(
+            assetId: String,
+        ) = tokenRepository.marketById(assetId)
+
+        fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
     }
