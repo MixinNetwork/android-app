@@ -66,6 +66,10 @@ class TransferHeader : LinearLayout {
                     title.setText(R.string.Revoking_Multisig_Signature)
                     subTitle.setText(R.string.multisig_unlocking_description)
                 }
+
+                else -> {
+
+                }
             }
         }
     }
@@ -106,6 +110,10 @@ class TransferHeader : LinearLayout {
 
                 TransferType.unMulSign -> {
                     title.setText(R.string.Revoking_Multisig_Failed)
+                }
+
+                else-> {
+
                 }
             }
         }
@@ -150,6 +158,11 @@ class TransferHeader : LinearLayout {
                 TransferType.unMulSign -> {
                     title.setText(R.string.Multisig_Revoked)
                     subTitle.setText(R.string.multisig_unlocked_description)
+                }
+
+                TransferType.signed -> {
+                    title.setText(R.string.Multisig_Signing_Successful)
+                    subTitle.setText(R.string.multisig_signing_successful_description)
                 }
             }
         }
@@ -211,6 +224,10 @@ class TransferHeader : LinearLayout {
                 TransferType.unMulSign -> {
                     title.setText(R.string.Revoke_Multisig_Signature)
                     subTitle.setText(R.string.review_transfer_hint)
+                }
+
+                else -> {
+
                 }
             }
             subTitle.setTextColor(context.colorAttr(R.attr.text_minor))

@@ -24,6 +24,7 @@ import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -115,7 +116,12 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
-        transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+        if (t is SafeMultisigsBiometricItem && t.state == PaymentStatus.paid.name) {
+            transferViewModel.updateStatus(TransferStatus.SIGNED)
+            binding.transferAlert.isVisible = false
+        } else {
+            transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+        }
         when (t) {
             is SafeMultisigsBiometricItem -> {
                 lifecycleScope.launch {
@@ -187,6 +193,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         binding.header.success(transferType)
                         finishCheck()
                     }
+
+                    TransferStatus.SIGNED -> {
+                        binding.header.success(transferType)
+                    }
                 }
             }
         }
@@ -246,7 +256,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                 is SafeMultisigsBiometricItem -> {
                     val multisigsBiometricItem = t as SafeMultisigsBiometricItem
-                    if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                    if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
+                        TransferType.signed
+                    } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
                         TransferType.unMulSign
                     } else {
                         TransferType.mutlSign
