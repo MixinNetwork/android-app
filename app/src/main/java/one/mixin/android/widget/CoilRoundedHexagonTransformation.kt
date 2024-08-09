@@ -30,7 +30,7 @@ class CoilRoundedHexagonTransformation : Transformation {
             }
 
         createHexagonPath(bitmap.width.toFloat(), path)
-        val result = createBitmap(bitmap.width, bitmap.height, bitmap.config)
+        val result = createBitmap(bitmap.width, bitmap.height, bitmap.config ?: Bitmap.Config.ARGB_8888)
         paint.pathEffect = CornerPathEffect(result.width / 10f)
 
         val canvas = Canvas(result)

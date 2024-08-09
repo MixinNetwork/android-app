@@ -14,7 +14,7 @@ class GrayscaleTransformation : Transformation {
     ): Bitmap {
         val width = input.width
         val height = input.height
-        val grayBitmap = Bitmap.createBitmap(width, height, input.config)
+        val grayBitmap = Bitmap.createBitmap(width, height, input.config ?: Bitmap.Config.ARGB_8888)
 
         for (y in 0 until height) {
             for (x in 0 until width) {

@@ -106,8 +106,8 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             resetButton.setOnClickListener {
                 selectedTokenItems.clear()
-                adapter.notifyDataSetChanged()
-                groupAdapter.notifyDataSetChanged()
+                onMultiSelectTokenListener?.onTokenSelect(null)
+                dismiss()
             }
             applyButton.setOnClickListener {
                 onMultiSelectTokenListener?.onTokenSelect(selectedTokenItems.toList())
