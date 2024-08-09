@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.isSolToken
 import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
@@ -72,6 +73,7 @@ class Web3TokenHeader : ConstraintLayout {
             }
         _binding.value.text = "≈ ${Fiats.getSymbol()}${(BigDecimal(token.price).multiply(BigDecimal(token.balance)).multiply(BigDecimal(Fiats.getRate())).numberFormat2())}"
         _binding.symbol.text = token.symbol
+        _binding.stake.root.isVisible = token.isSolToken()
     }
 
     @SuppressLint("SetTextI18n")
