@@ -1,5 +1,7 @@
 package one.mixin.android.compose
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,6 +25,23 @@ fun CoilImage(
         contentDescription = null,
         placeholder = placeholder?.let { painterResource(id = placeholder) },
         error = placeholder?.let { painterResource(id = placeholder) },
+        contentScale = contentScale,
+    )
+}
+
+@Composable
+fun CoilImage(
+    model: String?,
+    placeholder: Bitmap?,
+    modifier: Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
+    AsyncImage(
+        modifier = modifier,
+        model = model,
+        contentDescription = null,
+        placeholder = placeholder?.let { rememberAsyncImagePainter(placeholder) },
+        error = placeholder?.let { rememberAsyncImagePainter(placeholder) },
         contentScale = contentScale,
     )
 }

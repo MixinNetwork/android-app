@@ -1244,6 +1244,7 @@ class WebFragment : BaseFragment() {
                                                 app.appId,
                                                 app.iconUrl,
                                                 "",
+                                                null,
                                                 webTitle,
                                                 app.name,
                                                 currentUrl,
