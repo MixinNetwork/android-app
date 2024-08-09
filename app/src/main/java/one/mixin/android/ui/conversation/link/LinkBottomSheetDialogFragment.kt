@@ -329,6 +329,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                     return@launch
                 }
+                if (state == PaymentStatus.paid.name) {
+                    showError(R.string.multisig_state_signed)
+                    return@launch
+                }
                 val multisigsBiometricItem =
                     SafeMultisigsBiometricItem(
                         action = action,
