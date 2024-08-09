@@ -32,6 +32,7 @@ open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int
     init {
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).width = width
+        binding.chatContentLayout.update(width - 12.dp, 2.dp)
         binding.chatGroupLayout.setLineSpacing(6.dp)
         (binding.chatGroupLayout.layoutParams as LinearLayout.LayoutParams).apply {
             width = this@ShareAppActionsCardRenderer.width - 16.dp
@@ -44,24 +45,7 @@ open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int
         actionCard: AppCardData,
         isNightMode: Boolean,
     ) {
-        binding.chatContentLayout.setContent {
-            AppCard(
-                actionCard,
-                contentClick = {
-                },
-                contentLongClick = {
-                },
-                urlClick = { _ ->
-                },
-                urlLongClick = { _ ->
-                },
-                width = width, createdAt = nowInUtc(), isLast = true, isMe = true,
-                status = MessageStatus.DELIVERED.name,
-                isPin = false,
-                isRepresentative = false,
-                isSecret = false,
-            )
-        }
+        binding.chatContentLayout.setData(actionCard, true, isMe = true, createdAt = nowInUtc(), status = MessageStatus.DELIVERED.name, isPin = false, isRepresentative = false, isSecret = false, onItemListener = null, textGestureListener = null)
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true
             for (b in actionCard.actions) {

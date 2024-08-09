@@ -305,6 +305,10 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
             renderer.render(appCardData, requireContext().isNightMode())
         } else {
+            if (appCardData.cover != null && ((appCardData.cover.width < 64 || appCardData.cover.width > 104) || (appCardData.cover.height < 64 || appCardData.cover.height > 104))) {
+                toast(getString(R.string.error_unknown_with_message, "Illegal size"))
+                dismiss()
+            }
             val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
                 margin = 20.dp

@@ -67,7 +67,7 @@
         app:layout_constraintVertical_bias="0"
         app:layout_goneMarginBottom="0dp">
 
-        <androidx.compose.ui.platform.ComposeView
+        <one.mixin.android.widget.AppCardLayout
             android:id="@+id/chat_content_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
