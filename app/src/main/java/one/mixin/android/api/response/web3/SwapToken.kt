@@ -72,4 +72,5 @@ data class SwapToken(
 
 interface Swappable : Parcelable {
     fun toSwapToken(): SwapToken
+    fun getUnique(): String
 }

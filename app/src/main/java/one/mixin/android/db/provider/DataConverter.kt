@@ -193,6 +193,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfPinTop = cursor.getColumnIndexOrThrow("isPin")
     val cursorIndexOfExpireIn = cursor.getColumnIndexOrThrow("expireIn")
     val cursorIndexOfExpireAt = cursor.getColumnIndexOrThrow("expireAt")
+    val cursorIndexOfCaption = cursor.getColumnIndexOrThrow("caption")
     val res = ArrayList<MessageItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: MessageItem
@@ -323,6 +324,12 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             } else {
                 cursor.getLong(cursorIndexOfExpireAt)
             }
+        val tempCaption: String? =
+            if (cursor.isNull(cursorIndexOfCaption)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfCaption)
+            }
         item =
             MessageItem(
                 tmpMessageId,
@@ -383,6 +390,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tmpPinTop,
                 tempExpireIn,
                 tempExpireAt,
+                tempCaption
             )
         res.add(item)
     }

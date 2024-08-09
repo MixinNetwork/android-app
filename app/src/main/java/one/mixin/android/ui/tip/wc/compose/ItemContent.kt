@@ -26,7 +26,7 @@ fun ItemContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -40,7 +40,7 @@ fun ItemContent(
             Box(modifier = Modifier.height(4.dp))
             Text(
                 text = footer,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }

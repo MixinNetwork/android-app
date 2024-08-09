@@ -159,6 +159,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var step by mutableStateOf(Step.Pending)
 
+    private var parsedLink: ParsedLink? = null
+    private var receiver: User? by mutableStateOf(null)
+
     private var errorInfo: String? by mutableStateOf(null)
 
     override fun onCreateView(
@@ -217,24 +220,35 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         modifier = Modifier.wrapContentWidth(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CoilImage(
-                                            model = inAsset.iconUrl,
-                                            placeholder = R.drawable.ic_avatar_place_holder,
+                                        Box(
                                             modifier =
                                             Modifier
                                                 .size(70.dp)
                                                 .offset(x = (-27).dp)
                                                 .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
-                                        )
-                                        CoilImage(
-                                            model = outAsset.iconUrl,
-                                            placeholder = R.drawable.ic_avatar_place_holder,
+                                        ) {
+                                            CoilImage(
+                                                model = inAsset.iconUrl,
+                                                placeholder = R.drawable.ic_avatar_place_holder,
+                                                modifier = Modifier
+                                                    .size(67.dp)
+                                                    .align(Alignment.Center)
+                                                    .clip(CircleShape)
+                                            )
+                                        }
+                                        Box(
                                             modifier =
                                             Modifier
                                                 .size(70.dp)
                                                 .offset(x = 27.dp)
                                                 .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
-                                        )
+                                        ) {
+                                            CoilImage(
+                                                model = outAsset.iconUrl,
+                                                placeholder = R.drawable.ic_avatar_place_holder,
+                                                modifier = Modifier.size(67.dp).align(Alignment.Center).clip(CircleShape)
+                                            )
+                                        }
                                     }
                             }
                             Box(modifier = Modifier.height(20.dp))
@@ -273,7 +287,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 textAlign = TextAlign.Center,
                                 style =
                                 TextStyle(
-                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.W400,
                                 ),
@@ -298,7 +312,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             Box(modifier = Modifier.height(20.dp))
                             ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), self)
                             Box(modifier = Modifier.height(20.dp))
-                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), self)
+                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver)
                             Box(modifier = Modifier.height(16.dp))
                         }
 
@@ -370,6 +384,8 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
+
+            parseLink()
         }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -391,18 +407,31 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
 
+    inner class ParsedLink(
+        val assetId: String,
+        val amount: String,
+        val receiverIds: List<String>,
+        val memo: String?,
+        val traceId: String,
+    )
+
+    private fun parseLink() = lifecycleScope.launch {
+        val assetId = requireNotNull(link.getQueryParameter("asset"))
+        val amount = requireNotNull(link.getQueryParameter("amount"))
+        val receiverId = requireNotNull(link.lastPathSegment)
+        receiver = bottomViewModel.refreshUser(receiverId)
+        val receiverIds = listOf(receiverId)
+        val memo = link.getQueryParameter("memo")
+        val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+        parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
+    }
+
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val parsedLink = this@SwapTransferBottomSheetDialogFragment.parsedLink ?: return@launch
                 step = Step.Sending
-                val assetId = link.getQueryParameter("asset")!!
-                val amount = link.getQueryParameter("amount")!!
-                val receiverId = link.lastPathSegment!!
-                bottomViewModel.refreshUser(receiverId) ?: throw IllegalArgumentException(getString(R.string.User_not_found))
-                val receiverIds = listOf(receiverId)
-                val memo = link.getQueryParameter("memo")
-                val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-                val response = bottomViewModel.kernelTransaction(assetId, receiverIds, 1.toByte(), amount, pin, traceId, memo)
+                val response = bottomViewModel.kernelTransaction(parsedLink.assetId, parsedLink.receiverIds, 1.toByte(), parsedLink.amount, pin, parsedLink.traceId, parsedLink.memo)
                 if (response.isSuccess) {
                     defaultSharedPreferences.putLong(
                         Constants.BIOMETRIC_PIN_CHECK,
@@ -527,7 +556,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 @Composable
 fun ItemUserContent(
     title: String,
-    user: User
+    user: User?,
 ) {
     Column(
         modifier =
@@ -537,26 +566,33 @@ fun ItemUserContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
         Box(modifier = Modifier.height(4.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CoilImage(
-                model = user.avatarUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier =
-                Modifier
-                    .size(18.dp)
-                    .clip(CircleShape),
+        if (user == null) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MixinAppTheme.colors.accent,
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "${user.fullName} (${user.identityNumber})",
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-            )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CoilImage(
+                    model = user.avatarUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier =
+                    Modifier
+                        .size(18.dp)
+                        .clip(CircleShape),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "${user.fullName} (${user.identityNumber})",
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                )
+            }
         }
     }
 }
@@ -579,7 +615,7 @@ fun ItemPriceContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -627,7 +663,7 @@ fun AssetChanges(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -655,7 +691,7 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = outAsset.chainName ?: "",
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }
@@ -683,7 +719,7 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = inAsset.chainName ?: "",
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }

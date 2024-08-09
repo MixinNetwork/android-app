@@ -82,7 +82,7 @@ private fun Content(
         Text(
             text = connectionUI.uri,
             fontSize = 12.sp,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
         )
         Box(modifier = Modifier.height(12.dp))
         Text(

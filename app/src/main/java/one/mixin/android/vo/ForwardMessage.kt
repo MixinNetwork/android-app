@@ -25,6 +25,7 @@ data class ForwardMessage(
     val category: ForwardCategory,
     val content: String,
     val messageId: String? = null,
+    val caption: String? = null
 ) : Parcelable
 
 sealed class ForwardCategory : Parcelable {
@@ -215,6 +216,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                                 m.content,
                             ),
                         ),
+                        caption = m.caption
                     )
                 },
                 { null },

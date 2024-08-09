@@ -94,6 +94,10 @@ data class TokenItem(
         )
     }
 
+    override fun getUnique(): String {
+        return assetId
+    }
+
     companion object {
         val DIFF_CALLBACK =
             object : DiffUtil.ItemCallback<TokenItem>() {

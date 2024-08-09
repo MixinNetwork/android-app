@@ -57,12 +57,14 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_52_53
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_53_54
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_54_55
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_55_56
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_56_57
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
 import one.mixin.android.db.converter.RawTransactionTypeConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
+import one.mixin.android.db.converter.TreasuryConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
@@ -163,7 +165,7 @@ import kotlin.math.min
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class)
+@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
 
@@ -311,6 +313,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_53_54,
                                 MIGRATION_54_55,
                                 MIGRATION_55_56,
+                                MIGRATION_56_57
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

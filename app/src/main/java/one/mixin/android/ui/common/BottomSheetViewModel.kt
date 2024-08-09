@@ -152,6 +152,8 @@ class BottomSheetViewModel
 
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
 
+        suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenRepository.findAssetItemsWithBalance()
+
         fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
 
         suspend fun kernelWithdrawalTransaction(

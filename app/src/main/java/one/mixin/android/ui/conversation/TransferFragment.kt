@@ -201,7 +201,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (t is TransferBiometricItem && t.users.size == 1) {
             binding.titleView.rightIb.setOnClickListener {
                 val u = t.users.first()
-                navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG)
+                dismiss()
+                navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG, AllTransactionsFragment.TAG)
             }
         } else {
             binding.titleView.rightIb.isVisible = false

@@ -14,5 +14,7 @@ interface MixinStickyRecyclerHeadersAdapter<VH : RecyclerView.ViewHolder> : Stic
 
     fun isLast(position: Int): Boolean
 
+    fun isButtonGroup(position: Int): Boolean
+
     fun isListLast(position: Int): Boolean
 }

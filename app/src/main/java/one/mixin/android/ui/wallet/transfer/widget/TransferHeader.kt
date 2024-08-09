@@ -30,9 +30,9 @@ class TransferHeader : LinearLayout {
     fun progress(type: TransferType) {
         _binding.apply {
             icon.displayedChild = 3
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             when (type) {
-                TransferType.transfer, TransferType.nft -> {
+                TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
                     title.setText(R.string.Sending_Transfer_Request)
                     subTitle.setText(R.string.transfer_sending_description)
                 }
@@ -40,11 +40,6 @@ class TransferHeader : LinearLayout {
                 TransferType.nftRelease -> {
                     title.setText(R.string.collectible_releasing)
                     subTitle.setText(R.string.collectible_releasing_description)
-                }
-
-                TransferType.addressTransfer -> {
-                    title.setText(R.string.Adding_Address)
-                    subTitle.setText(R.string.address_adding_description)
                 }
 
                 TransferType.withdraw -> {
@@ -85,16 +80,12 @@ class TransferHeader : LinearLayout {
             subTitle.text = errorMessage
             subTitle.textColorResource = R.color.text_color_error_tip
             when (type) {
-                TransferType.transfer, TransferType.nft -> {
+                TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
                     title.setText(R.string.Transfer_Failed)
                 }
 
                 TransferType.nftRelease -> {
                     title.setText(R.string.collectible_release_failed)
-                }
-
-                TransferType.addressTransfer -> {
-                    title.setText(R.string.Confirm_Adding_Address)
                 }
 
                 TransferType.withdraw -> {
@@ -123,10 +114,10 @@ class TransferHeader : LinearLayout {
     fun success(type: TransferType) {
         _binding.apply {
             icon.displayedChild = 2
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
             when (type) {
-                TransferType.transfer, TransferType.nft -> {
+                TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
                     title.setText(R.string.Transfer_Success)
                     subTitle.setText(R.string.transfer_sent_description)
                 }
@@ -134,11 +125,6 @@ class TransferHeader : LinearLayout {
                 TransferType.nftRelease -> {
                     title.setText(R.string.collectible_release_success)
                     subTitle.setText(R.string.collectible_released_description)
-                }
-
-                TransferType.addressTransfer -> {
-                    title.setText(R.string.Transfer_Success)
-                    subTitle.setText(R.string.transfer_sent_description)
                 }
 
                 TransferType.withdraw -> {
@@ -192,7 +178,7 @@ class TransferHeader : LinearLayout {
                     0
                 }
             when (type) {
-                TransferType.transfer, TransferType.nft -> {
+                TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
                     title.setText(R.string.Transfer_confirmation)
                     subTitle.setText(R.string.review_transfer_hint)
                 }
@@ -200,11 +186,6 @@ class TransferHeader : LinearLayout {
                 TransferType.nftRelease -> {
                     title.setText(R.string.collectible_release_confirmation)
                     subTitle.setText(R.string.collectible_release_hint)
-                }
-
-                TransferType.addressTransfer -> {
-                    title.setText(R.string.Transfer_confirmation)
-                    subTitle.setText(R.string.review_address_hint)
                 }
 
                 TransferType.withdraw -> {
@@ -232,7 +213,7 @@ class TransferHeader : LinearLayout {
                     subTitle.setText(R.string.review_transfer_hint)
                 }
             }
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             assetIcon.loadToken(asset)
         }
     }

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/item_contact_height"
+    android:background="?attr/bg_white"
+    android:foreground="?android:attr/selectableItemBackground"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <CheckBox
+        android:id="@+id/cb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:button="@drawable/cb_add_member"
+        android:layout_centerVertical="true" />
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_toEndOf="@id/cb"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_centerVertical="true" />
+
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"/>
+
+    <TextView
+        android:id="@+id/normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/avatar"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="2dp"
+        android:maxWidth="240dp"
+        android:singleLine="true"
+        android:textSize="16sp"
+        android:ellipsize="end"
+        android:textColor="?attr/text_primary"
+        tools:text="name"/>
+
+    <ImageView
+        android:id="@+id/verified_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/normal"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_user_verified"
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/bot_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/verified_iv"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_bot"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/mixin_id_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="14sp"
+        android:textColor="?attr/text_assist"
+        android:layout_marginEnd="@dimen/margin16"/>
+</RelativeLayout>

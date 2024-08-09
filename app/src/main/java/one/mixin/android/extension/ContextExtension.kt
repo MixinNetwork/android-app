@@ -442,6 +442,7 @@ fun FragmentActivity.addFragment(
     to: Fragment,
     tag: String,
     id: Int = R.id.container,
+    name: String? = null
 ) {
     val ft =
         supportFragmentManager.beginTransaction()
@@ -451,15 +452,16 @@ fun FragmentActivity.addFragment(
     } else {
         ft.add(id, to, tag)
     }
-    ft.addToBackStack(null)
+    ft.addToBackStack(name)
     ft.commitAllowingStateLoss()
 }
 
 fun Fragment.navTo(
     fragment: Fragment,
     tag: String,
+    name: String? = null
 ) {
-    activity?.addFragment(this, fragment, tag)
+    activity?.addFragment(this, fragment, tag, name = name)
 }
 
 inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {

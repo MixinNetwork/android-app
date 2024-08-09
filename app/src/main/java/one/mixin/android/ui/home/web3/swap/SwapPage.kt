@@ -29,6 +29,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -73,12 +74,12 @@ fun SwapPage(
     outputText: String,
     exchangeRate: Float,
     slippageBps: Int,
+    quoteCountDown: Float,
     errorInfo: String?,
     switch: () -> Unit,
     selectCallback: (Int) -> Unit,
     onInputChanged: (String) -> Unit,
     onShowSlippage: () -> Unit,
-    onHalf: () -> Unit,
     onMax: () -> Unit,
     onSwap: () -> Unit,
     pop: () -> Unit,
@@ -109,7 +110,7 @@ fun SwapPage(
                                     .height(40.dp)
                                     .clip(CircleShape)
                                     .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                    .background(MixinAppTheme.colors.backgroundGray)
+                                    .background(MixinAppTheme.colors.backgroundGrayLight)
                                     .clickable {
                                         isReverse = !isReverse
                                         switch.invoke()
@@ -126,7 +127,7 @@ fun SwapPage(
                         }
                     },
                     headerCompose = {
-                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onHalf, onMax) {
+                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onMax) {
                             inputText.value = it
                             onInputChanged.invoke(it)
                         }
@@ -147,36 +148,10 @@ fun SwapPage(
                                     if (exchangeRate == 0f) 0f else 1f,
                                 )
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(MixinAppTheme.colors.backgroundGray)
+                                .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
-                            Row(
-                                modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.Best_price),
-                                    maxLines = 1,
-                                    style =
-                                    TextStyle(
-                                        fontWeight = FontWeight.W400,
-                                        color = MixinAppTheme.colors.textSubtitle,
-                                    ),
-                                )
-                                Text(
-                                    text = "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}",
-                                    maxLines = 1,
-                                    style =
-                                    TextStyle(
-                                        fontWeight = FontWeight.W400,
-                                        color = MixinAppTheme.colors.textPrimary,
-                                    ),
-                                )
-                            }
+                            PriceInfo(fromToken, toToken, exchangeRate, quoteCountDown)
                             if (!fromToken.inMixin()) {
                                 SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
                             }
@@ -188,7 +163,7 @@ fun SwapPage(
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(MixinAppTheme.colors.backgroundGray)
+                                .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
                             Text(
@@ -207,7 +182,7 @@ fun SwapPage(
                     val focusManager = LocalFocusManager.current
                     if (inputText.value.isNotEmpty()) {
                         Button(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
                             enabled = !isLoading && checkBalance == true,
                             onClick = {
                                 keyboardController?.hide()
@@ -216,7 +191,7 @@ fun SwapPage(
                             },
                             colors =
                                 ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
+                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                                 ),
                             shape = RoundedCornerShape(32.dp),
                             contentPadding = PaddingValues(vertical = 16.dp),
@@ -236,7 +211,7 @@ fun SwapPage(
                             } else {
                                 Text(
                                     text = if (checkBalance == false) "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                    color = if (checkBalance != true) MixinAppTheme.colors.textSubtitle else Color.White,
+                                    color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
                                 )
                             }
                         }
@@ -254,7 +229,6 @@ fun InputArea(
     title: String,
     readOnly: Boolean = false,
     selectClick: () -> Unit,
-    onHalf: (() -> Unit)? = null,
     onMax: (() -> Unit)? = null,
     onInputChanged: ((String) -> Unit)? = null,
 ) {
@@ -264,7 +238,7 @@ fun InputArea(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(12.dp))
-                .background(MixinAppTheme.colors.backgroundGray)
+                .background(MixinAppTheme.colors.backgroundGrayLight)
                 .padding(20.dp, 20.dp, 20.dp, if (readOnly) 20.dp else 10.dp),
     ) {
         Row(
@@ -272,7 +246,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
+                Text(text = title, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.width(4.dp))
                 CoilImage(
                     model = token?.chain?.icon ?: "",
@@ -284,23 +258,24 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 if (token == null) {
-                    Text(text = stringResource(id = R.string.select_token), fontSize = 13.sp, color = MixinAppTheme.colors.textMinor)
+                    Text(text = stringResource(id = R.string.select_token), fontSize = 12.sp, color = MixinAppTheme.colors.textMinor)
                 } else {
-                    Text(text = token.chain.name, fontSize = 13.sp, color = MixinAppTheme.colors.textSubtitle)
+                    Text(text = token.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_web3_wallet),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
+                    tint = MixinAppTheme.colors.textAssist,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = token?.balance ?: "0",
                     style =
                         TextStyle(
-                            color = MixinAppTheme.colors.textMinor,
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
                             textAlign = TextAlign.End,
                         ),
                 )
@@ -358,6 +333,66 @@ fun SwapPageScaffold(
 }
 
 @Composable
+private fun PriceInfo(
+    fromToken: SwapToken,
+    toToken: SwapToken?,
+    exchangeRate: Float,
+    quoteCountDown: Float,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    var isPriceReverse by remember { mutableStateOf(false) }
+    Row(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (isPriceReverse) {
+                    "1 ${toToken?.symbol} ≈ ${1f / exchangeRate} ${fromToken.symbol}"
+                } else {
+                    "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}"
+                },
+                maxLines = 1,
+                style =
+                TextStyle(
+                    fontWeight = FontWeight.W400,
+                    color = MixinAppTheme.colors.textAssist,
+                ),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            CircularProgressIndicator(
+                progress = quoteCountDown,
+                modifier = Modifier.size(12.dp),
+                strokeWidth = 2.dp,
+                color = MixinAppTheme.colors.textPrimary,
+                backgroundColor = MixinAppTheme.colors.textAssist,
+            )
+        }
+        Icon(
+            modifier =
+            Modifier
+                .size(24.dp)
+                .rotate(90f)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                ) {
+                    isPriceReverse = !isPriceReverse
+                },
+            painter = painterResource(id = R.drawable.ic_switch),
+            contentDescription = null,
+            tint = MixinAppTheme.colors.icon,
+        )
+    }
+}
+
+@Composable
 private fun SlippageInfo(
     slippageBps: Int,
     enableClick: Boolean,
@@ -388,7 +423,7 @@ private fun SlippageInfo(
             style =
                 TextStyle(
                     fontWeight = FontWeight.W400,
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                 ),
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -404,7 +439,7 @@ private fun SlippageInfo(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
-                tint = MixinAppTheme.colors.textSubtitle,
+                tint = MixinAppTheme.colors.textAssist,
             )
         }
     }
@@ -448,7 +483,7 @@ private fun InputAction(
             Modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
-                .border(1.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor, RoundedCornerShape(12.dp))
+                .border(0.7.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist, RoundedCornerShape(12.dp))
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
@@ -462,8 +497,7 @@ private fun InputAction(
             style =
                 TextStyle(
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textMinor,
+                    color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
                 ),
         )
     }

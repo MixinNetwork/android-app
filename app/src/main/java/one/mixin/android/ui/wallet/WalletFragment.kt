@@ -319,7 +319,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     }
                     sendReceiveView.enableSwap()
                     sendReceiveView.swap.setOnClickListener {
-                        navTo(SwapFragment.newInstance(assets), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root

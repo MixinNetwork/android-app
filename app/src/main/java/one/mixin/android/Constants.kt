@@ -92,6 +92,7 @@ object Constants {
             const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
             const val PREF_MIGRATION_INSCRIPTION = "pref_migration_inscription"
+            const val PREF_MIGRATION_COLLECTION = "pref_migration_inscription_collection"
         }
 
         object ChainAddress {
@@ -120,6 +121,7 @@ object Constants {
         const val MIXIN_MULTISIGS = "mixin://mixin.one/multisigs"
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
         const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
+        const val MIXIN_SWAP = "mixin://mixin.one/swap"
 
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
@@ -130,6 +132,7 @@ object Constants {
         const val HTTPS_MULTISIGS = "https://mixin.one/multisigs"
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
         const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
+        const val HTTPS_SWAP = "https://mixin.one/swap"
 
         // web3
         const val HTTPS_MIXIN_WC = "https://mixin.one/wc"
@@ -145,7 +148,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 56
+        const val CURRENT_VERSION = 57
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
@@ -177,13 +178,21 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             a?.let {
                 if (viewDestroyed()) return@launch
 
-                view?.navigate(
-                    R.id.action_all_transactions_fragment_to_transaction_fragment,
-                    Bundle().apply {
-                        putParcelable(ARGS_SNAPSHOT, snapshot)
-                        putParcelable(ARGS_ASSET, it)
-                    },
-                )
+                if (requireActivity() !is WalletActivity) {
+                    activity?.addFragment(
+                        this@AllTransactionsFragment,
+                        TransactionFragment.newInstance(snapshot, it),
+                        TransactionFragment.TAG,
+                    )
+                } else {
+                    view?.navigate(
+                        R.id.action_all_transactions_fragment_to_transaction_fragment,
+                        Bundle().apply {
+                            putParcelable(ARGS_SNAPSHOT, snapshot)
+                            putParcelable(ARGS_ASSET, it)
+                        },
+                    )
+                }
             }
         }
     }

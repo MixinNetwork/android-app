@@ -2,9 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
-    xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/bg_white"
-    android:foreground="?android:attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <CheckBox
         android:id="@+id/cb"
@@ -73,7 +73,8 @@
         android:layout_below="@id/center"
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
-        android:singleLine="true"
+        android:maxLines="1"
         android:textSize="12sp"
-        android:textColor="?attr/text_assist" />
+        android:textColor="?attr/text_assist"
+        android:layout_marginEnd="@dimen/margin16"/>
 </RelativeLayout>

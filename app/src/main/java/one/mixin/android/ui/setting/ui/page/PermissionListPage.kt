@@ -94,7 +94,7 @@ private fun PermissionScopeItem(scope: Scope) {
         Text(
             text = scope.desc,
             overflow = TextOverflow.Ellipsis,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 12.sp,
         )
     }
@@ -111,7 +111,7 @@ private fun Footer(
             modifier = Modifier.padding(horizontal = 16.dp),
             text = stringResource(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate()),
             fontSize = 12.sp,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
         )
         Box(modifier = Modifier.height(16.dp))
 

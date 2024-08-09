@@ -35,6 +35,7 @@ import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
@@ -76,6 +77,9 @@ class SwapFragment : BaseFragment() {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
         const val ARGS_TOKEN_ITEMS = "args_token_items"
+        const val ARGS_INPUT = "args_input"
+        const val ARGS_OUTPUT = "args_output"
+        const val ARGS_AMOUNT = "args_amount"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -84,16 +88,26 @@ class SwapFragment : BaseFragment() {
 
         const val maxLeftAmount = 0.01
 
-        inline fun <reified T : Swappable> newInstance(tokens: List<T>): SwapFragment =
+        inline fun <reified T : Swappable> newInstance(
+            tokens: List<T>? = null,
+            input: String? = null,
+            output: String? = null,
+            amount: String? = null,
+        ): SwapFragment =
             SwapFragment().withArgs {
-                when (T::class) {
-                    Web3Token::class -> {
-                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { addAll(tokens) })
-                    }
-                    TokenItem::class -> {
-                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { addAll(tokens) })
+                if (!tokens.isNullOrEmpty()) {
+                    when (T::class) {
+                        Web3Token::class -> {
+                            putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { addAll(tokens) })
+                        }
+                        TokenItem::class -> {
+                            putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { addAll(tokens) })
+                        }
                     }
                 }
+                input?.let { putString(ARGS_INPUT, it) }
+                output?.let { putString(ARGS_OUTPUT, it) }
+                amount?.let { putString(ARGS_AMOUNT, it) }
             }
     }
 
@@ -107,15 +121,14 @@ class SwapFragment : BaseFragment() {
     private var inputText = mutableStateOf("")
     private var outputText: String by mutableStateOf("")
     private var exchangeRate: Float by mutableFloatStateOf(0f)
+    private var quoteCountDown: Float by mutableFloatStateOf(0f)
     private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private var errorInfo: String? = null
     private val web3tokens: List<Web3Token>? by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
     }
-    private val tokenItems: List<TokenItem>? by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
-    }
+    private var tokenItems: List<TokenItem>? = null
 
     private var quoteResp: QuoteResponse? = null
     private var txhash: String? = null
@@ -148,8 +161,9 @@ class SwapFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         lifecycleScope.launch {
-            setFromTo()
+            initFromTo()
             refreshTokens()
+            initAmount()
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -186,7 +200,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, errorInfo, {
+                            SwapPage(isLoading, fromToken, toToken, inputText, outputText, exchangeRate, slippage, quoteCountDown, errorInfo, {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
@@ -213,11 +227,7 @@ class SwapFragment : BaseFragment() {
                                     }
                                     .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
                             }, {
-                                val a = calcInput(true)
-                                inputText.value = a
-                                refreshQuote(a)
-                            }, {
-                                val a = calcInput(false)
+                                val a = calcInput()
                                 inputText.value = a
                                 refreshQuote(a)
                             }, {
@@ -255,11 +265,7 @@ class SwapFragment : BaseFragment() {
                                         ) ?: return@launch
                                     if (inMixin()) {
                                         isLoading = false
-                                        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint }?:return@launch
-                                        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint }?:return@launch
-                                        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
-                                            setOnDone { clearInputAndRefreshInMixinFromToToken() }
-                                        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+                                        openSwapTransfer(swapResult)
                                         return@launch
                                     }
                                     val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)
@@ -293,14 +299,38 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun setFromTo() {
-        (web3tokens ?: tokenItems)?.let {
-            if (it.isNotEmpty()) {
-                fromToken = it[0].toSwapToken()
+    private suspend fun openSwapTransfer(swapResult: SwapResponse){
+        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: return
+        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: return
+        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
+            setOnDone { clearInputAndRefreshInMixinFromToToken() }
+        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+    }
+
+    private suspend fun initFromTo() {
+        tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
+        var swappable = web3tokens ?: tokenItems
+        if (swappable.isNullOrEmpty()) {
+            swappable = swapViewModel.findTokenItems()
+            tokenItems = swappable
+        }
+        swappable.let { tokens ->
+            val input = requireArguments().getString(ARGS_INPUT)
+            val output = requireArguments().getString(ARGS_OUTPUT)
+            if (tokens.isNotEmpty()) {
+                fromToken = input?.let { tokens.firstOrNull { t -> t.getUnique() == input }?.toSwapToken() } ?: tokens[0].toSwapToken()
             }
-            if (it.size > 1) {
-                toToken = it[1].toSwapToken()
+            if (tokens.size > 1) {
+                toToken = output?.let { tokens.firstOrNull { t -> t.getUnique() == output }?.toSwapToken() } ?: tokens[1].toSwapToken()
             }
+        }
+    }
+
+    private fun initAmount() {
+        val amount = requireArguments().getString(ARGS_AMOUNT)
+        if (amount?.toFloatOrNull() != null) {
+            inputText.value = amount
+            refreshQuote(amount)
         }
     }
 
@@ -498,7 +528,10 @@ class SwapFragment : BaseFragment() {
                 quoteJob =
                     lifecycleScope.launch {
                         quote(text)
-                        delay(10.seconds)
+                        repeat(100) { t ->
+                            quoteCountDown = t / 100f
+                            delay(.1.seconds)
+                        }
                         refreshQuote(text)
                     }
             }
@@ -533,27 +566,27 @@ class SwapFragment : BaseFragment() {
         ) ?: return
 
         quoteResp = resp
-        val inValue = fromToken?.realAmount(resp.inAmount)
-        val outValue = toToken?.realAmount(resp.outAmount)
+        updateExchangeRate(resp.inAmount, resp.outAmount)
+        slippage = resp.slippage
+        outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
+    }
+
+    private fun updateExchangeRate(inAmount: String, outAmount: String) {
+        val inValue = fromToken?.realAmount(inAmount)
+        val outValue = toToken?.realAmount(outAmount)
         exchangeRate =
             if (inValue == null || outValue == null || inValue == BigDecimal.ZERO || outValue == BigDecimal.ZERO) {
                 0f
             } else {
                 outValue.divide(inValue, RoundingMode.CEILING).toFloat()
             }
-        slippage = resp.slippage
-        outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
     }
 
-    private fun calcInput(half: Boolean): String {
+    private fun calcInput(): String {
         val from = this.fromToken ?: return ""
         val balance = from.balance ?: "0"
         val calc = fun(balance: BigDecimal): String {
-            return if (half) {
-                balance.divide(BigDecimal(2))
-            } else {
-                balance
-            }.setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
+            return balance.setScale(9, RoundingMode.CEILING).stripTrailingZeros().toPlainString()
         }
         var b = BigDecimal(balance)
         if (!from.isSolToken() || b <= BigDecimal(maxLeftAmount)) {
@@ -590,8 +623,8 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun inMixin(): Boolean = !tokenItems.isNullOrEmpty()
-    private fun getSource(): String = if (!tokenItems.isNullOrEmpty()) "exin" else ""
+    private fun inMixin(): Boolean = web3tokens.isNullOrEmpty()
+    private fun getSource(): String = if (web3tokens.isNullOrEmpty()) "exin" else ""
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

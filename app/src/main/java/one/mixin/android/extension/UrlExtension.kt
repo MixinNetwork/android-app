@@ -87,7 +87,9 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.MIXIN_WC, true) ||
         startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
         startsWith(Constants.Scheme.HTTPS_TIP_SIGN, true) ||
-        startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true)
+        startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true) ||
+        startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
+        startsWith(Constants.Scheme.MIXIN_SWAP, true)
     ) {
         true
     } else {

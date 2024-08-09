@@ -37,6 +37,7 @@ import one.mixin.android.vo.Ticker
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
+import timber.log.Timber
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -125,7 +126,19 @@ interface TransactionInterface {
                 fragment.view?.navigateUp()
             }
         } else {
-            WalletActivity.showWithToken(curActivity, asset, WalletActivity.Destination.Transactions)
+            val back = kotlin.runCatching {
+                return@runCatching fragment.parentFragmentManager.let { fm ->
+                    val backStackEntryCount = fm.backStackEntryCount
+                    fm.getBackStackEntryAt(backStackEntryCount - 2).name == AllTransactionsFragment.TAG
+                }
+            }.getOrElse {
+                false
+            }
+            if (back) {
+                fragment.parentFragmentManager.popBackStack()
+            } else {
+                WalletActivity.showWithToken(curActivity, asset, WalletActivity.Destination.Transactions)
+            }
         }
     }
 
