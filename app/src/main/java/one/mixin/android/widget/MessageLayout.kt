@@ -52,10 +52,18 @@ open class MessageLayout : ViewGroup {
         val paddingWidth = paddingStart + paddingEnd
         val paddingHeight = paddingTop + paddingBottom
 
-        measureChildren(
-            MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
-            heightMeasureSpec,
-        )
+        if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY) {
+            measureChildren(
+                widthMeasureSpec,
+                heightMeasureSpec
+            )
+        } else {
+            measureChildren(
+                MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
+                heightMeasureSpec
+            )
+        }
+
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         val third = getThird()

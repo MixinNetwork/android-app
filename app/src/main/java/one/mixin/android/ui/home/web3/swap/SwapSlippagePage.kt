@@ -96,7 +96,7 @@ fun SwapSlippagePage(
                 },
                 colors =
                     ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (enabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
+                        backgroundColor = if (enabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
                 shape = RoundedCornerShape(32.dp),
                 contentPadding = PaddingValues(vertical = 16.dp),
@@ -231,7 +231,7 @@ private fun Custom(
                         Text(
                             text = "0.1 - 50",
                             fontSize = 16.sp,
-                            color = MixinAppTheme.colors.textSubtitle,
+                            color = MixinAppTheme.colors.textAssist,
                         )
                     }
                 }

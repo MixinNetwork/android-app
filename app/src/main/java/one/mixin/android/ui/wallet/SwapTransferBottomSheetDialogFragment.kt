@@ -220,24 +220,35 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         modifier = Modifier.wrapContentWidth(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CoilImage(
-                                            model = inAsset.iconUrl,
-                                            placeholder = R.drawable.ic_avatar_place_holder,
+                                        Box(
                                             modifier =
                                             Modifier
                                                 .size(70.dp)
                                                 .offset(x = (-27).dp)
                                                 .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
-                                        )
-                                        CoilImage(
-                                            model = outAsset.iconUrl,
-                                            placeholder = R.drawable.ic_avatar_place_holder,
+                                        ) {
+                                            CoilImage(
+                                                model = inAsset.iconUrl,
+                                                placeholder = R.drawable.ic_avatar_place_holder,
+                                                modifier = Modifier
+                                                    .size(67.dp)
+                                                    .align(Alignment.Center)
+                                                    .clip(CircleShape)
+                                            )
+                                        }
+                                        Box(
                                             modifier =
                                             Modifier
                                                 .size(70.dp)
                                                 .offset(x = 27.dp)
                                                 .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
-                                        )
+                                        ) {
+                                            CoilImage(
+                                                model = outAsset.iconUrl,
+                                                placeholder = R.drawable.ic_avatar_place_holder,
+                                                modifier = Modifier.size(67.dp).align(Alignment.Center).clip(CircleShape)
+                                            )
+                                        }
                                     }
                             }
                             Box(modifier = Modifier.height(20.dp))
@@ -276,7 +287,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 textAlign = TextAlign.Center,
                                 style =
                                 TextStyle(
-                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textPrimary,
+                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.W400,
                                 ),
@@ -555,7 +566,7 @@ fun ItemUserContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -604,7 +615,7 @@ fun ItemPriceContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -652,7 +663,7 @@ fun AssetChanges(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -680,7 +691,7 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = outAsset.chainName ?: "",
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }
@@ -708,7 +719,7 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = inAsset.chainName ?: "",
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
         }

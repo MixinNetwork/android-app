@@ -15,6 +15,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -319,7 +321,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check withdraw within 30 days
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val tips = mutableListOf<String>()
-                val exist =
+                val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+
+                val exist = withdrawBiometricItem.address.destination in listOf(ethAddress, solAddress) ||
                     withContext(Dispatchers.IO) {
                         transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
                     }
@@ -345,7 +350,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val fiatAmount =
                     (BigDecimal(t.amount) * asset.priceFiat()).numberFormat2()
                 val tips =
-                    listOf<String>(
+                    listOf(
                         getString(
                             R.string.large_amount_reminder,
                             "${t.amount}${asset.symbol}",

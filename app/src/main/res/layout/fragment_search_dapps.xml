@@ -70,6 +70,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:background="@drawable/selector_radio"
+            android:textSize="14sp"
             android:button="@null"
             android:text="@string/Ethereum"
             android:textColor="@drawable/radio_button_text_selector" />
@@ -80,6 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:background="@drawable/selector_radio"
+            android:textSize="14sp"
             android:button="@null"
             android:text="@string/Solana"
             android:textColor="@drawable/radio_button_text_selector" />

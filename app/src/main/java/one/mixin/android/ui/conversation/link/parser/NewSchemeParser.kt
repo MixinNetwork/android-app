@@ -155,9 +155,9 @@ class NewSchemeParser(
         val releaseAmount =
             if (urlQueryParser.amount != null) {
                 val amount = BigDecimal(urlQueryParser.amount)
-                val unit = BigDecimal(inscriptionCollection.unit)
-                if (amount <= BigDecimal.ZERO || amount > unit) throw ParserError(FAILURE)
-                if (amount == unit) null else{
+                val preAmount = inscriptionCollection.preAmount
+                if (amount <= BigDecimal.ZERO || amount > preAmount) throw ParserError(FAILURE)
+                if (amount == preAmount) null else{
                     // specify asset for release inscription
                     if (assetId == null) throw ParserError(FAILURE)
                     urlQueryParser.amount

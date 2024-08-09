@@ -142,7 +142,7 @@ private fun ValidatorItem(
                 text = "${validator.activatedStake}",
                 style =
                 TextStyle(
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                     fontSize = 14.sp,
                 ),
             )
@@ -195,7 +195,7 @@ private fun SearchInput(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_search),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textSubtitle,
+                    tint = MixinAppTheme.colors.textAssist,
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 if (text.isEmpty() || !isFocusedState.value) {
@@ -203,7 +203,7 @@ private fun SearchInput(
                         text = stringResource(R.string.Search),
                         style =
                         TextStyle(
-                            color = MixinAppTheme.colors.textSubtitle,
+                            color = MixinAppTheme.colors.textAssist,
                             fontSize = 16.sp,
                         ),
                     )

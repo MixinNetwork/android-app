@@ -87,7 +87,7 @@ fun TransactionPreview(
         Box(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(id = R.string.Balance_Change),
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
         )
         Box(modifier = Modifier.height(8.dp))
@@ -311,7 +311,7 @@ fun BalanceChangeHead() {
     Box(modifier = Modifier.height(16.dp))
     Text(
         text = stringResource(id = R.string.Balance_Change),
-        color = MixinAppTheme.colors.textSubtitle,
+        color = MixinAppTheme.colors.textAssist,
         fontSize = 14.sp,
     )
     Box(modifier = Modifier.height(8.dp))
@@ -326,7 +326,7 @@ fun MessagePreview(
         Box(modifier = Modifier.height(20.dp))
         Text(
             text = stringResource(id = R.string.Message),
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
         )
         Box(modifier = Modifier.height(4.dp))
@@ -461,7 +461,7 @@ private fun Instruction(
         modifier =
         Modifier
             .fillMaxWidth()
-            .background(MixinAppTheme.colors.backgroundGray)
+            .background(MixinAppTheme.colors.backgroundGrayLight)
             .border(1.dp, MixinAppTheme.colors.backgroundDark, shape = RoundedCornerShape(8.dp))
             .padding(16.dp, 12.dp),
     ) {
@@ -518,7 +518,7 @@ private fun Item(
     ) {
         Text(
             text = item.key,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             fontWeight = FontWeight.W600
         )

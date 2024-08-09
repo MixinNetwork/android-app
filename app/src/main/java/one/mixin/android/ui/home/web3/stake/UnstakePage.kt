@@ -68,7 +68,7 @@ fun UnstakePage(
                 style =
                 TextStyle(
                     fontWeight = FontWeight.W400,
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                     fontSize = 16.sp,
                 ),
             )
@@ -162,14 +162,14 @@ private fun StakeInfo(
                     } else if (stakeActivation.state == StakeState.inactive.name) {
                         MixinAppTheme.colors.red
                     } else {
-                        MixinAppTheme.colors.textSubtitle
+                        MixinAppTheme.colors.textAssist
                     },
                     fontSize = 16.sp,
                 ),
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Divider(color = MixinAppTheme.colors.textSubtitle, thickness = 1.dp)
+        Divider(color = MixinAppTheme.colors.textAssist, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
         Item(stringResource(id = R.string.Address), stakeAccount.pubkey.formatPublicKey(20))
         Item(stringResource(id = R.string.Balance), "${balance.solLamportToAmount(5)} SOL")

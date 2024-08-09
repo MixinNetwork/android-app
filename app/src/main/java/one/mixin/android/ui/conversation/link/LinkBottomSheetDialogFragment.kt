@@ -305,6 +305,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError()
                     return@launch
                 }
+                val revokedBy = multisigs.revokedBy
+                if (!revokedBy.isNullOrBlank()) {
+                    showError(getString(R.string.Multisig_Revoked))
+                    return@launch
+                }
                 var state: String = SignatureState.initial.name
                 multisigs.signers?.let { signers ->
                     when {
@@ -948,8 +953,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
-        val tokenItems = linkViewModel.findAssetItemsWithBalance()
-        SwapActivity.show(requireContext(), ArrayList(tokenItems), input, output, amount)
+        SwapActivity.show(requireContext(), input, output, amount)
         dismiss()
     }
 

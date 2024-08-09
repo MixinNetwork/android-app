@@ -85,7 +85,7 @@ fun StakePage(
                 style =
                 TextStyle(
                     fontWeight = FontWeight.W400,
-                    color = MixinAppTheme.colors.textSubtitle,
+                    color = MixinAppTheme.colors.textAssist,
                     fontSize = 16.sp,
                 ),
             )
@@ -154,7 +154,7 @@ fun StakePage(
                     } else {
                         Text(
                             text = if (checkBalance == false) "SOL ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Confirm),
-                            color = if (checkBalance != true) MixinAppTheme.colors.textSubtitle else Color.White,
+                            color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
                         )
                     }
                 }
@@ -218,7 +218,7 @@ private fun Input(
                     style =
                     TextStyle(
                         fontWeight = FontWeight.W400,
-                        color = MixinAppTheme.colors.textSubtitle,
+                        color = MixinAppTheme.colors.textAssist,
                         fontSize = 16.sp,
                     ),
                 )
@@ -297,7 +297,7 @@ private fun ValidatorInfo(
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Divider(color = MixinAppTheme.colors.textSubtitle, thickness = 1.dp)
+        Divider(color = MixinAppTheme.colors.textAssist, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
         Item(stringResource(id = R.string.Estimated_APY), "-")
         Item(stringResource(id = R.string.Commission), "${validator.commission}%")
@@ -319,7 +319,7 @@ fun Item(
     ) {
         Text(
             text = key,
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             fontWeight = FontWeight.W400
         )

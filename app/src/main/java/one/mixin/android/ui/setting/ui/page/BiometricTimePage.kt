@@ -126,7 +126,7 @@ fun BiometricTimePage() {
         Text(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
             text = stringResource(id = R.string.wallet_pin_pay_interval_tips),
-            color = MixinAppTheme.colors.textSubtitle,
+            color = MixinAppTheme.colors.textAssist,
             fontSize = 12.sp,
         )
     }

@@ -21,6 +21,7 @@ import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
 import one.mixin.android.databinding.ItemChatImageBinding
+import one.mixin.android.databinding.ItemChatImageCaptionBinding
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.databinding.ItemChatPostBinding
@@ -61,6 +62,7 @@ import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.holder.GroupCallHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
+import one.mixin.android.ui.conversation.holder.ImageCaptionHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.holder.LocationHolder
@@ -92,6 +94,8 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
+import one.mixin.android.vo.isAppButtonGroup
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -146,6 +150,10 @@ class MessageAdapter(
 
             IMAGE_QUOTE_TYPE -> {
                 ImageQuoteHolder(ItemChatImageQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
+
+            IMAGE_CAPTION_TYPE -> {
+                ImageCaptionHolder(ItemChatImageCaptionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
 
             SYSTEM_TYPE -> {
@@ -331,6 +339,18 @@ class MessageAdapter(
                         isSelect(position),
                         isRepresentative(it),
                         onItemListener,
+                    )
+                }
+
+                IMAGE_CAPTION_TYPE -> {
+                    (holder as ImageCaptionHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        isRepresentative(it),
+                        onItemListener
                     )
                 }
 
@@ -651,7 +671,9 @@ class MessageAdapter(
                     }
 
                     item.isImage() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
+                        if (!item.caption.isNullOrEmpty()) {
+                            IMAGE_CAPTION_TYPE
+                        } else if (!item.quoteId.isNullOrEmpty()) {
                             IMAGE_QUOTE_TYPE
                         } else {
                             IMAGE_TYPE
@@ -833,6 +855,11 @@ class MessageAdapter(
         } else {
             false
         }
+    }
+
+    override fun isButtonGroup(position: Int): Boolean {
+        val currentItem = getItem(position)
+        return currentItem?.isAppCard() == true && !currentItem.appCardData?.actions.isNullOrEmpty()
     }
 
     override fun isLast(position: Int): Boolean {
@@ -1118,33 +1145,34 @@ class MessageAdapter(
         const val TEXT_QUOTE_TYPE = -1
         const val IMAGE_TYPE = 2
         const val IMAGE_QUOTE_TYPE = -2
-        const val LINK_TYPE = 3
-        const val VIDEO_TYPE = 4
-        const val VIDEO_QUOTE_TYPE = -4
-        const val AUDIO_TYPE = 5
-        const val AUDIO_QUOTE_TYPE = -5
-        const val FILE_TYPE = 6
-        const val FILE_QUOTE_TYPE = -6
-        const val STICKER_TYPE = 7
-        const val CONTACT_CARD_TYPE = 8
-        const val CONTACT_CARD_QUOTE_TYPE = -8
-        const val CARD_TYPE = 9
-        const val SNAPSHOT_TYPE = 10
-        const val SAFE_SNAPSHOT_TYPE = 11
-        const val SYSTEM_SAFE_INSCRIPTION_TYPE = 12
-        const val POST_TYPE = 13
-        const val ACTION_TYPE = 14
-        const val ACTION_CARD_TYPE = 15
-        const val ACTIONS_CARD_TYPE = 16
-        const val SYSTEM_TYPE = 17
-        const val WAITING_TYPE = 18
-        const val STRANGER_TYPE = 19
-        const val SECRET_TYPE = 20
-        const val CALL_TYPE = 21
-        const val RECALL_TYPE = 22
-        const val LOCATION_TYPE = 23
-        const val GROUP_CALL_TYPE = 24
-        const val TRANSCRIPT_TYPE = 25
-        const val PIN_TYPE = 26
+        const val IMAGE_CAPTION_TYPE = 3
+        const val LINK_TYPE = 4
+        const val VIDEO_TYPE = 5
+        const val VIDEO_QUOTE_TYPE = -5
+        const val AUDIO_TYPE = 6
+        const val AUDIO_QUOTE_TYPE = -6
+        const val FILE_TYPE = 7
+        const val FILE_QUOTE_TYPE = -7
+        const val STICKER_TYPE = 8
+        const val CONTACT_CARD_TYPE = 9
+        const val CONTACT_CARD_QUOTE_TYPE = -9
+        const val CARD_TYPE = 10
+        const val SNAPSHOT_TYPE = 11
+        const val SAFE_SNAPSHOT_TYPE = 12
+        const val SYSTEM_SAFE_INSCRIPTION_TYPE = 13
+        const val POST_TYPE = 14
+        const val ACTION_TYPE = 15
+        const val ACTION_CARD_TYPE = 16
+        const val ACTIONS_CARD_TYPE = 17
+        const val SYSTEM_TYPE = 18
+        const val WAITING_TYPE = 19
+        const val STRANGER_TYPE = 20
+        const val SECRET_TYPE = 21
+        const val CALL_TYPE = 22
+        const val RECALL_TYPE = 23
+        const val LOCATION_TYPE = 24
+        const val GROUP_CALL_TYPE = 25
+        const val TRANSCRIPT_TYPE = 26
+        const val PIN_TYPE = 27
     }
 }

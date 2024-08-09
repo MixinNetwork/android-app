@@ -30,7 +30,7 @@ class TransferHeader : LinearLayout {
     fun progress(type: TransferType) {
         _binding.apply {
             icon.displayedChild = 3
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             when (type) {
                 TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
                     title.setText(R.string.Sending_Transfer_Request)
@@ -114,7 +114,7 @@ class TransferHeader : LinearLayout {
     fun success(type: TransferType) {
         _binding.apply {
             icon.displayedChild = 2
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
             when (type) {
                 TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
@@ -213,7 +213,7 @@ class TransferHeader : LinearLayout {
                     subTitle.setText(R.string.review_transfer_hint)
                 }
             }
-            subTitle.setTextColor(context.colorAttr(R.attr.text_assist))
+            subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             assetIcon.loadToken(asset)
         }
     }

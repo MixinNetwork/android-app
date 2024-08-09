@@ -179,7 +179,7 @@ fun PinKeyBoard(
                             Modifier
                                 .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp)
                                 .background(
-                                    color = MixinAppTheme.colors.backgroundGray,
+                                    color = MixinAppTheme.colors.backgroundGrayLight,
                                     shape = RoundedCornerShape(8.dp),
                                 )
                                 .padding(horizontal = 20.dp, vertical = 10.dp),
@@ -321,10 +321,10 @@ fun PinKeyBoard(
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_secret_tip),
                                         contentDescription = null,
-                                        tint = MixinAppTheme.colors.textMinor,
+                                        tint = MixinAppTheme.colors.textAssist,
                                     )
                                     Text(
-                                        color = MixinAppTheme.colors.textMinor,
+                                        color = MixinAppTheme.colors.textAssist,
                                         text = stringResource(id = R.string.Secured_by_TIP),
                                         fontSize = 12.sp,
                                     )

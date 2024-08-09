@@ -73,7 +73,7 @@ fun ScopeCheckLayout(
             Text(
                 scope.desc,
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textSubtitle,
+                color = MixinAppTheme.colors.textAssist,
             )
         }
     }
