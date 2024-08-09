@@ -170,7 +170,7 @@ fun Bitmap.blurBitmap(
     val input = Allocation.createFromBitmap(rs, this)
     val output = Allocation.createTyped(rs, input.type)
     val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-    val result = Bitmap.createBitmap(width, height, config)
+    val result = Bitmap.createBitmap(width, height, config ?: Bitmap.Config.ARGB_8888)
     script.setRadius(radius.toFloat())
     script.setInput(input)
     script.forEach(output)
