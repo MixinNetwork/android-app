@@ -48,7 +48,7 @@ class TransferBottom : ViewAnimator {
                 displayedChild = 0
             }
 
-            TransferStatus.SUCCESSFUL -> {
+            TransferStatus.SUCCESSFUL, TransferStatus.SIGNED  -> {
                 isInvisible = false
                 displayedChild = 1
                 _binding.doneBtn.setText(R.string.Done)

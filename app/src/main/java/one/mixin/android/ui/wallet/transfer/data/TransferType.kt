@@ -10,4 +10,5 @@ enum class TransferType {
     deleteAddress,
     nft,
     nftRelease,
+    signed
 }
