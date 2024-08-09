@@ -6,41 +6,49 @@
 
     <ImageView
         android:id="@+id/cover"
+        android:contentDescription="@null"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_width="0dp"
-        android:layout_height="0dp" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="0dp"
-        android:gravity="start"
+    <LinearLayout
+        android:id="@+id/content_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_marginTop="8dp"
-        android:textColor="?attr/text_primary"
-        android:textFontWeight="500"
-        android:layout_marginBottom="4dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cover" />
+        app:layout_constraintTop_toBottomOf="@id/cover">
 
-    <one.mixin.android.widget.linktext.AutoLinkTextView
-        android:id="@+id/content"
-        android:gravity="start"
-        android:layout_height="wrap_content"
-        android:layout_width="0dp"
-        android:textColor="?attr/text_primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title" />
+        <TextView
+            android:id="@+id/title"
+            android:gravity="start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
+            android:textFontWeight="500"
+            android:layout_marginBottom="4dp" />
 
-    <one.mixin.android.widget.bubble.TimeBubble
-        android:id="@+id/chat_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/content" />
+        <one.mixin.android.widget.linktext.AutoLinkTextView
+            android:id="@+id/content"
+            android:gravity="start"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textColor="?attr/text_primary"
+            android:layout_marginBottom="4dp"/>
+
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_gravity="end" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

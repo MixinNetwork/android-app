@@ -84,36 +84,8 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
             binding.chatName.visibility = View.GONE
         }
         val actionCard = messageItem.appCardData?:return
-        val contentClick = {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-            }
-        }
-        binding.chatContentLayout.setData(actionCard, isMe, isLast,onItemListener, textGestureListener)
-            // AppCard(
-            //     actionCard,
-            //     contentClick = contentClick,
-            //     contentLongClick = {
-            //         if (!hasSelect) {
-            //             itemView.context.heavyClickVibrate()
-            //             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-            //         } else {
-            //             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-            //         }
-            //     },
-            //     urlClick = { url ->
-            //         onItemListener.onUrlClick(url)
-            //     },
-            //     urlLongClick = { url ->
-            //         onItemListener.onUrlLongClick(url)
-            //     },
-            //     width = null, createdAt = messageItem.createdAt, isLast, isMe,
-            //     messageItem.status,
-            //     messageItem.isPin ?: false,
-            //     isRepresentative = isRepresentative,
-            //     isSecret = messageItem.isSecret(),
-            // )
-        // }
+        binding.chatContentLayout.setData(actionCard, isLast, isMe, messageItem.createdAt, messageItem.status, messageItem.isPin ?: false, isRepresentative, messageItem.isSecret(), onItemListener, textGestureListener)
+
         binding.chatGroupLayout.removeAllViews()
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true
@@ -187,7 +159,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 6.dp
-            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginEnd = 14.dp
+            (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginEnd = 8.dp
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.chatGroupLayout.layoutParams as MarginLayoutParams).marginStart = 12.dp
