@@ -1140,10 +1140,7 @@ fun PackageManager.getPackageInfoCompat(
         getPackageInfo(packageName, flags)
     }
 
-fun Context.openMarket(
-    fragmentManager: FragmentManager,
-    scope: CoroutineScope,
-) {
+fun Context.openMarket() {
     if (isPlayStoreInstalled()) {
         try {
             val intent = Intent(Intent.ACTION_VIEW)
@@ -1151,10 +1148,10 @@ fun Context.openMarket(
             intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
             startActivity(intent)
         } catch (e: Exception) {
-            getString(R.string.website).openAsUrlOrWeb(this, null, fragmentManager, scope)
+            openExternalUrl(getString(R.string.website))
         }
     } else {
-        getString(R.string.website).openAsUrlOrWeb(this, null, fragmentManager, scope)
+        openExternalUrl(getString(R.string.website))
     }
 }
 
