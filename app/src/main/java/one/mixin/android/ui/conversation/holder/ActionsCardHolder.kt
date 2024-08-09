@@ -2,15 +2,20 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.graphics.Typeface
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import coil.load
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionsCardBinding
+import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxCardWidth
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
@@ -78,38 +83,37 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         } else {
             binding.chatName.visibility = View.GONE
         }
-        val actionCard =
-            GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+        val actionCard = messageItem.appCardData?:return
         val contentClick = {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        binding.chatContentLayout.setContent {
-            AppCard(
-                actionCard,
-                contentClick = contentClick,
-                contentLongClick = {
-                    if (!hasSelect) {
-                        itemView.context.heavyClickVibrate()
-                        onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-                    } else {
-                        onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-                    }
-                },
-                urlClick = { url ->
-                    onItemListener.onUrlClick(url)
-                },
-                urlLongClick = { url ->
-                    onItemListener.onUrlLongClick(url)
-                },
-                width = null, createdAt = messageItem.createdAt, isLast, isMe,
-                messageItem.status,
-                messageItem.isPin ?: false,
-                isRepresentative = isRepresentative,
-                isSecret = messageItem.isSecret(),
-            )
-        }
+        binding.chatContentLayout.setData(actionCard, isMe, isLast,onItemListener, textGestureListener)
+            // AppCard(
+            //     actionCard,
+            //     contentClick = contentClick,
+            //     contentLongClick = {
+            //         if (!hasSelect) {
+            //             itemView.context.heavyClickVibrate()
+            //             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+            //         } else {
+            //             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            //         }
+            //     },
+            //     urlClick = { url ->
+            //         onItemListener.onUrlClick(url)
+            //     },
+            //     urlLongClick = { url ->
+            //         onItemListener.onUrlLongClick(url)
+            //     },
+            //     width = null, createdAt = messageItem.createdAt, isLast, isMe,
+            //     messageItem.status,
+            //     messageItem.isPin ?: false,
+            //     isRepresentative = isRepresentative,
+            //     isSecret = messageItem.isSecret(),
+            // )
+        // }
         binding.chatGroupLayout.removeAllViews()
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true
@@ -200,6 +204,45 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     R.drawable.chat_bubble_post_other,
                     R.drawable.chat_bubble_post_other_night,
                 )
+            }
+        }
+    }
+
+    private var textGestureListener: TextGestureListener? = null
+
+     class TextGestureListener(
+        var view: View,
+        var messageItem: MessageItem,
+        var hasSelect: Boolean = false,
+        var isSelect: Boolean = false,
+        var onItemListener: MessageAdapter.OnItemListener,
+        var absoluteAdapterPosition: Int = 0,
+    ) : GestureDetector.SimpleOnGestureListener() {
+        var longPressed = false
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            view.context.doubleClickVibrate()
+            onItemListener.onTextDoubleClick(messageItem)
+            return true
+        }
+
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+            return true
+        }
+
+        override fun onLongPress(e: MotionEvent) {
+            if (longPressed) {
+                longPressed = false
+                return
+            }
+
+            if (!hasSelect) {
+                view.performLongClick()
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
     }

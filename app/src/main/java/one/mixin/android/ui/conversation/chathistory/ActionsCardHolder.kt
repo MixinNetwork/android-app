@@ -55,29 +55,29 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         }
         val actionCard =
             GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
-        binding.chatContentLayout.setContent {
-            AppCard(
-                actionCard,
-                contentClick = {
-
-                },
-                contentLongClick = {
-                    itemView.context.heavyClickVibrate()
-                    onItemListener.onMenu(binding.chatJump, messageItem)
-                },
-                urlClick = { url ->
-                    onItemListener.onUrlClick(url)
-                },
-                urlLongClick = { url ->
-                    onItemListener.onUrlLongClick(url)
-                },
-                width = null, createdAt = messageItem.createdAt, isLast, isMe,
-                MessageStatus.DELIVERED.name,
-                false,
-                isRepresentative = false,
-                isSecret = false,
-            )
-        }
+        // binding.chatContentLayout.setContent {
+        //     AppCard(
+        //         actionCard,
+        //         contentClick = {
+        //
+        //         },
+        //         contentLongClick = {
+        //             itemView.context.heavyClickVibrate()
+        //             onItemListener.onMenu(binding.chatJump, messageItem)
+        //         },
+        //         urlClick = { url ->
+        //             onItemListener.onUrlClick(url)
+        //         },
+        //         urlLongClick = { url ->
+        //             onItemListener.onUrlLongClick(url)
+        //         },
+        //         width = null, createdAt = messageItem.createdAt, isLast, isMe,
+        //         MessageStatus.DELIVERED.name,
+        //         false,
+        //         isRepresentative = false,
+        //         isSecret = false,
+        //     )
+        // }
         binding.chatGroupLayout.removeAllViews()
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true

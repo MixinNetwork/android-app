@@ -44,24 +44,24 @@ open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int
         actionCard: AppCardData,
         isNightMode: Boolean,
     ) {
-        binding.chatContentLayout.setContent {
-            AppCard(
-                actionCard,
-                contentClick = {
-                },
-                contentLongClick = {
-                },
-                urlClick = { _ ->
-                },
-                urlLongClick = { _ ->
-                },
-                width = width, createdAt = nowInUtc(), isLast = true, isMe = true,
-                status = MessageStatus.DELIVERED.name,
-                isPin = false,
-                isRepresentative = false,
-                isSecret = false,
-            )
-        }
+        // binding.chatContentLayout.setContent {
+        //     AppCard(
+        //         actionCard,
+        //         contentClick = {
+        //         },
+        //         contentLongClick = {
+        //         },
+        //         urlClick = { _ ->
+        //         },
+        //         urlLongClick = { _ ->
+        //         },
+        //         width = width, createdAt = nowInUtc(), isLast = true, isMe = true,
+        //         status = MessageStatus.DELIVERED.name,
+        //         isPin = false,
+        //         isRepresentative = false,
+        //         isSecret = false,
+        //     )
+        // }
         if (!actionCard.actions.isNullOrEmpty()) {
             binding.chatGroupLayout.isVisible = true
             for (b in actionCard.actions) {
