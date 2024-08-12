@@ -153,7 +153,7 @@ class ConversationCheckView : LinearLayout, Checkable {
                 toggle()
                 listener?.onUserItemClick(item)
             }
-            item.showVerifiedOrBot(verifiedIv, botIv)
+            item.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
         }
     }
 

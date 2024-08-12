@@ -88,7 +88,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             binding.nameTv.text = messageItem.sharedUserFullName
             binding.idTv.text = messageItem.sharedUserIdentityNumber
 
-            messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
             val isMe = Session.getAccountId() == messageItem.userId
             if (isFirst && !isMe) {

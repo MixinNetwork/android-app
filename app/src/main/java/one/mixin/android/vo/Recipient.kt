@@ -2,11 +2,14 @@ package one.mixin.android.vo
 
 import android.os.Parcelable
 import android.view.View
+import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.R
 
 interface Recipient
 
@@ -61,7 +64,9 @@ data class UserItem(
     @ColumnInfo(name = "is_verified")
     val isVerified: Boolean?,
     @ColumnInfo(name = "app_id")
-    val appId: String?
+    val appId: String?,
+    @ColumnInfo(name = "membership")
+    val membership: Membership?
 ) : Recipient, Parcelable {
     companion object {
         val DIFF_CALLBACK =
@@ -79,13 +84,25 @@ data class UserItem(
                     oldItem == newItem
             }
     }
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
+
 }
 
 fun UserItem.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
+    membershipIv: ImageView
 ) {
     when {
+        isMembership() -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+            membershipIv.setImageResource(membership.membershipIcon())
+            membershipIv.isVisible = true
+        }
         isVerified == true -> {
             verifiedView.isVisible = true
             botView.isVisible = false

@@ -1236,7 +1236,7 @@ class ConversationListFragment : LinkFragment() {
                     binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
                 }
 
-                conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+                conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
                 if (conversationItem.isGroupConversation()) {
                     binding.avatarIv.setGroup(conversationItem.iconUrl())
                 } else {

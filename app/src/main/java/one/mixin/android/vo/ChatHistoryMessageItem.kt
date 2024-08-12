@@ -6,6 +6,8 @@ import android.media.MediaScannerConnection
 import android.os.Environment
 import android.os.Environment.DIRECTORY_MUSIC
 import android.view.View
+import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
@@ -64,9 +66,11 @@ class ChatHistoryMessageItem(
     val sharedUserIdentityNumber: String? = null,
     val sharedUserIsVerified: Boolean? = null,
     val sharedUserAppId: String? = null,
+    val sharedMembership: Membership? = null,
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val mentions: String? = null,
+    val membership: Membership? = null
 ) : ICategory {
     companion object {
         val DIFF_CALLBACK =
@@ -89,6 +93,8 @@ class ChatHistoryMessageItem(
             GsonHelper.customGson.fromJson(it, AppCardData::class.java)
         }
     }
+
+    fun isMembership() = membership?.isMembership() == true
 }
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
@@ -96,19 +102,29 @@ fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_J
 fun ChatHistoryMessageItem.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
+    membershipIv: ImageView
 ) {
     when {
+        isMembership() -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+            membershipIv.setImageResource(membership.membershipIcon())
+            membershipIv.isVisible = true
+        }
         sharedUserIsVerified == true -> {
             verifiedView.isVisible = true
             botView.isVisible = false
+            membershipIv.isVisible = false
         }
         appId != null -> {
             verifiedView.isVisible = false
             botView.isVisible = true
+            membershipIv.isVisible = false
         }
         else -> {
             verifiedView.isVisible = false
             botView.isVisible = false
+            membershipIv.isVisible = false
         }
     }
 }
@@ -211,6 +227,7 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): Messag
         null,
         sharedUserIsVerified,
         sharedUserAppId,
+        sharedMembership,
         mediaWaveform,
         quoteId,
         quoteContent,

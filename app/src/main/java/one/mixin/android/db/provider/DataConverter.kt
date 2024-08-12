@@ -8,6 +8,7 @@ import androidx.room.util.getColumnIndexOrThrow
 import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
@@ -54,6 +55,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
         getColumnIndexOrThrow(cursor, "participantUserId")
     val cursorIndexOfMentionCount = getColumnIndexOrThrow(cursor, "mentionCount")
     val cursorIndexOfMentions = getColumnIndexOrThrow(cursor, "mentions")
+    val cursorIndexOfMembership = getColumnIndexOrThrow(cursor, "membership")
     val res = ArrayList<ConversationItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: ConversationItem
@@ -100,6 +102,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
                 cursor.getInt(cursorIndexOfMentionCount)
             }
         val tmpMentions = cursor.getString(cursorIndexOfMentions)
+        val tmpMembership = cursor.getString(cursorIndexOfMembership)
         item =
             ConversationItem(
                 tmpConversationId,
@@ -128,6 +131,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
                 tmpAppId,
                 tmpMentions,
                 tmpMentionCount,
+                membershipConverter.revertData(tmpMembership)
             )
         res.add(item)
     }
@@ -187,6 +191,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfSharedUserAvatarUrl = cursor.getColumnIndexOrThrow("sharedUserAvatarUrl")
     val cursorIndexOfSharedUserIsVerified = cursor.getColumnIndexOrThrow("sharedUserIsVerified")
     val cursorIndexOfSharedUserAppId = cursor.getColumnIndexOrThrow("sharedUserAppId")
+    val cursorIndexOfSharedMembership = cursor.getColumnIndexOrThrow("sharedMembership")
     val cursorIndexOfGroupName = cursor.getColumnIndexOrThrow("groupName")
     val cursorIndexOfMentions = cursor.getColumnIndexOrThrow("mentions")
     val cursorIndexOfMentionRead = cursor.getColumnIndexOrThrow("mentionRead")
@@ -194,6 +199,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfExpireIn = cursor.getColumnIndexOrThrow("expireIn")
     val cursorIndexOfExpireAt = cursor.getColumnIndexOrThrow("expireAt")
     val cursorIndexOfCaption = cursor.getColumnIndexOrThrow("caption")
+    val cursorIndexOfMembership = cursor.getColumnIndexOrThrow("membership")
     val res = ArrayList<MessageItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: MessageItem
@@ -296,6 +302,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             }
         tmpSharedUserIsVerified = if (tmp == null) null else tmp != 0
         val tmpSharedUserAppId: String? = cursor.getString(cursorIndexOfSharedUserAppId)
+        val tmpSharedMembership: String? = cursor.getString(cursorIndexOfSharedMembership)
         val tmpGroupName: String? = cursor.getString(cursorIndexOfGroupName)
         val tmpMentions: String? = cursor.getString(cursorIndexOfMentions)
         val tmp1 =
@@ -329,6 +336,12 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 null
             } else {
                 cursor.getString(cursorIndexOfCaption)
+            }
+        val tempMembership: String? =
+            if (cursor.isNull(cursorIndexOfMembership)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMembership)
             }
         item =
             MessageItem(
@@ -381,6 +394,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tmpSharedUserAvatarUrl,
                 tmpSharedUserIsVerified,
                 tmpSharedUserAppId,
+                membershipConverter.revertData(tmpSharedMembership),
                 tmpMediaWaveform,
                 tmpQuoteId,
                 tmpQuoteContent,
@@ -390,7 +404,8 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tmpPinTop,
                 tempExpireIn,
                 tempExpireAt,
-                tempCaption
+                tempCaption,
+                membershipConverter.revertData(tempMembership)
             )
         res.add(item)
     }
@@ -468,6 +483,8 @@ fun callableUser(
                 getColumnIndexOrThrow(cursor, "app_id")
             val cursorIndexOfIsScam =
                 getColumnIndexOrThrow(cursor, "is_scam")
+            val cursorIndexOfIsMembership =
+                getColumnIndexOrThrow(cursor, "membership")
             val result: MutableList<User> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: User
@@ -554,6 +571,12 @@ fun callableUser(
                     } else {
                         cursor.getInt(cursorIndexOfIsScam)
                     }
+                val tmpMembership: String? =
+                    if (cursor.isNull(cursorIndexOfIsMembership)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfIsMembership)
+                    }
                 tmpIsScam = if (tmp2 == null) null else tmp2 != 0
                 item =
                     User(
@@ -570,6 +593,7 @@ fun callableUser(
                         tmpHasPin,
                         tmpAppId,
                         tmpIsScam,
+                        membership = membershipConverter.revertData(tmpMembership)
                     )
                 result.add(item)
             }
@@ -583,6 +607,10 @@ fun callableUser(
 
 private val depositEntryListConverter by lazy {
     DepositEntryListConverter()
+}
+
+private val membershipConverter by lazy {
+    MembershipConverter()
 }
 
 @SuppressLint("RestrictedApi")
@@ -876,6 +904,7 @@ fun callableChatMinimal(
             val cursorIndexOfOwnerMuteUntil = 10
             val cursorIndexOfMuteUntil = 11
             val cursorIndexOfPinTime = 12
+            val cursorIndexOfMembership = 13
             val result: MutableList<ChatMinimal> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
                 val item: ChatMinimal
@@ -959,6 +988,13 @@ fun callableChatMinimal(
                     } else {
                         cursor.getString(cursorIndexOfPinTime)
                     }
+                val tmpMembership: String? =
+                    if (cursor.isNull(cursorIndexOfMembership)) {
+                        null
+                    } else {
+
+                        cursor.getString(cursorIndexOfMembership)
+                    }
                 item =
                     ChatMinimal(
                         tmpCategory!!,
@@ -974,6 +1010,7 @@ fun callableChatMinimal(
                         tmpOwnerMuteUntil,
                         tmpMuteUntil,
                         tmpPinTime,
+                        membershipConverter.revertData(tmpMembership)
                     )
                 result.add(item)
             }
@@ -1022,7 +1059,9 @@ fun convertChatHistoryMessageItem(
     val cursorIndexOfSharedUserAvatarUrl = 46
     val cursorIndexOfSharedUserIsVerified = 47
     val cursorIndexOfSharedUserAppId = 48
+    val cursorIndexOfSharedUserMembership = 48
     val cursorIndexOfMentions = 49
+    val cursorIndexOfMembership = 50
     val list: MutableList<ChatHistoryMessageItem> =
         ArrayList(
             cursor.count,
@@ -1223,11 +1262,24 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfSharedUserAppId)
             }
+
+        val tmpSharedUserMembership: String? =
+            if (cursor.isNull(cursorIndexOfSharedUserMembership)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfSharedUserMembership)
+            }
         val tmpMentions: String? =
             if (cursor.isNull(cursorIndexOfMentions)) {
                 null
             } else {
                 cursor.getString(cursorIndexOfMentions)
+            }
+        val tmpMembership: String? =
+            if (cursor.isNull(cursorIndexOfMembership)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfMembership)
             }
         item =
             ChatHistoryMessageItem(
@@ -1262,9 +1314,11 @@ fun convertChatHistoryMessageItem(
                 tmpSharedUserIdentityNumber,
                 tmpSharedUserIsVerified,
                 tmpSharedUserAppId,
+                membershipConverter.revertData(tmpSharedUserMembership),
                 tmpQuoteId,
                 tmpQuoteContent,
                 tmpMentions,
+                membershipConverter.revertData(tmpMembership)
             )
         list.add(item)
     }

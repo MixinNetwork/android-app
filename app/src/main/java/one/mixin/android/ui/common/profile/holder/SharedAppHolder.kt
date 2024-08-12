@@ -17,7 +17,7 @@ class SharedAppHolder(private val itemBinding: ItemSharedAppBinding) : ItemViewH
             mixinIdTv.text = app.appNumber
             name.highLight(target)
             mixinIdTv.highLight(target)
-            verifiedIv.setImageResource(if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
+            verifiedIv.setImageResource(if (app.isMembership()) R.drawable.ic_membership_basic else if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
             icon.setOnClickListener {
                 appAction(app)
             }

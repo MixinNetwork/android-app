@@ -63,7 +63,7 @@ class DataProvider {
                         mu.full_name AS senderFullName,
                         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                         (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
-                        mm.mentions AS mentions  
+                        mm.mentions AS mentions, ou.membership AS membership
                         FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -331,7 +331,7 @@ class DataProvider {
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName,
         ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl,
         ou.is_verified AS isVerified, ou.app_id AS appId, ou.mute_until AS ownerMuteUntil, c.mute_until AS muteUntil,
-        c.pin_time AS pinTime 
+        c.pin_time AS pinTime, ou.membership AS membership 
         FROM conversations c
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id
@@ -464,7 +464,7 @@ class DataProvider {
                         a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
-                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
+                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, su.membership AS sharedMembership, mm.mentions AS mentions, mm.has_read as mentionRead,
                         c.name AS groupName
                         FROM pin_messages pm
                         LEFT JOIN messages m ON m.id = pm.message_id

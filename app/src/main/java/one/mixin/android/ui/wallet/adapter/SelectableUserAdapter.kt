@@ -39,7 +39,7 @@ class SelectableUserAdapter(private val selectedUsers: MutableList<Recipient>) :
             binding.mixinIdTv.text = user.identityNumber
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.id)
             binding.cb.isChecked = selectedRecipients.contains(user)
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
                 if (!binding.cb.isChecked && selectedRecipients.size >= MultiSelectTokenListBottomSheetDialogFragment.LIMIT) {

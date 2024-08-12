@@ -28,7 +28,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         val isMe = messageItem.userId == Session.getAccountId()
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+        messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
