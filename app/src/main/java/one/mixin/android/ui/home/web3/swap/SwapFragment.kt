@@ -420,7 +420,7 @@ class SwapFragment : BaseFragment() {
                             dialog.dismiss()
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                            requireContext().openMarket()
                             dialog.dismiss()
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         }.setCancelable(false)
