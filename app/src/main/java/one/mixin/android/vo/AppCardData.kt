@@ -117,8 +117,8 @@ data class Cover(
     val width: Int,
     @SerializedName("mime_type")
     val mimeType: String,
-    val url: String,
-    val thumbnail: String
+    val url: String?,
+    val thumbnail: String?
 ) : Parcelable {
     @IgnoredOnParcel
     val radio: Float
@@ -131,6 +131,6 @@ data class Cover(
     @IgnoredOnParcel
     val thumbnailDrawable: Bitmap?
         get() {
-            return thumbnail.toDrawable(width, height)?.toBitmap()
+            return thumbnail?.toDrawable(width, height)?.toBitmap()
         }
 }
