@@ -17,4 +17,4 @@ enum class StakeState {
 }
 
 fun String.isActiveState(): Boolean = this == StakeState.active.name || this == StakeState.activating.name
-fun String.isInactiveStakeState(): Boolean = this == StakeState.inactive.name || this == StakeState.deactivating.name
+fun String.isDeactivatingState(): Boolean = this == StakeState.deactivating.name

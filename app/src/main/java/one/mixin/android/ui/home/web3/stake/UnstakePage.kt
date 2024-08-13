@@ -37,6 +37,7 @@ import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeState
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.isActiveState
+import one.mixin.android.api.response.web3.isDeactivatingState
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.formatPublicKey
@@ -50,6 +51,7 @@ fun UnstakePage(
     onClick: () -> Unit,
     pop: () -> Unit,
 ) {
+    val stakeState = stakeActivation.state
     PageScaffold(
         title = stringResource(id = R.string.Your_Stake),
         verticalScrollable = true,
@@ -75,38 +77,40 @@ fun UnstakePage(
             Spacer(modifier = Modifier.height(20.dp))
             StakeInfo(validator, stakeAccount, stakeActivation)
             Spacer(modifier = Modifier.weight(1f))
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    onClick.invoke()
-                },
-                colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
-                ),
-                shape = RoundedCornerShape(32.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                elevation =
-                ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        color = Color.White,
-                    )
-                } else {
-                    Text(
-                        text = stringResource(if (stakeActivation.state.isActiveState()) R.string.Unstake else R.string.Withdraw_Stake),
-                        color = Color.White,
-                    )
+            if (!stakeState.isDeactivatingState()) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        onClick.invoke()
+                    },
+                    colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = MixinAppTheme.colors.accent,
+                    ),
+                    shape = RoundedCornerShape(32.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    elevation =
+                    ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(if (stakeState.isActiveState()) R.string.Unstake else R.string.Withdraw_Stake),
+                            color = Color.White,
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(32.dp))
             }
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
