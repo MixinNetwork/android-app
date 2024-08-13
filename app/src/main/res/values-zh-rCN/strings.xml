@@ -1577,5 +1577,5 @@
     <string name="All_Time_High">历史最高</string>
     <string name="Circulation_Supply">流通量</string>
     <string name="Total_Supply">总量</string>
-    <string name="address_warning">合同地址不是充值地址！</string>
+    <string name="address_warning">合约地址不是充值地址！</string>
 </resources>
