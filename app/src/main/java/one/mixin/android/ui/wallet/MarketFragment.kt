@@ -139,11 +139,13 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
+                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                     } else {
-                        priceValue.text = price
+                        priceValue.text = "$$price"
                         if (percentageChange == null) {
                             priceRise.text = ""
                         } else {
+                            priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
                             priceRise.text = String.format("%.2f%%", percentageChange)
                         }
                     }
