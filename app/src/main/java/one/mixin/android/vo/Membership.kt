@@ -23,7 +23,7 @@ data class Membership(
 }
 
 enum class Plan(val value: String) {
-    @SerializedName("basic")
+    @SerializedName("none")
     None("none"),
 
     @SerializedName("advance")
