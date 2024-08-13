@@ -24,9 +24,11 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.heavyClickVibrate
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -56,6 +58,7 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
         val background = MixinAppTheme.colors.background
         var highlightPointIndex by remember { mutableIntStateOf(-1) }
         var canvasSize by remember { mutableStateOf(Size.Zero) }
+        val context = LocalContext.current
         Box(modifier = Modifier.fillMaxSize()) {
             Canvas(modifier = Modifier
                 .fillMaxSize()
@@ -64,6 +67,8 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                         detectDragGestures(onDragEnd = {
                             highlightPointIndex = -1
                             onHighlightChange.invoke(highlightPointIndex)
+                        }, onDragStart = {
+                            context.heavyClickVibrate()
                         }) { change, _ ->
                             val spacing = canvasSize.width / (dataPoints.size - 1)
                             val draggedIndex = (change.position.x.div(spacing)).toInt()
@@ -76,14 +81,15 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                 })
             ) {
                 canvasSize = size
-                val path = Path()
+                val pathBefore = Path()
+                val pathAfter = Path()
                 val gradientPath = Path()
                 val spacing = size.width / (dataPoints.size - 1)
                 val points = dataPoints.mapIndexed { index, value ->
                     index * spacing to size.height * value
                 }
 
-                path.moveTo(points.first().first, points.first().second)
+                pathBefore.moveTo(points.first().first, points.first().second)
                 gradientPath.moveTo(points.first().first, points.first().second)
 
                 for (i in 0 until points.size - 1) {
@@ -94,11 +100,23 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                     val controlPoint1X = (x1 + x2) / 2
                     val controlPoint2X = (x1 + x2) / 2
 
-                    path.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
-                    gradientPath.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
+                    if (highlightPointIndex == -1 || i < highlightPointIndex) {
+                        pathBefore.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
+                        gradientPath.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
+                    } else if (i == highlightPointIndex) {
+                        pathBefore.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
+                        gradientPath.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
+                        pathAfter.moveTo(x2, y2)
+                    } else {
+                        pathAfter.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
+                    }
                 }
 
-                gradientPath.lineTo(size.width, size.height)
+                if (highlightPointIndex != -1) {
+                    gradientPath.lineTo(points[highlightPointIndex.coerceAtLeast(0)].first, size.height)
+                } else {
+                    gradientPath.lineTo(points.last().first, size.height)
+                }
                 gradientPath.lineTo(0f, size.height)
                 gradientPath.close()
 
@@ -111,10 +129,18 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                 )
 
                 drawPath(
-                    path = path,
+                    path = pathBefore,
                     color = color,
                     style = Stroke(width = 4f)
                 )
+
+                if (highlightPointIndex != -1) {
+                    drawPath(
+                        path = pathAfter,
+                        color = Color(0xFFD9D9D9),
+                        style = Stroke(width = 4f)
+                    )
+                }
 
                 if (highlightPointIndex != -1) {
                     val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
@@ -125,6 +151,15 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                         strokeWidth = 2f,
                         pathEffect = dashPathEffect
                     )
+                    
+                    drawLine(
+                        color = textPrimary,
+                        start = Offset(0f, size.height * dataPoints[0]),
+                        end = Offset(size.width, size.height * dataPoints[0]),
+                        strokeWidth = 2f,
+                        pathEffect = dashPathEffect
+                    )
+
                     val circleCenter = Offset(
                         highlightPointIndex * spacing,
                         size.height * dataPoints[highlightPointIndex]
