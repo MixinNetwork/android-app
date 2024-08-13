@@ -16,6 +16,7 @@ class RefreshPriceJob(private val assetId: String) : BaseJob(
         val response = routeService.priceHistory(assetId, "1D")
         if (response.isSuccess && response.data != null) {
             response.data?.let {
+                if (it.data.isEmpty()) return@let
                 historyPriceDao.insert(it)
             }
         }
