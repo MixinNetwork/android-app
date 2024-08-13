@@ -31,7 +31,6 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Price
-import timber.log.Timber
 
 sealed class Result<out T> {
     data object Loading : Result<Nothing>()
@@ -112,7 +111,6 @@ fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange
                     val prices = response.data.map { it.price.toFloat() }
                     val time = response.data.map { it.unix }
                     LineChart(prices, isPositive, time, type) { index ->
-                        Timber.e("on $index")
                         if (index < 0 || index >= prices.size) {
                             onHighlightChange.invoke(null, null)
                             return@LineChart
