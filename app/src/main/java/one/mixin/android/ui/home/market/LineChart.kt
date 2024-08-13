@@ -293,7 +293,7 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                             modifier = Modifier.background(color = background)
                         ) {
                             Text(
-                                text = text, fontSize = 12.sp, color = textPrimary, modifier = Modifier.padding(horizontal = 2.dp)
+                                text = text, fontSize = 14.sp, color = textPrimary, modifier = Modifier.padding(horizontal = 2.dp)
                             )
                         }
                     }.map { it.measure(constraints) }

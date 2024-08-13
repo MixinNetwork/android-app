@@ -248,7 +248,6 @@
                         android:textIsSelectable="true"
                         android:textFontWeight="500"
                         android:textSize="12sp"
-                        android:text="1D"
                         android:textColor="?attr/text_assist"
                         tools:ignore="RelativeOverlap" />
 
