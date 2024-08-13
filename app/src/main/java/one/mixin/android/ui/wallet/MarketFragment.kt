@@ -25,6 +25,7 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -50,7 +51,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
 
     private val typeState = mutableStateOf("1D")
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -68,14 +69,14 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     titleTv.text = asset.name
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             }
-            nameTitle.setText(getString(R.string.Name).uppercase())
-            symbolTitle.setText(getString(R.string.Symbol).uppercase())
-            chainTitle.setText(getString(R.string.Chain).uppercase())
-            contactAddressTitle.setText(getString(R.string.Contract_Address).uppercase())
-            circulationSupplyTitle.setText(getString(R.string.Circulation_Supply).uppercase())
-            totalSupply.setText(getString(R.string.Total_Supply).uppercase())
-            allTimeLowTitle.setText(getString(R.string.All_Time_Low).uppercase())
-            allTimeHighTitle.setText(getString(R.string.All_Time_High).uppercase())
+            nameTitle.text = getString(R.string.Name).uppercase()
+            symbolTitle.text = getString(R.string.Symbol).uppercase()
+            chainTitle.text = getString(R.string.Chain).uppercase()
+            contactAddressTitle.text = getString(R.string.Contract_Address).uppercase()
+            circulationSupplyTitle.text = getString(R.string.Circulation_Supply).uppercase()
+            totalSupply.text = getString(R.string.Total_Supply).uppercase()
+            allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
+            allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -121,8 +122,9 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             } else {
                 rise.visibility = VISIBLE
                 if (asset.changeUsd.isNotEmpty()) {
-                    rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    priceRise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    rise.text = currentRise
+                    priceRise.text = currentRise
                     rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                     priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                 }
@@ -133,14 +135,27 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             chain.text = asset.chainName
             address.text = asset.assetKey
             market.setContent {
-                Market(typeState.value, asset.assetId, isPositive)
+                Market(typeState.value, asset.assetId, isPositive) { price, percentageChange ->
+                    if (price == null) {
+                        priceRise.text = currentRise
+                        priceValue.text = currentPrice
+                    } else {
+                        priceValue.text = price
+                        if (percentageChange == null) {
+                            priceRise.text = ""
+                        } else {
+                            priceRise.text = String.format("%.2f%%", percentageChange)
+                        }
+                    }
+                }
             }
         }
 
         walletViewModel.marketById(asset.assetId).observe(this.viewLifecycleOwner) { info->
             if (info != null) {
                 binding.apply {
-                    priceValue.text = "\$${info.currentPrice.numberFormat8()}"
+                    currentPrice = "\$${info.currentPrice.numberFormat8()}"
+                    priceValue.text = currentPrice
                     marketHigh.text = "\$${info.high24h.numberFormat8()}"
                     marketLow.text = "\$${info.low24h.numberFormat8()}"
                     circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
@@ -158,4 +173,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             }
         }
     }
+
+    private var currentPrice:String? = null
+    private var currentRise:String? = null
 }

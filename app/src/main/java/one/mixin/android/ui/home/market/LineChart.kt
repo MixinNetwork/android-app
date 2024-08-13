@@ -27,8 +27,8 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.forEachWithIndex
-import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
 
 fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Float = 0.82f): Triple<List<Float>, Int, Int> {
     if (values.isEmpty()) return Triple(emptyList(), -1, -1)
@@ -48,7 +48,7 @@ fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Floa
 }
 
 @Composable
-fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boolean) {
+fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
     val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData)
     MixinAppTheme {
         val color = if (trend) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
@@ -59,23 +59,21 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
         Box(modifier = Modifier.fillMaxSize()) {
             Canvas(modifier = Modifier
                 .fillMaxSize()
-                .then(
-                    if (enableGestures) {
-                        Modifier.pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragEnd = {
-                                    highlightPointIndex = -1
-                                }
-                            ) { change, _ ->
-                                val spacing = canvasSize.width / (dataPoints.size - 1)
-                                val draggedIndex = (change.position.x.div(spacing)).toInt()
-                                highlightPointIndex = if (draggedIndex in dataPoints.indices) draggedIndex else -1
-                            }
+                .then(if (onHighlightChange != null) {
+                    Modifier.pointerInput(Unit) {
+                        detectDragGestures(onDragEnd = {
+                            highlightPointIndex = -1
+                            onHighlightChange.invoke(highlightPointIndex)
+                        }) { change, _ ->
+                            val spacing = canvasSize.width / (dataPoints.size - 1)
+                            val draggedIndex = (change.position.x.div(spacing)).toInt()
+                            highlightPointIndex = if (draggedIndex in dataPoints.indices) draggedIndex else -1
+                            onHighlightChange.invoke(highlightPointIndex)
                         }
-                    } else {
-                        Modifier
                     }
-                )
+                } else {
+                    Modifier
+                })
             ) {
                 canvasSize = size
                 val path = Path()
@@ -144,7 +142,7 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
                         center = circleCenter
                     )
                 }
-                if (enableGestures && minIndex != -1 && maxIndex != -1) {
+                if (onHighlightChange!=null && minIndex != -1 && maxIndex != -1) {
                     val minCircleCenter = Offset(
                         minIndex * spacing,
                         size.height * dataPoints[minIndex]
@@ -182,7 +180,7 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
                 }
             }
 
-            if (enableGestures && minIndex != -1 && maxIndex != -1) {
+            if (onHighlightChange!=null && minIndex != -1 && maxIndex != -1) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
                 val minXPosition = minIndex * spacing
                 val minYPosition = canvasSize.height * dataPoints[minIndex]
@@ -264,13 +262,14 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
                 }
             }
 
-            if (highlightPointIndex >= 0 && highlightPointIndex <= dataPoints.size) {
+            val index = highlightPointIndex
+            if (index >= 0 && index <= dataPoints.size && index <= dataPointsData.size && !timePointsData.isNullOrEmpty() && index<=timePointsData.size) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
-                val xPosition = highlightPointIndex * spacing
-                val yPosition = (dataPoints[highlightPointIndex] * canvasSize.height)
+                val xPosition = index * spacing
+                val yPosition = (dataPoints[index] * canvasSize.height)
 
                 SubcomposeLayout { constraints ->
-                    val text = "$${dataPointsData[highlightPointIndex]}"
+                    val text = formatTimestamp(timePointsData[index], type)
                     val horizontalPadding = with(density) { 2.dp.toPx() }
                     val verticalPadding = with(density) { 4.dp.toPx() }
 
@@ -313,5 +312,15 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, enableGestures: Boole
                 }
             }
         }
+    }
+}
+
+private fun formatTimestamp(unix: Long, type: String?): String {
+    val date = Date(unix)
+    return when (type) {
+        "1D" -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
+        "1W", "1M" -> SimpleDateFormat("M/d, HH:mm", Locale.getDefault()).format(date)
+        "YTD", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
+        else -> "Invalid type"
     }
 }

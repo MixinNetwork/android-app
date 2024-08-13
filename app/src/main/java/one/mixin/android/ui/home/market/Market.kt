@@ -30,6 +30,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.HistoryPrice
+import one.mixin.android.vo.market.Price
+import timber.log.Timber
 
 sealed class Result<out T> {
     data object Loading : Result<Nothing>()
@@ -58,22 +60,22 @@ fun Market(assetId: String, isPositive: Boolean) {
         val data = historyPrices.value!!.data.map {
             it.price.toFloat()
         }
-        LineChart(data, isPositive, false)
+        LineChart(data, isPositive)
     }
 }
 
 @Composable
-fun Market(type: String, assetId: String, isPositive: Boolean) {
+fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange: (String?, Float?) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<WalletViewModel>()
-    var responseState by remember { mutableStateOf<Result<List<Float>>>(Result.Loading) }
+    var responseState by remember { mutableStateOf<Result<List<Price>>>(Result.Loading) }
 
     LaunchedEffect(type, assetId) {
         responseState = Result.Loading
         responseState = try {
             val data = viewModel.priceHistory(assetId, type)
             if (data.isSuccess) {
-                Result.Success(data.data!!.data.map { it.price.toFloat() })
+                Result.Success(data.data!!.data)
             } else {
                 Result.Error(Exception(context.getMixinErrorStringByCode(data.errorCode, data.errorDescription)))
             }
@@ -107,7 +109,23 @@ fun Market(type: String, assetId: String, isPositive: Boolean) {
                         }
                     }
                 } else {
-                    LineChart(response.data, isPositive, true)
+                    val prices = response.data.map { it.price.toFloat() }
+                    val time = response.data.map { it.unix }
+                    LineChart(prices, isPositive, time, type) { index ->
+                        Timber.e("on $index")
+                        if (index < 0 || index >= prices.size) {
+                            onHighlightChange.invoke(null, null)
+                            return@LineChart
+                        }
+                        val currentPrice = prices[index]
+                        val basePrice = prices.first()
+                        if (basePrice != 0f) {
+                            val percentageChange = ((currentPrice - basePrice) / basePrice) * 100
+                            onHighlightChange.invoke(currentPrice.toString(), percentageChange)
+                        } else {
+                            onHighlightChange.invoke(currentPrice.toString(), null)
+                        }
+                    }
                 }
             }
 
