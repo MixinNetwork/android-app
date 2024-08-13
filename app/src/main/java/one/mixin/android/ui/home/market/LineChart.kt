@@ -35,7 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Float = 0.82f): Triple<List<Float>, Int, Int> {
+fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Float = 0.78f): Triple<List<Float>, Int, Int> {
     if (values.isEmpty()) return Triple(emptyList(), -1, -1)
 
     val minValue = values.minOrNull() ?: 0f
