@@ -14,6 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
@@ -82,6 +84,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
+        retainInstance = true
     }
 
     override fun onViewCreated(
@@ -109,7 +112,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
                     val assets = walletViewModel.allAssetItems()
-                    navTo(SwapFragment.newInstance(assets, input = asset.assetId), SwapFragment.TAG)
+                    val output = if (asset.assetId == USDT_ASSET_ID) {
+                        XIN_ASSET_ID
+                    } else {
+                        USDT_ASSET_ID
+                    }
+                    navTo(SwapFragment.newInstance(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
             value.text = try {
