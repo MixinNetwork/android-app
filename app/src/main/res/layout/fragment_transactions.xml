@@ -196,20 +196,23 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="20dp"
                 android:paddingBottom="10dp"
-                android:visibility="gone"
                 app:cardBackgroundColor="?attr/bg_white"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
                 <LinearLayout
-                    android:id="@+id/transactions_title_ll"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
                     android:orientation="vertical">
 
                     <RelativeLayout
+                        android:id="@+id/transactions_title_ll"
+                        android:layout_marginTop="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:foreground="?android:attr/selectableItemBackground">
 
                         <ImageView
                             android:id="@+id/transactions_iv"
@@ -217,8 +220,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_marginEnd="@dimen/margin16"
-                            android:layout_marginTop="20dp"
-                            android:src="@drawable/ic_arrow_right"
+                            android:src="@drawable/ic_arrow_gray_right"
                             tools:ignore="ContentDescription" />
 
                         <TextView
@@ -238,8 +240,7 @@
                         android:id="@+id/transactions_rv"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingBottom="10dp"
-                        android:paddingTop="10dp"/>
+                        android:paddingBottom="10dp" />
 
                 </LinearLayout>
 
