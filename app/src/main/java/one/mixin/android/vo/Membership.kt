@@ -23,15 +23,15 @@ data class Membership(
 }
 
 enum class Plan(val value: String) {
-    @SerializedName("none")
+    @SerializedName("basic")
     None("none"),
 
-    @SerializedName("basic")
-    BASIC("basic"),
+    @SerializedName("advance")
+    BASIC("advance"),
 
-    @SerializedName("standard")
-    STANDARD("standard"),
+    @SerializedName("elite")
+    STANDARD("elite"),
 
-    @SerializedName("premium")
-    PREMIUM("premium");
+    @SerializedName("prosperity")
+    PREMIUM("prosperity");
 }
