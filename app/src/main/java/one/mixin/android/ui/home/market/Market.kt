@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -104,7 +105,7 @@ fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange
                                 .background(brush = Brush.verticalGradient(colors = listOf(Color(0xFFD9D9D9), Color(0x33D9D9D9)))),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = stringResource(R.string.Price_data_unavailable), color = MixinAppTheme.colors.textRemarks)
+                            Text(text = stringResource(R.string.Price_data_unavailable), color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp)
                         }
                     }
                 } else {
@@ -132,7 +133,7 @@ fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange
                     Box(modifier = Modifier
                         .wrapContentSize()
                         .padding(20.dp)) {
-                        Text(text = response.exception.message ?: stringResource(R.string.Unknown), color = MixinAppTheme.colors.textPrimary)
+                        Text(text = response.exception.message ?: stringResource(R.string.Unknown), color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp)
                     }
                 }
             }

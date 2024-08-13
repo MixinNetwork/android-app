@@ -80,7 +80,8 @@
                             android:layout_marginTop="8dp"
                             android:textFontWeight="600"
                             android:textSize="14sp"
-                            android:textColor="@color/wallet_green" />
+                            android:text="0.00%"
+                            android:textColor="?attr/text_assist" />
                     </RelativeLayout>
 
                     <androidx.compose.ui.platform.ComposeView
@@ -89,7 +90,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_height="184dp"
-                        android:layout_marginTop="32dp"
+                        android:layout_marginTop="24dp"
                         android:layout_below="@+id/title_rl"/>
 
                     <RadioGroup
@@ -99,7 +100,7 @@
                         android:layout_below="@+id/market"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
-                        android:layout_marginTop="32dp"
+                        android:layout_marginTop="16dp"
                         android:orientation="horizontal"
                         android:gravity="center">
 
