@@ -78,6 +78,7 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/price_value"
                             android:layout_marginTop="8dp"
+                            android:textFontWeight="600"
                             android:textSize="14sp"
                             android:textColor="@color/wallet_green" />
                     </RelativeLayout>
