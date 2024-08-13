@@ -25,7 +25,6 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 

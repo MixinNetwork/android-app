@@ -68,7 +68,7 @@
                             android:layout_height="wrap_content"
                             android:textSize="22sp"
                             android:layout_below="@id/price"
-                            android:textFontWeight="500"
+                            android:textFontWeight="600"
                             android:textColor="?attr/text_minor"
                             android:text="@string/NA"/>
 
@@ -152,6 +152,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_low_title"
                         android:layout_marginTop="11dp"
+                        android:textFontWeight="600"
                         android:text="@string/N_A"/>
 
                     <TextView
@@ -175,6 +176,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="11dp"
                         android:layout_marginBottom="20dp"
+                        android:textFontWeight="600"
                         android:text="@string/N_A"/>
 
                 </RelativeLayout>
@@ -228,7 +230,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_marginEnd="12dp"
                         android:textIsSelectable="true"
-                        android:textFontWeight="500"
+                        android:textFontWeight="600"
                         android:textSize="18sp"
                         android:textColor="?attr/text_primary"
                         tools:ignore="RelativeOverlap" />
