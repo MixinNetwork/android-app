@@ -155,19 +155,21 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
-                scrollView.isInvisible = true
                 bottomCard.isVisible = true
                 val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }
                 transactionsRv.list = snapshotItems
-                scrollView.postDelayed(
-                    {
-                        scrollView.scrollTo(0, scrollY)
-                        scrollView.isInvisible = false
-                    }, 1
-                )
+                if (scrollY > 0) {
+                    scrollView.isInvisible = true
+                    scrollView.postDelayed(
+                        {
+                            scrollView.scrollTo(0, scrollY)
+                            scrollView.isInvisible = false
+                        }, 1
+                    )
+                }
             }
             marketRl.setOnClickListener {
                 view.navigate(
