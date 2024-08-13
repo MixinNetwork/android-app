@@ -60,6 +60,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_55_56
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_56_57
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_57_58
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
 import one.mixin.android.db.converter.PriceListConverter
@@ -171,7 +172,7 @@ import kotlin.math.min
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class, PriceListConverter::class)
+@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class, PriceListConverter::class, MembershipConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
 

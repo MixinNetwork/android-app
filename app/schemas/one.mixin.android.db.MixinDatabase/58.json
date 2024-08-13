@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 58,
-    "identityHash": "9a308bba59dd2dae629ec47f207cdbab",
+    "identityHash": "97036cf54565a582ddd542cdac34225e",
     "entities": [
       {
         "tableName": "users",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_id` TEXT NOT NULL, `identity_number` TEXT NOT NULL, `relationship` TEXT NOT NULL, `biography` TEXT NOT NULL, `full_name` TEXT, `avatar_url` TEXT, `phone` TEXT, `is_verified` INTEGER, `created_at` TEXT, `mute_until` TEXT, `has_pin` INTEGER, `app_id` TEXT, `is_scam` INTEGER, `is_deactivated` INTEGER, PRIMARY KEY(`user_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_id` TEXT NOT NULL, `identity_number` TEXT NOT NULL, `relationship` TEXT NOT NULL, `biography` TEXT NOT NULL, `full_name` TEXT, `avatar_url` TEXT, `phone` TEXT, `is_verified` INTEGER, `created_at` TEXT, `mute_until` TEXT, `has_pin` INTEGER, `app_id` TEXT, `is_scam` INTEGER, `is_deactivated` INTEGER, `membership` TEXT, PRIMARY KEY(`user_id`))",
         "fields": [
           {
             "fieldPath": "userId",
@@ -90,6 +90,12 @@
             "fieldPath": "isDeactivated",
             "columnName": "is_deactivated",
             "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "membership",
+            "columnName": "membership",
+            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -3212,7 +3218,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9a308bba59dd2dae629ec47f207cdbab')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '97036cf54565a582ddd542cdac34225e')"
     ]
   }
 }
