@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -84,7 +85,13 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
-        retainInstance = true
+    }
+
+    private var scrollY= 0
+
+    override fun onPause() {
+        super.onPause()
+        scrollY = binding.scrollView.scrollY
     }
 
     override fun onViewCreated(
@@ -148,11 +155,19 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
+                scrollView.isInvisible = true
                 bottomCard.isVisible = true
                 val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
                 bottomRl.updateLayoutParams {
                     height = remainingHeight
                 }
+                transactionsRv.list = snapshotItems
+                scrollView.postDelayed(
+                    {
+                        scrollView.scrollTo(0, scrollY)
+                        scrollView.isInvisible = false
+                    }, 1
+                )
             }
             marketRl.setOnClickListener {
                 view.navigate(
@@ -168,7 +183,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             binding.apply {
                 transactionsRv.isVisible = list.isNotEmpty()
                 bottomRl.isVisible = list.isEmpty()
-                transactionsRv.list = list
+                if (snapshotItems != list) {
+                    snapshotItems = list
+                    transactionsRv.list = snapshotItems
+                }
             }
         }
 
@@ -189,6 +207,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
     }
+
+    private var snapshotItems: List<SnapshotItem> = emptyList()
 
     override fun onDestroyView() {
         _bottomBinding = null

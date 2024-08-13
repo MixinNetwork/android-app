@@ -17,6 +17,7 @@
         app:titleText="@string/Transactions" />
 
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -196,6 +197,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="20dp"
                 android:paddingBottom="10dp"
+                android:visibility="gone"
                 app:cardBackgroundColor="?attr/bg_white"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
