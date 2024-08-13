@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 57,
-    "identityHash": "19e5c81362440dc0c433d9b10472097d",
+    "identityHash": "fbf40f8c9d7b0a29ef0ab1a622bdd8a4",
     "entities": [
       {
         "tableName": "users",
@@ -2883,7 +2883,7 @@
       },
       {
         "tableName": "inscription_collections",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `description` TEXT, `kernel_asset_id` TEXT, PRIMARY KEY(`collection_hash`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`collection_hash` TEXT NOT NULL, `supply` TEXT NOT NULL, `unit` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `description` TEXT, `kernel_asset_id` TEXT, `treasury` TEXT, PRIMARY KEY(`collection_hash`))",
         "fields": [
           {
             "fieldPath": "collectionHash",
@@ -2942,6 +2942,12 @@
           {
             "fieldPath": "kernelAssetId",
             "columnName": "kernel_asset_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "treasury",
+            "columnName": "treasury",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -3034,179 +3040,12 @@
         },
         "indices": [],
         "foreignKeys": []
-      },
-      {
-        "tableName": "price_info",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
-        "fields": [
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "currentPrice",
-            "columnName": "current_price",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "marketCap",
-            "columnName": "market_cap",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "marketCapRank",
-            "columnName": "market_cap_rank",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "totalVolume",
-            "columnName": "total_volume",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "high24h",
-            "columnName": "high_24h",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "low24h",
-            "columnName": "low_24h",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priceChange24h",
-            "columnName": "price_change_24h",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priceChangePercentage24h",
-            "columnName": "price_change_percentage_24h",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "marketCapChange24h",
-            "columnName": "market_cap_change_24h",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "marketCapChangePercentage24h",
-            "columnName": "market_cap_change_percentage_24h",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "circulatingSupply",
-            "columnName": "circulating_supply",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "totalSupply",
-            "columnName": "total_supply",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "maxSupply",
-            "columnName": "max_supply",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "ath",
-            "columnName": "ath",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "athChangePercentage",
-            "columnName": "ath_change_percentage",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "athDate",
-            "columnName": "ath_date",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "atl",
-            "columnName": "atl",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "atlChangePercentage",
-            "columnName": "atl_change_percentage",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "atlDate",
-            "columnName": "atl_date",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "asset_id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "history_prices",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, PRIMARY KEY(`asset_id`, `type`))",
-        "fields": [
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "type",
-            "columnName": "type",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "data",
-            "columnName": "data",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "asset_id",
-            "type"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '19e5c81362440dc0c433d9b10472097d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fbf40f8c9d7b0a29ef0ab1a622bdd8a4')"
     ]
   }
 }
