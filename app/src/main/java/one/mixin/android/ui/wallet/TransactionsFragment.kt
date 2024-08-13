@@ -116,10 +116,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 if (asset.fiat().toFloat() == 0f) {
                     "≈ ${Fiats.getSymbol()}0.00"
                 } else {
-                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                    "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
                 }
             } catch (ignored: NumberFormatException) {
-                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
             }
             if (asset.priceUsd == "0") {
                 rise.visibility = GONE
