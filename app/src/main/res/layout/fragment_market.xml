@@ -82,11 +82,20 @@
                             android:textColor="@color/wallet_green" />
                     </RelativeLayout>
 
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/market"
+                        android:layout_width="match_parent"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_height="184dp"
+                        android:layout_marginTop="32dp"
+                        android:layout_below="@+id/title_rl"/>
+
                     <RadioGroup
                         android:id="@+id/radio_group"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@+id/title_rl"
+                        android:layout_below="@+id/market"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginTop="32dp"
@@ -121,15 +130,6 @@
 
                     </RadioGroup>
 
-                    <androidx.compose.ui.platform.ComposeView
-                        android:id="@+id/market"
-                        android:layout_width="match_parent"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_below="@+id/radio_group"
-                        android:layout_height="184dp"
-                        android:layout_marginTop="32dp" />
-
                     <TextView
                         android:id="@+id/market_low_title"
                         android:layout_width="wrap_content"
@@ -139,7 +139,7 @@
                         android:textSize="12sp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="16dp"
-                        android:layout_below="@id/market"
+                        android:layout_below="@id/radio_group"
                         android:layout_marginTop="30dp" />
 
                     <TextView
@@ -163,7 +163,7 @@
                         android:textColor="?attr/text_remarks"
                         android:textSize="12sp"
                         android:layout_marginStart="16dp"
-                        android:layout_below="@id/market"
+                        android:layout_below="@id/radio_group"
                         android:layout_marginTop="30dp" />
 
                     <TextView

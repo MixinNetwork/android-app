@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 
 class RefreshPriceJob(private val assetId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork(),
+        .addTags(GROUP).requireNetwork().persist(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

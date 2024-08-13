@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.market
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -78,24 +79,21 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                             }
                         }
                         .pointerInput(Unit) {
-                            detectTapGestures(
-                                onPress = {
-                                    context.heavyClickVibrate()
-                                    val spacing = size.width / (dataPoints.size - 1)
-                                    val startIndex = (it.x / spacing).toInt()
-                                    highlightPointIndex = if (startIndex in dataPoints.indices) startIndex else -1
-                                    onHighlightChange.invoke(highlightPointIndex)
+                            detectTapGestures(onPress = {
+                                context.heavyClickVibrate()
+                                val spacing = size.width / (dataPoints.size - 1)
+                                val startIndex = (it.x / spacing).toInt()
+                                highlightPointIndex = if (startIndex in dataPoints.indices) startIndex else -1
+                                onHighlightChange.invoke(highlightPointIndex)
 
-                                    tryAwaitRelease()
-                                    highlightPointIndex = -1
-                                    onHighlightChange.invoke(highlightPointIndex)
-                                }
-                            )
+                                tryAwaitRelease()
+                                highlightPointIndex = -1
+                                onHighlightChange.invoke(highlightPointIndex)
+                            })
                         }
                 } else {
                     Modifier
-                })
-            ) {
+                })) {
                 val index = highlightPointIndex
                 canvasSize = size
                 val pathBefore = Path()
@@ -138,101 +136,72 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                 gradientPath.close()
 
                 drawPath(
-                    path = gradientPath,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(color.copy(alpha = 0.4f), Color.Transparent),
-                        endY = size.height
+                    path = gradientPath, brush = Brush.verticalGradient(
+                        colors = listOf(color.copy(alpha = 0.4f), Color.Transparent), endY = size.height
                     )
                 )
 
                 drawPath(
-                    path = pathBefore,
-                    color = color,
-                    style = Stroke(width = 4f)
+                    path = pathBefore, color = color, style = Stroke(width = 4f)
                 )
 
                 if (index != -1) {
                     drawPath(
-                        path = pathAfter,
-                        color = Color(0xFFD9D9D9),
-                        style = Stroke(width = 4f)
+                        path = pathAfter, color = Color(0xFFD9D9D9), style = Stroke(width = 4f)
                     )
                 }
 
                 if (index != -1) {
                     val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
                     drawLine(
-                        color = textPrimary,
-                        start = Offset(index * spacing, 0f),
-                        end = Offset(index * spacing, size.height),
-                        strokeWidth = 2f,
-                        pathEffect = dashPathEffect
+                        color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = 2f, pathEffect = dashPathEffect
                     )
-                    
+
                     drawLine(
-                        color = textPrimary,
-                        start = Offset(0f, size.height * dataPoints[0]),
-                        end = Offset(size.width, size.height * dataPoints[0]),
-                        strokeWidth = 2f,
-                        pathEffect = dashPathEffect
+                        color = textPrimary, start = Offset(0f, size.height * dataPoints[0]), end = Offset(size.width, size.height * dataPoints[0]), strokeWidth = 2f, pathEffect = dashPathEffect
                     )
 
                     val circleCenter = Offset(
-                        index * spacing,
-                        size.height * dataPoints[index]
+                        index * spacing, size.height * dataPoints[index]
                     )
 
                     drawCircle(
-                        color = Color.White,
-                        radius = 10f,
-                        center = circleCenter
+                        color = Color.White, radius = 10f, center = circleCenter
                     )
 
                     drawCircle(
-                        color = color,
-                        radius = 8f,
-                        center = circleCenter
+                        color = color, radius = 8f, center = circleCenter
                     )
                 }
-                if (onHighlightChange!=null && minIndex != -1 && maxIndex != -1) {
+                if (onHighlightChange != null && minIndex != -1 && maxIndex != -1) {
                     val minCircleCenter = Offset(
-                        minIndex * spacing,
-                        size.height * dataPoints[minIndex]
+                        minIndex * spacing, size.height * dataPoints[minIndex]
                     )
 
                     val maxCircleCenter = Offset(
-                        maxIndex * spacing,
-                        size.height * dataPoints[maxIndex]
+                        maxIndex * spacing, size.height * dataPoints[maxIndex]
                     )
 
                     if (index != minIndex) {
                         drawCircle(
-                            color = Color.White,
-                            radius = 10f,
-                            center = minCircleCenter
+                            color = Color.White, radius = 10f, center = minCircleCenter
                         )
                         drawCircle(
-                            color = color,
-                            radius = 8f,
-                            center = minCircleCenter
+                            color = color, radius = 8f, center = minCircleCenter
                         )
                     }
                     if (index != maxIndex) {
                         drawCircle(
-                            color = Color.White,
-                            radius = 10f,
-                            center = maxCircleCenter
+                            color = Color.White, radius = 10f, center = maxCircleCenter
                         )
                         drawCircle(
-                            color = color,
-                            radius = 8f,
-                            center = maxCircleCenter
+                            color = color, radius = 8f, center = maxCircleCenter
                         )
                     }
                 }
             }
 
-            if (onHighlightChange!=null && minIndex != -1 && maxIndex != -1) {
+            if (onHighlightChange != null && minIndex != -1 && maxIndex != -1) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
                 val minXPosition = minIndex * spacing
                 val minYPosition = canvasSize.height * dataPoints[minIndex]
@@ -298,16 +267,14 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                         // Place min text
                         minTextPlaceable.forEach { placeable ->
                             placeable.place(
-                                x = minXPositionAdjusted.toInt(),
-                                y = minYPositionAdjusted.toInt()
+                                x = minXPositionAdjusted.toInt(), y = minYPositionAdjusted.toInt()
                             )
                         }
 
                         // Place max text
                         maxTextPlaceable.forEach { placeable ->
                             placeable.place(
-                                x = maxXPositionAdjusted.toInt(),
-                                y = maxYPositionAdjusted.toInt()
+                                x = maxXPositionAdjusted.toInt(), y = maxYPositionAdjusted.toInt()
                             )
                         }
                     }
@@ -315,49 +282,33 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
             }
 
             val index = highlightPointIndex
-            if (index >= 0 && index <= dataPoints.size && index <= dataPointsData.size && !timePointsData.isNullOrEmpty() && index<=timePointsData.size) {
+            if (index >= 0 && index <= dataPoints.size && index <= dataPointsData.size && !timePointsData.isNullOrEmpty() && index <= timePointsData.size) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
                 val xPosition = index * spacing
-                val yPosition = (dataPoints[index] * canvasSize.height)
 
                 SubcomposeLayout { constraints ->
                     val text = formatTimestamp(timePointsData[index], type)
                     val horizontalPadding = with(density) { 2.dp.toPx() }
-                    val verticalPadding = with(density) { 4.dp.toPx() }
 
                     val textPlaceable = subcompose("text") {
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
-                            backgroundColor = background,
-                            elevation = 4.dp,
+                        Box(
+                            modifier = Modifier.background(color = background)
                         ) {
                             Text(
-                                text = text,
-                                fontSize = 14.sp,
-                                color = textPrimary,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                text = text, fontSize = 12.sp, color = textPrimary, modifier = Modifier.padding(horizontal = 2.dp)
                             )
                         }
                     }.map { it.measure(constraints) }
 
                     val textWidth = textPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
-                    val cardHeight = textPlaceable.maxByOrNull { it.height }?.height?.toFloat() ?: 0f
 
-                    // Adjust x, y position to ensure the Text is within bounds
+                    // Adjust x position to ensure the Text is within bounds
                     val xPositionAdjusted = (xPosition - textWidth / 2).coerceIn(horizontalPadding, canvasSize.width - textWidth - horizontalPadding)
-                    val yPositionAdjusted = (yPosition - cardHeight - verticalPadding).let {
-                        if (it < 0) {
-                            yPosition + verticalPadding
-                        } else {
-                            it
-                        }
-                    }
 
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         textPlaceable.forEach { placeable ->
                             placeable.place(
-                                x = xPositionAdjusted.toInt(),
-                                y = yPositionAdjusted.toInt()
+                                x = xPositionAdjusted.toInt(), y = 0
                             )
                         }
                     }
