@@ -149,7 +149,7 @@ interface RouteService {
     ): MixinResponse<HistoryPrice>
 
     @GET("markets/{id}")
-    suspend fun price(
+    suspend fun market(
         @Path("id") assetId: String,
     ): MixinResponse<Market>
 }

@@ -69,5 +69,8 @@ data class Market(
     val atlChangePercentage: String,
     @SerializedName("atl_date")
     @ColumnInfo(name = "atl_date")
-    val atlDate: String
+    val atlDate: String,
+    @SerializedName("updated_at")
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: String
 )

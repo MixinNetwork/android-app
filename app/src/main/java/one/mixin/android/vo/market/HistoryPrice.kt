@@ -14,5 +14,8 @@ data class HistoryPrice(
     val type: String,
     @ColumnInfo(name = "data")
     @SerializedName("data")
-    val data: List<Price>
+    val data: List<Price>,
+    @ColumnInfo(name = "updated_at")
+    @SerializedName("updated_at")
+    val updatedAt: String
 )

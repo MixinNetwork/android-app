@@ -13,7 +13,7 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
     }
 
     override fun onRun() = runBlocking{
-        val response = routeService.price(assetId)
+        val response = routeService.market(assetId)
         if (response.isSuccess && response.data != null) {
             response.data?.let {
                 marketDao.insert(it)
