@@ -16,6 +16,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
@@ -24,8 +25,10 @@ import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.market.Price
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -76,6 +79,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             totalSupply.text = getString(R.string.Total_Supply).uppercase()
             allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
+            marketVolCTitle.text = getString(R.string.vol_24h, asset.symbol)
+            marketVolUTitle.text = getString(R.string.vol_24h, Fiats.getAccountCurrencyAppearance())
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -155,10 +160,13 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         walletViewModel.marketById(asset.assetId).observe(this.viewLifecycleOwner) { info->
             if (info != null) {
                 binding.apply {
-                    currentPrice = "\$${info.currentPrice.numberFormat8()}"
+                    currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
-                    marketHigh.text = "\$${info.high24h.numberFormat8()}"
-                    marketLow.text = "\$${info.low24h.numberFormat8()}"
+                    marketHigh.text = priceFormat(info.high24h)
+                    marketLow.text = priceFormat(info.low24h)
+                    marketVolC.text = volFormat(info.totalVolume, BigDecimal(info.currentPrice))
+                    marketVolU.text = volFormat(info.totalVolume, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
+
                     circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
                     totalSupply.text = "${info.totalSupply} ${asset.symbol}"
 
@@ -169,10 +177,36 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate
                 }
-            } else {
-                // Todo
             }
         }
+    }
+
+    private fun volFormat(vol: String, rate: BigDecimal, symbol: String? = null): String {
+        val formatVol = try {
+            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).toPlainString()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatVol != null) {
+            if (symbol != null) {
+                return "$symbol$formatVol"
+            }
+            return formatVol
+        }
+        return getString(R.string.N_A)
+    }
+
+
+    private fun priceFormat(price: String): String {
+        val formatPrice = try {
+            BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).numberFormat8()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatPrice != null) {
+            return "${Fiats.getSymbol()} $formatPrice"
+        }
+        return getString(R.string.N_A)
     }
 
     private var currentPrice:String? = null
