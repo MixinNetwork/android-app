@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -188,24 +189,57 @@ fun SolanaParsedTxPreview(
     parsedTx: ParsedTx?,
     solanaTxSource: SolanaTxSource,
 ) {
-    if (parsedTx?.tokens == null || parsedTx.balanceChanges == null) {
-        Column(
-            modifier =
-            Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(MixinAppTheme.colors.background)
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            BalanceChangeHead()
-            // is refreshing parsedTx or tokens
-            if (parsedTx?.instructions == null || (parsedTx.balanceChanges != null && parsedTx.tokens == null)) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(32.dp),
-                    color = MixinAppTheme.colors.accent,
+    Column(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(MixinAppTheme.colors.background)
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        BalanceChangeHead()
+        if (parsedTx == null) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(32.dp),
+                color = MixinAppTheme.colors.accent,
+            )
+        } else if (parsedTx.instructions.isEmpty()) {
+            Row(
+                modifier =
+                Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    modifier = Modifier.alignByBaseline(),
+                    text = stringResource(id = R.string.preview_unavailable),
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontFamily = FontFamily(Font(R.font.mixin_font)),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600
                 )
-            } else {
+                Box(modifier = Modifier.weight(1f))
+                CoilImage(
+                    model = asset?.iconUrl,
+                    modifier =
+                    Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                )
+            }
+        } else if (parsedTx.balanceChanges != null && parsedTx.tokens == null) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(32.dp),
+                color = MixinAppTheme.colors.accent,
+            )
+        } else {
+            val viewDetails = remember {
+                mutableStateOf(false)
+            }
+            val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
+            if (parsedTx.balanceChanges == null) {
                 Row(
                     modifier =
                     Modifier
@@ -214,7 +248,7 @@ fun SolanaParsedTxPreview(
                 ) {
                     Text(
                         modifier = Modifier.alignByBaseline(),
-                        text = stringResource(id = R.string.preview_unavailable),
+                        text = stringResource(id = R.string.No_balance_change_detected),
                         color = MixinAppTheme.colors.textPrimary,
                         fontFamily = FontFamily(Font(R.font.mixin_font)),
                         fontSize = 18.sp,
@@ -230,58 +264,43 @@ fun SolanaParsedTxPreview(
                         placeholder = R.drawable.ic_avatar_place_holder,
                     )
                 }
+            } else {
+                parsedTx.balanceChanges.forEach { bc ->
+                    val token = parsedTx.tokens?.get(bc.address) ?: return
+                    BalanceChangeItem(token, bc)
+                    Box(modifier = Modifier.height(10.dp))
+                }
             }
-        }
-        return
-    }
-    val viewDetails = remember {
-        mutableStateOf(false)
-    }
-    val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-    Column(
-        modifier =
-        Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp),
-        horizontalAlignment = Alignment.Start,
-    ) {
-        BalanceChangeHead()
-        parsedTx.balanceChanges.forEach { bc ->
-            val token = parsedTx.tokens?.get(bc.address) ?: return
-            BalanceChangeItem(token, bc)
-            Box(modifier = Modifier.height(10.dp))
-        }
-        if (!solanaTxSource.isInnerTx()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        viewDetails.value = !viewDetails.value
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_play_arrow),
-                    modifier =
-                    Modifier
-                        .size(24.dp, 24.dp)
-                        .rotate(rotation),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.accent,
-                )
-                Text(
-                    modifier = Modifier.padding(start = 4.dp),
-                    text = stringResource(id = R.string.View_details),
-                    color = MixinAppTheme.colors.accent,
-                    fontFamily = FontFamily(Font(R.font.mixin_font)),
-                    fontSize = 14.sp,
-                )
-            }
-            if (viewDetails.value) {
-                Box(modifier = Modifier.height(10.dp))
-                Instructions(parsedTx.instructions)
+            if (!solanaTxSource.isInnerTx()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            viewDetails.value = !viewDetails.value
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_play_arrow),
+                        modifier =
+                        Modifier
+                            .size(24.dp, 24.dp)
+                            .rotate(rotation),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.accent,
+                    )
+                    Text(
+                        modifier = Modifier.padding(start = 4.dp),
+                        text = stringResource(id = R.string.View_details),
+                        color = MixinAppTheme.colors.accent,
+                        fontFamily = FontFamily(Font(R.font.mixin_font)),
+                        fontSize = 14.sp,
+                    )
+                }
+                if (viewDetails.value) {
+                    Box(modifier = Modifier.height(10.dp))
+                    Instructions(parsedTx.instructions)
+                }
             }
         }
     }
@@ -428,8 +447,8 @@ private fun Instructions(
         modifier = Modifier.height(200.dp)
     ) {
         items(instructions.size) { i ->
-            Instruction(instructions[i])
-            Box(modifier = Modifier.height(8.dp))
+            Instruction(instruction = instructions[i])
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
@@ -656,4 +675,42 @@ fun SolanaParsedTxPreviewPreview() {
 @Composable
 fun InstructionPreview() {
     Instruction(ParsedInstruction("", "", "", info = "cannot decode instruction for Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"))
+}
+
+@Preview
+@Composable
+fun SolanaParsedTxNullPreview() {
+    SolanaParsedTxPreview(parsedTx = null, asset = null, solanaTxSource = SolanaTxSource.Web)
+}
+
+@Preview
+@Composable
+fun SolanaParsedTxInstructionNullPreview() {
+    val data = """{"instructions":[]}"""
+    val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
+    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+}
+
+@Preview
+@Composable
+fun SolanaParsedTxBalanceChangeNullWebPreview() {
+    val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
+    val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
+    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+}
+
+@Preview
+@Composable
+fun SolanaParsedTxBalanceChangeNullInnerPreview() {
+    val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
+    val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
+    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+}
+
+@Preview
+@Composable
+fun SolanaParsedTxTokenNullPreview() {
+    val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
+    val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
+    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
 }

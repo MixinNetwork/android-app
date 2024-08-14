@@ -9,15 +9,20 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.api.response.web3.StakeAccountActivation
+import one.mixin.android.api.response.web3.StakeResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
+import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
@@ -141,6 +146,31 @@ interface RouteService {
     suspend fun searchTokens(
         @Path("query") query: String,
     ): MixinResponse<List<SwapToken>>
+
+    @POST("web3/stake")
+    suspend fun stakeSol(
+        @Body stakeRequest: StakeRequest,
+    ): MixinResponse<StakeResponse>
+
+    @GET("web3/stake/{account}")
+    suspend fun getStakeAccounts(
+        @Path("account") account: String,
+    ): MixinResponse<List<StakeAccount>>
+
+    @GET("web3/stake/activation")
+    suspend fun getStakeAccountActivations(
+        @Query("accounts") accounts: String,
+    ): MixinResponse<List<StakeAccountActivation>>
+
+    @GET("web3/stake/validators")
+    suspend fun getStakeValidators(
+        @Query("votePubkeys") votePubkeys: String? = null,
+    ): MixinResponse<List<Validator>>
+
+    @GET("web3/stake/validators/search/{query}")
+    suspend fun searchStakeValidators(
+        @Path("query") query: String,
+    ): MixinResponse<List<Validator>>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(

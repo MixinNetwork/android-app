@@ -90,7 +90,7 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
     }
 
     override fun getItemCount(): Int {
-        return tokens.size + 1
+        return tokens.size +  1
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -124,6 +124,11 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
         }
     }
 }
+
+class StakeAccountSummary(
+    val count: Int,
+    val amount: String,
+)
 
 class Web3HeaderHolder(val binding: ItemWeb3HeaderBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(

@@ -15,7 +15,9 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.isSolana
+import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.getClipboardManager
@@ -24,10 +26,15 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.stake.StakeFragment
+import one.mixin.android.ui.home.web3.stake.StakingFragment
+import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
@@ -128,6 +135,15 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                                 }
                                 bottomSheet.dismiss()
                             }
+                            stakeSolTv.isVisible = token.isSolToken()
+                            stakeSolTv.setOnClickListener {
+                                this@Web3TransactionDetailsFragment.navTo(ValidatorsFragment.newInstance().apply {
+                                    setOnSelect { v ->
+                                        this@Web3TransactionDetailsFragment.navTo(StakeFragment.newInstance(v, token.balance), StakeFragment.TAG)
+                                    }
+                                }, ValidatorsFragment.TAG)
+                                bottomSheet.dismiss()
+                            }
                             copy.setOnClickListener {
                                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
                                 toast(R.string.copied_to_clipboard)
@@ -137,6 +153,10 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         }
 
                         bottomSheet.show()
+                    }
+
+                    R.id.stake_rl -> {
+                        navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
                     }
                 }
             }
@@ -159,15 +179,38 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         binding.transactionsRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.transactionsRv.adapter = adapter
+        web3ViewModel // keep init
         lifecycleScope.launch {
             binding.progress.isVisible = true
             handleMixinResponse(invokeNetwork = {
                 web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId, token.assetKey)
             }, successBlock = { result ->
-                if (isAdded) adapter.transactions = result.data ?: emptyList()
+                if (!viewDestroyed()) adapter.transactions = result.data ?: emptyList()
             }, endBlock = {
-                if (isAdded) binding.progress.isVisible = false
+                if (!viewDestroyed()) binding.progress.isVisible = false
             })
         }
+
+        if (token.isSolToken()) {
+            lifecycleScope.launch {
+                getStakeAccounts(address)
+            }
+        }
+    }
+
+    private suspend fun getStakeAccounts(address: String) {
+        val stakeAccounts = web3ViewModel.getStakeAccounts(address)
+        if (stakeAccounts.isNullOrEmpty()) {
+            adapter.setStake(emptyList(), StakeAccountSummary(0, "0"))
+            return
+        }
+
+        var amount: Long = 0
+        var count = 0
+        stakeAccounts.forEach { a ->
+            count++
+            amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
+        }
+        adapter.setStake(stakeAccounts, StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString()))
     }
 }
