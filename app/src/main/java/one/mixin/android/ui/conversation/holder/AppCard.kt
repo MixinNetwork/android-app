@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
+import java.util.regex.Pattern
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,7 +53,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.AppCardData
-import java.util.regex.Pattern
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

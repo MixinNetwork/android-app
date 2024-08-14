@@ -1059,9 +1059,9 @@ fun convertChatHistoryMessageItem(
     val cursorIndexOfSharedUserAvatarUrl = 46
     val cursorIndexOfSharedUserIsVerified = 47
     val cursorIndexOfSharedUserAppId = 48
-    val cursorIndexOfSharedUserMembership = 48
     val cursorIndexOfMentions = 49
-    val cursorIndexOfMembership = 50
+    val cursorIndexOfSharedUserMembership = 50
+    val cursorIndexOfMembership = 51
     val list: MutableList<ChatHistoryMessageItem> =
         ArrayList(
             cursor.count,

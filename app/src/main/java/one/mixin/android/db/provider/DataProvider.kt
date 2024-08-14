@@ -464,8 +464,8 @@ class DataProvider {
                         a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
-                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, su.membership AS sharedMembership, mm.mentions AS mentions, mm.has_read as mentionRead,
-                        c.name AS groupName
+                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions,
+                        su.membership AS sharedMembership, u.membership AS membership
                         FROM pin_messages pm
                         LEFT JOIN messages m ON m.id = pm.message_id
                         LEFT JOIN users u ON m.user_id = u.user_id

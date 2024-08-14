@@ -95,6 +95,8 @@ class ChatHistoryMessageItem(
     }
 
     fun isMembership() = membership?.isMembership() == true
+
+    fun isSharedMembership() = sharedMembership?.isMembership() == true
 }
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
@@ -108,7 +110,7 @@ fun ChatHistoryMessageItem.showVerifiedOrBot(
         isMembership() -> {
             verifiedView.isVisible = false
             botView.isVisible = false
-            membershipIv.setImageResource(membership.membershipIcon())
+            membershipIv.setImageResource(sharedMembership.membershipIcon())
             membershipIv.isVisible = true
         }
         sharedUserIsVerified == true -> {

@@ -10,6 +10,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Parcelable
 import android.view.View
+import android.widget.ImageView
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -297,13 +298,14 @@ fun MessageItem.mediaDownloaded() =
 fun MessageItem.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
-    membershipView: View
+    membershipView: ImageView
 ) {
     when {
         isSharedMembership() -> {
             verifiedView.isVisible = false
             botView.isVisible = false
             membershipView.isVisible = true
+            membershipView.setImageResource(sharedMembership.membershipIcon())
         }
         sharedUserIsVerified == true -> {
             verifiedView.isVisible = true
