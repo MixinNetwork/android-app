@@ -190,7 +190,6 @@ fun SwapPage(
                                     backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                                 ),
                             shape = RoundedCornerShape(32.dp),
-                            contentPadding = PaddingValues(vertical = 12.dp),
                             elevation =
                                 ButtonDefaults.elevation(
                                     pressedElevation = 0.dp,
