@@ -40,7 +40,7 @@ sealed class Result<out T> {
 }
 
 @Composable
-fun Market(assetId: String, isPositive: Boolean) {
+fun Market(assetId: String) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel = hiltViewModel<WalletViewModel>()
     val liveData = viewModel.historyPriceById(assetId)
@@ -60,12 +60,12 @@ fun Market(assetId: String, isPositive: Boolean) {
         val data = historyPrices.value!!.data.map {
             it.price.toFloat()
         }
-        LineChart(data, isPositive)
+        LineChart(data)
     }
 }
 
 @Composable
-fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange: (String?, Float?) -> Unit) {
+fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighlightChange: (String?, Float?) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<WalletViewModel>()
     var responseState by remember { mutableStateOf<Result<List<Price>>>(Result.Loading) }
@@ -75,11 +75,22 @@ fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange
         responseState = try {
             val data = viewModel.priceHistory(assetId, type)
             if (data.isSuccess) {
+                val list = data.data!!.data
+                if (list.isNotEmpty()) {
+                    val first = data.data!!.data.first().price.toFloat()
+                    val last = data.data!!.data.last().price.toFloat()
+                    val percentageChange = ((last - first) / first) * 100
+                    dataChange.invoke(percentageChange)
+                } else {
+                    dataChange.invoke(null)
+                }
                 Result.Success(data.data!!.data)
             } else {
+                dataChange.invoke(null)
                 Result.Error(Exception(context.getMixinErrorStringByCode(data.errorCode, data.errorDescription)))
             }
         } catch (e: Exception) {
+            dataChange.invoke(null)
             Result.Error(e)
         }
     }
@@ -111,7 +122,7 @@ fun Market(type: String, assetId: String, isPositive: Boolean, onHighlightChange
                 } else {
                     val prices = response.data.map { it.price.toFloat() }
                     val time = response.data.map { it.unix }
-                    LineChart(prices, isPositive, time, type) { index ->
+                    LineChart(prices, time, type) { index ->
                         if (index < 0 || index >= prices.size) {
                             onHighlightChange.invoke(null, null)
                             return@LineChart

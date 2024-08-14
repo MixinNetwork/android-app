@@ -190,8 +190,7 @@
                         android:textSize="12sp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="16dp"
-                        android:layout_below="@id/market_high"
-                        android:textFontWeight="600"/>
+                        android:layout_below="@id/market_high" />
 
                     <TextView
                         android:id="@+id/market_vol_u"

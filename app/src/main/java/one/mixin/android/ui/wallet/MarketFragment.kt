@@ -11,12 +11,12 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMarketBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
-import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
@@ -25,7 +25,6 @@ import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.market.Price
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -139,13 +138,21 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             chain.text = asset.chainName
             address.text = asset.assetKey
             market.setContent {
-                Market(typeState.value, asset.assetId, isPositive) { price, percentageChange ->
+                Market(typeState.value, asset.assetId, { percentageChange->
+                    if (percentageChange == null) {
+                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        priceRise.text = getString(R.string.N_A)
+                    } else {
+                        priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.text = String.format("%.2f%%", percentageChange)
+                    }
+                },{ price, percentageChange ->
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
                         priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                     } else {
-                        priceValue.text = "$$price"
+                        priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
                             priceRise.text = ""
                         } else {
@@ -153,7 +160,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                             priceRise.text = String.format("%.2f%%", percentageChange)
                         }
                     }
-                }
+                })
             }
         }
 
@@ -199,7 +206,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
 
     private fun priceFormat(price: String): String {
         val formatPrice = try {
-            BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).numberFormat8()
+            BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
         } catch (e: NumberFormatException) {
             null
         }

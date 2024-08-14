@@ -31,6 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.marketPriceFormat
+import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -63,10 +66,10 @@ private fun maxRange(): Float {
 }
 
 @Composable
-fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
+fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
     val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (onHighlightChange != null) null else 1f)
     MixinAppTheme {
-        val color = if (trend) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+        val color = if (dataPointsData.last() >= dataPointsData.first()) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
         val textPrimary = MixinAppTheme.colors.textPrimary
         val background = MixinAppTheme.colors.background
         var highlightPointIndex by remember { mutableIntStateOf(-1) }
@@ -219,9 +222,8 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                 val maxYPosition = canvasSize.height * dataPoints[maxIndex]
 
                 SubcomposeLayout { constraints ->
-                    val minText = "${dataPointsData[minIndex]}"
-                    val maxText = "${dataPointsData[maxIndex]}"
-
+                    val minText = BigDecimal(dataPointsData[minIndex].toDouble()).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
+                    val maxText = BigDecimal(dataPointsData[maxIndex].toDouble()).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
                     // Measure min text
                     val minTextPlaceable = subcompose("min-text") {
                         Text(

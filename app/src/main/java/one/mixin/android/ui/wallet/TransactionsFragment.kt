@@ -327,7 +327,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 )
             }
             marketView.setContent {
-                Market(asset.assetId, isPositive)
+                Market(asset.assetId)
             }
         }
     }

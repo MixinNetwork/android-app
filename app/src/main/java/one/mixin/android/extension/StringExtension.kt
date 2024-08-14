@@ -388,9 +388,27 @@ fun BigDecimal.priceFormat(): String {
     }
 }
 
+fun BigDecimal.marketPriceFormat(): String {
+    return if (this.compareTo(BigDecimal.ONE) == 1 || this.compareTo(BigDecimal.ONE) == 0) {
+        priceFormat2()
+    } else {
+        numberFormat12()
+    }
+}
+
 fun BigDecimal.numberFormat8(): String {
     return try {
         DecimalFormat(",###.########").format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
+    }
+}
+
+fun BigDecimal.numberFormat12(): String {
+    return try {
+        DecimalFormat(",###.############").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
