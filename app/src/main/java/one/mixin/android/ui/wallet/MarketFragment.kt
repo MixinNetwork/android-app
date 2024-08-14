@@ -11,8 +11,10 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMarketBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
@@ -134,13 +136,21 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             chain.text = asset.chainName
             address.text = asset.assetKey
             market.setContent {
-                Market(typeState.value, asset.assetId, isPositive) { price, percentageChange ->
+                Market(typeState.value, asset.assetId, { percentageChange->
+                    if (percentageChange == null) {
+                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        priceRise.text = getString(R.string.N_A)
+                    } else {
+                        priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.text = String.format("%.2f%%", percentageChange)
+                    }
+                },{ price, percentageChange ->
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
                         priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                     } else {
-                        priceValue.text = "$$price"
+                        priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
                             priceRise.text = ""
                         } else {
@@ -148,31 +158,46 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                             priceRise.text = String.format("%.2f%%", percentageChange)
                         }
                     }
-                }
+                })
             }
         }
 
         walletViewModel.marketById(asset.assetId).observe(this.viewLifecycleOwner) { info->
             if (info != null) {
                 binding.apply {
-                    currentPrice = "\$${info.currentPrice.numberFormat8()}"
+                    currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
-                    marketHigh.text = "\$${info.high24h.numberFormat8()}"
-                    marketLow.text = "\$${info.low24h.numberFormat8()}"
-                    circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
-                    totalSupply.text = "${info.totalSupply} ${asset.symbol}"
+                    marketHigh.text = priceFormat(info.high24h)
+                    marketLow.text = priceFormat(info.low24h)
 
-                    highValue.text = info.ath
+                    circulationSupply.text = if (info.circulatingSupply == "0") {
+                        getString(R.string.N_A)
+                    } else {
+                        "${info.circulatingSupply.numberFormat8()} ${asset.symbol}"
+                    }
+                    totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
+
+                    highValue.text = info.ath.numberFormat8()
                     highTime.isVisible = true
                     highTime.text = info.athDate
-                    lowValue.text = info.atl
+                    lowValue.text = info.atl.numberFormat8()
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate
                 }
-            } else {
-                // Todo
             }
         }
+    }
+
+    private fun priceFormat(price: String): String {
+        val formatPrice = try {
+            BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatPrice != null) {
+            return "${Fiats.getSymbol()}$formatPrice"
+        }
+        return getString(R.string.N_A)
     }
 
     private var currentPrice:String? = null

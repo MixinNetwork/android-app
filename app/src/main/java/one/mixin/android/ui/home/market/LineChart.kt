@@ -25,16 +25,23 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.marketPriceFormat
+import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Float = 0.78f): Triple<List<Float>, Int, Int> {
+@Composable
+fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, normalizedMaxRange: Float? = null): Triple<List<Float>, Int, Int> {
     if (values.isEmpty()) return Triple(emptyList(), -1, -1)
+    val maxRange = normalizedMaxRange ?: maxRange()
 
     val minValue = values.minOrNull() ?: 0f
     val maxValue = values.maxOrNull() ?: 0f
@@ -51,10 +58,18 @@ fun normalizeValues(values: List<Float>, minRange: Float = 0.18f, maxRange: Floa
 }
 
 @Composable
-fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
-    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData)
+private fun maxRange(): Float {
+    val heightInDp = 154.dp
+    val fontSizeInSp = 26.sp
+    val fontSizeInDp = fontSizeInSp.let { with(LocalDensity.current) { it.toDp() } }
+    return 1f - (fontSizeInDp.value / heightInDp.value)
+}
+
+@Composable
+fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
+    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (onHighlightChange != null) null else 1f)
     MixinAppTheme {
-        val color = if (trend) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+        val color = if (dataPointsData.last() >= dataPointsData.first()) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
         val textPrimary = MixinAppTheme.colors.textPrimary
         val background = MixinAppTheme.colors.background
         var highlightPointIndex by remember { mutableIntStateOf(-1) }
@@ -207,23 +222,28 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                 val maxYPosition = canvasSize.height * dataPoints[maxIndex]
 
                 SubcomposeLayout { constraints ->
-                    val minText = "${dataPointsData[minIndex]}"
-                    val maxText = "${dataPointsData[maxIndex]}"
-
+                    val minText = BigDecimal(dataPointsData[minIndex].toDouble()).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
+                    val maxText = BigDecimal(dataPointsData[maxIndex].toDouble()).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
                     // Measure min text
-                    val minTextPlaceable = subcompose("minText") {
+                    val minTextPlaceable = subcompose("min-text") {
                         Text(
                             text = minText,
-                            fontSize = 12.sp,
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                lineHeight = 12.sp,
+                            ),
                             color = color,
                         )
                     }.map { it.measure(constraints) }
 
                     // Measure max text
-                    val maxTextPlaceable = subcompose("maxText") {
+                    val maxTextPlaceable = subcompose("max-text") {
                         Text(
                             text = maxText,
-                            fontSize = 12.sp,
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                lineHeight = 12.sp,
+                            ),
                             color = color,
                         )
                     }.map { it.measure(constraints) }
@@ -288,12 +308,15 @@ fun LineChart(dataPointsData: List<Float>, trend: Boolean, timePointsData: List<
                     val text = formatTimestamp(timePointsData[index], type)
                     val horizontalPadding = with(density) { 2.dp.toPx() }
 
-                    val textPlaceable = subcompose("text") {
+                    val textPlaceable = subcompose("time-text") {
                         Box(
                             modifier = Modifier.background(color = background)
                         ) {
                             Text(
-                                text = text, fontSize = 14.sp, color = textPrimary, modifier = Modifier.padding(horizontal = 2.dp)
+                                text = text, style = TextStyle(
+                                    fontSize = 14.sp,
+                                    lineHeight = 14.sp,
+                                ), color = textPrimary, modifier = Modifier.padding(horizontal = 2.dp)
                             )
                         }
                     }.map { it.measure(constraints) }

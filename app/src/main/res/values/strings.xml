@@ -1639,4 +1639,7 @@
     <string name="Circulation_Supply">Circulation Supply</string>
     <string name="Total_Supply">Total Supply</string>
     <string name="address_warning">Contract address is NOT a deposit address!</string>
+    <string name="high_24h">24H HIGH</string>
+    <string name="low_24h">24H LOW</string>
+    <string name="vol_24h">24H VOL(%1$s)</string>
 </resources>
