@@ -211,7 +211,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             null
         }
         if (formatPrice != null) {
-            return "${Fiats.getSymbol()} $formatPrice"
+            return "${Fiats.getSymbol()}$formatPrice"
         }
         return getString(R.string.N_A)
     }
