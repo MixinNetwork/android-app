@@ -3,57 +3,65 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
-import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
-import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.inflate
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
-import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.DepositEntry
-import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.ConcatHeadersDecoration
 import one.mixin.android.widget.DebugClickListener
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_transactions), OnSnapshotListener {
+class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSnapshotListener {
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
@@ -67,13 +75,23 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
     @Inject
     lateinit var tip: Tip
 
-    private val adapter = SnapshotAdapter()
-    private val headerAdapter = HeaderAdapter()
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
+    private val walletViewModel by viewModels<WalletViewModel>()
+
     lateinit var asset: TokenItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
+    }
+
+    private var scrollY= 0
+
+    override fun onPause() {
+        super.onPause()
+        scrollY = binding.scrollView.scrollY
     }
 
     override fun onViewCreated(
@@ -82,42 +100,104 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
+        jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
+        val changeUsd = BigDecimal(asset.changeUsd)
+        val isPositive = changeUsd > BigDecimal.ZERO
         binding.titleView.apply {
-            titleTv.text = asset.name
+            val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+            if (sub != null)
+                setSubTitle(asset.name, sub)
+            else
+                titleTv.text = asset.name
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()
             }
         }
-        binding.transactionsRv.itemAnimator = null
-        binding.transactionsRv.addItemDecoration(ConcatHeadersDecoration(adapter).apply { headerCount = 1 })
-        val concatAdapter = ConcatAdapter(headerAdapter, adapter)
-        binding.transactionsRv.adapter = concatAdapter
-
-        adapter.listener = this@TransactionsFragment
-        dataObserver =
-            Observer { pagedList ->
-                if (pagedList.isNotEmpty()) {
-                    headerAdapter.show = false
-                    val opponentIds =
-                        pagedList.filter {
-                            it?.opponentId != null
-                        }.map {
-                            it.opponentId
-                        }
-                    walletViewModel.checkAndRefreshUsers(opponentIds)
-                } else {
-                    headerAdapter.show = true
+        binding.apply {
+            sendReceiveView.enableSwap()
+            sendReceiveView.swap.setOnClickListener {
+                lifecycleScope.launch {
+                    val assets = walletViewModel.allAssetItems()
+                    val output = if (asset.assetId == USDT_ASSET_ID) {
+                        XIN_ASSET_ID
+                    } else {
+                        USDT_ASSET_ID
+                    }
+                    navTo(SwapFragment.newInstance(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
-                adapter.submitList(pagedList)
             }
-        bindLiveData()
+            value.text = try {
+                if (asset.fiat().toFloat() == 0f) {
+                    "≈ ${Fiats.getSymbol()}0.00"
+                } else {
+                    "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+                }
+            } catch (ignored: NumberFormatException) {
+                "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+            }
+            if (asset.priceUsd == "0") {
+                rise.visibility = GONE
+            } else {
+                rise.visibility = VISIBLE
+                if (asset.changeUsd.isNotEmpty()) {
+                    rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                }
+            }
+            transactionsTitleLl.setOnClickListener {
+                view.navigate(
+                    R.id.action_transactions_fragment_to_all_transactions_fragment,
+                    Bundle().apply {
+                        putParcelable(ARGS_TOKEN, asset)
+                    },
+                )
+            }
+            transactionsRv.listener = this@TransactionsFragment
+            bottomCard.post {
+                bottomCard.isVisible = true
+                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
+                bottomRl.updateLayoutParams {
+                    height = remainingHeight
+                }
+                transactionsRv.list = snapshotItems
+                if (scrollY > 0) {
+                    scrollView.isInvisible = true
+                    scrollView.postDelayed(
+                        {
+                            scrollView.scrollTo(0, scrollY)
+                            scrollView.isInvisible = false
+                        }, 1
+                    )
+                }
+            }
+            marketRl.setOnClickListener {
+                view.navigate(
+                    R.id.action_transactions_to_market,
+                    Bundle().apply {
+                        putParcelable(ARGS_TOKEN, asset)
+                    },
+                )
+            }
+        }
+
+        walletViewModel.snapshotsLimit(asset.assetId).observe(viewLifecycleOwner) { list ->
+            binding.apply {
+                transactionsRv.isVisible = list.isNotEmpty()
+                bottomRl.isVisible = list.isEmpty()
+                if (snapshotItems != list) {
+                    snapshotItems = list
+                    transactionsRv.list = snapshotItems
+                }
+            }
+        }
+
         walletViewModel.assetItem(asset.assetId).observe(
             viewLifecycleOwner,
         ) { assetItem ->
             assetItem?.let {
                 asset = it
-                headerAdapter.asset = it
+                bindHeader(isPositive)
             }
         }
 
@@ -130,8 +210,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
         }
     }
 
+    private var snapshotItems: List<SnapshotItem> = emptyList()
+
     override fun onDestroyView() {
-        adapter.listener = null
         _bottomBinding = null
         sendBottomSheet.release()
         super.onDestroyView()
@@ -218,220 +299,79 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R
         }
     }
 
-    override fun onApplyClick() {
-        bindLiveData()
-        filtersSheet.dismiss()
+    override fun onMoreClick() {
+        view?.navigate(
+            R.id.action_transactions_fragment_to_all_transactions_fragment,
+            Bundle().apply {
+                putParcelable(ARGS_TOKEN, asset)
+            },
+        )
     }
 
-    private fun bindLiveData() =
-        lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
-
-            val orderByAmount = currentOrder == R.id.sort_amount
-            when (currentType) {
-                R.id.filters_radio_all -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-                }
-
-                R.id.filters_radio_transfer -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(
-                            asset.assetId,
-                            SafeSnapshotType.snapshot.name,
-                            SafeSnapshotType.pending.name,
-                            initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount,
-                        ),
-                    )
-                }
-
-                R.id.filters_radio_deposit -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(
-                            asset.assetId,
-                            SafeSnapshotType.deposit.name,
-                            initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount,
-                        ),
-                    )
-                }
-
-                R.id.filters_radio_withdrawal -> {
-                    bindLiveData(
-                        walletViewModel.snapshotsFromDb(
-                            asset.assetId,
-                            SafeSnapshotType.withdrawal.name,
-                            initialLoadKey = initialLoadKey,
-                            orderByAmount = orderByAmount,
-                        ),
-                    )
+    private fun bindHeader(isPositive: Boolean) {
+        binding.apply {
+            if (asset.collectionHash.isNullOrEmpty()) {
+                topRl.setOnClickListener {
+                    AssetKeyBottomSheetDialogFragment.newInstance(asset)
+                        .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
                 }
             }
-            headerAdapter.currentType = currentType
+            updateHeader(asset)
+            sendReceiveView.send.setOnClickListener {
+                sendBottomSheet.show(asset)
+            }
+            sendReceiveView.receive.setOnClickListener {
+                sendReceiveView.navigate(
+                    R.id.action_transactions_to_deposit,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                )
+            }
+            marketView.setContent {
+                Market(asset.assetId, isPositive)
+            }
         }
+    }
 
-    inner class HeaderAdapter : RecyclerView.Adapter<HeaderAdapter.ViewHolder>() {
-        var asset: TokenItem? = null
-            set(value) {
-                if (value == field) return
-
-                field = value
-                notifyItemChanged(0)
-            }
-
-        var show: Boolean = false
-            set(value) {
-                if (value == field) return
-
-                field = value
-                notifyItemChanged(0)
-            }
-
-        var currentType: Int = R.id.filters_radio_all
-            set(value) {
-                if (value == field) return
-
-                field = value
-                notifyItemChanged(0)
-            }
-
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            private val headerBinding = ViewTransactionsFragmentHeaderBinding.bind(itemView)
-
-            fun bind(
-                asset: TokenItem,
-                show: Boolean,
-                currentType: Int,
-            ) {
-                headerBinding.apply {
-                    groupInfoMemberTitleSort.setOnClickListener {
-                        showFiltersSheet()
+    private fun updateHeader(asset: TokenItem) {
+        binding.apply {
+            val amountText =
+                try {
+                    if (asset.balance.toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        asset.balance.numberFormat()
                     }
-                    if (asset.collectionHash.isNullOrEmpty()) {
-                        topRl.setOnClickListener {
-                            AssetKeyBottomSheetDialogFragment.newInstance(asset)
-                                .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
-                        }
+                } catch (ignored: NumberFormatException) {
+                    asset.balance.numberFormat()
+                }
+            val color = requireContext().colorFromAttribute(R.attr.text_primary)
+            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balanceAs.text =
+                try {
+                    if (asset.fiat().toFloat() == 0f) {
+                        "≈ ${Fiats.getSymbol()}0.00"
+                    } else {
+                        "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
                     }
-                    updateHeader(asset)
-                    sendReceiveView.send.setOnClickListener {
-                        sendBottomSheet.show(asset)
-                    }
-                    sendReceiveView.receive.setOnClickListener {
-                        sendReceiveView.navigate(
-                            R.id.action_transactions_to_deposit,
-                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                } catch (ignored: NumberFormatException) {
+                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                }
+            avatar.loadToken(asset)
+            avatar.setOnClickListener(
+                object : DebugClickListener() {
+                    override fun onDebugClick() {
+                        view?.navigate(
+                            R.id.action_transactions_to_utxo,
+                            Bundle().apply {
+                                putParcelable(ARGS_ASSET, asset)
+                            },
                         )
                     }
-                    root.post {
-                        if (viewDestroyed()) return@post
 
-                        bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
-                            height = requireContext().screenHeight() - this@TransactionsFragment.binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
-                        }
+                    override fun onSingleClick() {
                     }
-                    bottomRl.isVisible = show
-                    when (currentType) {
-                        R.id.filters_radio_all -> {
-                            groupInfoMemberTitle.setText(R.string.Transactions)
-                            walletTransactionsEmpty.setText(R.string.No_transactions)
-                        }
-
-                        R.id.filters_radio_transfer -> {
-                            groupInfoMemberTitle.setText(R.string.Transfer)
-                            walletTransactionsEmpty.setText(R.string.No_transactions)
-                        }
-
-                        R.id.filters_radio_deposit -> {
-                            groupInfoMemberTitle.setText(R.string.Deposit)
-                            walletTransactionsEmpty.setText(R.string.No_deposits)
-                        }
-
-                        R.id.filters_radio_withdrawal -> {
-                            groupInfoMemberTitle.setText(R.string.Withdrawal)
-                            walletTransactionsEmpty.setText(R.string.No_withdrawals)
-                        }
-
-                        R.id.filters_radio_fee -> {
-                            groupInfoMemberTitle.setText(R.string.Fee)
-                            walletTransactionsEmpty.setText(R.string.No_fees)
-                        }
-
-                        R.id.filters_radio_rebate -> {
-                            groupInfoMemberTitle.setText(R.string.Rebate)
-                            walletTransactionsEmpty.setText(R.string.No_rebates)
-                        }
-
-                        R.id.filters_radio_raw -> {
-                            groupInfoMemberTitle.setText(R.string.Raw)
-                            walletTransactionsEmpty.setText(R.string.No_raws)
-                        }
-                    }
-                }
-            }
-
-            @SuppressLint("SetTextI18n")
-            fun updateHeader(asset: TokenItem) {
-                headerBinding.apply {
-                    val amountText =
-                        try {
-                            if (asset.balance.toFloat() == 0f) {
-                                "0.00"
-                            } else {
-                                asset.balance.numberFormat()
-                            }
-                        } catch (ignored: NumberFormatException) {
-                            asset.balance.numberFormat()
-                        }
-                    val color = requireContext().colorFromAttribute(R.attr.text_primary)
-                    balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
-                    balanceAs.text =
-                        try {
-                            if (asset.fiat().toFloat() == 0f) {
-                                "≈ ${Fiats.getSymbol()}0.00"
-                            } else {
-                                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-                            }
-                        } catch (ignored: NumberFormatException) {
-                            "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-                        }
-                    avatar.loadToken(asset)
-                    contractIv.isInvisible = !asset.collectionHash.isNullOrEmpty()
-                    avatar.setOnClickListener(
-                        object : DebugClickListener() {
-                            override fun onDebugClick() {
-                                view?.navigate(
-                                    R.id.action_transactions_to_utxo,
-                                    Bundle().apply {
-                                        putParcelable(ARGS_ASSET, asset)
-                                    },
-                                )
-                            }
-
-                            override fun onSingleClick() {
-                            }
-                        },
-                    )
-                }
-            }
-        }
-
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int,
-        ): ViewHolder {
-            return ViewHolder(parent.inflate(R.layout.view_transactions_fragment_header))
-        }
-
-        override fun onBindViewHolder(
-            holder: ViewHolder,
-            position: Int,
-        ) {
-            asset?.let { holder.bind(it, show, currentType) }
-        }
-
-        override fun getItemCount(): Int {
-            return 1
+                },
+            )
         }
     }
 }

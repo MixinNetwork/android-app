@@ -54,10 +54,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
+        const val ARGS_TOKEN = "args_token"
 
-        fun newInstance(user:UserItem):AllTransactionsFragment {
+        fun newInstance(user:UserItem? = null, tokenItem: TokenItem? = null):AllTransactionsFragment {
             return AllTransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
+                putParcelable(ARGS_TOKEN, tokenItem)
             }
         }
     }
@@ -70,8 +72,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         requireArguments().getParcelableCompat(ARGS_USER, UserItem::class.java)
     }
 
+    private val tokenItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
+    }
+
     private val filterParams by lazy {
-        FilterParams(recipients = userItem?.let { listOf(it) })
+        FilterParams(recipients = userItem?.let { listOf(it) }, tokenItems = tokenItem?.let { listOf(it) })
     }
 
     override fun onViewCreated(
@@ -211,6 +217,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
+    }
+
+    override fun onMoreClick() {
+        // Do noting
     }
 
     override fun onApplyClick() {
