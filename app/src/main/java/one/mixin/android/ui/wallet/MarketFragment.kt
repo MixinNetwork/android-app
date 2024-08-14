@@ -27,7 +27,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 @AndroidEntryPoint
