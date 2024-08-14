@@ -58,9 +58,12 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_53_54
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_54_55
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_55_56
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_56_57
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_57_58
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
+import one.mixin.android.db.converter.PriceListConverter
 import one.mixin.android.db.converter.RawTransactionTypeConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
@@ -107,6 +110,8 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.HistoryPrice
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -162,10 +167,12 @@ import kotlin.math.min
         (RawTransaction::class),
         (InscriptionCollection::class),
         (InscriptionItem::class),
+        (Market::class),
+        (HistoryPrice::class),
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class)
+@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class, PriceListConverter::class, MembershipConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
 
@@ -245,6 +252,10 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun inscriptionDao(): InscriptionDao
 
+    abstract fun historyPriceDao(): HistoryPriceDao
+
+    abstract fun marketDao(): MarketDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
@@ -313,7 +324,8 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_53_54,
                                 MIGRATION_54_55,
                                 MIGRATION_55_56,
-                                MIGRATION_56_57
+                                MIGRATION_56_57,
+                                MIGRATION_57_58,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

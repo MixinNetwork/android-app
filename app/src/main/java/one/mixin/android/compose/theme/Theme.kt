@@ -32,6 +32,8 @@ class AppColors(
     val red: Color = Color(0xFFE55541),
     val green: Color = Color(0xFF50BD5C),
     val tipError: Color = Color(0xFFF67070),
+    val walletRed: Color = Color(0xFFF67070),
+    val walletGreen: Color = Color(0xFF50BD5C),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,

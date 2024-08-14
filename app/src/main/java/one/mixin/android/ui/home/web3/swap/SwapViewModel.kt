@@ -59,5 +59,5 @@ class SwapViewModel
            return tokenRepository.findAssetItemById(assetId)
         }
 
-        suspend fun findTokenItems() = tokenRepository.findTokenItems()
+        suspend fun allAssetItems() = tokenRepository.allAssetItems()
 }
