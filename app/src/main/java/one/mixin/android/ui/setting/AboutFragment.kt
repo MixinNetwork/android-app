@@ -60,7 +60,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
-            checkUpdates.setOnClickListener { context?.openMarket(parentFragmentManager, lifecycleScope) }
+            checkUpdates.setOnClickListener { context?.openMarket() }
             logAndDebug.setOnClickListener {
                 navTo(LogAndDebugFragment.newInstance(), LogAndDebugFragment.TAG)
             }

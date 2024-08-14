@@ -91,7 +91,7 @@ interface OutputDao : BaseDao<Output> {
         INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         INNER JOIN tokens t on t.collection_hash = i.collection_hash
         WHERE o.state = 'unspent' AND ic.collection_hash = :collectionHash
-        ORDER BY o.sequence ASC
+        ORDER BY i.sequence ASC
         """,
     )
     fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>>

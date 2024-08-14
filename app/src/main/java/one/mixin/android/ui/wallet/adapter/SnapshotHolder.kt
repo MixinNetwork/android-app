@@ -5,8 +5,10 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
@@ -23,8 +25,24 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
-open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
+open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
+
+    init {
+        if (layout) {
+            binding.avatar.updateLayoutParams {
+                (this as MarginLayoutParams).apply {
+                    marginEnd = 16.dp
+                    marginStart = 16.dp
+                }
+            }
+            binding.symbolTv.updateLayoutParams {
+                (this as MarginLayoutParams).apply {
+                    marginEnd = 16.dp
+                }
+            }
+        }
+    }
 
     open fun bind(
         snapshot: SnapshotItem,
@@ -47,12 +65,14 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 }
                 binding.bg.setConfirmation(0, 0)
             }
+
             SafeSnapshotType.pending -> {
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                 binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
+
             else -> {
                 if (type == SafeSnapshotType.deposit) {
                     binding.avatar.setDeposit()
@@ -64,7 +84,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                             } else {
                                 sender
                             }
-                        ).formatPublicKey()
+                            ).formatPublicKey()
                 } else {
                     binding.avatar.setWithdrawal()
                     val receiver = snapshot.withdrawal?.receiver
@@ -132,8 +152,11 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     }
 }
 
-class SnapshotHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class SnapshotHeaderViewHolder(itemView: View, layout: Boolean = false) : RecyclerView.ViewHolder(itemView) {
     private val binding = ItemTransactionHeaderBinding.bind(itemView)
+    init {
+        if (layout) binding.dateTv.setPadding(16.dp,0,16.dp,0)
+    }
 
     fun bind(time: String) {
         binding.dateTv.timeAgoDay(time)
@@ -144,4 +167,6 @@ interface OnSnapshotListener {
     fun <T> onNormalItemClick(item: T)
 
     fun onUserClick(userId: String)
+
+    fun onMoreClick()
 }

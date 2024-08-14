@@ -1,117 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
-    <LinearLayout
+    <androidx.cardview.widget.CardView
         android:id="@+id/top_ll"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/top_rl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <one.mixin.android.widget.BadgeCircleImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="26dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="16dp"
+                    android:layout_alignParentEnd="true"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/avatar"
+                    android:layout_marginStart="@dimen/margin16"
+                    android:layout_alignParentStart="true"
+                    android:textSize="14sp"
+                    android:text="@string/Balance"
+                    tools:ignore="RelativeOverlap" />
+
+                <TextView
+                    android:id="@+id/balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_below="@+id/title"
+                    android:layout_marginStart="@dimen/margin16"
+                    android:layout_toStartOf="@id/avatar"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginEnd="12dp"
+                    android:textIsSelectable="true"
+                    android:textSize="14sp"
+                    tools:ignore="RelativeOverlap" />
+
+                <TextView
+                    android:id="@+id/balance_as"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/balance"
+                    android:layout_marginStart="@dimen/margin16"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="@dimen/margin16"
+                    android:layout_alignParentStart="true"
+                    android:textColor="?attr/text_assist" />
+
+            </RelativeLayout>
+
+            <one.mixin.android.widget.SendReceiveView
+                android:id="@+id/send_receive_view"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginBottom="@dimen/margin16"
+                android:layout_marginStart="@dimen/margin20"
+                android:layout_marginEnd="@dimen/margin16" />
+
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/market_rl"
+        android:layout_below="@+id/top_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
         <RelativeLayout
-            android:id="@+id/top_rl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:foreground="?android:attr/selectableItemBackground">
-
-            <one.mixin.android.widget.BadgeCircleImageView
-                android:id="@+id/avatar"
-                android:layout_width="51dp"
-                android:layout_height="51dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="28dp"
-                android:layout_marginBottom="16dp"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/balance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignTop="@+id/avatar"
-                android:layout_marginTop="4dp"
-                android:layout_marginStart="@dimen/margin12"
-                android:layout_marginEnd="42dp"
-                android:layout_toEndOf="@+id/avatar"
-                android:textIsSelectable="true"
-                android:textSize="14sp"
-                tools:ignore="RelativeOverlap" />
-
-            <TextView
-                android:id="@+id/balance_as"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/balance"
-                android:layout_marginStart="@dimen/margin12"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="@dimen/margin16"
-                android:layout_toEndOf="@id/avatar"
-                android:textColor="?attr/text_assist" />
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/contract_iv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
                 android:layout_marginEnd="@dimen/margin16"
-                android:src="@drawable/ic_keyboard_arrow_down"
+                android:layout_marginTop="20dp"
+                android:src="@drawable/ic_arrow_right"
                 tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/market_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/contract_iv"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_alignParentStart="true"
+                android:textSize="14sp"
+                android:text="@string/Market"
+                android:textColor="?attr/text_assist"
+                tools:ignore="RelativeOverlap" />
+
+            <TextView
+                android:id="@+id/value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_below="@+id/market_title"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_alignParentStart="true"
+                android:layout_marginEnd="12dp"
+                android:textIsSelectable="true"
+                android:textFontWeight="500"
+                android:textSize="18sp"
+                android:text="$3309.21"
+                android:textColor="?attr/text_primary"
+                tools:ignore="RelativeOverlap" />
+
+            <TextView
+                android:id="@+id/rise"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/value"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="@dimen/margin16"
+                android:layout_alignParentStart="true"
+                android:text="+2.34%"
+                android:textColor="@color/wallet_green" />
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/market_view"
+                android:layout_below="@id/contract_iv"
+                android:layout_marginTop="10dp"
+                android:layout_alignEnd="@id/contract_iv"
+                android:layout_width="102dp"
+                android:layout_height="44dp" />
+
         </RelativeLayout>
-
-        <one.mixin.android.widget.SendReceiveView
-            android:id="@+id/send_receive_view"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginBottom="@dimen/margin16"
-            android:layout_marginStart="@dimen/margin20"
-            android:layout_marginEnd="@dimen/margin20"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:background="?attr/bg_window" />
-    </LinearLayout>
-
-    <RelativeLayout
-        android:id="@+id/group_info_member_title_layout"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_below="@+id/top_ll">
-
-        <ImageView
-            android:id="@+id/group_info_member_title_sort"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/margin12"
-            android:background="@drawable/mixin_ripple_small"
-            android:padding="8dp"
-            android:src="@drawable/ic_sort"
-            android:contentDescription="@string/Sort_by" />
-
-        <TextView
-            android:id="@+id/group_info_member_title"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginBottom="8dp"
-            android:layout_toStartOf="@id/group_info_member_title_sort"
-            android:gravity="bottom"
-            android:paddingStart="@dimen/margin20"
-            android:paddingEnd="@dimen/margin20"
-            android:text="@string/Transactions"
-            android:textColor="?attr/text_primary" />
-    </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 
     <RelativeLayout
         android:id="@+id/bottom_rl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/group_info_member_title_layout"
+        android:layout_below="@id/market_rl"
+        android:visibility="gone"
         android:minHeight="240dp">
 
         <ImageView

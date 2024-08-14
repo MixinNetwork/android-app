@@ -282,7 +282,7 @@ class SolanaFragment : BaseFragment() {
                             .setNegativeButton(R.string.Later) { dialog, _ ->
                                 dialog.dismiss()
                             }.setPositiveButton(R.string.Update) { dialog, _ ->
-                                requireContext().openMarket(parentFragmentManager, lifecycleScope)
+                                requireContext().openMarket()
                                 dialog.dismiss()
                             }.create()
                     dialog?.show()

@@ -24,6 +24,8 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.market.HistoryPrice
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
@@ -169,4 +171,15 @@ interface RouteService {
     suspend fun searchStakeValidators(
         @Path("query") query: String,
     ): MixinResponse<List<Validator>>
+
+    @GET("markets/{id}/price-history")
+    suspend fun priceHistory(
+        @Path("id") assetId: String,
+        @Query("type") type: String,
+    ): MixinResponse<HistoryPrice>
+
+    @GET("markets/{id}")
+    suspend fun market(
+        @Path("id") assetId: String,
+    ): MixinResponse<Market>
 }

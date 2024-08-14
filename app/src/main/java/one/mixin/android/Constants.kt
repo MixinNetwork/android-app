@@ -148,7 +148,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 57
+        const val CURRENT_VERSION = 58
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -223,6 +223,7 @@ object Constants {
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
         const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
         const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
+        const val XIN_ASSET_ID = "c94ac88f-4671-3976-b60a-09064f1811e8"
     }
 
     object Mute {

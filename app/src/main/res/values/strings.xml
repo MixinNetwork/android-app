@@ -653,6 +653,7 @@
     <string name="My_favorite_bots">My Favorite Bots</string>
     <string name="My_Stickers">My Stickers</string>
     <string name="NA">N/A</string>
+    <string name="N_A" translatable="false">N/A</string>
     <string name="Name">Name</string>
     <string name="need_background_permission">Requires start in background permission to continue.</string>
     <string name="need_camera_permission">Requires camera permission to continue.</string>
@@ -1601,6 +1602,12 @@
     <string name="swap_failed">Swap Failed</string>
     <string name="swap_inner_desc">The signature request from Mixin Messenger.</string>
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
+    <string name="swap_not_supported">%1$s swap is not supported, it has been replaced</string>
+    <string name="Price_data_unavailable">Price data unavailable</string>
+    <string name="Balance">Balance</string>
+    <string name="Market">Market</string>
+    <string name="view_all">View All</string>
+    <string name="My_Balance">My Balance</string>
     <string name="All_Networks">All networks</string>
     <string name="Stake">Stake</string>
     <string name="Stake_SOL">Stake SOL</string>
@@ -1616,7 +1623,6 @@
     <string name="Activating">Activating</string>
     <string name="Unstake">Unstake</string>
     <string name="Withdraw_Stake">Withdraw Stake</string>
-    <string name="Balance">Balance</string>
     <string name="unstake_hint">Your SOL is currently staked with a validator. You\'ll need to unstake to access these funds.</string>
     <string name="Rent_Reserve">Rent Reserve</string>
     <string name="Active_Stake">Active Stake</string>
@@ -1624,4 +1630,11 @@
     <string name="Last_Reward">Last Reward</string>
     <string name="last_reward_hint">This is the most recent reward you earned for staking. You are rewarded 3 days.</string>
     <string name="No_balance_change_detected">No balance change detected</string>
+    <string name="Introduction">Introduction</string>
+    <string name="Contract_Address">Contract Address</string>
+    <string name="All_Time_Low">All Time Low</string>
+    <string name="All_Time_High">All Time High</string>
+    <string name="Circulation_Supply">Circulation Supply</string>
+    <string name="Total_Supply">Total Supply</string>
+    <string name="address_warning">Contract address is NOT a deposit address!</string>
 </resources>

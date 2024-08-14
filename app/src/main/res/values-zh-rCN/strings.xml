@@ -1564,6 +1564,12 @@
     <string name="swap_failed">闪兑失败</string>
     <string name="swap_inner_desc">该签名请求来自 Mixin Messenger。</string>
     <string name="swap_message_success">您的闪兑交易已发送至网络，将很快交易被处理。</string>
+    <string name="swap_not_supported">不支持 %1$s 闪兑，已切换</string>
+    <string name="Price_data_unavailable">价格数据不可用</string>
+    <string name="Balance">余额</string>
+    <string name="Market">行情</string>
+    <string name="view_all">查看所有</string>
+    <string name="My_Balance">我的余额</string>
     <string name="All_Networks">全部网络</string>
     <string name="Stake">质押</string>
     <string name="Stake_SOL">质押 SOL</string>
@@ -1579,7 +1585,6 @@
     <string name="Activating">生效中</string>
     <string name="Unstake">取消质押</string>
     <string name="Withdraw_Stake">提现质押</string>
-    <string name="Balance">余额</string>
     <string name="unstake_hint">您的 SOL 目前已被委托给验证者。您需要取消委托才能访问这些资金。</string>
     <string name="Rent_Reserve">租金储备</string>
     <string name="Active_Stake">已生效质押</string>
@@ -1587,4 +1592,11 @@
     <string name="Last_Reward">最近奖励</string>
     <string name="last_reward_hint">这是您最近因委托获得的奖励。您每 3 天获得一次奖励。</string>
     <string name="No_balance_change_detected">未检测到余额变化</string>
+    <string name="Introduction">介绍</string>
+    <string name="Contract_Address">合约地址</string>
+    <string name="All_Time_Low">历史最低</string>
+    <string name="All_Time_High">历史最高</string>
+    <string name="Circulation_Supply">流通量</string>
+    <string name="Total_Supply">总量</string>
+    <string name="address_warning">合约地址不是充值地址！</string>
 </resources>
