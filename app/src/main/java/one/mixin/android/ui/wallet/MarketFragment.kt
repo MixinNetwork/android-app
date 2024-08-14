@@ -16,6 +16,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -169,13 +170,17 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     marketHigh.text = priceFormat(info.high24h)
                     marketLow.text = priceFormat(info.low24h)
 
-                    circulationSupply.text = "${info.circulatingSupply} ${asset.symbol}"
-                    totalSupply.text = "${info.totalSupply} ${asset.symbol}"
+                    circulationSupply.text = if (info.circulatingSupply == "0") {
+                        getString(R.string.N_A)
+                    } else {
+                        "${info.circulatingSupply.numberFormat8()} ${asset.symbol}"
+                    }
+                    totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
 
-                    highValue.text = info.ath
+                    highValue.text = info.ath.numberFormat8()
                     highTime.isVisible = true
                     highTime.text = info.athDate
-                    lowValue.text = info.atl
+                    lowValue.text = info.atl.numberFormat8()
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate
                 }
