@@ -449,6 +449,7 @@ class SwapFragment : BaseFragment() {
                         tokenItem.assetId == token.assetId
                     } ?: return@map token
                     token.balance = t.balance
+                    token.price = t.priceUsd
                     token
                 }
                 if (fromToken == null) {
