@@ -1424,6 +1424,8 @@
     <string name="Transfer_Failed">Transfer Failed</string>
     <string name="Withdrawal_Failed">Withdrawal Failed</string>
     <string name="Multisig_Signing_Failed">Multisig Signing Failed</string>
+    <string name="Multisig_Signing_Successful">Multisig Signing Successful</string>
+    <string name="multisig_signing_successful_description">This transaction has enough signatures, the current one is ignored.</string>
     <string name="Confirm_Withdrawal">Confirm Withdrawal</string>
     <string name="Sending_Withdrawal_Request">Sending Withdrawal Request</string>
     <string name="Withdrawal_Request_Sent">Withdrawal Request Sent</string>
