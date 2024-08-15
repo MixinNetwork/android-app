@@ -71,7 +71,7 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
         query: String,
         searchMessageCallback: SearchMessageAdapter.SearchMessageCallback?,
     ) {
-        binding.searchNameTv.text = message.userFullName
+        binding.searchNameTv.setName(message)
         if (message.isData()) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, fileIcon, null, null, null)
             binding.searchMsgTv.text = message.mediaName
@@ -96,12 +96,6 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
         } else {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
             binding.searchMsgTv.text = message.content
-        }
-        if (message.isMembership()) {
-            binding.badge.isVisible = true
-            binding.badge.setImageResource(message.membership.membershipIcon())
-        } else {
-            binding.badge.isVisible = false
         }
         binding.searchTimeTv.timeAgoDate(message.createdAt)
         binding.searchMsgTv.highLight(query)

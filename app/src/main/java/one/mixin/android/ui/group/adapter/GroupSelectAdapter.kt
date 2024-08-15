@@ -34,7 +34,7 @@ class GroupSelectAdapter(val removeUser: (User) -> Unit) : RecyclerView.Adapter<
         checkedUsers?.let { list ->
             val user = list[position]
             binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.nameTv.text = user.fullName
+            binding.nameTv.setName(user)
         }
         holder.itemView.setOnClickListener {
             checkedUsers?.let { list ->

@@ -25,7 +25,7 @@
         app:layout_constraintBottom_toBottomOf="@id/avatar_view"
         app:layout_constraintEnd_toEndOf="@id/avatar_view" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/name_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

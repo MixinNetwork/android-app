@@ -450,15 +450,14 @@ class ExploreFragment : BaseFragment() {
                     avatar.renderApp(a)
                     name.setText(a.name)
                     mixinIdTv.setText(a.description)
-                    verifiedIv.isVisible = false
+                    name.setTextOnly(a.name)
                 }
             } else if (app is ExploreApp) {
                 itemBinding.apply {
                     avatar.setInfo(app.name, app.iconUrl, app.appId)
                     name.text = app.name
                     mixinIdTv.text = app.appNumber
-                    verifiedIv.isVisible = true
-                    verifiedIv.setImageResource(if (app.isMembership()) app.membership.membershipIcon() else if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
+                    name.setName(app)
                 }
             }
         }

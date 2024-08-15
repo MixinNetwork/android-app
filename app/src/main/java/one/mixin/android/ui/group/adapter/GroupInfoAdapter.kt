@@ -52,16 +52,8 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
             self: User?,
         ) {
             binding.avatar.setInfo(participant.fullName, participant.avatarUrl, participant.userId)
-            binding.normal.text = participant.fullName
+            binding.normal.setName(participant)
             binding.mixinIdTv.text = participant.identityNumber
-            binding.botIv.visibility = if (participant.appId != null) VISIBLE else GONE
-            binding.verifiedIv.visibility = if (participant.isVerified != null && participant.isVerified) VISIBLE else GONE
-            if (participant.isMembership()) {
-                binding.membershipIv.visibility = VISIBLE
-                binding.membershipIv.setImageResource(participant.membership.membershipIcon())
-            } else {
-                binding.membershipIv.visibility = GONE
-            }
             when (participant.role) {
                 ParticipantRole.OWNER.name -> {
                     binding.desc.setText(R.string.Owner)

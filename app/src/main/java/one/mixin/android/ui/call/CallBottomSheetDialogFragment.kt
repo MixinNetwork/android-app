@@ -197,6 +197,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             account.fullName,
                             account.avatarUrl,
                             "",
+                            false,
+                            null,
+                            account.membership
                         )
                     } else {
                         var callUser = viewModel.findSelfCallUser(cid, account.userId)
@@ -208,6 +211,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     account.fullName,
                                     account.avatarUrl,
                                     "",
+                                    false,
+                                    null,
+                                    account.membership
                                 )
                             viewModel.refreshConversation(cid)
                         }

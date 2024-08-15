@@ -14,23 +14,12 @@ class MessageHolder constructor(val binding: ItemSearchMessageBinding) : NormalH
         message: SearchMessageItem,
         onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
-        binding.searchNameTv.text =
-            if (message.conversationName.isNullOrEmpty()) {
-                message.userFullName
-            } else {
-                message.conversationName
-            }
+        binding.searchNameTv.setName(message)
         binding.searchMsgTv.text = itemView.context.resources.getQuantityString(R.plurals.search_related_message, message.messageCount, message.messageCount)
         if (message.conversationCategory == ConversationCategory.CONTACT.name) {
             binding.searchAvatarIv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
         } else {
             binding.searchAvatarIv.setGroup(message.conversationAvatarUrl)
-        }
-        if (message.isMembership()) {
-            binding.badge.isVisible = true
-            binding.badge.setImageResource(message.membership.membershipIcon())
-        } else {
-            binding.badge.isVisible = false
         }
 
         binding.root.setOnClickListener {

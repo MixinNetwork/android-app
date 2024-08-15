@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/normal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,42 +31,6 @@
         android:singleLine="true"
         android:textColor="?attr/text_primary"
         tools:text="name"/>
-
-    <ImageView
-        android:id="@+id/verified_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_toEndOf="@id/normal"
-        android:layout_above="@id/center"
-        android:layout_marginBottom="4dp"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_user_verified"
-        android:visibility="gone"
-        tools:ignore="ContentDescription"/>
-
-    <ImageView
-        android:id="@+id/bot_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_toEndOf="@id/verified_iv"
-        android:layout_above="@id/center"
-        android:layout_marginBottom="4dp"
-        android:layout_marginStart="8dp"
-        android:contentDescription="@null"
-        android:src="@drawable/ic_bot"
-        android:visibility="gone"/>
-
-    <ImageView
-        android:id="@+id/membership_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_toEndOf="@id/bot_iv"
-        android:layout_above="@id/center"
-        android:layout_marginBottom="4dp"
-        android:layout_marginStart="8dp"
-        android:contentDescription="@null"
-        android:src="@drawable/ic_membership_advance"
-        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/mixin_id_tv"

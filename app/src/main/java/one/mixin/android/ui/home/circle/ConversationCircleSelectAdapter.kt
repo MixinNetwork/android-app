@@ -38,16 +38,15 @@ class ConversationCircleSelectAdapter(
         val binding = ItemGroupSelectBinding.bind(holder.itemView)
         if (item is User) {
             binding.avatarView.setInfo(item.fullName, item.avatarUrl, item.userId)
-            binding.nameTv.text = item.fullName
+            binding.nameTv.setName(item)
         } else if (item is ConversationMinimal) {
             holder.itemView.apply {
                 if (item.isGroupConversation()) {
                     binding.avatarView.setGroup(item.groupIconUrl)
-                    binding.nameTv.text = item.groupName
                 } else {
                     binding.avatarView.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
-                    binding.nameTv.text = item.name
                 }
+                binding.nameTv.setName(item)
             }
         }
         holder.itemView.setOnClickListener {

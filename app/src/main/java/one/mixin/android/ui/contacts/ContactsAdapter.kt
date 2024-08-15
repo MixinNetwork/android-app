@@ -64,7 +64,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             return POS_FRIEND.toLong()
         }
         val u = users[getPosition(position)]
-        return if (u.fullName != null && u.fullName.isNotEmpty()) u.fullName[0].code.toLong() else -1L
+        return if (!u.fullName.isNullOrEmpty()) u.fullName[0].code.toLong() else -1L
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -294,12 +294,12 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             listener: ContactListener?,
         ) {
             binding.index.text =
-                if (user.fullName != null && user.fullName.isNotEmpty()) {
+                if (!user.fullName.isNullOrEmpty()) {
                     user.fullName[0].toString()
                 } else {
                     ""
                 }
-            binding.contactFriend.text = user.fullName
+            binding.contactFriend.setName(user)
             if (listener != null) {
                 itemView.setOnClickListener { listener.onContactItem(user) }
             }
