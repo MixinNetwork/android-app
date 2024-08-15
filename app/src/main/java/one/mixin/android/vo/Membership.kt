@@ -1,10 +1,13 @@
 package one.mixin.android.vo
 
 import android.os.Parcelable
+import android.view.View
+import androidx.annotation.DrawableRes
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.R
 import org.threeten.bp.Instant
 
 @Parcelize
@@ -18,8 +21,17 @@ data class Membership(
     val expiredAt: String,
 ) : Parcelable {
     fun isMembership(): Boolean {
-        return plan in listOf(Plan.BASIC, Plan.STANDARD, Plan.PREMIUM) && Instant.now().isBefore(Instant.parse(expiredAt))
+        return plan in listOf(Plan.ADVANCE, Plan.ELITE, Plan.PROSPERITY) && Instant.now().isBefore(Instant.parse(expiredAt))
     }
+}
+
+@DrawableRes
+fun Membership?.membershipIcon() = when {
+    this == null -> View.NO_ID
+    plan == Plan.ADVANCE -> R.drawable.ic_membership_basic
+    plan == Plan.PROSPERITY -> R.drawable.ic_membership_premium
+    plan == Plan.ELITE -> R.drawable.ic_membership_standard
+    else -> View.NO_ID
 }
 
 enum class Plan(val value: String) {
@@ -27,11 +39,11 @@ enum class Plan(val value: String) {
     None("none"),
 
     @SerializedName("advance")
-    BASIC("advance"),
+    ADVANCE("advance"),
 
     @SerializedName("elite")
-    STANDARD("elite"),
+    ELITE("elite"),
 
     @SerializedName("prosperity")
-    PREMIUM("prosperity");
+    PROSPERITY("prosperity");
 }

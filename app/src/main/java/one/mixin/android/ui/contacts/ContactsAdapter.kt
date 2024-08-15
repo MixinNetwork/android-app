@@ -258,7 +258,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 normal.text = user.fullName
                 mixinIdTv.text = user.identityNumber
                 avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-                user.showVerifiedOrBot(verifiedIv, botIv)
+                user.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
                 if (listener != null) {
                     itemView.setOnClickListener { listener.onFriendItem(user) }
                 }

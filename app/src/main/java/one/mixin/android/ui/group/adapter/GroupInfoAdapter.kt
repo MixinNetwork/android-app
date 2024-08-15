@@ -15,6 +15,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
+import one.mixin.android.vo.membershipIcon
 
 class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantItem>(ParticipantItem.DIFF_CALLBACK) {
     private var listener: GroupInfoListener? = null
@@ -55,6 +56,12 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
             binding.mixinIdTv.text = participant.identityNumber
             binding.botIv.visibility = if (participant.appId != null) VISIBLE else GONE
             binding.verifiedIv.visibility = if (participant.isVerified != null && participant.isVerified) VISIBLE else GONE
+            if (participant.isMembership()) {
+                binding.membershipIv.visibility = VISIBLE
+                binding.membershipIv.setImageResource(participant.membership.membershipIcon())
+            } else {
+                binding.membershipIv.visibility = GONE
+            }
             when (participant.role) {
                 ParticipantRole.OWNER.name -> {
                     binding.desc.setText(R.string.Owner)

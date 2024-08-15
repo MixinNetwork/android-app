@@ -66,4 +66,16 @@
         android:src="@drawable/ic_bot"
         android:visibility="gone"/>
 
+    <ImageView
+        android:id="@+id/membership_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/bot_iv"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_membership_basic"
+        android:visibility="gone"/>
+
 </RelativeLayout>

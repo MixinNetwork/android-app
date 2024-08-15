@@ -16,13 +16,14 @@
         android:layout_marginTop="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/search_name_tv"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
+        android:maxWidth="200dp"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
         android:maxLines="1"
@@ -31,7 +32,17 @@
         app:layout_constraintEnd_toStartOf="@+id/search_time_tv"
         app:layout_constraintStart_toEndOf="@+id/search_avatar_iv"
         app:layout_constraintTop_toTopOf="@+id/search_avatar_iv"
+        app:layout_constraintHorizontal_bias="0"
         tools:text="Username"/>
+
+    <ImageView
+        android:id="@+id/badge"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="3dp"
+        app:layout_constraintStart_toEndOf="@id/search_name_tv"
+        app:layout_constraintTop_toTopOf="@id/search_name_tv"
+        app:layout_constraintBottom_toBottomOf="@id/search_name_tv" />
 
     <TextView
         android:id="@+id/search_msg_tv"

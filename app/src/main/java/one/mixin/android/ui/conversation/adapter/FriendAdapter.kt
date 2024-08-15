@@ -31,7 +31,7 @@ class FriendsViewHolder(val binding: ItemContactNormalBinding) : BaseFriendsView
             mixinIdTv.text = item.identityNumber
             mixinIdTv.highLight(filter)
             avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
-            item.showVerifiedOrBot(verifiedIv, botIv)
+            item.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
         }
         itemView.setOnClickListener {
             listener?.onItemClick(item)

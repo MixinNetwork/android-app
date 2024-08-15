@@ -29,7 +29,9 @@ import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.membershipIcon
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {
@@ -76,6 +78,19 @@ abstract class BaseViewHolder constructor(containerView: View) :
                 it.setBounds(0, 0, dp12, dp12)
             }
         }
+
+        protected fun getMembershipBadge(messageItem: ChatHistoryMessageItem): Drawable? {
+            return messageItem.membership.membershipIcon().let { icon ->
+                if (icon == View.NO_ID) {
+                    null
+                } else {
+                    AppCompatResources.getDrawable(itemView.context, icon)?.also {
+                        it.setBounds(0, 0, dp12, dp12)
+                    }
+                }
+            }
+        }
+
         protected val isNightMode by lazy {
             itemView.context.booleanFromAttribute(R.attr.flag_night)
         }

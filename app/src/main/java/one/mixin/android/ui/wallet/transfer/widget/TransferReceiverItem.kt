@@ -33,13 +33,20 @@ class TransferReceiverItem : LinearLayout {
         _binding.apply {
             name.text = "${user.fullName} (${user.identityNumber})"
             userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
-            if (user.isVerified == true) {
+            if (user.isMembership()) {
+                membershipIv.isVisible = true
+                verifiedIv.isVisible = false
+                botIv.isVisible = false
+            } else if (user.isVerified == true) {
+                membershipIv.isVisible = false
                 verifiedIv.isVisible = true
                 botIv.isVisible = false
             } else if (user.isBot()) {
+                membershipIv.isVisible = false
                 verifiedIv.isVisible = false
                 botIv.isVisible = true
             } else {
+                membershipIv.isVisible = false
                 verifiedIv.isVisible = false
                 botIv.isVisible = false
             }

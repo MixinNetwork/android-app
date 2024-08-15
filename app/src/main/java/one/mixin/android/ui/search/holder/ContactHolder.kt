@@ -20,7 +20,7 @@ class ContactHolder constructor(
             normal.highLight(target)
             mixinIdTv.text = user.identityNumber
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            user.showVerifiedOrBot(verifiedIv, botIv)
+            user.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
             root.setOnClickListener {
                 onItemClickListener?.onUserClick(user)
             }

@@ -60,18 +60,18 @@ interface AppDao : BaseDao<App> {
     @Query("SELECT a.* FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
     fun observerFavoriteApps(userId: String): LiveData<List<App>>
 
-    @Query("SELECT a.*, u.is_verified FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id LEFT JOIN users u ON u.user_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
+    @Query("SELECT a.*, u.is_verified, u.membership FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id LEFT JOIN users u ON u.user_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
     suspend fun getFavoriteAppsByUserId(userId: String): List<ExploreApp>
 
     @Query(
         """
-        SELECT a.*, u.is_verified FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id = :userId)
+        SELECT a.*, u.is_verified, u.membership FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id = :userId)
         """,
     )
     suspend fun getUnfavoriteApps(userId: String): List<ExploreApp>
 
     @Query(
-        "SELECT a.*, u.is_verified FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE u.relationship = 'FRIEND' ORDER BY u.full_name ASC",
+        "SELECT a.*, u.is_verified, u.membership FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE u.relationship = 'FRIEND' ORDER BY u.full_name ASC",
     )
     suspend fun getAllExploreApps(): List<ExploreApp>
 

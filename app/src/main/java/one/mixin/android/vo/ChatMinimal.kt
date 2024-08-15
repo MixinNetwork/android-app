@@ -23,6 +23,7 @@ data class ChatMinimal(
     val ownerMuteUntil: String?,
     val muteUntil: String?,
     val pinTime: String?,
+    val membership: Membership?
 ) : Parcelable, IConversationCategory {
     override val conversationCategory: String
         get() = category
@@ -44,24 +45,37 @@ data class ChatMinimal(
             else -> ""
         }
     }
+
+    fun isMembership():Boolean {
+        return membership?.isMembership() == true
+    }
 }
 
 fun ChatMinimal.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
+    membershipView: View
 ) {
     when {
+        isMembership() ->{
+            verifiedView.isVisible = false
+            botView.isVisible = false
+            membershipView.isVisible = true
+        }
         isVerified == true -> {
             verifiedView.isVisible = true
             botView.isVisible = false
+            membershipView.isVisible = false
         }
         appId != null -> {
             verifiedView.isVisible = false
             botView.isVisible = true
+            membershipView.isVisible = false
         }
         else -> {
             verifiedView.isVisible = false
             botView.isVisible = false
+            membershipView.isVisible = false
         }
     }
 }

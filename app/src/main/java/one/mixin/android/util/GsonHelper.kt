@@ -51,9 +51,9 @@ object GsonHelper {
         ): Plan? {
             return when (json?.asString) {
                 Plan.None.value -> Plan.None
-                Plan.STANDARD.value -> Plan.STANDARD
-                Plan.BASIC.value -> Plan.BASIC
-                Plan.PREMIUM.value -> Plan.PREMIUM
+                Plan.ELITE.value -> Plan.ELITE
+                Plan.ADVANCE.value -> Plan.ADVANCE
+                Plan.PROSPERITY.value -> Plan.PROSPERITY
                 else -> null
             }
         }

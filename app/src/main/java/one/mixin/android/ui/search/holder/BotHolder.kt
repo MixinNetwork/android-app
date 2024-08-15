@@ -21,7 +21,7 @@ class BotHolder(
             mixinIdTv.text = user.identityNumber
             mixinIdTv.highLight(target)
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            user.showVerifiedOrBot(verifiedIv, botIv)
+            user.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
             root.setOnClickListener {
                 onItemClickListener?.onItemClick(user)
             }
