@@ -26,17 +26,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/top_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="?attr/bg_white"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -67,7 +65,7 @@
                             android:layout_marginStart="@dimen/margin16"
                             android:layout_alignParentStart="true"
                             android:textSize="14sp"
-                            android:textColor="?attr/text_assist"
+                            android:textColor="?attr/text_minor"
                             android:text="@string/Balance"
                             tools:ignore="RelativeOverlap" />
 
@@ -108,19 +106,17 @@
                         android:layout_marginEnd="16dp"/>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/market_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="?attr/bg_white"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -145,7 +141,7 @@
                         android:layout_alignParentStart="true"
                         android:textSize="14sp"
                         android:text="@string/Market"
-                        android:textColor="?attr/text_assist"
+                        android:textColor="?attr/text_minor"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
@@ -182,25 +178,21 @@
                         android:layout_below="@id/contract_iv"
                         android:layout_marginTop="10dp"
                         android:layout_alignEnd="@id/contract_iv"
-                        android:layout_width="102dp"
-                        android:layout_height="44dp" />
+                        android:layout_width="150dp"
+                        android:layout_height="48dp" />
 
                 </RelativeLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/bottom_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="20dp"
-                android:paddingBottom="10dp"
-                android:visibility="gone"
-                app:cardBackgroundColor="?attr/bg_white"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
 
                 <LinearLayout
                     android:layout_height="wrap_content"
@@ -234,7 +226,7 @@
                             android:layout_alignParentStart="true"
                             android:textSize="14sp"
                             android:text="@string/Transactions"
-                            android:textColor="?attr/text_assist"
+                            android:textColor="?attr/text_minor"
                             tools:ignore="RelativeOverlap" />
                     </RelativeLayout>
 
@@ -272,7 +264,7 @@
                         android:text="@string/No_transactions"
                         android:textColor="?attr/text_assist" />
                 </RelativeLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
         </LinearLayout>
     </ScrollView>
 

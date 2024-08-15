@@ -128,7 +128,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 }
             }
             value.text = try {
-                if (asset.fiat().toFloat() == 0f) {
+                if (asset.priceFiat().toFloat() == 0f) {
                     "≈ ${Fiats.getSymbol()}0.00"
                 } else {
                     "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"

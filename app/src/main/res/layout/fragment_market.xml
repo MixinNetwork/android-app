@@ -24,17 +24,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/market_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="?attr/bg_white"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -70,7 +68,7 @@
                             android:layout_below="@id/price"
                             android:textFontWeight="600"
                             android:textColor="?attr/text_minor"
-                            android:text="@string/NA"/>
+                            android:text="@string/NA" />
 
                         <TextView
                             android:id="@+id/price_rise"
@@ -91,7 +89,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_height="184dp"
                         android:layout_marginTop="24dp"
-                        android:layout_below="@+id/title_rl"/>
+                        android:layout_below="@+id/title_rl" />
 
                     <RadioGroup
                         android:id="@+id/radio_group"
@@ -108,7 +106,7 @@
                             android:id="@+id/radio_1d"
                             style="@style/AppTheme.RadioButtonDateStyle"
                             android:text="1D"
-                            android:checked="true"/>
+                            android:checked="true" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/radio_1w"
@@ -155,7 +153,7 @@
                         android:layout_below="@id/market_low_title"
                         android:layout_marginTop="11dp"
                         android:textFontWeight="600"
-                        android:text="@string/N_A"/>
+                        android:text="@string/N_A" />
 
                     <TextView
                         android:id="@+id/market_high_title"
@@ -179,22 +177,20 @@
                         android:layout_marginTop="11dp"
                         android:layout_marginBottom="20dp"
                         android:textFontWeight="600"
-                        android:text="@string/N_A"/>
+                        android:text="@string/N_A" />
 
                 </RelativeLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/balance_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="?attr/bg_white"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -280,19 +276,17 @@
                         android:textColor="@color/wallet_green" />
 
                 </RelativeLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/third_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="20dp"
-                app:cardBackgroundColor="?attr/bg_white"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -419,7 +413,7 @@
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/N_A"/>
+                        android:text="@string/N_A" />
 
                     <!-- All Time High -->
                     <TextView
@@ -447,7 +441,7 @@
                         android:textColor="?attr/text_assist"
                         android:textSize="16sp"
                         android:layout_marginTop="6dp"
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                     <!-- All Time Low -->
                     <TextView
@@ -475,10 +469,10 @@
                         android:textColor="?attr/text_assist"
                         android:textSize="16sp"
                         android:layout_marginTop="6dp"
-                        android:visibility="gone"/>
+                        android:visibility="gone" />
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
         </LinearLayout>
     </ScrollView>
