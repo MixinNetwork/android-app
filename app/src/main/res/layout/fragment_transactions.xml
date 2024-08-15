@@ -67,7 +67,7 @@
                             android:layout_marginStart="@dimen/margin16"
                             android:layout_alignParentStart="true"
                             android:textSize="14sp"
-                            android:textColor="?attr/text_assist"
+                            android:textColor="?attr/text_minor"
                             android:text="@string/Balance"
                             tools:ignore="RelativeOverlap" />
 
@@ -145,7 +145,7 @@
                         android:layout_alignParentStart="true"
                         android:textSize="14sp"
                         android:text="@string/Market"
-                        android:textColor="?attr/text_assist"
+                        android:textColor="?attr/text_minor"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
@@ -234,7 +234,7 @@
                             android:layout_alignParentStart="true"
                             android:textSize="14sp"
                             android:text="@string/Transactions"
-                            android:textColor="?attr/text_assist"
+                            android:textColor="?attr/text_minor"
                             tools:ignore="RelativeOverlap" />
                     </RelativeLayout>
 
