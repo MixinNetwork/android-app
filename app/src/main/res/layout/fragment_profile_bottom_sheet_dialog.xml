@@ -56,7 +56,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="8dp"
                     android:layout_toEndOf="@id/name"
-                    android:src="@drawable/ic_membership_basic"
+                    android:src="@drawable/ic_membership_advance"
                     android:visibility="gone"
                     tools:ignore="ContentDescription" />
             </RelativeLayout>

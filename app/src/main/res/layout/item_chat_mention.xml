@@ -67,7 +67,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"
             android:contentDescription="@null"
-            android:src="@drawable/ic_membership_basic"
+            android:src="@drawable/ic_membership_advance"
             android:visibility="visible"/>
     </LinearLayout>
 

@@ -127,7 +127,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_marginStart="3dp"
-                android:src="@drawable/ic_membership_basic"
+                android:src="@drawable/ic_membership_advance"
                 android:layout_toEndOf="@id/bot_iv"
                 android:layout_alignTop="@id/name_tv"
                 android:layout_alignBottom="@id/name_tv"

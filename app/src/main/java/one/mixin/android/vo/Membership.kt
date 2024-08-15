@@ -28,9 +28,9 @@ data class Membership(
 @DrawableRes
 fun Membership?.membershipIcon() = when {
     this == null -> View.NO_ID
-    plan == Plan.ADVANCE -> R.drawable.ic_membership_basic
-    plan == Plan.PROSPERITY -> R.drawable.ic_membership_premium
-    plan == Plan.ELITE -> R.drawable.ic_membership_standard
+    plan == Plan.ADVANCE -> R.drawable.ic_membership_advance
+    plan == Plan.ELITE -> R.drawable.ic_membership_elite
+    plan == Plan.PROSPERITY -> R.drawable.ic_membership_prosperity
     else -> View.NO_ID
 }
 

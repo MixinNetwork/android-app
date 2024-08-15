@@ -181,7 +181,7 @@
 
 
                     <TextView
-                        android:id="@+id/market_vol_u_title"
+                        android:id="@+id/market_vol_c_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/vol_24h"
@@ -193,7 +193,7 @@
                         android:visibility="invisible"/>
 
                     <TextView
-                        android:id="@+id/market_vol_u"
+                        android:id="@+id/market_vol_c"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
@@ -208,7 +208,7 @@
                         android:visibility="invisible"/>
 
                     <TextView
-                        android:id="@+id/market_vol_c_title"
+                        android:id="@+id/market_vol_u_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/vol_24h"
@@ -218,7 +218,7 @@
                         android:layout_below="@id/market_high" />
 
                     <TextView
-                        android:id="@+id/market_vol_c"
+                        android:id="@+id/market_vol_u"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"

@@ -195,7 +195,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
 
     private fun volFormat(vol: String, rate: BigDecimal, symbol: String? = null): String {
         val formatVol = try {
-            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).toPlainString()
+            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).numberFormat2()
         } catch (e: NumberFormatException) {
             null
         }
