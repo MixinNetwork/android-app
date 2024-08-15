@@ -75,7 +75,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             chainTitle.text = getString(R.string.Chain).uppercase()
             contactAddressTitle.text = getString(R.string.Contract_Address).uppercase()
             circulationSupplyTitle.text = getString(R.string.Circulation_Supply).uppercase()
-            totalSupply.text = getString(R.string.Total_Supply).uppercase()
+            totalSupplyTitle.text = getString(R.string.Total_Supply).uppercase()
             allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
