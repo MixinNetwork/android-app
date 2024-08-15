@@ -182,8 +182,8 @@
                         android:layout_below="@id/contract_iv"
                         android:layout_marginTop="10dp"
                         android:layout_alignEnd="@id/contract_iv"
-                        android:layout_width="102dp"
-                        android:layout_height="44dp" />
+                        android:layout_width="150dp"
+                        android:layout_height="48dp" />
 
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
