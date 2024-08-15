@@ -78,6 +78,7 @@
         <item name="bg_chain_gradient_start">@color/chainGradientStart</item>
         <item name="bg_chain_gradient_end">@color/chainGradientEnd</item>
         <item name="icon_chain">@color/iconChain</item>
+        <item name="bg_market_card">@drawable/bg_market_card</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
