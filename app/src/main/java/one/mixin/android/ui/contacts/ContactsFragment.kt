@@ -174,7 +174,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             override fun onHeaderRl() {
                 ProfileBottomSheetDialogFragment.newInstance().showNow(
                     parentFragmentManager,
-                    UserBottomSheetDialogFragment.TAG,
+                    ProfileBottomSheetDialogFragment.TAG,
                 )
             }
 
