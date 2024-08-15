@@ -79,8 +79,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             totalSupplyTitle.text = getString(R.string.Total_Supply).uppercase()
             allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
-            marketVolCTitle.text = getString(R.string.vol_24h, asset.symbol)
-            marketVolUTitle.text = getString(R.string.vol_24h, Fiats.getAccountCurrencyAppearance())
+            marketVolCTitle.text = getString(R.string.vol_24h).uppercase()
+            marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
