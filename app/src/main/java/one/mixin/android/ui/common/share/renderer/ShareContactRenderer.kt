@@ -29,9 +29,8 @@ open class ShareContactRenderer(val context: Context) {
             user.avatarUrl,
             user.userId,
         )
-        binding.nameTv.text = user.fullName
+        binding.nameTv.setName(user)
         binding.idTv.text = user.identityNumber
-        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
         binding.chatTime.load(
             true,

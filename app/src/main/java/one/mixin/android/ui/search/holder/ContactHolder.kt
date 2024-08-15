@@ -16,11 +16,10 @@ class ContactHolder constructor(
         onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
         binding.apply {
-            normal.text = user.fullName
+            normal.setName(user)
             normal.highLight(target)
             mixinIdTv.text = user.identityNumber
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            user.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
             root.setOnClickListener {
                 onItemClickListener?.onUserClick(user)
             }

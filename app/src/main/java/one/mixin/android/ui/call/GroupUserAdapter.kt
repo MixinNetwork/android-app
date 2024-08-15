@@ -45,14 +45,13 @@ class GroupUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.Vi
         checkedMap: HashMap<String, Boolean>,
         alreadyUserIds: List<String>?,
     ) {
-        binding.normal.text = user.fullName
+        binding.normal.setName(user)
         binding.mixinIdTv.text = user.identityNumber
         binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         alreadyUserIds?.let {
             if (it.contains(user.userId)) {
                 binding.cb.setButtonDrawable(R.drawable.ic_round_gray)
                 binding.root.isEnabled = false
-                user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
                 return
             } else {
                 binding.cb.setButtonDrawable(R.drawable.cb_add_member)
@@ -60,7 +59,6 @@ class GroupUserViewHolder(val binding: ItemGroupFriendBinding) : RecyclerView.Vi
             }
         }
         binding.cb.isChecked = checkedMap[user.identityNumber] == true
-        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
         binding.cb.isClickable = false
         binding.root.setOnClickListener {
             if ((alreadyUserIds?.size ?: (0 + checkedMap.size)) >= GROUP_VOICE_MAX_COUNT) {
