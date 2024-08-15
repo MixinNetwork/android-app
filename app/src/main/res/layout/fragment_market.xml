@@ -179,6 +179,56 @@
                         android:textFontWeight="600"
                         android:text="@string/N_A" />
 
+
+                    <TextView
+                        android:id="@+id/market_vol_u_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vol_24h"
+                        android:textColor="?attr/text_remarks"
+                        android:textSize="12sp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginEnd="16dp"
+                        android:layout_below="@id/market_high"
+                        android:visibility="invisible"/>
+
+                    <TextView
+                        android:id="@+id/market_vol_u"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_below="@id/market_vol_u_title"
+                        android:layout_marginTop="11dp"
+                        android:layout_marginBottom="28dp"
+                        android:textFontWeight="600"
+                        android:text="@string/N_A"
+                        android:visibility="invisible"/>
+
+                    <TextView
+                        android:id="@+id/market_vol_c_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vol_24h"
+                        android:textColor="?attr/text_remarks"
+                        android:textSize="12sp"
+                        android:layout_marginStart="16dp"
+                        android:layout_below="@id/market_high" />
+
+                    <TextView
+                        android:id="@+id/market_vol_c"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp"
+                        android:layout_below="@id/market_vol_c_title"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="11dp"
+                        android:text="@string/N_A"
+                        android:textFontWeight="600"/>
+
                 </RelativeLayout>
             </FrameLayout>
 

@@ -28,6 +28,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -78,6 +79,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             totalSupplyTitle.text = getString(R.string.Total_Supply).uppercase()
             allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
+            marketVolCTitle.text = getString(R.string.vol_24h, asset.symbol)
+            marketVolUTitle.text = getString(R.string.vol_24h, Fiats.getAccountCurrencyAppearance())
             icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -169,6 +172,8 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)
                     marketLow.text = priceFormat(info.low24h)
+                    marketVolC.text = volFormat(info.totalVolume, BigDecimal(info.currentPrice))
+                    marketVolU.text = volFormat(info.totalVolume, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
 
                     circulationSupply.text = if (info.circulatingSupply == "0") {
                         getString(R.string.N_A)
@@ -186,6 +191,21 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 }
             }
         }
+    }
+
+    private fun volFormat(vol: String, rate: BigDecimal, symbol: String? = null): String {
+        val formatVol = try {
+            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).toPlainString()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatVol != null) {
+            if (symbol != null) {
+                return "$symbol$formatVol"
+            }
+            return formatVol
+        }
+        return getString(R.string.N_A)
     }
 
     private fun priceFormat(price: String): String {
