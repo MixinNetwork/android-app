@@ -817,6 +817,7 @@ fun callableSearchMessageItem(
             val cursorIndexOfUserId = 5
             val cursorIndexOfUserAvatarUrl = 6
             val cursorIndexOfUserFullName = 7
+            val cursorIndexOfUserMembership = 8
             val result: MutableList<SearchMessageItem> =
                 java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -864,6 +865,12 @@ fun callableSearchMessageItem(
                     } else {
                         cursor.getString(cursorIndexOfUserFullName)
                     }
+                val tmpUserMembership: String? =
+                    if (cursor.isNull(cursorIndexOfUserMembership)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserMembership)
+                    }
                 item =
                     SearchMessageItem(
                         tmpConversationId!!,
@@ -874,6 +881,7 @@ fun callableSearchMessageItem(
                         tmpUserFullName,
                         tmpUserAvatarUrl,
                         tmpConversationAvatarUrl,
+                        membershipConverter.revertData(tmpUserMembership)
                     )
                 result.add(item)
             }

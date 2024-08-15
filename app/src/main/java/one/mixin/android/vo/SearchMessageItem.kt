@@ -15,4 +15,9 @@ data class SearchMessageItem(
     val userFullName: String?,
     val userAvatarUrl: String?,
     val conversationAvatarUrl: String?,
-) : Parcelable
+    val membership: Membership?
+) : Parcelable {
+    fun isMembership(): Boolean {
+        return conversationCategory == ConversationCategory.CONTACT.name && membership?.isMembership() == true
+    }
+}

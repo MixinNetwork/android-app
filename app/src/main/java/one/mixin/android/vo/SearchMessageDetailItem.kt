@@ -14,7 +14,7 @@ data class SearchMessageDetailItem(
     val membership: Membership?
 ) : ICategory {
     fun isMembership(): Boolean {
-        return isContact() && membership?.isMembership() == true
+        return membership?.isMembership() == true
     }
     companion object {
         val DIFF_CALLBACK =

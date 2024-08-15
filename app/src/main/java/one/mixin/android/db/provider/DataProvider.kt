@@ -403,7 +403,7 @@ class DataProvider {
                 val sql = """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
-                u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
+                u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, u.membership AS membership 
                 FROM messages m
                 INNER JOIN conversations c ON c.conversation_id = m.conversation_id
 				INNER JOIN users u ON c.owner_id = u.user_id

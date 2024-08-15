@@ -636,6 +636,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             user.fullName,
                             user.avatarUrl,
                             null,
+                            null
                         )
                     } else {
                         SearchMessageItem(
@@ -647,6 +648,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             null,
                             null,
                             it.iconUrl,
+                            null
                         )
                     }
                 activity?.addFragment(
