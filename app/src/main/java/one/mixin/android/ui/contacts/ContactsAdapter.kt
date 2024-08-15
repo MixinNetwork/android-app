@@ -1,9 +1,11 @@
 package one.mixin.android.ui.contacts
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
@@ -13,8 +15,12 @@ import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
+import one.mixin.android.vo.Account
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
@@ -221,6 +227,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 if (account != null) {
                     binding.contactHeaderAvatar.setInfo(account.fullName, account.avatarUrl, account.userId)
                     binding.contactHeaderNameTv.text = account.fullName
+                    binding.contactHeaderNameTv.setCompoundDrawables(null, null, getMembershipBadge(account), null)
                     binding.contactHeaderIdTv.text =
                         itemView.context.getString(R.string.contact_mixin_id, account.identityNumber)
                     binding.contactHeaderMobileTv.text =
@@ -233,6 +240,22 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 binding.addContactRl.setOnClickListener { listener.onAddContact() }
                 binding.myQrFl.setOnClickListener { listener.onMyQr(self) }
                 binding.receiveFl.setOnClickListener { listener.onReceiveQr(self) }
+            }
+        }
+
+        private val dp12 by lazy {
+           binding.root.context.dpToPx(12f)
+        }
+
+        private fun getMembershipBadge(account: Account): Drawable? {
+            return account.membership.membershipIcon().let { icon ->
+                if (icon == View.NO_ID) {
+                    null
+                } else {
+                    AppCompatResources.getDrawable(binding.root.context, icon)?.also {
+                        it.setBounds(0, 0, dp12, dp12)
+                    }
+                }
             }
         }
     }

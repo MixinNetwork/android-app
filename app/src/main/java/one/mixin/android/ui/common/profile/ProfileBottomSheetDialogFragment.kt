@@ -59,7 +59,6 @@ import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
 import one.mixin.android.vo.membershipIcon
-import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 import timber.log.Timber
@@ -195,7 +194,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
             name.text = account.fullName
-            if (account.membership?.isMembership() == null) {
+            if (account.membership?.isMembership() == true) {
                 binding.membershipIv.isVisible = true
                 binding.membershipIv.setImageResource(account.membership.membershipIcon())
             } else {
