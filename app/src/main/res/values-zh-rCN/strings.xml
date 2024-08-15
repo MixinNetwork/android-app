@@ -1604,4 +1604,7 @@
     <string name="high_24h">24小时最高</string>
     <string name="low_24h">24小时最低</string>
     <string name="vol_24h">24小时交易量</string>
+    <string name="New_Update_Available">发现新版本</string>
+    <string name="New_Update_Available_desc">我们定期更新应用程序，以便为您提供更好的服务</string>
+    <string name="Update_Now">现在升级</string>
 </resources>

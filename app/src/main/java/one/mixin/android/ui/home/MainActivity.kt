@@ -12,6 +12,7 @@ import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
@@ -22,8 +23,10 @@ import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
+import com.google.android.gms.tasks.Task
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -85,6 +88,9 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isPlayStoreInstalled
+import one.mixin.android.extension.openExternalUrl
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
@@ -952,6 +958,44 @@ class MainActivity : BlazeBaseActivity() {
 
     fun openWallet() {
         navigationController.pushWallet(walletFragment)
+    }
+
+    fun showUpdate(releaseUrl: String?) {
+        if (isPlayStoreInstalled()) {
+            appUpdateManager
+                .appUpdateInfo
+                .addOnSuccessListener { appUpdateInfo ->
+                    if (appUpdateInfo.updateAvailability()
+                        == UpdateAvailability.UPDATE_AVAILABLE
+                    ) {
+                        appUpdateManager.startUpdateFlowForResult(
+                            appUpdateInfo,
+                            activityResultLauncher,
+                            AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                        )
+                    } else {
+                        Timber.e("No availability Update")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Timber.e(e)
+                }
+                .addOnCanceledListener {
+                    Timber.e("Update cancel")
+                }
+        } else {
+            releaseUrl?.let { url ->
+                openExternalUrl(url)
+            }
+        }
+    }
+
+    private val activityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            // Handle the case where the update was not successful
+        }
     }
 
     fun hideSearchLoading() {

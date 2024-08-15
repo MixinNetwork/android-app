@@ -1642,4 +1642,7 @@
     <string name="high_24h">24H HIGH</string>
     <string name="low_24h">24H LOW</string>
     <string name="vol_24h">24H VOL</string>
+    <string name="New_Update_Available">New Update Available</string>
+    <string name="New_Update_Available_desc">We update the app regularly so we can make \nit better for you</string>
+    <string name="Update_Now">Update Now</string>
 </resources>

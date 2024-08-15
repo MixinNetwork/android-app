@@ -57,10 +57,12 @@ open class Account(
     @SerializedName("salt_base64")
     var salt: String?,
     @SerializedName("membership")
-    val membership: Membership?
+    val membership: Membership?,
+    @SerializedName("system")
+    val system: AppVersion?
 )
 
-fun Account.toAccountWithoutSalt() = Account(userId, sessionId, type, identityNumber, relationship, fullName, biography, avatarUrl, phone, avatarBase64, pinToken, codeId, codeUrl, createdAt, receiveMessageSource, hasPin, tipKeyBase64, tipCounter, acceptConversationSource, acceptSearchSource, hasEmergencyContact, hasSafe, fiatCurrency, transferNotificationThreshold, transferConfirmationThreshold, features, null, null)
+fun Account.toAccountWithoutSalt() = Account(userId, sessionId, type, identityNumber, relationship, fullName, biography, avatarUrl, phone, avatarBase64, pinToken, codeId, codeUrl, createdAt, receiveMessageSource, hasPin, tipKeyBase64, tipCounter, acceptConversationSource, acceptSearchSource, hasEmergencyContact, hasSafe, fiatCurrency, transferNotificationThreshold, transferConfirmationThreshold, features, null, membership, system)
 
 fun Account.toUser(): User {
     return User(userId, identityNumber, relationship, biography ?: "", fullName, avatarUrl, phone, null, createdAt, null, hasPin, membership = membership)
