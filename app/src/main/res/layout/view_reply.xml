@@ -24,6 +24,7 @@
         android:lines="1"
         android:textColor="?attr/text_primary"
         android:textSize="14sp"
+        android:drawablePadding="1.5dp"
         app:layout_constraintWidth_max="240dp"
         app:layout_constraintBottom_toTopOf="@id/reply_view_tv"
         app:layout_constraintEnd_toStartOf="@id/reply_view_iv"
