@@ -35,6 +35,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ConversationCheckView : LinearLayout, Checkable {
@@ -110,6 +111,12 @@ class ConversationCheckView : LinearLayout, Checkable {
                 normal.text = item.name
                 mixinIdTv.text = item.ownerIdentityNumber
                 avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
+            }
+            if (item.isMembership()) {
+                membershipIv.setImageResource(item.membership.membershipIcon())
+                membershipIv.isVisible = true
+            } else {
+                membershipIv.isVisible = false
             }
             botIv.isVisible = item.isBot()
             setOnClickListener {

@@ -11,7 +11,11 @@ data class SearchMessageDetailItem(
     val userId: String,
     val userFullName: String?,
     val userAvatarUrl: String?,
+    val membership: Membership?
 ) : ICategory {
+    fun isMembership(): Boolean {
+        return isContact() && membership?.isMembership() == true
+    }
     companion object {
         val DIFF_CALLBACK =
             object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {

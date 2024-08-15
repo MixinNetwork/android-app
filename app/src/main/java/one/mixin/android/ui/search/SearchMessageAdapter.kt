@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
@@ -19,6 +20,7 @@ import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.membershipIcon
 
 class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
     var query: String = ""
@@ -94,6 +96,12 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
         } else {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
             binding.searchMsgTv.text = message.content
+        }
+        if (message.isMembership()) {
+            binding.badge.isVisible = true
+            binding.badge.setImageResource(message.membership.membershipIcon())
+        } else {
+            binding.badge.isVisible = false
         }
         binding.searchTimeTv.timeAgoDate(message.createdAt)
         binding.searchMsgTv.highLight(query)

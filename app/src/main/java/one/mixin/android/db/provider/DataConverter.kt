@@ -422,6 +422,7 @@ fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDe
     val cursorIndexOfContent = cursor.getColumnIndexOrThrow("content")
     val cursorIndexOfCreatedAt = cursor.getColumnIndexOrThrow("createdAt")
     val cursorIndexOfMediaName = cursor.getColumnIndexOrThrow("mediaName")
+    val cursorIndexOfMembership = cursor.getColumnIndexOrThrow("membership")
     val res = ArrayList<SearchMessageDetailItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: SearchMessageDetailItem
@@ -433,6 +434,7 @@ fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDe
         val tmpContent = cursor.getString(cursorIndexOfContent)
         val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
         val tmpMediaName = cursor.getString(cursorIndexOfMediaName)
+        val tmpMembership = cursor.getString(cursorIndexOfMembership)
         item =
             SearchMessageDetailItem(
                 tmpMessageId,
@@ -443,6 +445,7 @@ fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDe
                 tmpUserId,
                 tmpUserFullName,
                 tmpUserAvatarUrl,
+                membershipConverter.revertData(tmpMembership)
             )
         res.add(item)
     }
