@@ -237,7 +237,7 @@ interface MessageDao : BaseDao<Message> {
         m.quote_message_id as quoteId, m.quote_content as quoteContent, 
         st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId, 
         st.name AS assetName, st.asset_type AS assetType, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber, 
-        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions 
+        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, u.membership 
         FROM messages m 
         INNER JOIN users u ON m.user_id = u.user_id 
         LEFT JOIN stickers st ON st.sticker_id = m.sticker_id 

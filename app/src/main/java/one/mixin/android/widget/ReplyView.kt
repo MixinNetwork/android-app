@@ -1,6 +1,7 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -37,6 +38,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.membershipIcon
 
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
     private val binding = ViewReplyBinding.inflate(LayoutInflater.from(context), this, true)
@@ -180,5 +182,19 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
         }
         binding.replyNameTv.text = messageItem.userFullName
+        binding.replyNameTv.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+    }
+
+    private fun getMembershipBadge(messageItem: MessageItem): Drawable? {
+        if (messageItem.membership?.isMembership() != true) return null
+        return messageItem.membership.membershipIcon().let { icon ->
+            if (icon == View.NO_ID) {
+                null
+            } else {
+                AppCompatResources.getDrawable(context, icon)?.also {
+                    it.setBounds(0, 0, dp12, dp12)
+                }
+            }
+        }
     }
 }

@@ -71,6 +71,7 @@ data class QuoteMessageItem(
     @SerializedName(value = "shared_user_avatar_url", alternate = ["sharedUserAvatarUrl"])
     val sharedUserAvatarUrl: String? = null,
     val mentions: String? = null,
+    val membership: Membership? = null,
 ) : Parcelable {
     constructor(messageItem: MessageItem) : this(
         messageItem.messageId,
@@ -108,6 +109,7 @@ data class QuoteMessageItem(
         messageItem.sharedUserIdentityNumber,
         messageItem.sharedUserAvatarUrl,
         messageItem.mentions,
+        messageItem.membership
     )
 }
 

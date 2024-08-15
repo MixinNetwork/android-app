@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -32,6 +33,7 @@ import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.membershipIcon
 import timber.log.Timber
 import java.io.File
 
@@ -71,6 +73,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             binding.replyNameTv.visibility = View.VISIBLE
             binding.replyNameTv.text = quoteMessageItem.userFullName
             binding.replyNameTv.setTextColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
+            binding.replyNameTv.setCompoundDrawables(null, null, getMembershipBadge(quoteMessageItem), null)
             setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
             background.alpha = 0x0D
             binding.startView.setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
@@ -264,6 +267,23 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 }
                 else -> {
                     binding.replyIv.visibility = View.GONE
+                }
+            }
+        }
+
+        private val dp12 by lazy {
+            context.dpToPx(12f)
+        }
+
+        private fun getMembershipBadge(messageItem: QuoteMessageItem?): Drawable? {
+            if (messageItem?.membership?.isMembership() != true) return null
+            return messageItem?.membership.membershipIcon().let { icon ->
+                if (icon == View.NO_ID) {
+                    null
+                } else {
+                    AppCompatResources.getDrawable(context, icon)?.also {
+                        it.setBounds(0, 0, dp12, dp12)
+                    }
                 }
             }
         }
