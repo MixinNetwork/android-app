@@ -14,7 +14,7 @@
         android:text="@string/Send_transfer"
         android:textSize="14sp"
         android:textFontWeight="600"
-        android:textColor="?attr/text_minor" />
+        android:textColor="?attr/text_primary" />
 
     <View
         android:layout_width="2dp"
@@ -36,7 +36,7 @@
             android:textFontWeight="600"
             android:text="@string/Receive"
             android:textSize="14sp"
-            android:textColor="?attr/text_minor" />
+            android:textColor="?attr/text_primary" />
 
         <ProgressBar
             android:id="@+id/receive_progress"
@@ -71,7 +71,7 @@
             android:text="@string/Buy"
             android:textSize="14sp"
             android:textFontWeight="600"
-            android:textColor="?attr/text_minor" />
+            android:textColor="?attr/text_primary" />
 
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"
@@ -104,7 +104,7 @@
             android:text="@string/Swap"
             android:textSize="14sp"
             android:textFontWeight="600"
-            android:textColor="?attr/text_minor" />
+            android:textColor="?attr/text_primary" />
 
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"
