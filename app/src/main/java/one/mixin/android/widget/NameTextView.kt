@@ -8,6 +8,8 @@ import androidx.appcompat.widget.AppCompatTextView
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.vo.ConversationMinimal
+import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.membershipIcon
@@ -25,6 +27,11 @@ class NameTextView : AppCompatTextView {
         a.recycle()
     }
 
+    fun setTextOnly(text: String?) {
+        this.text = text
+        setCompoundDrawables(null, null, null, null)
+    }
+
     fun setName(user: User) {
         text = user.fullName
         setCompoundDrawables(null, null, getBadge(user), null)
@@ -38,6 +45,16 @@ class NameTextView : AppCompatTextView {
             text = item.name
             setCompoundDrawables(null, null, getBadge(item), null)
         }
+    }
+
+    fun setName(message: MessageItem) {
+        text = message.sharedUserFullName
+        setCompoundDrawables(null, null, getBadge(message), null)
+    }
+
+    fun setName(message: ChatHistoryMessageItem) {
+        text = message.sharedUserFullName
+        setCompoundDrawables(null, null, getBadge(message), null)
     }
 
     private val dp12 by lazy {
@@ -59,7 +76,7 @@ class NameTextView : AppCompatTextView {
         }
         return resources?.let { it ->
             AppCompatResources.getDrawable(context, it).also { icon ->
-                icon?.setBounds(0, 0, dp12, dp12)
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }
     }
@@ -74,7 +91,41 @@ class NameTextView : AppCompatTextView {
         }
         return resources?.let { it ->
             AppCompatResources.getDrawable(context, it).also { icon ->
-                icon?.setBounds(0, 0, dp12, dp12)
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(item: MessageItem): Drawable? {
+        val resources = if (item.isSharedMembership()) {
+            item.sharedMembership.membershipIcon()
+        } else if (item.sharedUserIsVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (item.sharedUserAppId != null) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { it ->
+            AppCompatResources.getDrawable(context, it).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(item: ChatHistoryMessageItem): Drawable? {
+        val resources = if (item.isSharedMembership()) {
+            item.sharedMembership.membershipIcon()
+        } else if (item.sharedUserIsVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (item.sharedUserAppId != null) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { it ->
+            AppCompatResources.getDrawable(context, it).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }
     }

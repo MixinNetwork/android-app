@@ -39,9 +39,8 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             messageItem.sharedUserId
                 ?: "0",
         )
-        binding.nameTv.text = messageItem.sharedUserFullName
+        binding.nameTv.setName(messageItem)
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
         val isMe = Session.getAccountId() == messageItem.userId
         if (isFirst && !isMe) {
