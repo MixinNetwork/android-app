@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import android.view.View
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import kotlinx.parcelize.Parcelize
 import org.threeten.bp.Instant
@@ -54,13 +55,14 @@ data class ChatMinimal(
 fun ChatMinimal.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
-    membershipView: View
+    membershipView: ImageView
 ) {
     when {
         isMembership() ->{
             verifiedView.isVisible = false
             botView.isVisible = false
             membershipView.isVisible = true
+            membershipView.setImageResource(membership.membershipIcon())
         }
         isVerified == true -> {
             verifiedView.isVisible = true
