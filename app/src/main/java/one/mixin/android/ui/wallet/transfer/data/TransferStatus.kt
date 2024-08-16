@@ -5,4 +5,5 @@ enum class TransferStatus {
     AWAITING_CONFIRMATION,
     FAILED,
     SUCCESSFUL,
+    SIGNED
 }

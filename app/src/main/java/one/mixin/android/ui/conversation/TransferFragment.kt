@@ -202,7 +202,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             binding.titleView.rightIb.setOnClickListener {
                 val u = t.users.first()
                 dismiss()
-                navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG, AllTransactionsFragment.TAG)
+                navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId, u.membership)), AllTransactionsFragment.TAG, AllTransactionsFragment.TAG)
             }
         } else {
             binding.titleView.rightIb.isVisible = false

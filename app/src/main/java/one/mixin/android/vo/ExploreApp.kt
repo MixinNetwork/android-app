@@ -1,8 +1,10 @@
 package one.mixin.android.vo
 
+import androidx.annotation.DrawableRes
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
+import one.mixin.android.R
 
 class ExploreApp(
     @SerializedName("app_id")
@@ -27,6 +29,13 @@ class ExploreApp(
     val iconUrl: String,
     @ColumnInfo(name = "is_verified")
     val isVerified: Boolean?,
+    @ColumnInfo(name = "membership")
+    val membership: Membership?
 ) : BotInterface {
     override fun getBotId() = appId
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
+
 }

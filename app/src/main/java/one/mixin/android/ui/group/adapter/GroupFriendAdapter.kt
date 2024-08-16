@@ -114,7 +114,7 @@ class GroupFriendAdapter :
                     if (it.contains(user.userId)) {
                         binding.cb.setButtonDrawable(R.drawable.ic_round_gray)
                         itemView.isEnabled = false
-                        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+                        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
                         return
                     } else {
                         binding.cb.setButtonDrawable(R.drawable.cb_add_member)
@@ -125,7 +125,7 @@ class GroupFriendAdapter :
             if (checkedMap.containsKey(user.identityNumber)) {
                 binding.cb.isChecked = checkedMap[user.identityNumber]!!
             }
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
                 binding.cb.isChecked = !binding.cb.isChecked

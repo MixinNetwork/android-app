@@ -57,6 +57,7 @@
         <item name="bg_chain_gradient_start">@color/chainGradientStartNight</item>
         <item name="bg_chain_gradient_end">@color/chainGradientEndNight</item>
         <item name="icon_chain">@color/iconChainNight</item>
+        <item name="bg_market_card">@drawable/bg_market_card_night</item>
 
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>

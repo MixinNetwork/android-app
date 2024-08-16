@@ -81,5 +81,5 @@
     <attr name="bg_chain_gradient_start" format="color|reference" />
     <attr name="bg_chain_gradient_end" format="color|reference" />
     <attr name="icon_chain" format="color|reference" />
-
+    <attr name="bg_market_card" format="reference" />
 </resources>

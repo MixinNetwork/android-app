@@ -3,6 +3,8 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import android.view.View
+import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
@@ -15,6 +17,7 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.R
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -87,7 +90,11 @@ data class User(
     @SerialName("is_deactivated")
     @ColumnInfo("is_deactivated")
     val isDeactivated: Boolean? = null,
-) : Parcelable {
+    @SerializedName("membership")
+    @SerialName("membership")
+    @ColumnInfo("membership")
+    val membership: Membership? = null,
+    ) : Parcelable {
     @SerializedName("app")
     @Ignore
     @IgnoredOnParcel
@@ -113,6 +120,10 @@ data class User(
     fun isBot(): Boolean {
         return appId != null
     }
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
 }
 
 const val SYSTEM_USER = "00000000-0000-0000-0000-000000000000"
@@ -128,19 +139,29 @@ fun User.notMessengerUser(): Boolean {
 fun User.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
+    membershipIv: ImageView
 ) {
     when {
+        isMembership() -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+            membershipIv.setImageResource(membership.membershipIcon())
+            membershipIv.isVisible = true
+        }
         isVerified == true -> {
             verifiedView.isVisible = true
             botView.isVisible = false
+            membershipIv.isVisible = false
         }
         isBot() -> {
             verifiedView.isVisible = false
             botView.isVisible = true
+            membershipIv.isVisible = false
         }
         else -> {
             verifiedView.isVisible = false
             botView.isVisible = false
+            membershipIv.isVisible = false
         }
     }
 }

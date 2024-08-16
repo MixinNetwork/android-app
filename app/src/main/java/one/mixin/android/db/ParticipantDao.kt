@@ -17,7 +17,7 @@ interface ParticipantDao : BaseDao<Participant> {
             SELECT p.conversation_id as conversationId, p.role as role, p.created_at as createdAt, 
             u.user_id as userId, u.identity_number as identityNumber, u.relationship as relationship, u.biography as biography, u.full_name as fullName, 
             u.avatar_url as avatarUrl, u.phone as phone, u.is_verified as isVerified, u.created_at as userCreatedAt, u.mute_until as muteUntil,
-            u.has_pin as hasPin, u.app_id as appId, u.is_scam as isScam 
+            u.has_pin as hasPin, u.app_id as appId, u.is_scam as isScam, u.membership as membership
         """
     }
 

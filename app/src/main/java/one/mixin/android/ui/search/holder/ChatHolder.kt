@@ -24,10 +24,11 @@ class ChatHolder(val binding: ItemSearchChatBinding) : NormalHolder(binding.root
             binding.searchName.text = chat.fullName
             binding.searchName.highLight(target)
             binding.searchAvatarIv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
-            chat.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            chat.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
         } else {
             binding.botIv.visibility = View.GONE
             binding.verifiedIv.visibility = View.GONE
+            binding.membershipIv.visibility = View.GONE
             binding.searchName.text = chat.groupName
             binding.searchName.highLight(target)
             binding.searchAvatarIv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)

@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
@@ -57,6 +58,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 import timber.log.Timber
@@ -192,6 +194,12 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
             name.text = account.fullName
+            if (account.membership?.isMembership() == true) {
+                binding.membershipIv.isVisible = true
+                binding.membershipIv.setImageResource(account.membership.membershipIcon())
+            } else {
+                binding.membershipIv.isVisible = false
+            }
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
             idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
             detailTv.originalText = account.biography ?: ""

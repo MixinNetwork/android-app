@@ -208,7 +208,10 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             if (isFirst && !isMe) {
                 binding.chatName.visibility = View.VISIBLE
                 binding.chatName.text = messageItem.userFullName
-                if (messageItem.appId != null) {
+                if (messageItem.membership != null) {
+                    binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+                    binding.chatName.compoundDrawablePadding = 3.dp
+                } else if (messageItem.appId != null) {
                     binding.chatName.setCompoundDrawables(null, null, botIcon, null)
                     binding.chatName.compoundDrawablePadding = 3.dp
                 } else {
@@ -220,7 +223,10 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
                 binding.chatName.visibility = View.GONE
             }
 
-            if (messageItem.appId != null) {
+            if (messageItem.membership != null) {
+                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+                binding.chatName.compoundDrawablePadding = 3.dp
+            } else if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
                 binding.chatName.compoundDrawablePadding = 3.dp
             } else {

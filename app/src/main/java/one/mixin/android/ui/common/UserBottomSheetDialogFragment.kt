@@ -325,7 +325,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             menu {
                 title = getString(R.string.Transactions)
                 action = {
-                    navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId)), AllTransactionsFragment.TAG, AllTransactionsFragment.TAG)
+                    navTo(AllTransactionsFragment.newInstance(UserItem(u.userId, u.fullName, u.avatarUrl, u.identityNumber, u.isVerified, u.appId, u.membership)), AllTransactionsFragment.TAG, AllTransactionsFragment.TAG)
                     dismiss()
                 }
             }
@@ -636,6 +636,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             user.fullName,
                             user.avatarUrl,
                             null,
+                            null
                         )
                     } else {
                         SearchMessageItem(
@@ -647,6 +648,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             null,
                             null,
                             it.iconUrl,
+                            null
                         )
                     }
                 activity?.addFragment(
@@ -804,7 +806,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 binding.detailTv.visibility = GONE
             }
             updateUserStatus(user.relationship)
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
             binding.opLl.isVisible = true
             if (user.isBot()) {
                 binding.openFl.visibility = VISIBLE

@@ -23,6 +23,7 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.isSecret
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {
@@ -146,7 +147,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
+            if (messageItem.membership != null) {
+                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+                binding.chatName.compoundDrawablePadding = 3.dp
+            } else if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
                 binding.chatName.compoundDrawablePadding = 3.dp
             } else {
@@ -158,7 +162,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
             binding.chatName.visibility = View.GONE
         }
 
-        if (messageItem.appId != null) {
+        if (messageItem.membership != null) {
+            binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+            binding.chatName.compoundDrawablePadding = 3.dp
+        } else if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
             binding.chatName.compoundDrawablePadding = 3.dp
         } else {

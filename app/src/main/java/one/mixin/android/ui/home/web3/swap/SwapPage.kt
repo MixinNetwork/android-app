@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.swap
 
+import PageScaffold
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,7 +10,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,9 +28,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -59,7 +56,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
-import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
@@ -84,7 +80,7 @@ fun SwapPage(
     onSwap: () -> Unit,
     pop: () -> Unit,
 ) {
-    SwapPageScaffold(
+    PageScaffold(
         title = stringResource(id = R.string.Swap),
         verticalScrollable = true,
         pop = pop,
@@ -194,7 +190,6 @@ fun SwapPage(
                                     backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                                 ),
                             shape = RoundedCornerShape(32.dp),
-                            contentPadding = PaddingValues(vertical = 16.dp),
                             elevation =
                                 ButtonDefaults.elevation(
                                     pressedElevation = 0.dp,
@@ -289,46 +284,6 @@ fun InputArea(
         }
         Box(modifier = Modifier.height(16.dp))
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
-    }
-}
-
-@Composable
-fun SwapPageScaffold(
-    title: String,
-    verticalScrollable: Boolean = true,
-    pop: () -> Unit,
-    body: @Composable ColumnScope.() -> Unit,
-) {
-    Scaffold(
-        backgroundColor = MixinAppTheme.colors.background,
-        topBar = {
-            MixinTopAppBar(
-                title = {
-                    Text(title)
-                },
-                navigationIcon = {
-                    IconButton(onClick = { pop() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.icon,
-                        )
-                    }
-                },
-            )
-        },
-    ) {
-        Column(
-            Modifier
-                .padding(it)
-                .apply {
-                    if (verticalScrollable) {
-                        verticalScroll(rememberScrollState())
-                    }
-                },
-        ) {
-            body()
-        }
     }
 }
 
@@ -606,10 +561,10 @@ fun PreviewInputActionMax() {
     InputAction("MAX") {}
 }
 
-/*
+/**
  * @return True if the input was successful, false if the balance is insufficient, or null if the input is invalid.
  */
-private fun checkBalance(
+fun checkBalance(
     inputText: String,
     balance: String?,
 ): Boolean? {

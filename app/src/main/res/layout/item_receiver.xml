@@ -48,4 +48,14 @@
         android:visibility="gone"
         android:contentDescription="@null" />
 
+    <ImageView
+        android:id="@+id/membership_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="6dp"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_membership_advance"
+        android:visibility="gone"
+        android:contentDescription="@null"/>
+
 </merge>

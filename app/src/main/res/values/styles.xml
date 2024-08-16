@@ -78,6 +78,7 @@
         <item name="bg_chain_gradient_start">@color/chainGradientStart</item>
         <item name="bg_chain_gradient_end">@color/chainGradientEnd</item>
         <item name="icon_chain">@color/iconChain</item>
+        <item name="bg_market_card">@drawable/bg_market_card</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
@@ -434,6 +435,18 @@
     <style name="AppTheme.DaySelectedStyle" parent="Widget.MaterialComponents.MaterialCalendar.Day.Selected">
         <item name="itemFillColor">?color_accent</item>
         <item name="itemTextColor">#FFF</item>
+    </style>
+
+    <style name="AppTheme.RadioButtonDateStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_radio_date</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:padding">4dp</item>
     </style>
 
 </resources>

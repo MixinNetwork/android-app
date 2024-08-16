@@ -10,6 +10,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Parcelable
 import android.view.View
+import android.widget.ImageView
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
@@ -111,6 +112,7 @@ data class MessageItem(
     val sharedUserAvatarUrl: String? = null,
     val sharedUserIsVerified: Boolean? = null,
     val sharedUserAppId: String? = null,
+    val sharedMembership: Membership? = null,
     val mediaWaveform: ByteArray? = null,
     val quoteId: String? = null,
     val quoteContent: String? = null,
@@ -120,7 +122,8 @@ data class MessageItem(
     val isPin: Boolean? = null,
     val expireIn: Long? = null,
     val expireAt: Long? = null,
-    val caption: String? = null
+    val caption: String? = null,
+    val membership: Membership? = null
 ) : Parcelable, ICategory {
     @IgnoredOnParcel
     @Ignore
@@ -217,6 +220,10 @@ data class MessageItem(
         this.canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
 
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
+
+    fun isMembership() = membership?.isMembership() == true
+
+    fun isSharedMembership() = sharedMembership?.isMembership() == true
 }
 
 fun create(
@@ -291,19 +298,29 @@ fun MessageItem.mediaDownloaded() =
 fun MessageItem.showVerifiedOrBot(
     verifiedView: View,
     botView: View,
+    membershipView: ImageView
 ) {
     when {
+        isSharedMembership() -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+            membershipView.isVisible = true
+            membershipView.setImageResource(sharedMembership.membershipIcon())
+        }
         sharedUserIsVerified == true -> {
             verifiedView.isVisible = true
             botView.isVisible = false
+            membershipView.isVisible = false
         }
         sharedUserAppId != null -> {
             verifiedView.isVisible = false
             botView.isVisible = true
+            membershipView.isVisible = false
         }
         else -> {
             verifiedView.isVisible = false
             botView.isVisible = false
+            membershipView.isVisible = false
         }
     }
 }

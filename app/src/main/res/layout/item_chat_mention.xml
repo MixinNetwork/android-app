@@ -59,6 +59,16 @@
             android:contentDescription="@null"
             android:src="@drawable/ic_bot"
             android:visibility="visible"/>
+
+        <ImageView
+            android:id="@+id/membership_iv"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_membership_advance"
+            android:visibility="visible"/>
     </LinearLayout>
 
     <TextView

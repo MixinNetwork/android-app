@@ -1,6 +1,8 @@
 package one.mixin.android.vo
 
+import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.DiffUtil
+import one.mixin.android.R
 
 data class ParticipantItem(
     val conversationId: String,
@@ -19,6 +21,7 @@ data class ParticipantItem(
     val hasPin: Boolean? = null,
     var appId: String? = null,
     var isScam: Boolean? = null,
+    val membership: Membership?,
 ) {
     companion object {
         val DIFF_CALLBACK =
@@ -53,4 +56,8 @@ data class ParticipantItem(
             appId,
             isScam,
         )
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
+    }
 }

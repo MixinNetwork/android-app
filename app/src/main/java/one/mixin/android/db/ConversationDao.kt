@@ -30,7 +30,7 @@ interface ConversationDao : BaseDao<Conversation> {
             mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-            mm.mentions AS mentions 
+            mm.mentions AS mentions, ou.membership AS membership
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
             LEFT JOIN messages m ON c.last_message_id = m.id
@@ -56,7 +56,7 @@ interface ConversationDao : BaseDao<Conversation> {
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
         c.name AS groupName, c.owner_id AS ownerId, ou.avatar_url AS avatarUrl, ou.full_name AS name, 
         ou.is_verified AS ownerVerified, ou.identity_number AS ownerIdentityNumber, ou.app_id AS appId,
-        m.content AS content, m.category AS contentType, m.status AS messageStatus
+        m.content AS content, m.category AS contentType, m.status AS messageStatus, ou.membership AS membership 
         FROM conversations c
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id

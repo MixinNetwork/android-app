@@ -29,6 +29,7 @@
         android:maxWidth="240dp"
         android:singleLine="true"
         android:textColor="?attr/text_primary"
+        android:includeFontPadding="false"
         android:textSize="16sp"
         tools:text="name"/>
 
@@ -38,9 +39,11 @@
         android:layout_height="12dp"
         android:layout_toEndOf="@id/normal"
         android:layout_above="@id/center"
-        android:layout_marginBottom="4dp"
         android:layout_marginStart="8dp"
         android:src="@drawable/ic_user_verified"
+        android:contentDescription="@null"
+        android:layout_alignTop="@id/normal"
+        android:layout_alignBottom="@id/normal"
         android:visibility="gone"
         tools:ignore="ContentDescription"/>
 
@@ -50,10 +53,24 @@
         android:layout_height="12dp"
         android:layout_toEndOf="@id/verified_iv"
         android:layout_above="@id/center"
-        android:layout_marginBottom="4dp"
         android:layout_marginStart="8dp"
         android:contentDescription="@null"
+        android:layout_alignTop="@id/normal"
+        android:layout_alignBottom="@id/normal"
         android:src="@drawable/ic_bot"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/membership_iv"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_toEndOf="@id/bot_iv"
+        android:layout_above="@id/center"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:layout_alignTop="@id/normal"
+        android:layout_alignBottom="@id/normal"
+        android:src="@drawable/ic_membership_advance"
         android:visibility="gone"/>
 
     <TextView

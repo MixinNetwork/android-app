@@ -58,6 +58,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.SegmentationItemDecoration
 import javax.inject.Inject
 
@@ -457,7 +458,7 @@ class ExploreFragment : BaseFragment() {
                     name.text = app.name
                     mixinIdTv.text = app.appNumber
                     verifiedIv.isVisible = true
-                    verifiedIv.setImageResource(if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
+                    verifiedIv.setImageResource(if (app.isMembership()) app.membership.membershipIcon() else if (app.isVerified == true) R.drawable.ic_bot else R.drawable.ic_user_verified)
                 }
             }
         }

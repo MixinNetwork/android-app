@@ -57,6 +57,7 @@
         android:singleLine="true"
         android:textColor="?attr/text_primary"
         android:textSize="14sp"
+        android:drawablePadding="1.5dp"
         app:layout_constraintEnd_toStartOf="@id/reply_iv"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/start_view"

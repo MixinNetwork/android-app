@@ -21,6 +21,7 @@ data class ConversationMinimal(
     val content: String?,
     val contentType: String?,
     val messageStatus: String?,
+    val membership: Membership?
 ) : IConversationCategory, ICategory, Parcelable {
     companion object {
         val DIFF_CALLBACK =
@@ -63,6 +64,10 @@ data class ConversationMinimal(
 
     fun isBot(): Boolean {
         return category == ConversationCategory.CONTACT.name && appId != null
+    }
+
+    fun isMembership(): Boolean {
+        return membership?.isMembership() == true
     }
 }
 

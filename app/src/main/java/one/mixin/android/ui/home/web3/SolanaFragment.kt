@@ -26,6 +26,9 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
+import one.mixin.android.api.response.isSolToken
+import one.mixin.android.api.response.solLamportToAmount
+import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -43,6 +46,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.stake.StakeFragment
+import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
@@ -60,6 +65,7 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SolanaFragment : BaseFragment() {
