@@ -18,6 +18,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -197,7 +198,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                         marketCap.setTextColor(textAssist)
                     } else {
                         marketCap.setTextColor(textPrimary)
-                        marketCap.text = volFormat(info.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
+                        marketCap.text = capFormat(info.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
                     }
                     totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
 
@@ -266,6 +267,18 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 return "$symbol$formatVol"
             }
             return formatVol
+        }
+        return getString(R.string.N_A)
+    }
+
+    private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
+        val formatVol = try {
+            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).numberFormatCompact()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatVol != null) {
+            return "$symbol$formatVol"
         }
         return getString(R.string.N_A)
     }
