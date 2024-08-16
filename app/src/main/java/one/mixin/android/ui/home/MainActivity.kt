@@ -23,10 +23,8 @@ import androidx.room.util.readVersion
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
-import com.google.android.gms.tasks.Task
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -166,6 +164,7 @@ import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -995,6 +994,11 @@ class MainActivity : BlazeBaseActivity() {
     ) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
             // Handle the case where the update was not successful
+        } else {
+            defaultSharedPreferences.putLong(
+                PREF_NEW_VERSION,
+                System.currentTimeMillis(),
+            )
         }
     }
 
