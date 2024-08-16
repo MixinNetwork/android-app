@@ -13,7 +13,7 @@
         android:foreground="@drawable/mixin_ripple_round_left_12dp"
         android:text="@string/Send_transfer"
         android:textSize="14sp"
-        android:textFontWeight="500"
+        android:textFontWeight="600"
         android:textColor="?attr/text_minor" />
 
     <View
@@ -33,7 +33,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:foreground="@drawable/mixin_ripple_round_right_12dp"
-            android:textFontWeight="500"
+            android:textFontWeight="600"
             android:text="@string/Receive"
             android:textSize="14sp"
             android:textColor="?attr/text_minor" />
@@ -70,7 +70,7 @@
             android:gravity="center"
             android:text="@string/Buy"
             android:textSize="14sp"
-            android:textFontWeight="500"
+            android:textFontWeight="600"
             android:textColor="?attr/text_minor" />
 
         <ProgressBar
@@ -103,7 +103,7 @@
             android:gravity="center"
             android:text="@string/Swap"
             android:textSize="14sp"
-            android:textFontWeight="500"
+            android:textFontWeight="600"
             android:textColor="?attr/text_minor" />
 
         <ProgressBar
