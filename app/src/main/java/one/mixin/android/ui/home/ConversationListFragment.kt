@@ -815,9 +815,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem: ConversationItem,
             ) {
                 val id = Session.getAccountId()
-                conversationItem.getConversationName().let {
-                    binding.nameTv.text = it
-                }
+                binding.nameTv.setName(conversationItem)
                 binding.groupNameTv.visibility = GONE
                 binding.msgExpire.isVisible = conversationItem.isExpire()
                 binding.mentionFlag.isVisible =
@@ -1236,7 +1234,6 @@ class ConversationListFragment : LinkFragment() {
                     binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
                 }
 
-                conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
                 if (conversationItem.isGroupConversation()) {
                     binding.avatarIv.setGroup(conversationItem.iconUrl())
                 } else {

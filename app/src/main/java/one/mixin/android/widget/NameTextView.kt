@@ -10,6 +10,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.membershipIcon
@@ -21,10 +22,11 @@ class NameTextView : AppCompatTextView {
 
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
         val a = context.obtainStyledAttributes(attributeSet, R.styleable.NameTextView)
-        badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp12)
-        val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp8)
+        badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)
+        val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp4)
         compoundDrawablePadding = badgePadding
         a.recycle()
+        includeFontPadding = false
     }
 
     fun setTextOnly(text: String?) {
@@ -57,11 +59,16 @@ class NameTextView : AppCompatTextView {
         setCompoundDrawables(null, null, getBadge(message), null)
     }
 
-    private val dp12 by lazy {
-        context.dpToPx(12f)
+    fun setName(conversationItem: ConversationItem) {
+        text = conversationItem.getConversationName()
+        setCompoundDrawables(null, null, getBadge(conversationItem), null)
     }
-    private val dp8 by lazy {
-        context.dpToPx(8f)
+
+    private val dp14 by lazy {
+        context.dpToPx(14f)
+    }
+    private val dp4 by lazy {
+        context.dpToPx(4f)
     }
 
     private fun getBadge(user: User): Drawable? {
@@ -74,8 +81,8 @@ class NameTextView : AppCompatTextView {
         } else {
             null
         }
-        return resources?.let { it ->
-            AppCompatResources.getDrawable(context, it).also { icon ->
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
                 icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }
@@ -84,13 +91,15 @@ class NameTextView : AppCompatTextView {
     private fun getBadge(item: ConversationMinimal): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.isBot()) { // todo maybe verified icon
+        } else if (item.ownerVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (item.isBot()) {
             R.drawable.ic_bot
         } else {
             null
         }
-        return resources?.let { it ->
-            AppCompatResources.getDrawable(context, it).also { icon ->
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
                 icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }
@@ -106,8 +115,8 @@ class NameTextView : AppCompatTextView {
         } else {
             null
         }
-        return resources?.let { it ->
-            AppCompatResources.getDrawable(context, it).also { icon ->
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
                 icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }
@@ -123,8 +132,27 @@ class NameTextView : AppCompatTextView {
         } else {
             null
         }
-        return resources?.let { it ->
-            AppCompatResources.getDrawable(context, it).also { icon ->
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(item: ConversationItem): Drawable? {
+        val resources = if (item.isMembership()) {
+            item.membership.membershipIcon()
+        } else if (item.ownerVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (item.isVerified()) {
+            R.drawable.ic_user_verified
+        } else if(item.isBot()){
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
                 icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }

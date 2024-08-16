@@ -110,7 +110,7 @@
                         android:layout_marginBottom="4dp"
                         android:src="@drawable/default_avatar" />
 
-                    <TextView
+                    <one.mixin.android.widget.NameTextView
                         android:id="@+id/name_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

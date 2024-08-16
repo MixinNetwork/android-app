@@ -98,34 +98,8 @@ data class ConversationItem(
     fun isMembership(): Boolean {
         return isContactConversation() && membership?.isMembership() == true
     }
-}
 
-fun ConversationItem.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipIv: ImageView
-) {
-    when {
-        isMembership() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.setImageResource(membership.membershipIcon())
-            membershipIv.isVisible = true
-        }
-        ownerVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-        isBot() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipIv.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
+    fun isVerified(): Boolean {
+        return isContactConversation() && ownerVerified == true
     }
 }

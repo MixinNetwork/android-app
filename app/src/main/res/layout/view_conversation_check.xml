@@ -50,8 +50,6 @@
         android:singleLine="true"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
-        app:badgeSize="12dp"
-        app:badgePadding="8dp"
         tools:text="name"/>
 
     <TextView
