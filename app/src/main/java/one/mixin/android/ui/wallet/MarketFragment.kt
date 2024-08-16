@@ -148,17 +148,19 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             market.setContent {
                 Market(typeState.value, asset.assetId, { percentageChange->
                     if (percentageChange == null) {
+                        currentRise = percentageChange
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         priceRise.text = getString(R.string.N_A)
                     } else {
                         priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
-                        priceRise.text = String.format("%.2f%%", percentageChange)
+                        currentRise = String.format("%.2f%%", percentageChange)
+                        priceRise.text = currentRise
                     }
                 },{ price, percentageChange ->
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
-                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.textColorResource = if (currentRise?.startsWith("-") == true) R.color.wallet_pink else R.color.wallet_green
                     } else {
                         priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
