@@ -1642,4 +1642,5 @@
     <string name="high_24h">24H HIGH</string>
     <string name="low_24h">24H LOW</string>
     <string name="vol_24h">24H VOL</string>
+    <string name="Market_Cap">Market Cap</string>
 </resources>

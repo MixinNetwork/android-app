@@ -59,8 +59,8 @@ fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, normalizedMaxRa
 
 @Composable
 private fun maxRange(): Float {
-    val heightInDp = 154.dp
-    val fontSizeInSp = 26.sp
+    val heightInDp = 204.dp
+    val fontSizeInSp = 34.sp
     val fontSizeInDp = fontSizeInSp.let { with(LocalDensity.current) { it.toDp() } }
     return 1f - (fontSizeInDp.value / heightInDp.value)
 }

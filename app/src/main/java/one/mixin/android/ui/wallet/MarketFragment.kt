@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,6 +18,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -75,6 +77,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             symbolTitle.text = getString(R.string.Symbol).uppercase()
             chainTitle.text = getString(R.string.Chain).uppercase()
             contactAddressTitle.text = getString(R.string.Contract_Address).uppercase()
+            marketCapTitle.text = getString(R.string.Market_Cap).uppercase()
             circulationSupplyTitle.text = getString(R.string.Circulation_Supply).uppercase()
             totalSupplyTitle.text = getString(R.string.Total_Supply).uppercase()
             allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
@@ -99,7 +102,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                             "1M"
                         }
 
-                        R.id.radio_1y -> {
+                        R.id.radio_ytd -> {
                             "YTD"
                         }
 
@@ -123,14 +126,19 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             }
             if (asset.priceUsd == "0") {
                 rise.visibility = GONE
+                priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                priceRise.text = "0.00%"
             } else {
-                rise.visibility = VISIBLE
+                priceRise.visibility = VISIBLE
                 if (asset.changeUsd.isNotEmpty()) {
                     currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                     rise.text = currentRise
                     priceRise.text = currentRise
                     rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                     priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                } else {
+                    rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                    rise.text = "0.00%"
                 }
             }
 
@@ -141,17 +149,19 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             market.setContent {
                 Market(typeState.value, asset.assetId, { percentageChange->
                     if (percentageChange == null) {
+                        currentRise = percentageChange
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         priceRise.text = getString(R.string.N_A)
                     } else {
                         priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
-                        priceRise.text = String.format("%.2f%%", percentageChange)
+                        currentRise = String.format("%.2f%%", percentageChange)
+                        priceRise.text = currentRise
                     }
                 },{ price, percentageChange ->
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
-                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.textColorResource = if (currentRise?.startsWith("-") == true) R.color.wallet_pink else R.color.wallet_green
                     } else {
                         priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
@@ -175,10 +185,20 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     marketVolC.text = volFormat(info.totalVolume, BigDecimal(info.currentPrice))
                     marketVolU.text = volFormat(info.totalVolume, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
 
-                    circulationSupply.text = if (info.circulatingSupply == "0") {
-                        getString(R.string.N_A)
+                    if (info.circulatingSupply == "0") {
+                        circulationSupply.text = getString(R.string.N_A)
+                        circulationSupply.setTextColor(textAssist)
                     } else {
-                        "${info.circulatingSupply.numberFormat8()} ${asset.symbol}"
+                        circulationSupply.setTextColor(textPrimary)
+                        circulationSupply.text = "${info.circulatingSupply.numberFormat8()} ${asset.symbol}"
+                    }
+
+                    if (info.marketCap == "0" || info.marketCap.isBlank()) {
+                        marketCap.text = getString(R.string.N_A)
+                        marketCap.setTextColor(textAssist)
+                    } else {
+                        marketCap.setTextColor(textPrimary)
+                        marketCap.text = capFormat(info.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
                     }
                     totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
 
@@ -188,9 +208,52 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     lowValue.text = info.atl.numberFormat8()
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate
+
+                    priceValue.setTextColor(textPrimary)
+                    marketCap.setTextColor(textPrimary)
+                    marketHigh.setTextColor(textPrimary)
+                    marketLow.setTextColor(textPrimary)
+                    marketVolC.setTextColor(textPrimary)
+                    marketVolU.setTextColor(textPrimary)
+                    totalSupply.setTextColor(textPrimary)
+                    highValue.setTextColor(textPrimary)
+                    lowValue.setTextColor(textPrimary)
+                    radioGroup.isInvisible = false
+                }
+            } else {
+                binding.apply {
+                    radioGroup.isInvisible = true
+                    priceValue.setTextColor(textAssist)
+                    priceValue.setText(R.string.N_A)
+                    marketCap.setTextColor(textAssist)
+                    marketCap.setText(R.string.N_A)
+                    marketHigh.setTextColor(textAssist)
+                    marketHigh.setText(R.string.N_A)
+                    marketLow.setTextColor(textAssist)
+                    marketLow.setText(R.string.N_A)
+                    marketVolC.setTextColor(textAssist)
+                    marketVolC.setText(R.string.N_A)
+                    marketVolU.setTextColor(textAssist)
+                    marketVolU.setText(R.string.N_A)
+                    circulationSupply.setTextColor(textAssist)
+                    circulationSupply.setText(R.string.N_A)
+                    totalSupply.setTextColor(textAssist)
+                    totalSupply.setText(R.string.N_A)
+                    highValue.setTextColor(textAssist)
+                    highValue.setText(R.string.N_A)
+                    lowValue.setTextColor(textAssist)
+                    lowValue.setText(R.string.N_A)
                 }
             }
         }
+    }
+
+    private val textAssist by lazy {
+        requireContext().colorAttr(R.attr.text_assist)
+    }
+
+    private val textPrimary by lazy {
+        requireContext().colorAttr(R.attr.text_primary)
     }
 
     private fun volFormat(vol: String, rate: BigDecimal, symbol: String? = null): String {
@@ -204,6 +267,18 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 return "$symbol$formatVol"
             }
             return formatVol
+        }
+        return getString(R.string.N_A)
+    }
+
+    private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
+        val formatVol = try {
+            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).numberFormatCompact()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatVol != null) {
+            return "$symbol$formatVol"
         }
         return getString(R.string.N_A)
     }
