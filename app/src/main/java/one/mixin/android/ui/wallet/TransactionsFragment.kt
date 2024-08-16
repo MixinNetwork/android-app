@@ -22,6 +22,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
@@ -129,17 +130,17 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             value.text = try {
                 if (asset.priceFiat().toFloat() == 0f) {
-                    "≈ ${Fiats.getSymbol()}0.00"
+                    "${Fiats.getSymbol()}0.00"
                 } else {
-                    "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+                    "${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
                 }
             } catch (ignored: NumberFormatException) {
                 "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
             }
             if (asset.priceUsd == "0") {
-                rise.visibility = GONE
+                rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                rise.text = "0.00%"
             } else {
-                rise.visibility = VISIBLE
                 if (asset.changeUsd.isNotEmpty()) {
                     rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                     rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink

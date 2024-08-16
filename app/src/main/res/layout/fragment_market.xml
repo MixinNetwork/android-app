@@ -67,6 +67,7 @@
                             android:textSize="22sp"
                             android:layout_below="@id/price"
                             android:textFontWeight="600"
+                            android:layout_marginTop="8dp"
                             android:textColor="?attr/text_minor"
                             android:text="@string/NA" />
 
@@ -87,7 +88,7 @@
                         android:layout_width="match_parent"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
-                        android:layout_height="184dp"
+                        android:layout_height="204dp"
                         android:layout_marginTop="24dp"
                         android:layout_below="@+id/title_rl" />
 
@@ -119,9 +120,9 @@
                             android:text="1M" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_1y"
+                            android:id="@+id/radio_ytd"
                             style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="1Y" />
+                            android:text="YTD" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/radio_all"
@@ -426,6 +427,24 @@
                         android:textSize="12sp"
                         android:layout_marginTop="8dp" />
 
+                    <!-- Market Cap -->
+                    <TextView
+                        android:id="@+id/market_cap_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Market_Cap"
+                        android:textColor="?attr/text_assist"
+                        android:textSize="14sp"
+                        android:layout_marginTop="20dp" />
+
+                    <TextView
+                        android:id="@+id/market_cap"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/N_A"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="16sp"
+                        android:layout_marginTop="8dp" />
 
                     <!-- Circulation Supply -->
                     <TextView
