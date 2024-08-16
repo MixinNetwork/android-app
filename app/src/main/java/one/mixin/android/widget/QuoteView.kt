@@ -277,7 +277,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
 
         private fun getMembershipBadge(messageItem: QuoteMessageItem?): Drawable? {
             if (messageItem?.membership?.isMembership() != true) return null
-            return messageItem?.membership.membershipIcon().let { icon ->
+            return messageItem.membership.membershipIcon().let { icon ->
                 if (icon == View.NO_ID) {
                     null
                 } else {
