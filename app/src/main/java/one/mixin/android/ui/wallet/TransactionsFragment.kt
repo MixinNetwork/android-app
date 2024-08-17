@@ -32,6 +32,8 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColorResource
@@ -130,12 +132,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             value.text = try {
                 if (asset.priceFiat().toFloat() == 0f) {
-                    "${Fiats.getSymbol()}0.00"
+                    getString(R.string.NA)
                 } else {
-                    "${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+                    "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 }
             } catch (ignored: NumberFormatException) {
-                "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+                "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             }
             if (asset.priceUsd == "0") {
                 rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
