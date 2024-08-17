@@ -201,10 +201,10 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     }
                     totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
 
-                    highValue.text = info.ath.numberFormat8()
+                    highValue.text = priceFormat(info.ath)
                     highTime.isVisible = true
                     highTime.text = info.athDate
-                    lowValue.text = info.atl.numberFormat8()
+                    lowValue.text = priceFormat(info.atl)
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate
 
