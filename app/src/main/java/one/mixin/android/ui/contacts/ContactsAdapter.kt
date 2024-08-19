@@ -18,10 +18,8 @@ import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
     RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),

@@ -7,7 +7,6 @@ import one.mixin.android.databinding.ItemChatMentionBinding
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.util.QueryHighlighter
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
     private val binding by lazy {

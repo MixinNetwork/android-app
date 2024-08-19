@@ -14,7 +14,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -30,7 +29,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 @AndroidEntryPoint

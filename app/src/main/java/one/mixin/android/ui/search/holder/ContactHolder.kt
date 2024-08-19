@@ -5,7 +5,6 @@ import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactHolder constructor(
     val binding: ItemSearchContactBinding,

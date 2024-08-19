@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemGroupFriendBinding
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupUserAdapter : ListAdapter<User, GroupUserViewHolder>(User.DIFF_CALLBACK) {
     var listener: GroupUserListener? = null

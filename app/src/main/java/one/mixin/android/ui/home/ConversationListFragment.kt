@@ -111,7 +111,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView

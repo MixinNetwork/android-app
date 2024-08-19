@@ -15,7 +15,6 @@ import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBinding) :
     MediaHolder(binding.root),

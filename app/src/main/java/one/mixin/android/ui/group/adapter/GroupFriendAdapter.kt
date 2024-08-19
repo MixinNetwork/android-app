@@ -11,7 +11,6 @@ import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemGroupFriendBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupFriendAdapter :
     RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
