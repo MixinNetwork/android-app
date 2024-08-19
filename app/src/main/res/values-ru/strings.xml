@@ -234,7 +234,6 @@
     <string name="contact_mixin_id">Идентификатор Mixin: %1$s</string>
     <string name="contact_mobile">Мобильный: %1$s</string>
     <string name="contact_mute_title">Отключить уведомления для…</string>
-    <string name="contact_new_group_chat_desc">Создайте групповой чат с друзьями</string>
     <string name="contact_favorite_bots_title">Общие боты пользователя %1$s</string>
     <string name="CONTACTS">КОНТАКТЫ</string>
     <string name="content_audio">[Аудио]</string>
