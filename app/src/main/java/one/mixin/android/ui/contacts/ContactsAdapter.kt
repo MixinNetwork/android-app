@@ -224,8 +224,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             } else {
                 if (account != null) {
                     binding.contactHeaderAvatar.setInfo(account.fullName, account.avatarUrl, account.userId)
-                    binding.contactHeaderNameTv.text = account.fullName
-                    binding.contactHeaderNameTv.setCompoundDrawables(null, null, getMembershipBadge(account), null)
+                    binding.contactHeaderNameTv.setName(account)
                     binding.contactHeaderIdTv.text =
                         itemView.context.getString(R.string.contact_mixin_id, account.identityNumber)
                     binding.contactHeaderMobileTv.text =
@@ -241,21 +240,6 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             }
         }
 
-        private val dp12 by lazy {
-           binding.root.context.dpToPx(12f)
-        }
-
-        private fun getMembershipBadge(account: Account): Drawable? {
-            return account.membership.membershipIcon().let { icon ->
-                if (icon == View.NO_ID) {
-                    null
-                } else {
-                    AppCompatResources.getDrawable(binding.root.context, icon)?.also {
-                        it.setBounds(0, 0, dp12, dp12)
-                    }
-                }
-            }
-        }
     }
 
     class FootViewHolder(val binding: ViewContactListEmptyBinding) : ViewHolder(binding.root) {
