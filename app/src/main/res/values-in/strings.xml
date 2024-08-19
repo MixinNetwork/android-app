@@ -157,7 +157,6 @@
     <string name="contact_mixin_id">Mixin ID: %1$s</string>
     <string name="contact_mobile">Seluler: %1$s</string>
     <string name="contact_mute_title">Matikan notifikasi selama…</string>
-    <string name="contact_new_group_chat_desc">Buat obrolan grup dengan maksimal teman</string>
     <string name="contact_favorite_bots_title">Aplikasi Bersama %1$s</string>
     <string name="CONTACTS">KONTAK</string>
     <string name="content_audio">[Audio]</string>

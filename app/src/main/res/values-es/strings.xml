@@ -245,7 +245,6 @@
     <string name="contact_mixin_id">ID de Mixin: %1$s</string>
     <string name="contact_mobile">Móvil: %1$s</string>
     <string name="contact_mute_title">Silenciar notificaciones para…</string>
-    <string name="contact_new_group_chat_desc">Crea un chat grupal con hasta amigos</string>
     <string name="contact_favorite_bots_title">Bots compartidos de %1$s</string>
     <string name="CONTACTS">CONTACTOS</string>
     <string name="content_audio">[Audio]</string>
