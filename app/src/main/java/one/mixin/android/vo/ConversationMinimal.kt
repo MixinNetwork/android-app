@@ -66,6 +66,10 @@ data class ConversationMinimal(
         return category == ConversationCategory.CONTACT.name && appId != null
     }
 
+    fun isVerified(): Boolean {
+        return category == ConversationCategory.CONTACT.name && ownerVerified == true
+    }
+
     fun isMembership(): Boolean {
         return membership?.isMembership() == true
     }

@@ -47,7 +47,15 @@ data class ChatMinimal(
         }
     }
 
-    fun isMembership():Boolean {
-        return membership?.isMembership() == true
+    fun isBot(): Boolean {
+        return isContactConversation() && appId != null
+    }
+
+    fun isVerified(): Boolean {
+        return isContactConversation() && isVerified == true
+    }
+
+    fun isMembership(): Boolean {
+        return isContactConversation() && membership?.isMembership() == true
     }
 }

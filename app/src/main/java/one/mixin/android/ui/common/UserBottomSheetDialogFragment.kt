@@ -632,9 +632,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             null,
                             0,
                             user.userId,
+                            null,
                             user.fullName,
                             user.avatarUrl,
                             null,
+                            false,
                             null
                         )
                     } else {
@@ -646,7 +648,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             "",
                             null,
                             null,
+                            null,
                             it.iconUrl,
+                            false,
                             null
                         )
                     }

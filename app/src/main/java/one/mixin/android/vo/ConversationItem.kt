@@ -92,7 +92,7 @@ data class ConversationItem(
     fun isExpire() = actionName == SystemConversationAction.EXPIRE.name
 
     fun isBot(): Boolean {
-        return category == ConversationCategory.CONTACT.name && appId != null
+        return isContactConversation() && appId != null
     }
 
     fun isMembership(): Boolean {

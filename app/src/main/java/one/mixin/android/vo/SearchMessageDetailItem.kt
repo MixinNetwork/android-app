@@ -11,6 +11,8 @@ data class SearchMessageDetailItem(
     val userId: String,
     val userFullName: String?,
     val userAvatarUrl: String?,
+    val appId: String?,
+    val isVerified: Boolean,
     val membership: Membership?
 ) : ICategory {
     fun isMembership(): Boolean {

@@ -31,8 +31,8 @@ class NameTextView : AppCompatTextView {
 
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
         val a = context.obtainStyledAttributes(attributeSet, R.styleable.NameTextView)
-        badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)
         val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp4)
+        badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)
         compoundDrawablePadding = badgePadding
         a.recycle()
         includeFontPadding = false
@@ -202,7 +202,7 @@ class NameTextView : AppCompatTextView {
     private fun getBadge(item: ConversationMinimal): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.ownerVerified == true) {
+        } else if (item.isVerified()) {
             R.drawable.ic_user_verified
         } else if (item.isBot()) {
             R.drawable.ic_bot
@@ -238,7 +238,7 @@ class NameTextView : AppCompatTextView {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (user.membership != null) {
+        } else if (!user.appId.isNullOrEmpty()) {
             R.drawable.ic_bot
         } else {
             null
@@ -253,7 +253,11 @@ class NameTextView : AppCompatTextView {
     private fun getBadge(item: SearchMessageDetailItem): Drawable? {
         val resources = if (item.membership?.isMembership() == true) {
             item.membership.membershipIcon()
-        } else { // todo maybe bot or verified
+        } else if (item.isVerified) {
+            R.drawable.ic_user_verified
+        } else if (!item.appId.isNullOrEmpty()) {
+            R.drawable.ic_bot
+        } else {
             null
         }
         return resources?.let { res ->
@@ -279,12 +283,13 @@ class NameTextView : AppCompatTextView {
             }
         }
     }
+
     private fun getBadge(item: ChatMinimal): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.isVerified == true) {
+        } else if (item.isVerified()) {
             R.drawable.ic_user_verified
-        } else if (item.appId != null) {
+        } else if (item.isBot()) {
             R.drawable.ic_bot
         } else {
             null
@@ -299,8 +304,6 @@ class NameTextView : AppCompatTextView {
     private fun getBadge(item: ConversationItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.ownerVerified == true) {
-            R.drawable.ic_user_verified
         } else if (item.isVerified()) {
             R.drawable.ic_user_verified
         } else if (item.isBot()) {
@@ -318,7 +321,11 @@ class NameTextView : AppCompatTextView {
     private fun getBadge(message: SearchMessageItem): Drawable? {
         val resources = if (message.isMembership()) {
             message.membership.membershipIcon()
-        } else { // todo maybe verified icon
+        } else if (message.isVerified()) {
+            R.drawable.ic_user_verified
+        } else if (message.isBot()) {
+            R.drawable.ic_bot
+        } else {
             null
         }
         return resources?.let { res ->

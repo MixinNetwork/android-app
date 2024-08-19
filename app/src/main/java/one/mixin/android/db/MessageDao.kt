@@ -269,7 +269,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
-        m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName, u.membership AS membership 
+        m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName, u.membership AS membership, u.app_id AS app_id, u.is_verified AS isVerified  
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE  m.id IN (:ids)
         ORDER BY m.created_at DESC

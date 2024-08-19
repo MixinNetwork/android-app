@@ -24,7 +24,7 @@ interface ParticipantDao : BaseDao<Participant> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography FROM participants p, users u 
+        SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography, u.app_id, u.membership, u.is_verified FROM participants p, users u 
         WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id
         """,
     )
@@ -33,7 +33,7 @@ interface ParticipantDao : BaseDao<Participant> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography 
+        SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography, u.app_id, u.membership, u.is_verified 
         FROM participants p, users u 
         WHERE p.conversation_id = :conversationId 
         AND p.user_id = u.user_id
