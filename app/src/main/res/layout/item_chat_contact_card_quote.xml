@@ -117,6 +117,7 @@
                         android:layout_above="@id/center"
                         android:layout_marginStart="8dp"
                         android:layout_marginBottom="2dp"
+                        android:layout_marginEnd="8dp"
                         android:layout_toEndOf="@id/avatar_iv"
                         android:ellipsize="end"
                         android:maxWidth="140dp"

@@ -87,31 +87,32 @@
 
             <one.mixin.android.widget.NameTextView
                 android:id="@+id/name_tv"
-                android:layout_toEndOf="@id/avatar_iv"
-                android:textSize="16sp"
-                android:layout_marginStart="10dp"
-                android:maxWidth="220dp"
-                android:ellipsize="end"
-                android:textColor="?attr/text_primary"
-                android:layout_alignTop="@id/avatar_iv"
                 android:layout_width="wrap_content"
-                android:singleLine="true"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:maxWidth="220dp"
+                android:layout_alignTop="@id/avatar_iv"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toEndOf="@id/avatar_iv"
+                android:textColor="?attr/text_primary"
+                android:ellipsize="end"
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/id_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/avatar_iv"
+                android:maxWidth="220dp"
+                android:textSize="12sp"
+                android:textColor="@color/gray_50"
+                android:fontFamily="@font/roboto_light"
+                android:layout_marginTop="2dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                android:layout_marginTop="2dp"
-                android:textSize="12sp"
-                android:fontFamily="@font/roboto_light"
-                android:maxWidth="220dp"
-                android:singleLine="true"
-                android:textColor="@color/gray_50"
                 android:layout_alignBottom="@id/avatar_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:singleLine="true" />
 
         </RelativeLayout>
 
