@@ -272,7 +272,7 @@ class SwapFragment : BaseFragment() {
                                     }
                                     if (inMixin()) {
                                         // Check tokens
-                                        swapViewModel.syncAndFindTokens(listOfNotNull(fromToken?.assetId, toToken?.assetId))
+                                        swapViewModel.checkAndSyncTokens(listOfNotNull(fromToken?.assetId, toToken?.assetId))
                                         isLoading = false
                                         openSwapTransfer(swapResult)
                                         return@launch
