@@ -78,39 +78,7 @@ class WalletViewModel
                 .cachedIn(viewModelScope)
 
         fun snapshotsLimit(id:String) = tokenRepository.snapshotsLimit(id)
-
-        fun snapshotsFromDb(
-            id: String,
-            type: String? = null,
-            otherType: String? = null,
-            initialLoadKey: Int? = 0,
-            orderByAmount: Boolean = false,
-        ): LiveData<PagedList<SnapshotItem>> =
-            LivePagedListBuilder(
-                tokenRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(PAGE_SIZE)
-                    .setPageSize(PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
-                .setInitialLoadKey(initialLoadKey)
-                .build()
-
-        fun snapshotsByUserId(
-            opponentId: String,
-            initialLoadKey: Int? = 0,
-        ): LiveData<PagedList<SnapshotItem>> =
-            LivePagedListBuilder(
-                tokenRepository.snapshotsByUserId(opponentId),
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(PAGE_SIZE)
-                    .setPageSize(PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
-                .setInitialLoadKey(initialLoadKey)
-                .build()
+        fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
 
         suspend fun snapshotLocal(
             assetId: String,

@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.map
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -189,8 +190,25 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 transactionsRv.isVisible = list.isNotEmpty()
                 bottomRl.isVisible = list.isEmpty()
                 if (snapshotItems != list) {
-                    snapshotItems = list
-                    transactionsRv.list = snapshotItems
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        snapshotItems = list.map {
+                            if (!it.withdrawal?.receiver.isNullOrBlank()) {
+                                val receiver = it.withdrawal!!.receiver
+                                val index: Int = receiver.indexOf(":")
+                                if (index == -1) {
+                                    it.label = walletViewModel.findAddressByReceiver(receiver, "")
+                                } else {
+                                    val destination: String = receiver.substring(0, index)
+                                    val tag: String = receiver.substring(index + 1)
+                                    it.label = walletViewModel.findAddressByReceiver(destination, tag)
+                                }
+                            }
+                            it
+                        }
+                        withContext(Dispatchers.Main) {
+                            transactionsRv.list = snapshotItems
+                        }
+                    }
                 }
             }
         }
