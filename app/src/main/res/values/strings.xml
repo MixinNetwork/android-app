@@ -257,7 +257,7 @@
     <string name="contact_mixin_id">Mixin ID: %1$s</string>
     <string name="contact_mobile">Mobile: %1$s</string>
     <string name="contact_mute_title">Mute notifications for…</string>
-    <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
+    <string name="contact_new_group_chat_desc">Create a group chat</string>
     <string name="contact_favorite_bots_title">%1$s\'s Favorite Bots </string>
     <string name="CONTACTS">CONTACTS</string>
     <string name="content_audio">[Audio]</string>
@@ -1645,4 +1645,5 @@
     <string name="New_Update_Available">New Update Available</string>
     <string name="New_Update_Available_desc">We update the app regularly so we can make \nit better for you</string>
     <string name="Update_Now">Update Now</string>
+    <string name="Market_Cap">Market Cap</string>
 </resources>

@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
+import android.icu.text.CompactDecimalFormat
 import android.net.Uri
 import android.text.Editable
 import android.text.SpannableStringBuilder
@@ -43,6 +44,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.util.Arrays
 import java.util.Formatter
 import java.util.Locale
@@ -428,6 +430,17 @@ fun BigDecimal.priceFormat2(): String {
 
 fun String.stripAmountZero(): String {
     return BigDecimal(this).stripTrailingZeros().toPlainString()
+}
+
+fun BigDecimal.numberFormatCompact(): String {
+    val formatter = CompactDecimalFormat.getInstance(
+        Locale.US,
+        CompactDecimalFormat.CompactStyle.SHORT
+    ).apply {
+        minimumFractionDigits = 2
+        maximumFractionDigits = 2
+    }
+    return formatter.format(this)
 }
 
 fun BigDecimal.numberFormat2(): String {

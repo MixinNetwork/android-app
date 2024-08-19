@@ -252,7 +252,7 @@
     <string name="contact_mixin_id">Mixin ID：%1$s</string>
     <string name="contact_mobile">手机：%1$s</string>
     <string name="contact_mute_title">静音通知</string>
-    <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
+    <string name="contact_new_group_chat_desc">创建一个群聊</string>
     <string name="contact_favorite_bots_title">%1$s收藏的机器人</string>
     <string name="CONTACTS">联系人</string>
     <string name="content_audio">[语音]</string>
@@ -1607,4 +1607,5 @@
     <string name="New_Update_Available">发现新版本</string>
     <string name="New_Update_Available_desc">我们定期更新应用程序，以便为您提供更好的服务</string>
     <string name="Update_Now">现在升级</string>
+    <string name="Market_Cap">市值</string>
 </resources>
