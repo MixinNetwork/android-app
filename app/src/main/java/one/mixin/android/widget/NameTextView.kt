@@ -8,16 +8,19 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatTextView
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ExploreApp
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.membershipIcon
 
@@ -50,6 +53,21 @@ class NameTextView : AppCompatTextView {
         setCompoundDrawables(null, null, getBadge(user), null)
     }
 
+    fun setName(user: User, text: String) {
+        this.text = text
+        setCompoundDrawables(null, null, getBadge(user), null)
+    }
+
+    fun setName(user: UserItem) {
+        text = user.fullName
+        setCompoundDrawables(null, null, getBadge(user), null)
+    }
+
+    fun setName(account: Account) {
+        text = account.fullName
+        setCompoundDrawables(null, null, getBadge(account), null)
+    }
+
     fun setName(user: ParticipantItem) {
         text = user.fullName
         setCompoundDrawables(null, null, getBadge(user), null)
@@ -58,6 +76,11 @@ class NameTextView : AppCompatTextView {
     fun setName(user: CallUser) {
         text = user.fullName
         setCompoundDrawables(null, null, getBadge(user), null)
+    }
+
+    fun setName(item: ChatMinimal) {
+        text = item.fullName
+        setCompoundDrawables(null, null, getBadge(item), null)
     }
 
     fun setName(item: ConversationMinimal) {
@@ -74,7 +97,6 @@ class NameTextView : AppCompatTextView {
         text = message.sharedUserFullName
         setCompoundDrawables(null, null, getBadge(message), null)
     }
-
 
     fun setName(message: SearchMessageDetailItem) {
         text = message.userFullName
@@ -120,6 +142,36 @@ class NameTextView : AppCompatTextView {
             R.drawable.ic_user_verified
         } else if (user.isBot()) {
             R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(user: UserItem): Drawable? {
+        val resources = if (user.isMembership()) {
+            user.membership.membershipIcon()
+        } else if (user.isVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (user.appId != null) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(account: Account): Drawable? {
+        val resources = if (account.membership?.isMembership() == true) {
+            account.membership.membershipIcon()
         } else {
             null
         }
@@ -227,6 +279,22 @@ class NameTextView : AppCompatTextView {
             }
         }
     }
+    private fun getBadge(item: ChatMinimal): Drawable? {
+        val resources = if (item.isMembership()) {
+            item.membership.membershipIcon()
+        } else if (item.isVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (item.appId != null) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
 
     private fun getBadge(item: ConversationItem): Drawable? {
         val resources = if (item.isMembership()) {
@@ -259,6 +327,7 @@ class NameTextView : AppCompatTextView {
             }
         }
     }
+
     private fun getBadge(app: ExploreApp): Drawable? {
         val resources = if (app.isMembership()) {
             app.membership.membershipIcon()

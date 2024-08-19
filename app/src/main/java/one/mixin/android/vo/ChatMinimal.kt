@@ -51,33 +51,3 @@ data class ChatMinimal(
         return membership?.isMembership() == true
     }
 }
-
-fun ChatMinimal.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipView: ImageView
-) {
-    when {
-        isMembership() ->{
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipView.isVisible = true
-            membershipView.setImageResource(membership.membershipIcon())
-        }
-        isVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipView.isVisible = false
-        }
-        appId != null -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipView.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipView.isVisible = false
-        }
-    }
-}

@@ -70,23 +70,3 @@ data class ConversationMinimal(
         return membership?.isMembership() == true
     }
 }
-
-fun ConversationMinimal.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-) {
-    when {
-        ownerVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-        }
-        isBot() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-        }
-    }
-}

@@ -10,7 +10,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
-import one.mixin.android.vo.showVerifiedOrBot
 
 class SelectableUserAdapter(private val selectedUsers: MutableList<Recipient>) : ListAdapter<UserItem, SelectableUserAdapter.SearchUserViewHolder>(UserItem.DIFF_CALLBACK) {
     var callback: WalletSearchUserCallback? = null
@@ -35,11 +34,10 @@ class SelectableUserAdapter(private val selectedUsers: MutableList<Recipient>) :
             selectedRecipients: MutableList<Recipient>,
             callback: WalletSearchUserCallback? = null,
         ) {
-            binding.normal.text = user.fullName
+            binding.normal.setName(user)
             binding.mixinIdTv.text = user.identityNumber
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.id)
             binding.cb.isChecked = selectedRecipients.contains(user)
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
                 if (!binding.cb.isChecked && selectedRecipients.size >= MultiSelectTokenListBottomSheetDialogFragment.LIMIT) {

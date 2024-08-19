@@ -92,7 +92,6 @@ import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.widget.picker.getTimeInterval
@@ -773,7 +772,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             if (!isAdded) return@launch
 
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.name.text = user.fullName
+            binding.name.setName(user)
             binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
             binding.idTv.setOnLongClickListener {
                 context?.getClipboardManager()
@@ -806,7 +805,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 binding.detailTv.visibility = GONE
             }
             updateUserStatus(user.relationship)
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
             binding.opLl.isVisible = true
             if (user.isBot()) {
                 binding.openFl.visibility = VISIBLE

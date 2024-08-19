@@ -135,33 +135,3 @@ fun createSystemUser(): User {
 fun User.notMessengerUser(): Boolean {
     return identityNumber == "0"
 }
-
-fun User.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipIv: ImageView
-) {
-    when {
-        isMembership() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.setImageResource(membership.membershipIcon())
-            membershipIv.isVisible = true
-        }
-        isVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-        isBot() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipIv.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-    }
-}

@@ -8,11 +8,9 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.isVisible
 import one.mixin.android.databinding.ItemReceiverBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
-import one.mixin.android.vo.membershipIcon
 
 class TransferReceiverItem : LinearLayout {
     private val _binding: ItemReceiverBinding
@@ -33,25 +31,8 @@ class TransferReceiverItem : LinearLayout {
     fun setContent(user: User) {
         _binding.apply {
             name.text = "${user.fullName} (${user.identityNumber})"
+            name.setName(user,"${user.fullName} (${user.identityNumber})")
             userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
-            if (user.isMembership()) {
-                membershipIv.isVisible = true
-                verifiedIv.isVisible = false
-                membershipIv.setImageResource(user.membership.membershipIcon())
-                botIv.isVisible = false
-            } else if (user.isVerified == true) {
-                membershipIv.isVisible = false
-                verifiedIv.isVisible = true
-                botIv.isVisible = false
-            } else if (user.isBot()) {
-                membershipIv.isVisible = false
-                verifiedIv.isVisible = false
-                botIv.isVisible = true
-            } else {
-                membershipIv.isVisible = false
-                verifiedIv.isVisible = false
-                botIv.isVisible = false
-            }
         }
     }
 }
