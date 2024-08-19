@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -232,7 +233,9 @@ class SwapFragment : BaseFragment() {
                                 inputText.value = a
                                 refreshQuote(a)
                             }, {
-                                lifecycleScope.launch {
+                                lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                                    toast(error.message ?: getString(R.string.Unknown))
+                                }) {
                                     val qr = quoteResp ?: return@launch
                                     val inputMint = fromToken?.getUnique() ?: return@launch
                                     val outputMint = toToken?.getUnique() ?: return@launch
@@ -263,8 +266,13 @@ class SwapFragment : BaseFragment() {
                                                 isLoading = false
                                                 return@handleMixinResponse false
                                             },
-                                        ) ?: return@launch
+                                        )
+                                    if (swapResult == null) {
+                                        throw IllegalStateException(getString(R.string.Data_error))
+                                    }
                                     if (inMixin()) {
+                                        // Check tokens
+                                        swapViewModel.checkAndSyncTokens(listOfNotNull(fromToken?.assetId, toToken?.assetId))
                                         isLoading = false
                                         openSwapTransfer(swapResult)
                                         return@launch
@@ -301,8 +309,8 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun openSwapTransfer(swapResult: SwapResponse){
-        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: return
-        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: return
+        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
+        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
             setOnDone { clearInputAndRefreshInMixinFromToToken() }
         }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)

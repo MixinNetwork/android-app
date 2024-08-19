@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.map
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +33,8 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColorResource
@@ -130,12 +133,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             value.text = try {
                 if (asset.priceFiat().toFloat() == 0f) {
-                    "${Fiats.getSymbol()}0.00"
+                    getString(R.string.NA)
                 } else {
-                    "${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+                    "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 }
             } catch (ignored: NumberFormatException) {
-                "≈ ${Fiats.getSymbol()}${asset.priceFiat().numberFormat2()}"
+                "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             }
             if (asset.priceUsd == "0") {
                 rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
@@ -187,8 +190,25 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 transactionsRv.isVisible = list.isNotEmpty()
                 bottomRl.isVisible = list.isEmpty()
                 if (snapshotItems != list) {
-                    snapshotItems = list
-                    transactionsRv.list = snapshotItems
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        snapshotItems = list.map {
+                            if (!it.withdrawal?.receiver.isNullOrBlank()) {
+                                val receiver = it.withdrawal!!.receiver
+                                val index: Int = receiver.indexOf(":")
+                                if (index == -1) {
+                                    it.label = walletViewModel.findAddressByReceiver(receiver, "")
+                                } else {
+                                    val destination: String = receiver.substring(0, index)
+                                    val tag: String = receiver.substring(index + 1)
+                                    it.label = walletViewModel.findAddressByReceiver(destination, tag)
+                                }
+                            }
+                            it
+                        }
+                        withContext(Dispatchers.Main) {
+                            transactionsRv.list = snapshotItems
+                        }
+                    }
                 }
             }
         }

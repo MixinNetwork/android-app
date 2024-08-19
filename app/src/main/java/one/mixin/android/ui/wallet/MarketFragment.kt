@@ -84,8 +84,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             marketVolCTitle.text = getString(R.string.vol_24h).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
-            icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            icon.loadToken(asset)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 typeState.value =
                     when (checkedId) {
@@ -202,10 +201,10 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     }
                     totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
 
-                    highValue.text = info.ath.numberFormat8()
+                    highValue.text = priceFormat(info.ath)
                     highTime.isVisible = true
                     highTime.text = info.athDate
-                    lowValue.text = info.atl.numberFormat8()
+                    lowValue.text = priceFormat(info.atl)
                     lowTime.isVisible = true
                     lowTime.text = info.atlDate
 
@@ -258,7 +257,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
 
     private fun volFormat(vol: String, rate: BigDecimal, symbol: String? = null): String {
         val formatVol = try {
-            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).numberFormat2()
+            BigDecimal(vol).multiply(rate).numberFormat2()
         } catch (e: NumberFormatException) {
             null
         }
@@ -273,7 +272,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
 
     private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
         val formatVol = try {
-            BigDecimal(vol).divide(rate, 2, RoundingMode.HALF_UP).numberFormatCompact()
+            BigDecimal(vol).multiply(rate).numberFormatCompact()
         } catch (e: NumberFormatException) {
             null
         }

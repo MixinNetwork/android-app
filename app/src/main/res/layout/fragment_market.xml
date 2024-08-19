@@ -278,7 +278,6 @@
                         android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentStart="true"
                         android:layout_marginEnd="12dp"
-                        android:textIsSelectable="true"
                         android:textFontWeight="600"
                         android:textSize="18sp"
                         android:textColor="?attr/text_primary"
@@ -309,7 +308,6 @@
                         android:layout_alignParentStart="true"
                         android:layout_marginBottom="@dimen/margin16"
                         android:layout_marginEnd="12dp"
-                        android:textIsSelectable="true"
                         android:textSize="14sp"
                         android:textColor="?attr/text_remarks"
                         tools:ignore="RelativeOverlap" />

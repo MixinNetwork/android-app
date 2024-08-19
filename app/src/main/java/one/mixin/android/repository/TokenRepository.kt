@@ -3,6 +3,7 @@ package one.mixin.android.repository
 import android.os.CancellationSignal
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
@@ -290,6 +291,20 @@ class TokenRepository
             return tokenDao.findTokenItems(assetIds)
         }
 
+        suspend fun checkAndSyncTokens(assetIds: List<String>) {
+            val list = tokenDao.findTokenItems(assetIds)
+            if (list.size == assetIds.size) return
+            handleMixinResponse(
+                invokeNetwork = { tokenService.fetchTokenSuspend(assetIds) },
+                successBlock = { resp ->
+                    resp.data?.let { list ->
+                        tokenDao.insertListSuspend(list)
+                        list
+                    }
+                }
+            )
+        }
+
         suspend fun syncAssetByKernel(kernelAssetId: String): TokenItem? {
             val asset: Token =
                 handleMixinResponse(
@@ -365,45 +380,13 @@ class TokenRepository
 
         fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
 
-        fun snapshotsFromDb(
-            id: String,
-            type: String? = null,
-            otherType: String? = null,
-            orderByAmount: Boolean = false,
-        ): DataSource.Factory<Int, SnapshotItem> {
-            return if (type == null) {
-                if (orderByAmount) {
-                    safeSnapshotDao.snapshotsOrderByAmount(id)
-                } else {
-                    safeSnapshotDao.snapshots(id)
-                }
-            } else {
-                if (orderByAmount) {
-                    safeSnapshotDao.snapshotsByTypeOrderByAmount(id, type, otherType)
-                } else {
-                    safeSnapshotDao.snapshotsByType(id, type, otherType)
-                }
-            }.map {
-                if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                    val receiver = it.withdrawal!!.receiver
-                    val index: Int = receiver.indexOf(":")
-                    if (index == -1) {
-                        it.label = addressDao.findAddressByReceiver(receiver, "")
-                    } else {
-                        val destination: String = receiver.substring(0, index)
-                        val tag: String = receiver.substring(index + 1)
-                        it.label = addressDao.findAddressByReceiver(destination, tag)
-                    }
-                }
-                it
-            }
-        }
-
         suspend fun snapshotLocal(
             assetId: String,
             snapshotId: String,
         ) =
             safeSnapshotDao.snapshotLocal(assetId, snapshotId)
+
+        fun findAddressByReceiver(receiver: String, tag: String) = addressDao.findAddressByReceiver(receiver, tag)
 
         fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
 
@@ -472,7 +455,20 @@ class TokenRepository
         fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()
 
         fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
-            return safeSnapshotDao.getSnapshots(filterParams.buildQuery())
+            return safeSnapshotDao.getSnapshots(filterParams.buildQuery()).map {
+                if (!it.withdrawal?.receiver.isNullOrBlank()) {
+                    val receiver = it.withdrawal!!.receiver
+                    val index: Int = receiver.indexOf(":")
+                    if (index == -1) {
+                        it.label = addressDao.findAddressByReceiver(receiver, "")
+                    } else {
+                        val destination: String = receiver.substring(0, index)
+                        val tag: String = receiver.substring(index + 1)
+                        it.label = addressDao.findAddressByReceiver(destination, tag)
+                    }
+                }
+                it
+            }
         }
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)

@@ -226,7 +226,6 @@
     <string name="contact_mixin_id">Mixin ID：%1$s</string>
     <string name="contact_mobile">手機：%1$s</string>
     <string name="contact_mute_title">靜音通知</string>
-    <string name="contact_new_group_chat_desc">建立一個最多支援 1024 人的群</string>
     <string name="contact_favorite_bots_title">%1$s分享的機器人</string>
     <string name="CONTACTS">聯絡人</string>
     <string name="content_audio">[語音]</string>
