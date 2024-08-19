@@ -111,7 +111,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             balanceRl.setOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
-            balance.text = asset.balance
+            balance.text = "${asset.balance} ${asset.symbol}"
             value.text = try {
                 if (asset.fiat().toFloat() == 0f) {
                     "≈ ${Fiats.getSymbol()}0.00"
