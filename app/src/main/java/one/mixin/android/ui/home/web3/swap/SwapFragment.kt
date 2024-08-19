@@ -271,6 +271,8 @@ class SwapFragment : BaseFragment() {
                                         throw IllegalStateException(getString(R.string.Data_error))
                                     }
                                     if (inMixin()) {
+                                        // Check tokens
+                                        swapViewModel.checkAndSyncTokens(listOfNotNull(fromToken?.assetId, toToken?.assetId))
                                         isLoading = false
                                         openSwapTransfer(swapResult)
                                         return@launch
