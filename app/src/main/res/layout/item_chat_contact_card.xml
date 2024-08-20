@@ -51,6 +51,7 @@
         android:textColor="#19BEF1"
         android:textSize="14sp"
         android:layout_marginBottom="1.5dp"
+        android:includeFontPadding="false"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
         app:layout_constraintStart_toStartOf="@id/chat_layout" />
 

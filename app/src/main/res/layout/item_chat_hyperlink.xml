@@ -45,6 +45,7 @@
             android:lines="1"
             android:minWidth="30dp"
             android:textColor="#19BEF1"
+            android:includeFontPadding="false"
             android:textSize="14sp" />
 
         <one.mixin.android.widget.linktext.AutoLinkTextView
