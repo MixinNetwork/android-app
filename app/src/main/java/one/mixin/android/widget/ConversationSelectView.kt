@@ -17,8 +17,6 @@ class ConversationSelectView : LinearLayout, Checkable {
     private val binding = ViewConversationSelectBinding.inflate(LayoutInflater.from(context), this, true)
     val normal get() = binding.normal
     val avatar get() = binding.avatar
-    val verifiedIv get() = binding.verifiedIv
-    val botIv get() = binding.botIv
 
     constructor(context: Context) : super(context)
 
@@ -67,13 +65,11 @@ class ConversationSelectView : LinearLayout, Checkable {
     ) {
         binding.apply {
             if (item.isGroupConversation()) {
-                normal.text = item.groupName
                 avatar.setGroup(item.iconUrl())
             } else {
-                normal.text = item.name
                 avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
             }
-            botIv.isVisible = item.isBot()
+            normal.setName(item)
             setOnClickListener {
                 toggle()
                 listener(isChecked)

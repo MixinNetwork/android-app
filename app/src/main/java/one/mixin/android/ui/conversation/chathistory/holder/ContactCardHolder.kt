@@ -10,7 +10,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root) {
     fun bind(
@@ -26,9 +25,8 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             messageItem.sharedUserId ?: "0",
         )
         val isMe = messageItem.userId == Session.getAccountId()
-        binding.nameTv.text = messageItem.sharedUserFullName
+        binding.nameTv.setName(messageItem)
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE

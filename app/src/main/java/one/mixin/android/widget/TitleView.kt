@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.vo.User
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding: ViewTitleBinding =
@@ -80,13 +81,20 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         first: String,
         second: String,
     ) {
-        binding.titleTv.text = first
+        binding.titleTv.setTextOnly(first)
         if (second.isBlank()) {
             binding.subTitleTv.visibility = View.GONE
         } else {
             binding.subTitleTv.visibility = View.VISIBLE
             binding.subTitleTv.text = second
         }
+    }
+
+
+    fun setUser(user: User) {
+        binding.titleTv.setName(user)
+        binding.subTitleTv.visibility = View.VISIBLE
+        binding.subTitleTv.text = user.identityNumber
     }
 
     fun initProgress(

@@ -248,6 +248,10 @@
         <attr name="reusable"
             format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="NameTextView">
+        <attr name="badgeSize" format="dimension"/>
+        <attr name="badgePadding" format="dimension"/>
+    </declare-styleable>
     <declare-styleable name="InscriptionView">
         <attr name="iconSize" format="dimension"/>
         <attr name="iconRoundSize" format="dimension"/>

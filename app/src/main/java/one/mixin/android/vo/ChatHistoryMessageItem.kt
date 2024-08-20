@@ -101,36 +101,6 @@ class ChatHistoryMessageItem(
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
-fun ChatHistoryMessageItem.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipIv: ImageView
-) {
-    when {
-        isMembership() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.setImageResource(sharedMembership.membershipIcon())
-            membershipIv.isVisible = true
-        }
-        sharedUserIsVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-        appId != null -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipIv.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-    }
-}
-
 fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 

@@ -24,6 +24,7 @@
             android:textSize="15sp"
             android:maxWidth="280dp"
             android:minWidth="30dp"
+            android:includeFontPadding="false"
             android:visibility="gone" />
 
         <LinearLayout

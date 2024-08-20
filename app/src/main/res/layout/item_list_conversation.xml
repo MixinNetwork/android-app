@@ -26,7 +26,7 @@
         android:orientation="horizontal"
         android:layout_above="@id/center">
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/name_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,45 +37,6 @@
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/verified_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginStart="6dp"
-            android:layout_gravity="center_vertical"
-            android:src="@drawable/ic_user_verified"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
-            android:id="@+id/bot_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_bot"
-            android:visibility="gone"
-            android:contentDescription="@null" />
-
-        <ImageView
-            android:id="@+id/membership_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_membership_advance"
-            android:visibility="gone"
-            android:contentDescription="@null" />
-
-        <ImageView
-            android:id="@+id/mute_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/ic_mute"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
     </LinearLayout>
 
     <TextView
@@ -156,6 +117,16 @@
             android:textSize="13sp" />
 
         <ImageView
+            android:id="@+id/mute_iv"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="8dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_mute"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
             android:id="@+id/msg_pin"
             android:layout_width="12dp"
             android:layout_height="12dp"
@@ -163,7 +134,7 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_pin_status"
             android:visibility="gone"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/mention_flag"

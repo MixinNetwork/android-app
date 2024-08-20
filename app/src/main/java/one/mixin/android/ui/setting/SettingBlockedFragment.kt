@@ -118,7 +118,7 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
         ) {
             itemBinding.apply {
                 avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-                normal.text = user.fullName
+                normal.setName(user)
                 mixinIdTv.text = user.identityNumber
             }
             itemView.setOnClickListener {

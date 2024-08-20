@@ -190,7 +190,7 @@ class NewGroupFragment : BaseFragment() {
 
         fun bind(user: User) {
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.normal.text = user.fullName
+            binding.normal.setName(user)
             binding.mixinIdTv.text = user.identityNumber
         }
     }

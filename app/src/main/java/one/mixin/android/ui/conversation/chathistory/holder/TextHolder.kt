@@ -23,7 +23,6 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {

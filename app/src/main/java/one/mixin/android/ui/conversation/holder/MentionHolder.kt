@@ -7,7 +7,6 @@ import one.mixin.android.databinding.ItemChatMentionBinding
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.util.QueryHighlighter
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
     private val binding by lazy {
@@ -21,10 +20,10 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
         queryHighlighter: QueryHighlighter,
         listener: MentionAdapter.OnUserClickListener,
     ) {
+        binding.name.setName(user)
         queryHighlighter.apply(binding.name, user.fullName, keyword)
         queryHighlighter.apply(binding.idTv, "@${user.identityNumber}", "@$keyword")
         binding.iconIv.setInfo(user.fullName, user.avatarUrl, user.userId)
-        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
         itemView.setOnClickListener {
             listener.onUserClick(user)
         }

@@ -11,7 +11,6 @@ import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemGroupFriendBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupFriendAdapter :
     RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
@@ -106,7 +105,7 @@ class GroupFriendAdapter :
             alreadyUserIds: List<String>?,
             isAdd: Boolean,
         ) {
-            binding.normal.text = user.fullName
+            binding.normal.setName(user)
             binding.mixinIdTv.text = user.identityNumber
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             if (isAdd) {
@@ -114,7 +113,6 @@ class GroupFriendAdapter :
                     if (it.contains(user.userId)) {
                         binding.cb.setButtonDrawable(R.drawable.ic_round_gray)
                         itemView.isEnabled = false
-                        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
                         return
                     } else {
                         binding.cb.setButtonDrawable(R.drawable.cb_add_member)
@@ -125,7 +123,6 @@ class GroupFriendAdapter :
             if (checkedMap.containsKey(user.identityNumber)) {
                 binding.cb.isChecked = checkedMap[user.identityNumber]!!
             }
-            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
                 binding.cb.isChecked = !binding.cb.isChecked
@@ -138,7 +135,7 @@ class GroupFriendAdapter :
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: User) {
             binding.header.text =
-                if (user.fullName != null && user.fullName.isNotEmpty()) {
+                if (!user.fullName.isNullOrEmpty()) {
                     user.fullName[0].toString()
                 } else {
                     ""

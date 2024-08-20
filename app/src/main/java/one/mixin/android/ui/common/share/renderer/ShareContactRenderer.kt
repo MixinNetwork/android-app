@@ -9,7 +9,6 @@ import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
 open class ShareContactRenderer(val context: Context) {
     private val binding = ItemChatContactCardBinding.inflate(LayoutInflater.from(context), null, false)
@@ -29,9 +28,8 @@ open class ShareContactRenderer(val context: Context) {
             user.avatarUrl,
             user.userId,
         )
-        binding.nameTv.text = user.fullName
+        binding.nameTv.setName(user)
         binding.idTv.text = user.identityNumber
-        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
         binding.chatTime.load(
             true,

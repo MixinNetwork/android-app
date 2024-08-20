@@ -71,6 +71,7 @@
             android:ellipsize="end"
             android:lines="1"
             android:textColor="#19BEF1"
+            android:includeFontPadding="false"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:textSize="14sp"/>

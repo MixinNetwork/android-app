@@ -41,7 +41,7 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin">
 
-                <TextView
+                <one.mixin.android.widget.NameTextView
                     android:id="@+id/name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -52,38 +52,6 @@
                     android:includeFontPadding="false"
                     android:textSize="@dimen/bottom_name_text_size" />
 
-                <ImageView
-                    android:id="@+id/bot_iv"
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/name"
-                    android:src="@drawable/ic_bot"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription" />
-
-                <ImageView
-                    android:id="@+id/verified_iv"
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/bot_iv"
-                    android:src="@drawable/ic_user_verified"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription" />
-
-                <ImageView
-                    android:id="@+id/membership_iv"
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/bot_iv"
-                    android:src="@drawable/ic_membership_advance"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription" />
             </RelativeLayout>
 
             <TextView

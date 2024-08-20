@@ -422,7 +422,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                         "",
                         null,
                         null,
+                        null,
                         it.iconUrl,
+                        false,
                         null
                     )
                 activity?.addFragment(

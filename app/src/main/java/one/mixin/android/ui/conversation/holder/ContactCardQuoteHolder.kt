@@ -15,7 +15,6 @@ import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBinding) :
     MediaHolder(binding.root),
@@ -85,10 +84,8 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 messageItem.sharedUserId
                     ?: "0",
             )
-            binding.nameTv.text = messageItem.sharedUserFullName
             binding.idTv.text = messageItem.sharedUserIdentityNumber
-
-            messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
+            binding.nameTv.setName(messageItem)
 
             val isMe = Session.getAccountId() == messageItem.userId
             if (isFirst && !isMe) {

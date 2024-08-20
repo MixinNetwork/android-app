@@ -47,37 +47,15 @@ data class ChatMinimal(
         }
     }
 
-    fun isMembership():Boolean {
-        return membership?.isMembership() == true
+    fun isBot(): Boolean {
+        return isContactConversation() && appId != null
     }
-}
 
-fun ChatMinimal.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipView: ImageView
-) {
-    when {
-        isMembership() ->{
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipView.isVisible = true
-            membershipView.setImageResource(membership.membershipIcon())
-        }
-        isVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipView.isVisible = false
-        }
-        appId != null -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipView.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipView.isVisible = false
-        }
+    fun checkIsVerified(): Boolean {
+        return isContactConversation() && isVerified == true
+    }
+
+    fun isMembership(): Boolean {
+        return isContactConversation() && membership?.isMembership() == true
     }
 }

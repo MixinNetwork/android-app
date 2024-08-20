@@ -1,11 +1,11 @@
 package one.mixin.android.ui.home.web3.components
 
 import androidx.room.ColumnInfo
-import java.math.BigDecimal
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.Treasury
+import java.math.BigDecimal
 
 class InscriptionState(
     @ColumnInfo(name = "name")

@@ -11,7 +11,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBinding) : MediaHolder(binding.root) {
     init {
@@ -70,10 +69,8 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             messageItem.sharedUserAvatarUrl,
             messageItem.sharedUserId ?: "0",
         )
-        binding.nameTv.text = messageItem.sharedUserFullName
+        binding.nameTv.setName(messageItem)
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-
-        messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv, binding.membershipIv)
 
         val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {

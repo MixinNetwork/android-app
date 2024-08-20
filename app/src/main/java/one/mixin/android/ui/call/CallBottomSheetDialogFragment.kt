@@ -197,6 +197,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             account.fullName,
                             account.avatarUrl,
                             "",
+                            false,
+                            null,
+                            account.membership
                         )
                     } else {
                         var callUser = viewModel.findSelfCallUser(cid, account.userId)
@@ -208,6 +211,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     account.fullName,
                                     account.avatarUrl,
                                     "",
+                                    false,
+                                    null,
+                                    account.membership
                                 )
                             viewModel.refreshConversation(cid)
                         }
@@ -229,7 +235,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     binding.usersRv.isVisible = false
                     val callee = callState.user
                     if (callee != null) {
-                        binding.nameTv.text = callee.fullName
+                        binding.nameTv.setName(callee)
                         binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
                         binding.avatar.setTextSize(48f)
                         binding.avatar.clicks()

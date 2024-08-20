@@ -33,7 +33,7 @@
         android:layout_marginEnd="16dp"
         android:orientation="horizontal">
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -42,15 +42,6 @@
             android:singleLine="true"
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
-
-        <ImageView
-            android:id="@+id/verified_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginStart="6dp"
-            android:layout_gravity="center_vertical"
-            android:src="@drawable/ic_user_verified"
-            android:contentDescription="@null" />
 
     </LinearLayout>
 

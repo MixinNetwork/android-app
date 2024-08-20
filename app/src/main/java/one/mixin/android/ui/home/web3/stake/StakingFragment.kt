@@ -9,23 +9,17 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.extension.getParcelableArrayListCompat
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.stake.StakeFragment.Companion.ARGS_BALANCE
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
 
 @AndroidEntryPoint
 class StakingFragment : BaseFragment() {

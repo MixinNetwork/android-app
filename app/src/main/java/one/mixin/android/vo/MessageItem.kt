@@ -295,36 +295,6 @@ fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) 
 fun MessageItem.mediaDownloaded() =
     mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
 
-fun MessageItem.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipView: ImageView
-) {
-    when {
-        isSharedMembership() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipView.isVisible = true
-            membershipView.setImageResource(sharedMembership.membershipIcon())
-        }
-        sharedUserIsVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipView.isVisible = false
-        }
-        sharedUserAppId != null -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipView.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipView.isVisible = false
-        }
-    }
-}
-
 fun MessageItem.shareFile(
     context: Context,
     mediaMimeType: String,
