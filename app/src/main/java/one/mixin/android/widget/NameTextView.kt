@@ -287,7 +287,7 @@ class NameTextView : AppCompatTextView {
     private fun getBadge(item: ChatMinimal): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.isVerified()) {
+        } else if (item.checkIsVerified()) {
             R.drawable.ic_user_verified
         } else if (item.isBot()) {
             R.drawable.ic_bot

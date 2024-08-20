@@ -71,31 +71,6 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     suspend fun successConversationList(): List<ConversationMinimal>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        """
-        SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName,
-        ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl,
-        ou.is_verified AS isVerified, ou.app_id AS appId, ou.mute_until AS ownerMuteUntil, c.mute_until AS muteUntil,
-        c.pin_time AS pinTime 
-        FROM conversations c
-        INNER JOIN users ou ON ou.user_id = c.owner_id
-        LEFT JOIN messages m ON c.last_message_id = m.id
-        WHERE (c.category = 'GROUP' AND c.name LIKE '%' || :query || '%' $ESCAPE_SUFFIX) 
-        OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' 
-            AND (ou.full_name LIKE '%' || :query || '%' $ESCAPE_SUFFIX 
-                OR ou.identity_number like '%' || :query || '%' $ESCAPE_SUFFIX))
-        ORDER BY 
-            (c.category = 'GROUP' AND c.name = :query COLLATE NOCASE) 
-                OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' 
-                    AND (ou.full_name = :query COLLATE NOCASE
-                        OR ou.identity_number = :query COLLATE NOCASE)) DESC,
-            c.pin_time DESC, 
-            m.created_at DESC
-        """,
-    )
-    suspend fun fuzzySearchChat(query: String): List<ChatMinimal>
-
     @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
     suspend fun getConversationIdIfExistsSync(recipientId: String): String?
 

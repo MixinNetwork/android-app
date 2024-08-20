@@ -51,7 +51,7 @@ data class ChatMinimal(
         return isContactConversation() && appId != null
     }
 
-    fun isVerified(): Boolean {
+    fun checkIsVerified(): Boolean {
         return isContactConversation() && isVerified == true
     }
 

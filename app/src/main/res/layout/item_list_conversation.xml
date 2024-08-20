@@ -37,15 +37,6 @@
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/mute_iv"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="4dp"
-            android:src="@drawable/ic_mute"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
     </LinearLayout>
 
     <TextView
@@ -126,6 +117,16 @@
             android:textSize="13sp" />
 
         <ImageView
+            android:id="@+id/mute_iv"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="8dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_mute"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
             android:id="@+id/msg_pin"
             android:layout_width="12dp"
             android:layout_height="12dp"
@@ -133,7 +134,7 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_pin_status"
             android:visibility="gone"
-            android:contentDescription="@null" />
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/mention_flag"
