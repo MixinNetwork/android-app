@@ -41,7 +41,7 @@ class ViewEmergencyContactFragment : BaseFragment(R.layout.fragment_view_emergen
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            nameTv.text = user.fullName
+            nameTv.setName(user)
             idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
 
             val url = Constants.HelpLink.EMERGENCY
