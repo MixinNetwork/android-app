@@ -51,6 +51,7 @@
         android:textColor="#19BEF1"
         android:textSize="14sp"
         android:layout_marginBottom="1.5dp"
+        android:includeFontPadding="false"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
         app:layout_constraintStart_toStartOf="@id/chat_layout" />
 
@@ -85,70 +86,34 @@
                 android:layout_marginBottom="4dp"
                 android:contentDescription="@null" />
 
-            <TextView
+            <one.mixin.android.widget.NameTextView
                 android:id="@+id/name_tv"
-                android:layout_toEndOf="@id/avatar_iv"
-                android:textSize="16sp"
-                android:layout_marginStart="10dp"
-                android:maxWidth="220dp"
-                android:ellipsize="end"
-                android:textColor="?attr/text_primary"
-                android:layout_alignTop="@id/avatar_iv"
                 android:layout_width="wrap_content"
-                android:singleLine="true"
-                android:layout_height="wrap_content" />
-
-            <ImageView
-                android:id="@+id/verified_iv"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginStart="3dp"
-                android:src="@drawable/ic_user_verified"
-                android:layout_toEndOf="@id/name_tv"
-                android:layout_alignTop="@id/name_tv"
-                android:layout_alignBottom="@id/name_tv"
-                android:visibility="gone"
-                tools:ignore="ContentDescription" />
-
-            <ImageView
-                android:id="@+id/bot_iv"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginStart="3dp"
-                android:src="@drawable/ic_bot"
-                android:layout_toEndOf="@id/verified_iv"
-                android:layout_alignTop="@id/name_tv"
-                android:layout_alignBottom="@id/name_tv"
-                android:visibility="gone"
-                android:contentDescription="@null" />
-
-            <ImageView
-                android:id="@+id/membership_iv"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginStart="3dp"
-                android:src="@drawable/ic_membership_advance"
-                android:layout_toEndOf="@id/bot_iv"
-                android:layout_alignTop="@id/name_tv"
-                android:layout_alignBottom="@id/name_tv"
-                android:visibility="gone"
-                android:contentDescription="@null"
-                />
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:maxWidth="220dp"
+                android:layout_alignTop="@id/avatar_iv"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toEndOf="@id/avatar_iv"
+                android:textColor="?attr/text_primary"
+                android:ellipsize="end"
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/id_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/avatar_iv"
+                android:maxWidth="220dp"
+                android:textSize="12sp"
+                android:textColor="@color/gray_50"
+                android:fontFamily="@font/roboto_light"
+                android:layout_marginTop="2dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                android:layout_marginTop="2dp"
-                android:textSize="12sp"
-                android:fontFamily="@font/roboto_light"
-                android:maxWidth="220dp"
-                android:singleLine="true"
-                android:textColor="@color/gray_50"
                 android:layout_alignBottom="@id/avatar_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:singleLine="true" />
 
         </RelativeLayout>
 

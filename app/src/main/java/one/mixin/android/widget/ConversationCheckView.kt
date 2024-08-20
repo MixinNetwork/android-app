@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Checkable
 import android.widget.LinearLayout
-import androidx.core.view.isVisible
 import com.google.gson.Gson
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewConversationCheckBinding
@@ -35,8 +34,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.membershipIcon
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ConversationCheckView : LinearLayout, Checkable {
     private var checked = false
@@ -44,8 +41,6 @@ class ConversationCheckView : LinearLayout, Checkable {
     private val binding = ViewConversationCheckBinding.inflate(LayoutInflater.from(context), this, true)
     val normal get() = binding.normal
     val avatar get() = binding.avatar
-    val verifiedIv get() = binding.verifiedIv
-    val botIv get() = binding.botIv
 
     constructor(context: Context) : super(context)
 
@@ -104,21 +99,13 @@ class ConversationCheckView : LinearLayout, Checkable {
     ) {
         binding.apply {
             if (item.isGroupConversation()) {
-                normal.text = item.groupName
                 setConversationSubtitle(item)
                 avatar.setGroup(item.iconUrl())
             } else {
-                normal.text = item.name
                 mixinIdTv.text = item.ownerIdentityNumber
                 avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
             }
-            if (item.isMembership()) {
-                membershipIv.setImageResource(item.membership.membershipIcon())
-                membershipIv.isVisible = true
-            } else {
-                membershipIv.isVisible = false
-            }
-            botIv.isVisible = item.isBot()
+            normal.setName(item)
             setOnClickListener {
                 toggle()
                 listener?.onConversationClick(item)
@@ -132,15 +119,13 @@ class ConversationCheckView : LinearLayout, Checkable {
     ) {
         binding.apply {
             if (item.isGroupConversation()) {
-                normal.text = item.groupName
                 setConversationSubtitle(item)
                 avatar.setGroup(item.iconUrl())
             } else {
-                normal.text = item.name
                 mixinIdTv.text = item.ownerIdentityNumber
                 avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
             }
-            botIv.isVisible = item.isBot()
+            normal.setName(item)
             setOnClickListener {
                 toggle()
                 listener(isChecked)
@@ -153,14 +138,13 @@ class ConversationCheckView : LinearLayout, Checkable {
         listener: ForwardAdapter.ForwardListener?,
     ) {
         binding.apply {
-            normal.text = item.fullName
+            normal.setName(item)
             mixinIdTv.text = item.identityNumber
             avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
             setOnClickListener {
                 toggle()
                 listener?.onUserItemClick(item)
             }
-            item.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
         }
     }
 

@@ -14,6 +14,12 @@ class CallUser(
     val avatarUrl: String?,
     @ColumnInfo(name = "role")
     val role: String,
+    @ColumnInfo(name = "is_verified")
+    val isVerified: Boolean?,
+    @ColumnInfo(name = "app_id")
+    var appId: String?,
+    @ColumnInfo(name = "membership")
+    val membership: Membership?,
 ) {
     companion object {
         val DIFF_CALLBACK =

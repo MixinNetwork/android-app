@@ -16,7 +16,7 @@
         android:textColor="?attr/text_assist"
         android:textSize="22sp"/>
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/contact_friend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

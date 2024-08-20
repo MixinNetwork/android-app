@@ -27,13 +27,15 @@
 
     <TextView
         android:id="@+id/name_tv"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
         android:gravity="center"
         android:singleLine="true"
         android:orientation="horizontal"
         android:textColor="?text_primary"
+        android:maxWidth="64dp"
+        app:badgePadding="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/avatar_view" />

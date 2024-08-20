@@ -49,6 +49,7 @@
         android:lines="1"
         android:minWidth="30dp"
         android:textColor="#19BEF1"
+        android:includeFontPadding="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
         android:textSize="14sp" />

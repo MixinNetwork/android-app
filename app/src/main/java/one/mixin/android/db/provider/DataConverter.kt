@@ -412,46 +412,6 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     return res
 }
 
-fun convertToSearchMessageDetailItem(cursor: Cursor?): ArrayList<SearchMessageDetailItem> {
-    cursor ?: return ArrayList()
-    val cursorIndexOfMessageId = cursor.getColumnIndexOrThrow("messageId")
-    val cursorIndexOfUserId = cursor.getColumnIndexOrThrow("userId")
-    val cursorIndexOfUserAvatarUrl = cursor.getColumnIndexOrThrow("userAvatarUrl")
-    val cursorIndexOfUserFullName = cursor.getColumnIndexOrThrow("userFullName")
-    val cursorIndexOfType = cursor.getColumnIndexOrThrow("type")
-    val cursorIndexOfContent = cursor.getColumnIndexOrThrow("content")
-    val cursorIndexOfCreatedAt = cursor.getColumnIndexOrThrow("createdAt")
-    val cursorIndexOfMediaName = cursor.getColumnIndexOrThrow("mediaName")
-    val cursorIndexOfMembership = cursor.getColumnIndexOrThrow("membership")
-    val res = ArrayList<SearchMessageDetailItem>(cursor.count)
-    while (cursor.moveToNext()) {
-        val item: SearchMessageDetailItem
-        val tmpMessageId = cursor.getString(cursorIndexOfMessageId)
-        val tmpUserId = cursor.getString(cursorIndexOfUserId)
-        val tmpUserAvatarUrl = cursor.getString(cursorIndexOfUserAvatarUrl)
-        val tmpUserFullName = cursor.getString(cursorIndexOfUserFullName)
-        val tmpType = cursor.getString(cursorIndexOfType)
-        val tmpContent = cursor.getString(cursorIndexOfContent)
-        val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
-        val tmpMediaName = cursor.getString(cursorIndexOfMediaName)
-        val tmpMembership = cursor.getString(cursorIndexOfMembership)
-        item =
-            SearchMessageDetailItem(
-                tmpMessageId,
-                tmpType,
-                tmpContent,
-                tmpCreatedAt,
-                tmpMediaName,
-                tmpUserId,
-                tmpUserFullName,
-                tmpUserAvatarUrl,
-                membershipConverter.revertData(tmpMembership)
-            )
-        res.add(item)
-    }
-    return res
-}
-
 @SuppressLint("RestrictedApi")
 fun callableUser(
     db: MixinDatabase,
@@ -815,9 +775,11 @@ fun callableSearchMessageItem(
             val cursorIndexOfConversationCategory = 3
             val cursorIndexOfMessageCount = 4
             val cursorIndexOfUserId = 5
-            val cursorIndexOfUserAvatarUrl = 6
-            val cursorIndexOfUserFullName = 7
-            val cursorIndexOfUserMembership = 8
+            val cursorIndexOfAppId = 6
+            val cursorIndexOfUserAvatarUrl = 7
+            val cursorIndexOfUserFullName = 8
+            val cursorIndexOfUserIsVerified = 9
+            val cursorIndexOfUserMembership = 10
             val result: MutableList<SearchMessageItem> =
                 java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -853,6 +815,12 @@ fun callableSearchMessageItem(
                     } else {
                         cursor.getString(cursorIndexOfUserId)
                     }
+                val tempAppId: String? =
+                    if (cursor.isNull(cursorIndexOfAppId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAppId)
+                    }
                 val tmpUserAvatarUrl: String? =
                     if (cursor.isNull(cursorIndexOfUserAvatarUrl)) {
                         null
@@ -865,6 +833,14 @@ fun callableSearchMessageItem(
                     } else {
                         cursor.getString(cursorIndexOfUserFullName)
                     }
+                val tmpIsVerified: Boolean?
+                val tmp: Int? =
+                    if (cursor.isNull(cursorIndexOfUserIsVerified)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfUserIsVerified)
+                    }
+                tmpIsVerified = if (tmp == null) null else tmp != 0
                 val tmpUserMembership: String? =
                     if (cursor.isNull(cursorIndexOfUserMembership)) {
                         null
@@ -878,9 +854,11 @@ fun callableSearchMessageItem(
                         tmpConversationName,
                         tmpMessageCount,
                         tmpUserId!!,
+                        tempAppId,
                         tmpUserFullName,
                         tmpUserAvatarUrl,
                         tmpConversationAvatarUrl,
+                        tmpIsVerified,
                         membershipConverter.revertData(tmpUserMembership)
                     )
                 result.add(item)

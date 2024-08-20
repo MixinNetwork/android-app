@@ -2,7 +2,6 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentOldVersionBinding

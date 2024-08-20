@@ -81,7 +81,7 @@ class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
 
 class UserHolder(val binding: ItemUserListBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(user: User) {
-        binding.nameTv.text = user.fullName
+        binding.nameTv.setName(user)
         binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         binding.numberTv.text = user.identityNumber
     }

@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants

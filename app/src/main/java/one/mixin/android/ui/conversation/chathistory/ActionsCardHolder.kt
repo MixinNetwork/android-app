@@ -18,6 +18,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.ActionButton
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
@@ -42,7 +43,10 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
-            if (messageItem.appId != null) {
+            if (messageItem.isMembership()) {
+                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+                binding.chatName.compoundDrawablePadding = 3.dp
+            } else if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
                 binding.chatName.compoundDrawablePadding = 3.dp
             } else {

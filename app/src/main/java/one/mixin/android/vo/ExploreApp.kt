@@ -1,10 +1,8 @@
 package one.mixin.android.vo
 
-import androidx.annotation.DrawableRes
 import androidx.room.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
-import one.mixin.android.R
 
 class ExploreApp(
     @SerializedName("app_id")

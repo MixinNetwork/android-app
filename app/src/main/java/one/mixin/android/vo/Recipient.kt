@@ -91,35 +91,6 @@ data class UserItem(
 
 }
 
-fun UserItem.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipIv: ImageView
-) {
-    when {
-        isMembership() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.setImageResource(membership.membershipIcon())
-            membershipIv.isVisible = true
-        }
-        isVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-        }
-
-        appId != null -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-        }
-
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-        }
-    }
-}
-
 fun AddressItem.displayAddress(): String {
     return if (!tag.isNullOrEmpty()) {
         "$destination:$tag"

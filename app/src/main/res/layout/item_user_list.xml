@@ -18,7 +18,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginEnd="@dimen/margin16" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/name_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

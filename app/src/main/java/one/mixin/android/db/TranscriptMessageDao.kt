@@ -70,7 +70,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership 
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
@@ -95,7 +95,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id

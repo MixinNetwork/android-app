@@ -18,10 +18,8 @@ import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
-import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
     RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
@@ -64,7 +62,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             return POS_FRIEND.toLong()
         }
         val u = users[getPosition(position)]
-        return if (u.fullName != null && u.fullName.isNotEmpty()) u.fullName[0].code.toLong() else -1L
+        return if (!u.fullName.isNullOrEmpty()) u.fullName[0].code.toLong() else -1L
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -226,8 +224,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             } else {
                 if (account != null) {
                     binding.contactHeaderAvatar.setInfo(account.fullName, account.avatarUrl, account.userId)
-                    binding.contactHeaderNameTv.text = account.fullName
-                    binding.contactHeaderNameTv.setCompoundDrawables(null, null, getMembershipBadge(account), null)
+                    binding.contactHeaderNameTv.setName(account)
                     binding.contactHeaderIdTv.text =
                         itemView.context.getString(R.string.contact_mixin_id, account.identityNumber)
                     binding.contactHeaderMobileTv.text =
@@ -243,21 +240,6 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             }
         }
 
-        private val dp12 by lazy {
-           binding.root.context.dpToPx(12f)
-        }
-
-        private fun getMembershipBadge(account: Account): Drawable? {
-            return account.membership.membershipIcon().let { icon ->
-                if (icon == View.NO_ID) {
-                    null
-                } else {
-                    AppCompatResources.getDrawable(binding.root.context, icon)?.also {
-                        it.setBounds(0, 0, dp12, dp12)
-                    }
-                }
-            }
-        }
     }
 
     class FootViewHolder(val binding: ViewContactListEmptyBinding) : ViewHolder(binding.root) {
@@ -278,10 +260,9 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             listener: ContactListener?,
         ) {
             binding.apply {
-                normal.text = user.fullName
+                normal.setName(user)
                 mixinIdTv.text = user.identityNumber
                 avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-                user.showVerifiedOrBot(verifiedIv, botIv, membershipIv)
                 if (listener != null) {
                     itemView.setOnClickListener { listener.onFriendItem(user) }
                 }
@@ -295,12 +276,12 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             listener: ContactListener?,
         ) {
             binding.index.text =
-                if (user.fullName != null && user.fullName.isNotEmpty()) {
+                if (!user.fullName.isNullOrEmpty()) {
                     user.fullName[0].toString()
                 } else {
                     ""
                 }
-            binding.contactFriend.text = user.fullName
+            binding.contactFriend.setName(user)
             if (listener != null) {
                 itemView.setOnClickListener { listener.onContactItem(user) }
             }

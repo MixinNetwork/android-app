@@ -117,7 +117,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
     ) {
         itemView.apply {
             binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.nameTv.text = user.fullName
+            binding.nameTv.setName(user)
             binding.loading.setAutoRepeat(true)
             binding.loading.setAnimation(R.raw.anim_call_loading, 64.dp, 64.dp)
             binding.loading.playAnimation()

@@ -2,10 +2,6 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
-import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -17,7 +13,6 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import one.mixin.android.R
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -134,34 +129,4 @@ fun createSystemUser(): User {
 
 fun User.notMessengerUser(): Boolean {
     return identityNumber == "0"
-}
-
-fun User.showVerifiedOrBot(
-    verifiedView: View,
-    botView: View,
-    membershipIv: ImageView
-) {
-    when {
-        isMembership() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.setImageResource(membership.membershipIcon())
-            membershipIv.isVisible = true
-        }
-        isVerified == true -> {
-            verifiedView.isVisible = true
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-        isBot() -> {
-            verifiedView.isVisible = false
-            botView.isVisible = true
-            membershipIv.isVisible = false
-        }
-        else -> {
-            verifiedView.isVisible = false
-            botView.isVisible = false
-            membershipIv.isVisible = false
-        }
-    }
 }
