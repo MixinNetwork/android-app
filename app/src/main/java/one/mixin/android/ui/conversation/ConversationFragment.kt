@@ -2453,7 +2453,7 @@ class ConversationFragment() :
         }
 
     private fun renderUserInfo(user: User) {
-        binding.actionBar.setSubTitle(user.fullName ?: "", user.identityNumber)
+        binding.actionBar.setUser(user)
         binding.actionBar.avatarIv.visibility = VISIBLE
         binding.actionBar.avatarIv.setTextSize(16f)
         binding.actionBar.avatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)
