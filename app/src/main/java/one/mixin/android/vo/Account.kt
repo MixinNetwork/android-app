@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import com.google.gson.annotations.SerializedName
 
-open class Account(
+data class Account(
     @SerializedName("user_id")
     val userId: String,
     @SerializedName("session_id")
@@ -61,8 +61,6 @@ open class Account(
     @SerializedName("system")
     val system: AppVersion?
 )
-
-fun Account.toAccountWithoutSalt() = Account(userId, sessionId, type, identityNumber, relationship, fullName, biography, avatarUrl, phone, avatarBase64, pinToken, codeId, codeUrl, createdAt, receiveMessageSource, hasPin, tipKeyBase64, tipCounter, acceptConversationSource, acceptSearchSource, hasEmergencyContact, hasSafe, fiatCurrency, transferNotificationThreshold, transferConfirmationThreshold, features, null, membership, system)
 
 fun Account.toUser(): User {
     return User(userId, identityNumber, relationship, biography ?: "", fullName, avatarUrl, phone, null, createdAt, null, hasPin, membership = membership)
