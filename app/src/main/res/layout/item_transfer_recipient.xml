@@ -2,22 +2,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:layout_marginTop="16dp">
-
-    <TextView
-        android:id="@+id/labelTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ba_label"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:paddingTop="2.5dp"
-        android:paddingBottom="2.5dp"
-        android:visibility="gone"
-        android:textSize="12sp"
-        android:layout_marginEnd="8dp"
-        android:layout_gravity="center_vertical"
-        android:textColor="?attr/text_label" />
+    android:clipToPadding="false"
+    android:clipChildren="false">
 
     <TextView
         android:id="@+id/addressTextView"
@@ -27,7 +13,13 @@
         android:layout_marginEnd="40dp"
         android:textSize="14sp"
         android:layout_gravity="center_vertical"
-        android:textColor="?attr/text_assist" />
+        android:lineSpacingMultiplier="1.5"
+        android:textColor="?attr/text_primary"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="4dp"
+        android:clipToPadding="false"
+        android:clipChildren="false" />
 
     <TextView
         android:id="@+id/amountTextView"
@@ -35,5 +27,5 @@
         android:layout_height="wrap_content"
         android:textSize="14sp"
         android:layout_gravity="center_vertical"
-        android:textColor="?attr/text_assist" />
+        android:textColor="?attr/text_minor" />
 </LinearLayout>

@@ -1650,4 +1650,6 @@
     <string name="Reject">Reject</string>
     <string name="Note">Note</string>
     <string name="Safe">Safe</string>
+    <string name="Approve_Successful">Approve Successful</string>
+    <string name="Reject_Successful">Reject Successful</string>
 </resources>

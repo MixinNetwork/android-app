@@ -55,7 +55,7 @@
     <color name="bgTipInfoBorder">#999999</color>
     <color name="bgTipWarning">#FBF1F0</color>
     <color name="bgTipWarningBorder">#E86B67</color>
-    <color name="bgLabel">#57333333</color>
+    <color name="bgLabel">#F7F7F7</color>
 
     <color name="chainGradientStart">#F6F7FA</color>
     <color name="chainGradientEnd">#EEF0F3</color>

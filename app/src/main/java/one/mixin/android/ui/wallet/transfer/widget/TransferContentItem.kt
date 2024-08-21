@@ -1,10 +1,16 @@
 package one.mixin.android.ui.wallet.transfer.widget
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.Spanned
 import android.text.style.RelativeSizeSpan
+import android.text.style.ReplacementSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
@@ -60,7 +66,7 @@ class TransferContentItem : RelativeLayout {
         label: String,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleResId).uppercase())
+            title.text = context.getString(titleResId).uppercase()
             footer.isVisible = false
 
             val fullText = "$contentStr $label"
@@ -78,4 +84,5 @@ class TransferContentItem : RelativeLayout {
             content.text = spannableString
         }
     }
+
 }

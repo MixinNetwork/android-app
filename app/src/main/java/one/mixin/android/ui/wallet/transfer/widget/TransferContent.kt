@@ -94,7 +94,7 @@ class TransferContent : LinearLayout {
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+        return "${Fiats.getSymbol()}${value.numberFormat2()}"
     }
 
     private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem): Pair<String, String> {
@@ -259,7 +259,7 @@ class TransferContent : LinearLayout {
         safeAccount: SafeAccount,
     ) {
         _binding.apply {
-            amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!), token = safeMultisigsBiometricItem.asset)
+            amount.setContent(R.string.Total_Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!), token = safeMultisigsBiometricItem.asset)
             receive.isVisible = false
             sender.isVisible = false
             total.isVisible = false
@@ -269,7 +269,7 @@ class TransferContent : LinearLayout {
                 memo.isVisible = true
                 memo.setContent(R.string.Note, safeMultisigsBiometricItem.memo ?: "")
             }
-            safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients)
+            safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients, safeMultisigsBiometricItem.asset?.symbol?:"")
             safeReceives.isVisible = true
             safeSender.setContent(R.string.Sender, safeAccount.address)
             safeSender.isVisible = true

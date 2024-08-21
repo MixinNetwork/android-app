@@ -164,15 +164,13 @@ class TransferHeader : LinearLayout {
                     title.setText(R.string.Multisig_Signing_Successful)
                     subTitle.setText(R.string.multisig_signing_successful_description)
                 }
-                // Todo
                 TransferType.approve -> {
-                    title.setText(R.string.Multisig_Signing_Successful)
-                    subTitle.setText(R.string.multisig_signing_successful_description)
+                    title.setText(R.string.Approve_Successful)
+                    subTitle.setText(R.string.review_safe_transfer_hint)
                 }
-                // Todo
                 TransferType.reject -> {
-                    title.setText(R.string.Multisig_Signing_Successful)
-                    subTitle.setText(R.string.multisig_signing_successful_description)
+                    title.setText(R.string.Reject_Successful)
+                    subTitle.setText(R.string.review_safe_transfer_hint)
                 }
             }
         }
