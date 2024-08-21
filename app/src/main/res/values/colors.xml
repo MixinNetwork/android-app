@@ -14,6 +14,7 @@
     <color name="textAssist">#999999</color>
     <color name="textRemarks">#B3B3B3</color>
     <color name="textSubtitle">#B3B3B3</color>
+    <color name="textLabel">#C2333333</color>
 
     <color name="textTranscript">#663B3C3E</color>
     <color name="textTranscriptNight">#858f9c</color>
@@ -54,6 +55,7 @@
     <color name="bgTipInfoBorder">#999999</color>
     <color name="bgTipWarning">#FBF1F0</color>
     <color name="bgTipWarningBorder">#E86B67</color>
+    <color name="bgLabel">#57333333</color>
 
     <color name="chainGradientStart">#F6F7FA</color>
     <color name="chainGradientEnd">#EEF0F3</color>

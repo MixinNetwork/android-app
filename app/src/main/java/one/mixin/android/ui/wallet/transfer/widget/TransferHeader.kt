@@ -164,6 +164,16 @@ class TransferHeader : LinearLayout {
                     title.setText(R.string.Multisig_Signing_Successful)
                     subTitle.setText(R.string.multisig_signing_successful_description)
                 }
+                // Todo
+                TransferType.approve -> {
+                    title.setText(R.string.Multisig_Signing_Successful)
+                    subTitle.setText(R.string.multisig_signing_successful_description)
+                }
+                // Todo
+                TransferType.reject -> {
+                    title.setText(R.string.Multisig_Signing_Successful)
+                    subTitle.setText(R.string.multisig_signing_successful_description)
+                }
             }
         }
     }
@@ -185,7 +195,10 @@ class TransferHeader : LinearLayout {
     ) {
         _binding.apply {
             icon.displayedChild =
-                if (type == TransferType.nft || type == TransferType.nftRelease) {
+                if (type == TransferType.approve || type == TransferType.reject) {
+                    statusIcon.setImageResource(R.drawable.ic_transfer_approve)
+                    2
+                } else if (type == TransferType.nft || type == TransferType.nftRelease) {
                     1
                 } else {
                     0
@@ -224,6 +237,16 @@ class TransferHeader : LinearLayout {
                 TransferType.unMulSign -> {
                     title.setText(R.string.Revoke_Multisig_Signature)
                     subTitle.setText(R.string.review_transfer_hint)
+                }
+
+                TransferType.approve -> {
+                    title.setText(R.string.Multisig_Safe_Transaction)
+                    subTitle.setText(R.string.review_safe_transfer_hint)
+                }
+
+                TransferType.reject -> {
+                    title.setText(R.string.Revoke_Multisig_Safe_Signature)
+                    subTitle.setText(R.string.review_safe_transfer_hint)
                 }
 
                 else -> {

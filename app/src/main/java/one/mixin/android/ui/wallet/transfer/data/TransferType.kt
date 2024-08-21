@@ -6,9 +6,11 @@ enum class TransferType {
     withdraw,
     mutlSign,
     unMulSign,
+    approve,
+    reject,
     addAddress,
     deleteAddress,
     nft,
     nftRelease,
-    signed
+    signed,
 }

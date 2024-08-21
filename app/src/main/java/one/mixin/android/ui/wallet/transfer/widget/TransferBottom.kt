@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.annotation.StringRes
 import androidx.core.view.isInvisible
 import androidx.core.view.setPadding
 import one.mixin.android.R
@@ -31,6 +32,10 @@ class TransferBottom : ViewAnimator {
         _binding.doneBtn.setOnClickListener(doneClickListener)
         _binding.retryCancel.setOnClickListener(cancelClickListener)
         _binding.retry.setOnClickListener(confirmClickListener)
+    }
+
+    fun setText(@StringRes res:Int) {
+        _binding.confirmButton.setText(res)
     }
 
     fun updateStatus(

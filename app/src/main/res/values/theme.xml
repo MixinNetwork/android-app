@@ -12,6 +12,7 @@
     <attr name="text_remarks" format="color|reference" />
     <attr name="text_subtitle" format="color|reference" />
     <attr name="text_blue" format="color|reference" />
+    <attr name="text_label" format="color|reference" />
 
     <attr name="text_default" format="color|reference" />
     <attr name="text_checked" format="color|reference" />
@@ -54,6 +55,7 @@
     <attr name="bg_tip_warning_border" format="color|reference" />
     <attr name="bg_tip_info" format="color|reference" />
     <attr name="bg_tip_info_border" format="color|reference" />
+    <attr name="bg_label" format="color|reference" />
 
     <attr name="music_played" format="color|reference" />
     <attr name="music_unplayed" format="color|reference" />

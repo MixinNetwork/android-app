@@ -4,6 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
@@ -127,6 +128,7 @@ open class SafeMultisigsBiometricItem(
     val raw: String,
     val views: String?,
     val index: Int,
+    val safe: SafeAccount?,
     open val senders: Array<String>,
     open val receivers: Array<String>,
     open val receiverThreshold: Int,

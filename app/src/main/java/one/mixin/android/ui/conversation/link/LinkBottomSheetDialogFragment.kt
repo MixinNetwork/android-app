@@ -300,6 +300,46 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     return@launch
                 }
                 val multisigs = transactionResponse.data!!
+                val safe = multisigs.safe
+                if (safe != null) {
+                    val asset = checkToken(safe.operation.transaction.assetId)
+                    if (asset == null) {
+                        showError()
+                        return@launch
+                    }
+                    var state: String = SignatureState.initial.name
+                    multisigs.signers?.let { signers ->
+                        when {
+                            signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
+                            action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
+                            action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
+                        }
+                    }
+                    val multisigsBiometricItem =
+                        SafeMultisigsBiometricItem(
+                            action = action,
+                            traceId = multisigs.requestId,
+                            senders = emptyArray(),
+                            receivers = emptyArray(),
+                            sendersThreshold = multisigs.sendersThreshold,
+                            receiverThreshold = 0,
+                            asset = asset,
+                            amount = multisigs.amount,
+                            memo = null,
+                            raw = multisigs.rawTransaction,
+                            index = multisigs.senders.indexOf(Session.getAccountId()),
+                            views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
+                            state = state,
+                            reference = null,
+                            safe = safe
+                        )
+                    TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
+                        parentFragmentManager,
+                        TransferBottomSheetDialogFragment.TAG,
+                    )
+                    dismiss()
+                    return@launch
+                }
                 val asset = checkToken(multisigs.assetId!!)
                 if (asset == null) {
                     showError()
@@ -345,6 +385,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
                         reference = null,
+                        safe = null
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,

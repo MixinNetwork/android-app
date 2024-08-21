@@ -116,23 +116,41 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
-        if (t is SafeMultisigsBiometricItem && t.state == PaymentStatus.paid.name) {
-            transferViewModel.updateStatus(TransferStatus.SIGNED)
-            binding.transferAlert.isVisible = false
+        if (t is SafeMultisigsBiometricItem){
+            val item = t as SafeMultisigsBiometricItem
+            if (item.safe != null) {
+                binding.bottom.setText(if(item.action == "sign") R.string.Approve else R.string.Reject)
+            }
+            if (t.state == PaymentStatus.paid.name) {
+                transferViewModel.updateStatus(TransferStatus.SIGNED)
+                binding.transferAlert.isVisible = false
+            }
         } else {
             transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
         }
         when (t) {
             is SafeMultisigsBiometricItem -> {
-                lifecycleScope.launch {
-                    val item = t as SafeMultisigsBiometricItem
-                    val result = bottomViewModel.findMultiUsers(item.senders, item.receivers)
-                    if (result != null) {
-                        val senders = result.first
-                        val receivers = result.second
-                        binding.content.render(t as SafeMultisigsBiometricItem, senders, receivers) { user ->
-                            if (user.userId == Session.getAccountId()) return@render
-                            showUserBottom(parentFragmentManager, user)
+                val item = t as SafeMultisigsBiometricItem
+                if (item.safe != null) {
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            item.safe.operation.transaction.recipients.forEach { item ->
+                                item.label = bottomViewModel.findAddressByReceiver(item.address, "")
+                            }
+                        }
+                        binding.content.render(item, emptyList(), emptyList()) {}
+                    }
+
+                } else {
+                    lifecycleScope.launch {
+                        val result = bottomViewModel.findMultiUsers(item.senders, item.receivers)
+                        if (result != null) {
+                            val senders = result.first
+                            val receivers = result.second
+                            binding.content.render(item, senders, receivers) { user ->
+                                if (user.userId == Session.getAccountId()) return@render
+                                showUserBottom(parentFragmentManager, user)
+                            }
                         }
                     }
                 }
@@ -256,12 +274,22 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                 is SafeMultisigsBiometricItem -> {
                     val multisigsBiometricItem = t as SafeMultisigsBiometricItem
-                    if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
-                        TransferType.signed
-                    } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
-                        TransferType.unMulSign
+                    if (multisigsBiometricItem.safe != null) {
+                        if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
+                            TransferType.reject // Todo
+                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                            TransferType.reject
+                        } else {
+                            TransferType.approve
+                        }
                     } else {
-                        TransferType.mutlSign
+                        if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
+                            TransferType.signed
+                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                            TransferType.unMulSign
+                        } else {
+                            TransferType.mutlSign
+                        }
                     }
                 }
 

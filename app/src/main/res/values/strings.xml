@@ -1643,4 +1643,11 @@
     <string name="low_24h">24H LOW</string>
     <string name="vol_24h">24H VOL</string>
     <string name="Market_Cap">Market Cap</string>
+    <string name="Multisig_Safe_Transaction">批准交易</string>
+    <string name="Revoke_Multisig_Safe_Signature">拒绝交易</string>
+    <string name="review_safe_transfer_hint">该交易请求来着 Mixin Safe。</string>
+    <string name="Approve">Apporeve</string>
+    <string name="Reject">Reject</string>
+    <string name="Note">Note</string>
+    <string name="Safe">Safe</string>
 </resources>

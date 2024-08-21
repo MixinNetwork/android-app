@@ -4,9 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -69,7 +71,11 @@ class TransferContent : LinearLayout {
         receiver: List<User>,
         userClick: (User) -> Unit,
     ) {
-        renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver, userClick)
+        if (safeMultisigsBiometricItem.safe != null) {
+            renderSafeMultisigsTransfer(safeMultisigsBiometricItem, safeMultisigsBiometricItem.safe)
+        } else {
+            renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver, userClick)
+        }
     }
 
     private fun amountAs(
@@ -245,6 +251,31 @@ class TransferContent : LinearLayout {
 
             val tokenItem = safeMultisigsBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderSafeMultisigsTransfer(
+        safeMultisigsBiometricItem: SafeMultisigsBiometricItem,
+        safeAccount: SafeAccount,
+    ) {
+        _binding.apply {
+            amount.setContent(R.string.Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!), token = safeMultisigsBiometricItem.asset)
+            receive.isVisible = false
+            sender.isVisible = false
+            total.isVisible = false
+            networkFee.isVisible = false
+
+            if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
+                memo.isVisible = true
+                memo.setContent(R.string.Note, safeMultisigsBiometricItem.memo ?: "")
+            }
+            safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients)
+            safeReceives.isVisible = true
+            safeSender.setContent(R.string.Sender, safeAccount.address)
+            safeSender.isVisible = true
+            safe.setContent(R.string.Safe, safeAccount.name)
+            safe.isVisible = true
+            network.isVisible = false
         }
     }
 
