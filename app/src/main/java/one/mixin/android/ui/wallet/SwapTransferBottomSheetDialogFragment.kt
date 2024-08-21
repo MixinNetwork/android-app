@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -91,6 +93,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.User
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import timber.log.Timber
@@ -246,7 +249,10 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                             CoilImage(
                                                 model = outAsset.iconUrl,
                                                 placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier = Modifier.size(67.dp).align(Alignment.Center).clip(CircleShape)
+                                                modifier = Modifier
+                                                    .size(67.dp)
+                                                    .align(Alignment.Center)
+                                                    .clip(CircleShape)
                                             )
                                         }
                                     }
@@ -587,12 +593,38 @@ fun ItemUserContent(
                         .clip(CircleShape),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "${user.fullName} (${user.identityNumber})",
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 16.sp,
-                )
+                UserBadge(user)
             }
+        }
+    }
+}
+
+@Composable
+fun UserBadge(
+    user: User,
+    badgeSize: Dp = 14.dp,
+) {
+    val badgeResource = when {
+        user.isMembership() -> user.membership.membershipIcon()
+        user.isVerified == true -> R.drawable.ic_user_verified
+        user.isBot() -> R.drawable.ic_bot
+        else -> null
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "${user.fullName} (${user.identityNumber})",
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 16.sp,
+        )
+        badgeResource?.let { res ->
+            Spacer(modifier = Modifier.width(4.dp))
+            Image(
+                painter = painterResource(id = res),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(badgeSize)
+                    .background(Color.Transparent)
+            )
         }
     }
 }
