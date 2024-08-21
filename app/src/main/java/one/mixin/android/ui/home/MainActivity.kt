@@ -973,10 +973,12 @@ class MainActivity : BlazeBaseActivity() {
                             AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
                         )
                     } else {
+                        openMarket()
                         Timber.e("No availability Update")
                     }
                 }
                 .addOnFailureListener { e ->
+                    openMarket()
                     Timber.e(e)
                 }
                 .addOnCanceledListener {
@@ -994,6 +996,7 @@ class MainActivity : BlazeBaseActivity() {
     ) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
             // Handle the case where the update was not successful
+            openMarket()
         } else {
             defaultSharedPreferences.putLong(
                 PREF_NEW_VERSION,
