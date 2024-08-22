@@ -493,7 +493,8 @@
     <string name="Forward_to_friend">转发给好友</string>
     <string name="fourth_pin_confirm_hint">这是最后一次确认 PIN，记住：PIN 丢失将永远无法找回！</string>
     <string name="Friday">星期五</string>
-    <string name="From">从</string>
+    <string name="From">来自</string>
+    <string name="Token_From">从</string>
     <string name="Generating_keys">正在创建密钥…</string>
     <string name="Get_a_new_wallet">创建新钱包</string>
     <string name="Go">导航</string>
