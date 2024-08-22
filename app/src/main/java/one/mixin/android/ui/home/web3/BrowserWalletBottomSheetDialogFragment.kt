@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.web3.ParsedTx
@@ -127,7 +128,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: JsSigner.currentChain
+        Web3ChainId.getChain(signMessage.web3ChainId)
     }
 
     var step by mutableStateOf(Step.Input)
@@ -251,8 +252,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
                 try {
-                    val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
-                    val gasLimit = viewModel.ethGasLimit(chain, transaction.toTransaction()) ?: return@onEach
+                    val gasPrice =  viewModel.ethGasPrice(chain) ?: return@onEach
+                    val gasLimit =  viewModel.ethGasLimit(chain, transaction.toTransaction()) ?: return@onEach
                     val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
                     tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
@@ -387,7 +388,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else if (tipGas != null) {
                 val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
                 if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
-                    Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
+                    Convert.fromWei(Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
                 } else {
                     maxGas > BigDecimal(chainToken.balance)
                 }

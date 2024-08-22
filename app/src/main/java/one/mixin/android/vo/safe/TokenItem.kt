@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
@@ -89,6 +90,7 @@ data class TokenItem(
                 icon = chainIconUrl ?: "",
                 price = null,
             ),
+            web3ChainId = Web3ChainId.MixinChainId,
             balance = balance,
             price = priceUsd,
         )

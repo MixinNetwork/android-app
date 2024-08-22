@@ -373,15 +373,17 @@ class AssetRepository
 
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-        suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source)
+        suspend fun web3Tokens(source: String, web3ChainId: Int): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source, web3ChainId)
 
         suspend fun web3Quote(
             inputMint: String,
             outputMint: String,
             amount: String,
+            inputChainId: Int,
+            outputChainId: Int,
             slippage: String,
             source: String,
-        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source)
+        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, inputChainId, outputChainId, slippage, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
@@ -389,9 +391,9 @@ class AssetRepository
 
         suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
 
-        suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
+        suspend fun getSwapToken(address: String, web3ChainId: Int) = routeService.getSwapToken(address, web3ChainId)
 
-        suspend fun searchTokens(query: String) = routeService.searchTokens(query)
+        suspend fun searchTokens(query: String, web3ChainId: Int) = routeService.searchTokens(query, web3ChainId)
 
         suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
 

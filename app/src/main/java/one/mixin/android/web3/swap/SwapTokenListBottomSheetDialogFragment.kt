@@ -20,6 +20,7 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -30,6 +31,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_WEB3_CHAIN_ID
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.receive.Web3AddressFragment
@@ -42,8 +44,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         const val ARGS_TOKENS = "args_tokens"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
-        fun newInstance(tokens: ArrayList<SwapToken>) =
+        fun newInstance(web3ChainId: Int, tokens: ArrayList<SwapToken>) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
+                putInt(ARGS_WEB3_CHAIN_ID, web3ChainId)
                 putParcelableArrayList(ARGS_TOKENS, tokens)
             }
     }
@@ -51,6 +54,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
     private val swapViewModel by viewModels<SwapViewModel>()
 
+    private val web3ChainId: Int by lazy {
+        requireArguments().getInt(ARGS_WEB3_CHAIN_ID)
+    }
     private val tokens by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)
     }
@@ -77,13 +83,16 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             assetRv.adapter = adapter
             adapter.tokens = tokens!!
             radio.isVisible = true
-            if (!inMixin()) { // only solana network
-                radioSolana.isChecked = true
+            if (!inMixin()) { // only solana, ethereum or polygon network
+                radioSolana.isChecked = web3ChainId == Web3ChainId.SolanaChainId
+                radioSolana.isVisible = web3ChainId == Web3ChainId.SolanaChainId
                 radioAll.isVisible = false
-                radioEth.isVisible = false
+                radioEth.isChecked = web3ChainId == Web3ChainId.EthChainId
+                radioEth.isVisible = web3ChainId == Web3ChainId.EthChainId
                 radioTron.isVisible = false
                 radioBsc.isVisible = false
-                radioPolygon.isVisible = false
+                radioPolygon.isChecked = web3ChainId == Web3ChainId.PolygonChainId
+                radioPolygon.isVisible = web3ChainId == Web3ChainId.PolygonChainId
             } else {
                 radioAll.isChecked = true
                 radioGroup.setOnCheckedChangeListener { _, id ->
@@ -183,7 +192,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         if (s.isBlank()) return localTokens
 
         handleMixinResponse(
-            invokeNetwork = { swapViewModel.searchTokens(s) },
+            invokeNetwork = { swapViewModel.searchTokens(s, web3ChainId) },
             successBlock = { resp ->
                 return@handleMixinResponse resp.data
             },

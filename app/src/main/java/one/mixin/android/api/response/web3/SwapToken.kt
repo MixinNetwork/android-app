@@ -3,6 +3,8 @@ package one.mixin.android.api.response.web3
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.api.response.Web3ChainId
+import one.mixin.android.api.response.polygonNativeTokenAssetKey
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import java.math.BigDecimal
@@ -18,6 +20,7 @@ data class SwapToken(
     @SerializedName("symbol") val symbol: String,
     @SerializedName("icon") val icon: String,
     @SerializedName("chain") val chain: SwapChain,
+    @SerializedName("web3ChainId") val web3ChainId: Int,
     var price: String? = null,
     var balance: String? = null,
 ) : Parcelable {
@@ -53,6 +56,13 @@ data class SwapToken(
         return address.ifEmpty {
             assetId
         }
+    }
+
+    fun getWeb3ApiAddress(): String {
+        if (web3ChainId == Web3ChainId.PolygonChainId) {
+            return polygonNativeTokenAssetKey
+        }
+        return address
     }
 
     fun inMixin(): Boolean = assetId != ""

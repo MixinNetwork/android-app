@@ -34,6 +34,7 @@ import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -933,7 +934,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
             return true
         }
-        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
+        val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, Web3ChainId.SolanaChainId, data = data, solanaTxSource = SolanaTxSource.Link)
         BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
             .setOnTxhash { sig, _ ->
@@ -953,7 +954,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
-        SwapActivity.show(requireContext(), input, output, amount)
+        SwapActivity.show(requireContext(), Web3ChainId.MixinChainId, input, output, amount)
         dismiss()
     }
 

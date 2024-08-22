@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.getWeb3ChainId
 import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.isSolana
 import one.mixin.android.api.response.solLamportToAmount
@@ -115,7 +116,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.swap -> {
-                        navTo(SwapFragment.newInstance(web3tokens), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance(token.getWeb3ChainId(), web3tokens), SwapFragment.TAG)
                     }
 
                     R.id.more -> {

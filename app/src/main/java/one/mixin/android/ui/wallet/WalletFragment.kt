@@ -37,6 +37,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
@@ -319,7 +320,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     }
                     sendReceiveView.enableSwap()
                     sendReceiveView.swap.setOnClickListener {
-                        navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<TokenItem>(Web3ChainId.MixinChainId), SwapFragment.TAG)
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root

@@ -24,6 +24,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
 import one.mixin.android.api.response.isSolToken
@@ -97,7 +98,7 @@ class SolanaFragment : BaseFragment() {
                     }
 
                     R.id.swap -> {
-                        navTo(SwapFragment.newInstance(tokens), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance(Web3ChainId.SolanaChainId, tokens), SwapFragment.TAG)
                     }
 
                     R.id.browser -> {

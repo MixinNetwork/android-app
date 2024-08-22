@@ -20,6 +20,7 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
@@ -128,7 +129,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ID
                     }
-                    navTo(SwapFragment.newInstance(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    navTo(SwapFragment.newInstance(Web3ChainId.MixinChainId, assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
             value.text = try {

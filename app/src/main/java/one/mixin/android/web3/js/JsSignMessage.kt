@@ -12,6 +12,7 @@ import org.web3j.utils.Numeric
 class JsSignMessage(
     val callbackId: Long,
     val type: Int,
+    val web3ChainId: Int,
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
     val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,

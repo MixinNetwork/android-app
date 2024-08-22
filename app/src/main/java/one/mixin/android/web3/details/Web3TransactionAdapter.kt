@@ -65,9 +65,7 @@ class Web3TransactionAdapter(val token: Web3Token) : RecyclerView.Adapter<Recycl
     ): RecyclerView.ViewHolder {
         return if (viewType == 0) {
             Web3HeaderHolder(ItemWeb3TokenHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
-                if (token.isSolana()) {
-                    enableSwap()
-                }
+                enableSwap()
             }
         } else {
             Web3TransactionHolder(ItemWeb3TransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
