@@ -62,6 +62,7 @@ fun AppCard(
     contentLongClick: () -> Unit,
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit,
+    botClick: (String) -> Unit,
     width: Int? = null,
     createdAt: String? = null,
     isLast: Boolean = false,
@@ -143,8 +144,8 @@ fun AppCard(
                 if (
                     !appCardData.description.isNullOrEmpty()
                 ) {
-                    ClickableTextWithUrls(
-                        text = appCardData.description ?: "", textSize, contentClick, contentLongClick, urlClick, urlLongClick
+                    ClickableTextWithUrlsAndBots(
+                        text = appCardData.description ?: "", textSize, contentClick, contentLongClick, urlClick, urlLongClick, botClick
                     )
                 }
                 if (createdAt != null) {
@@ -164,33 +165,65 @@ val Int.textDp: TextUnit
     @Composable get() = this.textDp(density = LocalDensity.current)
 
 private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
+private const val BOT_PATTERN = "(?<=^|\\D)7000\\d{6}(?=$|\\D)"
+
 private const val LONG_CLICK_TIME = 200L
 
+
 @Composable
-fun ClickableTextWithUrls(
+fun ClickableTextWithUrlsAndBots(
     text: String,
     fontSize: TextUnit,
     contentClick: () -> Unit,
     contentLongClick: () -> Unit,
     urlClick: (String) -> Unit,
-    urlLongClick: (String) -> Unit
+    urlLongClick: (String) -> Unit,
+    botClick: (String) -> Unit
 ) {
     val annotatedString = remember(text) {
         buildAnnotatedString {
             val urlPattern = Pattern.compile(URL_PATTERN)
-            val matcher = urlPattern.matcher(text)
+            val botPattern = Pattern.compile(BOT_PATTERN)
+
+            val urlMatcher = urlPattern.matcher(text)
+            val botMatcher = botPattern.matcher(text)
 
             var lastIndex = 0
 
-            while (matcher.find()) {
-                val start = matcher.start()
-                val end = matcher.end()
-                val url = matcher.group()
+            var nextUrlMatch = if (urlMatcher.find()) urlMatcher else null
+            var nextBotMatch = if (botMatcher.find()) botMatcher else null
+
+            while (nextUrlMatch != null || nextBotMatch != null) {
+                val isUrlNext = nextUrlMatch != null && (nextBotMatch == null || nextUrlMatch.start() < nextBotMatch.start())
+
+                val start: Int
+                val end: Int
+                val detectedText: String
+                val isUrl: Boolean
+
+                if (isUrlNext) {
+                    start = nextUrlMatch!!.start()
+                    end = nextUrlMatch.end()
+                    detectedText = nextUrlMatch.group()
+                    isUrl = true
+                    nextUrlMatch = if (urlMatcher.find()) urlMatcher else null
+                } else {
+                    start = nextBotMatch!!.start()
+                    end = nextBotMatch.end()
+                    detectedText = nextBotMatch.group()
+                    isUrl = false
+                    nextBotMatch = if (botMatcher.find()) botMatcher else null
+                }
 
                 append(text.substring(lastIndex, start))
-                pushStringAnnotation(tag = "URL", annotation = url)
-                withStyle(style = SpanStyle(color = Color(0xFF5FA7E4), textDecoration = TextDecoration.Underline)) {
-                    append(url)
+                pushStringAnnotation(tag = if (isUrl) "URL" else "BOT", annotation = detectedText)
+                withStyle(
+                    style = SpanStyle(
+                        color = if (isUrl) Color(0xFF5FA7E4) else Color(0xFF00FF00),
+                        textDecoration = if (isUrl) TextDecoration.Underline else TextDecoration.None
+                    )
+                ) {
+                    append(detectedText)
                 }
                 pop()
                 lastIndex = end
@@ -213,25 +246,48 @@ fun ClickableTextWithUrls(
     BasicText(
         text = buildAnnotatedString {
             val urlPattern = Pattern.compile(URL_PATTERN)
-            val matcher = urlPattern.matcher(text)
+            val botPattern = Pattern.compile(BOT_PATTERN)
+
+            val urlMatcher = urlPattern.matcher(text)
+            val botMatcher = botPattern.matcher(text)
 
             var lastIndex = 0
 
-            while (matcher.find()) {
-                val start = matcher.start()
-                val end = matcher.end()
-                val url = matcher.group()
+            var nextUrlMatch = if (urlMatcher.find()) urlMatcher else null
+            var nextBotMatch = if (botMatcher.find()) botMatcher else null
+
+            while (nextUrlMatch != null || nextBotMatch != null) {
+                val isUrlNext = nextUrlMatch != null && (nextBotMatch == null || nextUrlMatch!!.start() < nextBotMatch!!.start())
+
+                val start: Int
+                val end: Int
+                val detectedText: String
+                val isUrl: Boolean
+
+                if (isUrlNext) {
+                    start = nextUrlMatch!!.start()
+                    end = nextUrlMatch!!.end()
+                    detectedText = nextUrlMatch!!.group()
+                    isUrl = true
+                    nextUrlMatch = if (urlMatcher.find()) urlMatcher else null
+                } else {
+                    start = nextBotMatch!!.start()
+                    end = nextBotMatch!!.end()
+                    detectedText = nextBotMatch!!.group()
+                    isUrl = false
+                    nextBotMatch = if (botMatcher.find()) botMatcher else null
+                }
 
                 append(text.substring(lastIndex, start))
-                pushStringAnnotation(tag = "URL", annotation = url)
+                pushStringAnnotation(tag = if (isUrl) "URL" else "BOT", annotation = detectedText)
                 withStyle(
                     style = SpanStyle(
                         color = Color(0xFF5FA7E4),
                         textDecoration = TextDecoration.None,
-                        background = if (highlightedUrl == url) Color(0x660D94FC) else Color.Transparent
+                        background = if (highlightedUrl == detectedText) Color(0x660D94FC) else Color.Transparent
                     )
                 ) {
-                    append(url)
+                    append(detectedText)
                 }
                 pop()
                 lastIndex = end
@@ -249,11 +305,16 @@ fun ClickableTextWithUrls(
                     if (!isLongPressed) {
                         layoutResult?.let {
                             val position = it.getOffsetForPosition(offsetPosition)
-                            val urlAnnotation = annotatedString
-                                .getStringAnnotations(tag = "URL", start = position, end = position)
+                            val annotation = annotatedString
+                                .getStringAnnotations(start = position, end = position)
                                 .firstOrNull()
-                            if (urlAnnotation != null) {
-                                urlClick(urlAnnotation.item)
+
+                            if (annotation != null) {
+                                if (annotation.tag == "URL") {
+                                    urlClick(annotation.item)
+                                } else if (annotation.tag == "BOT") {
+                                    botClick(annotation.item)
+                                }
                             } else {
                                 contentClick()
                             }
@@ -262,15 +323,15 @@ fun ClickableTextWithUrls(
                 }, onLongPress = { offsetPosition ->
                     layoutResult?.let {
                         val position = it.getOffsetForPosition(offsetPosition)
-                        val urlAnnotation = annotatedString
-                            .getStringAnnotations(tag = "URL", start = position, end = position)
+                        val annotation = annotatedString
+                            .getStringAnnotations(start = position, end = position)
                             .firstOrNull()
 
-                        if (urlAnnotation != null) {
+                        if (annotation != null && annotation.tag == "URL") {
                             job = coroutineScope.launch {
                                 delay(LONG_CLICK_TIME)
-                                highlightedUrl = urlAnnotation.item
-                                urlLongClick(urlAnnotation.item)
+                                highlightedUrl = annotation.item
+                                urlLongClick(annotation.item)
                                 isLongPressed = true
                             }
                         } else {
