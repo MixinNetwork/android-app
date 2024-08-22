@@ -82,7 +82,9 @@ class Web3WalletAdapter(val chainId: String) : RecyclerView.Adapter<RecyclerView
         } else if (viewType == 1) {
             Web3HeaderHolder(ItemWeb3HeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
                 this.binding.header.setTitle(if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) R.string.Solana_Account else R.string.Ethereum_Account)
-                if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) this.binding.header.enableSwap()
+                if (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId == Constants.ChainId.ETHEREUM_CHAIN_ID) {
+                    this.binding.header.enableSwap()
+                }
             }
         } else {
             Web3Holder(ItemWeb3TokenBinding.inflate(LayoutInflater.from(parent.context), parent, false))

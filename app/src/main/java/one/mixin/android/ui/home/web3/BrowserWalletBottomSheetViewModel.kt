@@ -45,7 +45,7 @@ class BrowserWalletBottomSheetViewModel
             transaction: Transaction,
         ) = withContext(Dispatchers.IO) {
             WalletConnectV2.ethEstimateGas(chain, transaction)?.run {
-                val defaultLimit = if (chain.chainReference == Chain.Ethereum.chainReference) BigInteger.valueOf(4712380L) else null
+                val defaultLimit = if (chain == Chain.Ethereum || chain == Chain.Polygon) BigInteger.valueOf(4712380L) else null
                 convertToGasLimit(this, defaultLimit)
             }
         }
@@ -61,9 +61,9 @@ class BrowserWalletBottomSheetViewModel
                     } else {
                     BigInteger.ZERO
                 }
-            } else if (estimate.amountUsed.compareTo(BigInteger.ZERO) > 0) {
+            } else if (estimate.amountUsed > BigInteger.ZERO) {
                 estimate.amountUsed
-            } else if (defaultLimit == null || defaultLimit.equals(BigInteger.ZERO)) {
+            } else if (defaultLimit == null || defaultLimit == BigInteger.ZERO) {
                 BigInteger(DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS)
             } else {
                 defaultLimit

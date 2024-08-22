@@ -79,6 +79,7 @@ import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -1796,10 +1797,12 @@ class WebFragment : BaseFragment() {
             val id = obj.getLong("id")
             val method = DAppMethod.fromValue(obj.getString("name"))
             val network = obj.getString("network")
-            if (network == JsSigner.JsSignerNetwork.Solana.name) {
+            val web3ChainId = if (network == JsSigner.JsSignerNetwork.Solana.name) {
                 JsSigner.useSolana()
+                Web3ChainId.SolanaChainId
             } else {
-                JsSigner.useEvm()
+                JsSigner.useEip155(Web3ChainId.EthChainId)
+                Web3ChainId.EthChainId
             }
             if (isAddressEmpty(network)) {
                 return
@@ -1822,15 +1825,15 @@ class WebFragment : BaseFragment() {
                         } else {
                             o.toString()
                         }
-                    signMessage(id, data)
+                    signMessage(id, web3ChainId, data)
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
-                    signPersonalMessage(id, obj.getJSONObject("object"))
+                    signPersonalMessage(id, web3ChainId, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
-                    signTypedMessage(id, obj.getJSONObject("object"))
+                    signTypedMessage(id, web3ChainId, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
@@ -1868,19 +1871,19 @@ class WebFragment : BaseFragment() {
                             null
                         }
 
-                    signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                    signTransaction(id, web3ChainId, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 
                 DAppMethod.SIGNRAWTRANSACTION -> {
                     val o = obj.getJSONObject("object")
                     val raw = o.getString("raw")
-                    signRawTransaction(id, raw)
+                    signRawTransaction(id, web3ChainId, raw)
                 }
 
                 DAppMethod.SINGIN -> {
                     val o = obj.getJSONObject("object")
                     val data = o.getJSONObject("data")
-                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, web3ChainId, data = data.toString()))
                 }
 
                 else -> {
@@ -1899,27 +1902,31 @@ class WebFragment : BaseFragment() {
 
         private fun signTransaction(
             callbackId: Long,
+            web3ChainId: Int,
             wcEthereumTransaction: WCEthereumTransaction,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, web3ChainId, wcEthereumTransaction = wcEthereumTransaction))
         }
 
         private fun signRawTransaction(
             callbackId: Long,
+            web3ChainId: Int,
             raw: String,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, web3ChainId, data = raw, solanaTxSource = SolanaTxSource.Web))
         }
 
         private fun signMessage(
             callbackId: Long,
+            web3ChainId: Int,
             data: String,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, web3ChainId, data = data))
         }
 
         private fun signPersonalMessage(
             callbackId: Long,
+            web3ChainId: Int,
             data: JSONObject,
         ) {
             try {
@@ -1927,7 +1934,7 @@ class WebFragment : BaseFragment() {
                 if (!address.equals(JsSigner.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, web3ChainId, data = data.getString("data")))
             } catch (e: Exception) {
                 onWalletActionError(callbackId)
             }
@@ -1935,6 +1942,7 @@ class WebFragment : BaseFragment() {
 
         private fun signTypedMessage(
             callbackId: Long,
+            web3ChainId: Int,
             data: JSONObject,
         ) {
             try {
@@ -1942,7 +1950,7 @@ class WebFragment : BaseFragment() {
                 if (!address.equals(JsSigner.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, web3ChainId, data = data.getString("raw")))
             } catch (e: Exception) {
                 onWalletActionError(callbackId)
             }

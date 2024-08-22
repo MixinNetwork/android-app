@@ -33,6 +33,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.web3.QuoteResponse
@@ -53,6 +54,7 @@ import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
@@ -60,9 +62,9 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
@@ -77,6 +79,7 @@ import kotlin.time.Duration.Companion.seconds
 class SwapFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
+        const val ARGS_WEB3_CHAIN_ID = "args_web3_chain_id"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
         const val ARGS_TOKEN_ITEMS = "args_token_items"
         const val ARGS_INPUT = "args_input"
@@ -91,12 +94,14 @@ class SwapFragment : BaseFragment() {
         const val maxLeftAmount = 0.01
 
         inline fun <reified T : Swappable> newInstance(
+            web3ChainId: Int,
             tokens: List<T>? = null,
             input: String? = null,
             output: String? = null,
             amount: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
+                putInt(ARGS_WEB3_CHAIN_ID, web3ChainId)
                 if (!tokens.isNullOrEmpty()) {
                     when (T::class) {
                         Web3Token::class -> {
@@ -127,6 +132,9 @@ class SwapFragment : BaseFragment() {
     private var slippage: Int by mutableIntStateOf(0)
     private var isLoading by mutableStateOf(false)
     private var errorInfo: String? = null
+    private val web3ChainId: Int by lazy {
+        requireArguments().getInt(ARGS_WEB3_CHAIN_ID)
+    }
     private val web3tokens: List<Web3Token>? by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
     }
@@ -239,17 +247,21 @@ class SwapFragment : BaseFragment() {
                                     val qr = quoteResp ?: return@launch
                                     val inputMint = fromToken?.getUnique() ?: return@launch
                                     val outputMint = toToken?.getUnique() ?: return@launch
+                                    val inputChainId = fromToken?.web3ChainId ?: return@launch
+                                    val outputChainId = toToken?.web3ChainId ?: return@launch
 
                                     quoteJob?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
                                             invokeNetwork = { swapViewModel.web3Swap(SwapRequest(
-                                                if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
+                                                getPayer(),
                                                 inputMint,
-                                                if (inMixin()) 0 else qr.inAmount.toLong(),
-                                                if (inMixin()) qr.inAmount else "0",
+                                                qr.inAmount,
                                                 outputMint,
+                                                qr.outAmount,
+                                                inputChainId,
+                                                outputChainId,
                                                 qr.slippage,
                                                 qr.source,
                                                 qr.jupiterQuoteResponse,
@@ -277,8 +289,14 @@ class SwapFragment : BaseFragment() {
                                         openSwapTransfer(swapResult)
                                         return@launch
                                     }
-                                    val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)
-                                    JsSigner.useSolana()
+                                    val signMessage = if (web3ChainId == Web3ChainId.SolanaChainId) {
+                                        JsSigner.useSolana()
+                                        JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, web3ChainId, data = swapResult.tx, solanaTxSource = SolanaTxSource.InnerSwap)
+                                    } else {
+                                        JsSigner.useEip155(web3ChainId)
+                                        val tx = GsonHelper.customGson.fromJson(swapResult.tx, WCEthereumTransaction::class.java)
+                                        JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, web3ChainId, tx)
+                                    }
                                     isLoading = false
                                     showBrowserBottomSheetDialogFragment(
                                         requireActivity(),
@@ -384,6 +402,7 @@ class SwapFragment : BaseFragment() {
             }
         } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
+                web3ChainId,
                 ArrayList(
                     list.run {
                         this
@@ -412,7 +431,7 @@ class SwapFragment : BaseFragment() {
     private suspend fun refreshTokens() {
         handleMixinResponse(
             invokeNetwork = {
-                swapViewModel.web3Tokens(getSource())
+                swapViewModel.web3Tokens(getSource(), web3ChainId)
             },
             successBlock = { resp ->
                 resp.data
@@ -501,7 +520,7 @@ class SwapFragment : BaseFragment() {
                 }
             }
         } else {
-            val web3Tokens = swapViewModel.web3Tokens(chain = ChainType.solana.name, address = tokens.map { it.address })
+            val web3Tokens = swapViewModel.web3Tokens(chain = Web3ChainId.getChainType(web3ChainId).name, address = tokens.map { it.getWeb3ApiAddress() })
             if (web3Tokens.isEmpty()) {
                 return tokens
             }
@@ -554,6 +573,8 @@ class SwapFragment : BaseFragment() {
     private suspend fun quote(input: String) {
         val inputMint = fromToken?.getUnique() ?: return
         val outputMint = toToken?.getUnique() ?: return
+        val inputChainId = fromToken?.web3ChainId ?: return
+        val outputChainId = toToken?.web3ChainId ?: return
         val amount = if (inMixin()) {
             input
         } else {
@@ -565,7 +586,7 @@ class SwapFragment : BaseFragment() {
         isLoading = true
         errorInfo = null
         val resp = handleMixinResponse(
-            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage.toString(), getSource()) },
+            invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, inputChainId, outputChainId, slippage.toString(), getSource()) },
             successBlock = {
                 return@handleMixinResponse it.data
             },
@@ -637,8 +658,14 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun inMixin(): Boolean = web3tokens.isNullOrEmpty()
+    private fun inMixin(): Boolean = web3ChainId == Web3ChainId.MixinChainId
     private fun getSource(): String = if (web3tokens.isNullOrEmpty()) "exin" else ""
+
+    private fun getPayer(): String = when(web3ChainId) {
+        Web3ChainId.SolanaChainId -> JsSigner.solanaAddress
+        Web3ChainId.EthChainId, Web3ChainId.PolygonChainId -> JsSigner.evmAddress
+        else -> requireNotNull(Session.getAccountId())
+    }
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

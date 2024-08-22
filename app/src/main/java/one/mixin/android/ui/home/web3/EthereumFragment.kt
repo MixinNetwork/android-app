@@ -25,6 +25,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentChainBinding
@@ -43,6 +44,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
@@ -87,6 +89,10 @@ class EthereumFragment : BaseFragment() {
 
                     R.id.receive -> {
                         navTo(Web3ReceiveSelectionFragment(), Web3ReceiveSelectionFragment.TAG)
+                    }
+
+                    R.id.swap -> {
+                        navTo(SwapFragment.newInstance(Web3ChainId.EthChainId, tokens), SwapFragment.TAG)
                     }
 
                     R.id.browser -> {

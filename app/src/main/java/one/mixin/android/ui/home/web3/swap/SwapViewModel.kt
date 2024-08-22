@@ -27,21 +27,23 @@ class SwapViewModel
     ) : ViewModel() {
         suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
 
-        suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source)
+        suspend fun web3Tokens(source: String, web3ChainId: Int): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source, web3ChainId)
 
         suspend fun web3Quote(
             inputMint: String,
             outputMint: String,
             amount: String,
+            inputChainId: Int,
+            outputChainId: Int,
             slippage: String,
             source: String,
-        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source)
+        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, inputChainId, outputChainId, slippage, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
         ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
 
-        suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)
+        suspend fun searchTokens(query: String, web3ChainId: Int) = assetRepository.searchTokens(query, web3ChainId)
 
         suspend fun web3Tokens(chain: String, address: List<String>? = null): List<Web3Token> {
             return handleMixinResponse(

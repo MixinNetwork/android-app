@@ -12,6 +12,7 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -90,7 +91,7 @@ class Web3Token(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
-            address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
+            address = getUnique(),
             assetId = "",
             decimals = decimals,
             name = name,
@@ -105,18 +106,32 @@ class Web3Token(
                 icon = chainIconUrl,
                 price = null,
             ),
+            web3ChainId = getWeb3ChainId(),
             balance = balance,
             price = price,
         )
     }
 
     override fun getUnique(): String {
-        return if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey
+        return when (assetKey) {
+            solanaNativeTokenAssetKey -> {
+                wrappedSolTokenAssetKey
+            }
+            polygonNativeTokenAssetKey -> {
+                eip155NativeTokenAssetKey
+            }
+            else -> {
+                assetKey
+            }
+        }
     }
 }
 
 const val solanaNativeTokenAssetKey = "11111111111111111111111111111111"
 const val wrappedSolTokenAssetKey = "So11111111111111111111111111111111111111112"
+
+const val polygonNativeTokenAssetKey = "0x0000000000000000000000000000000000001010"
+const val eip155NativeTokenAssetKey = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
 fun Web3Token.getChainFromName(): Chain {
     return when {
@@ -150,6 +165,15 @@ fun Web3Token.getChainIdFromName(): String {
 
 fun Web3Token.isSolana(): Boolean {
     return chainName.equals("solana", true)
+}
+
+fun Web3Token.getWeb3ChainId(): Int {
+    return when {
+        chainName.equals("ethereum", true) -> Web3ChainId.EthChainId
+        chainName.equals("polygon", true) -> Web3ChainId.PolygonChainId
+        chainName.equals("solana", true) -> Web3ChainId.SolanaChainId
+        else -> Web3ChainId.MixinChainId
+    }
 }
 
 fun Web3Token.isSolToken(): Boolean {
@@ -264,9 +288,9 @@ suspend fun Web3Token.buildTransaction(
             )
         transaction.addPlaceholderSignature()
         val tx = transaction.serialize().base64Encode()
-        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
+        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, Web3ChainId.SolanaChainId, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else {
-        JsSigner.useEvm()
+        JsSigner.useEip155(getWeb3ChainId())
         val transaction =
             if ((chainName.equals("ethereum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainName.equals("base", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
@@ -294,7 +318,7 @@ suspend fun Web3Token.buildTransaction(
                 val data = FunctionEncoder.encode(function)
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
-        return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
+        return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, getWeb3ChainId(), transaction)
     }
 }
 
@@ -332,4 +356,32 @@ fun Web3Token.copy(
 
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
     return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
+}
+
+@Suppress("ConstPropertyName")
+object Web3ChainId {
+    // bip44
+    const val BtcChainId  = 0
+    const val SolanaChainId = 501
+    const val MixinChainId = 2365
+
+    // eip155
+    const val EthChainId = 1
+    const val PolygonChainId = 137
+
+    fun getChainType(id: Int): ChainType {
+        return when(id) {
+            EthChainId, PolygonChainId -> ChainType.ethereum
+            SolanaChainId -> ChainType.solana
+            else -> ChainType.solana
+        }
+    }
+
+    fun getChain(id: Int): Chain {
+        return when(id) {
+            EthChainId -> Chain.Ethereum
+            PolygonChainId -> Chain.Polygon
+            else -> Chain.Solana
+        }
+    }
 }

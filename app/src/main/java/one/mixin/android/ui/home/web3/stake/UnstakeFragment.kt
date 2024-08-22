@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.web3.StakeAction
 import one.mixin.android.api.request.web3.StakeRequest
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
@@ -89,7 +90,7 @@ class UnstakeFragment : BaseFragment() {
                 isLoading = false
                 return@launch
             }
-            val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = stakeResp.tx, solanaTxSource = SolanaTxSource.InnerStake)
+            val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, Web3ChainId.SolanaChainId, data = stakeResp.tx, solanaTxSource = SolanaTxSource.InnerStake)
             JsSigner.useSolana()
             isLoading = false
             showBrowserBottomSheetDialogFragment(

@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
@@ -132,6 +133,6 @@ fun SwapTokenPage(
 @Preview(widthDp = 300)
 @Composable
 fun SwapTokenPagePreView() {
-    SwapTokenPage(token = SwapToken("1111111111111111111111111", "", 9, "Solana", "SOL", "", SwapChain("",9, "Solana", "SOL", "", ""))) {
+    SwapTokenPage(token = SwapToken("1111111111111111111111111", "", 9, "Solana", "SOL", "", SwapChain("",9, "Solana", "SOL", "", ""), Web3ChainId.SolanaChainId)) {
     }
 }

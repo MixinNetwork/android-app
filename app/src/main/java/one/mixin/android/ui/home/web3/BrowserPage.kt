@@ -242,7 +242,7 @@ fun BrowserPage(
                     TransactionPreview(
                         balance =
                             Convert.fromWei(
-                                Numeric.toBigInt(transaction?.value ?: "0").toBigDecimal(),
+                                Numeric.decodeQuantity(transaction?.value ?: "0").toBigDecimal(),
                                 Convert.Unit.ETHER,
                             ),
                         chain,
