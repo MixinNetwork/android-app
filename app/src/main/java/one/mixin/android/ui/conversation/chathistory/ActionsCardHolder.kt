@@ -75,6 +75,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 urlLongClick = { url ->
                     onItemListener.onUrlLongClick(url)
                 },
+                botClick = { str -> onItemListener.onMentionClick(str) },
                 width = null, createdAt = messageItem.createdAt, isLast, isMe,
                 MessageStatus.DELIVERED.name,
                 false,

@@ -633,6 +633,7 @@ class SwapFragment : BaseFragment() {
             exchangeRate = 0f
             quoteResp = null
             onTextChanged("")
+            textInputFlow.emit("")
         }
     }
 

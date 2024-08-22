@@ -122,7 +122,7 @@ fun SwapPage(
                         }
                     },
                     headerCompose = {
-                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.From), readOnly = false, { selectCallback(0) }, onMax) {
+                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.Token_From), readOnly = false, { selectCallback(0) }, onMax) {
                             inputText.value = it
                             onInputChanged.invoke(it)
                         }

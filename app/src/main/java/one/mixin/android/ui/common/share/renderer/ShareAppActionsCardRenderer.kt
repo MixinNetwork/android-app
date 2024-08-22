@@ -47,14 +47,11 @@ open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int
         binding.chatContentLayout.setContent {
             AppCard(
                 actionCard,
-                contentClick = {
-                },
-                contentLongClick = {
-                },
-                urlClick = { _ ->
-                },
-                urlLongClick = { _ ->
-                },
+                contentClick = {},
+                contentLongClick = {},
+                urlClick = { _ -> },
+                urlLongClick = { _ -> },
+                botClick = { _ -> },
                 width = width, createdAt = nowInUtc(), isLast = true, isMe = true,
                 status = MessageStatus.DELIVERED.name,
                 isPin = false,
