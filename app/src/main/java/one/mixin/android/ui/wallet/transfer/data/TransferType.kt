@@ -13,4 +13,5 @@ enum class TransferType {
     nft,
     nftRelease,
     signed,
+    safeSigned,
 }

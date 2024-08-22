@@ -1650,9 +1650,13 @@
     <string name="signature_request_from">This signature request is issued by %1$s.</string>
     <string name="Approve_Transaction">Approve Transaction</string>
     <string name="Approving_Transaction">Approving Transaction</string>
+    <string name="Approving_Transaction_Failed">Approving Transaction Failed</string>
     <string name="Transaction_Approved">Transaction Approved</string>
     <string name="Reject_Transaction">Reject Transaction</string>
     <string name="Rejecting_Transaction">Rejecting Transaction</string>
+    <string name="Rejecting_Transaction_Failed">Rejecting Transaction Failed</string>
     <string name="Transaction_Rejected">Transaction Rejected</string>
     <string name="SAFE">SAFE</string>
+    <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
+    <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
 </resources>

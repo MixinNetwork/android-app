@@ -1612,9 +1612,13 @@
     <string name="Approve_Transaction">批准交易</string>
     <string name="Approving_Transaction">正在批准</string>
     <string name="Transaction_Approved">批准成功</string>
+    <string name="Approving_Transaction_Failed">批准失败</string>
     <string name="Approve">批准</string>
     <string name="Reject_Transaction">拒绝交易</string>
     <string name="Rejecting_Transaction">正在拒绝</string>
     <string name="Transaction_Rejected">拒绝成功</string>
+    <string name="Rejecting_Transaction_Failed">拒绝失败</string>
     <string name="SAFE">金库</string>
+    <string name="multisig_safe_state_signed">您已经批准了这笔交易，您无法再次批准。</string>
+    <string name="multisig_safe_state_unlocked">这笔交易已经被其他人拒绝，您无法再次拒绝。</string>
 </resources>

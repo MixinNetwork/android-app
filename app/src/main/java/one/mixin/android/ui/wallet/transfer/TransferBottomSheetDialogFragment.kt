@@ -275,7 +275,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 is SafeMultisigsBiometricItem -> {
                     val multisigsBiometricItem = t as SafeMultisigsBiometricItem
                     if (multisigsBiometricItem.safe != null) {
-                        if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
+                            TransferType.safeSigned
+                        }else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
                             TransferType.reject
                         } else {
                             TransferType.approve

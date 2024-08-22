@@ -122,6 +122,14 @@ class TransferHeader : LinearLayout {
                     title.setText(R.string.Revoking_Multisig_Failed)
                 }
 
+                TransferType.approve -> {
+                    title.setText(R.string.Approving_Transaction_Failed)
+                }
+
+                TransferType.reject -> {
+                    title.setText(R.string.Rejecting_Transaction_Failed)
+                }
+
                 else-> {
 
                 }
@@ -170,10 +178,11 @@ class TransferHeader : LinearLayout {
                     subTitle.setText(R.string.multisig_unlocked_description)
                 }
 
-                TransferType.signed -> {
+                TransferType.signed, TransferType.safeSigned -> {
                     title.setText(R.string.Multisig_Signing_Successful)
                     subTitle.setText(R.string.multisig_signing_successful_description)
                 }
+
                 TransferType.approve -> {
                     title.setText(R.string.Transaction_Approved)
                     subTitle.setText(R.string.multisig_state_signed)
