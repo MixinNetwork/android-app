@@ -67,6 +67,16 @@ class TransferHeader : LinearLayout {
                     subTitle.setText(R.string.multisig_unlocking_description)
                 }
 
+                TransferType.approve -> {
+                    title.setText(R.string.Approving_Transaction)
+                    subTitle.setText(R.string.multisig_signing_description)
+                }
+
+                TransferType.reject -> {
+                    title.setText(R.string.Rejecting_Transaction)
+                    subTitle.setText(R.string.multisig_unlocking_description)
+                }
+
                 else -> {
 
                 }
@@ -165,12 +175,12 @@ class TransferHeader : LinearLayout {
                     subTitle.setText(R.string.multisig_signing_successful_description)
                 }
                 TransferType.approve -> {
-                    title.setText(R.string.Approve_Successful)
-                    subTitle.setText(R.string.review_safe_transfer_hint)
+                    title.setText(R.string.Transaction_Approved)
+                    subTitle.setText(R.string.multisig_state_signed)
                 }
                 TransferType.reject -> {
-                    title.setText(R.string.Reject_Successful)
-                    subTitle.setText(R.string.review_safe_transfer_hint)
+                    title.setText(R.string.Transaction_Rejected)
+                    subTitle.setText(R.string.multisig_state_unlocked)
                 }
             }
         }
@@ -238,13 +248,13 @@ class TransferHeader : LinearLayout {
                 }
 
                 TransferType.approve -> {
-                    title.setText(R.string.Multisig_Safe_Transaction)
-                    subTitle.setText(R.string.review_safe_transfer_hint)
+                    title.setText(R.string.Approve_Transaction)
+                    subTitle.text = context.getString(R.string.signature_request_from, context.getString(R.string.SAFE))
                 }
 
                 TransferType.reject -> {
-                    title.setText(R.string.Revoke_Multisig_Safe_Signature)
-                    subTitle.setText(R.string.review_safe_transfer_hint)
+                    title.setText(R.string.Reject_Transaction)
+                    subTitle.text = context.getString(R.string.signature_request_from, context.getString(R.string.SAFE))
                 }
 
                 else -> {

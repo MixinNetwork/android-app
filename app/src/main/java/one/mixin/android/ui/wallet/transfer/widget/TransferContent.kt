@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -273,7 +272,7 @@ class TransferContent : LinearLayout {
             safeReceives.isVisible = true
             safeSender.setContent(R.string.Sender, safeAccount.address)
             safeSender.isVisible = true
-            safe.setContent(R.string.Safe, safeAccount.name)
+            safe.setContent(R.string.SAFE, safeAccount.name)
             safe.isVisible = true
             network.isVisible = false
         }

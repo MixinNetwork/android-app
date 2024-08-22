@@ -642,6 +642,7 @@
     <string name="Multisig_by_PIN">Multisig by PIN</string>
     <string name="multisig_senders_threshold">Senders (%1$s)</string>
     <string name="multisig_receivers_threshold">Receivers (%1$s)</string>
+    <string name="multisig_state_paid">This transaction has already collected enough signatures; the current signature has been automatically ignored.</string>
     <string name="multisig_state_signed">This multisig link has already been signed by yourself, you can not make a duplicate operation.</string>
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
     <string name="Multisig_Transaction">Multisig Transaction</string>
@@ -1643,13 +1644,15 @@
     <string name="low_24h">24H LOW</string>
     <string name="vol_24h">24H VOL</string>
     <string name="Market_Cap">Market Cap</string>
-    <string name="Multisig_Safe_Transaction">批准交易</string>
-    <string name="Revoke_Multisig_Safe_Signature">拒绝交易</string>
-    <string name="review_safe_transfer_hint">该交易请求来着 Mixin Safe。</string>
     <string name="Approve">Apporeve</string>
     <string name="Reject">Reject</string>
     <string name="Note">Note</string>
-    <string name="Safe">Safe</string>
-    <string name="Approve_Successful">Approve Successful</string>
-    <string name="Reject_Successful">Reject Successful</string>
+    <string name="signature_request_from">This signature request is issued by %1$s.</string>
+    <string name="Approve_Transaction">Approve Transaction</string>
+    <string name="Approving_Transaction">Approving Transaction</string>
+    <string name="Transaction_Approved">Transaction Approved</string>
+    <string name="Reject_Transaction">Reject Transaction</string>
+    <string name="Rejecting_Transaction">Rejecting Transaction</string>
+    <string name="Transaction_Rejected">Transaction Rejected</string>
+    <string name="SAFE">SAFE</string>
 </resources>
