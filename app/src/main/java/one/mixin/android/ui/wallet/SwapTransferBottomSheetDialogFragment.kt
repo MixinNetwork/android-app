@@ -81,9 +81,16 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.isTipNodeException
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
+import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
+import one.mixin.android.ui.common.biometric.isUtxoException
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
@@ -437,6 +444,18 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             try {
                 val parsedLink = this@SwapTransferBottomSheetDialogFragment.parsedLink ?: return@launch
                 step = Step.Sending
+                val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsedLink.assetId, parsedLink.amount)
+                val token = bottomViewModel.findAssetItemById(parsedLink.assetId)
+                if (consolidationAmount != null && token != null) {
+                    UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                        .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+                    step = Step.Pending
+                    return@launch
+                } else if (token == null) {
+                    errorInfo = getString(R.string.Data_error)
+                    step = Step.Error
+                    return@launch
+                }
                 val response = bottomViewModel.kernelTransaction(parsedLink.assetId, parsedLink.receiverIds, 1.toByte(), parsedLink.amount, pin, parsedLink.traceId, parsedLink.memo)
                 if (response.isSuccess) {
                     defaultSharedPreferences.putLong(
@@ -482,10 +501,16 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun handleException(e: Throwable) {
-        Timber.e(e)
-        errorInfo = e.message
-        reportException("$TAG handleException", e)
+    private fun handleException(t: Throwable) {
+        Timber.e(t)
+        errorInfo = if (t.isTipNodeException()) {
+            t.getTipExceptionMsg(requireContext(), null)
+        } else if (t.isUtxoException()) {
+            t.getUtxoExceptionMsg(requireContext())
+        } else {
+            t.message
+        }
+        reportException("$TAG handleException", t)
         step = Step.Error
     }
 
