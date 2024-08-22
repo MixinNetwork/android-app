@@ -9,7 +9,6 @@
     <color name="textAssistNight">#7F878F</color>
     <color name="textRemarksNight">#6E7073</color>
     <color name="textSubtitleNight">#6E7073</color>
-    <color name="textLabelNight">#C27F878F</color>
 
     <color name="colorIconNight">#EAEAEB</color>
     <color name="colorIconWhiteNight">#22272B</color>
@@ -36,7 +35,6 @@
     <color name="bgChooseNetworkNight">#3B3F44</color>
     <color name="bgFlagNight">#3E4148</color>
     <color name="bgTranslucenceNight">#EE2c3136</color>
-    <color name="bgLabelNight">#577F878F</color>
 
     <color name="bgChatNight">#34373B</color>
     <color name="bgTipInfoNight">#383B40</color>

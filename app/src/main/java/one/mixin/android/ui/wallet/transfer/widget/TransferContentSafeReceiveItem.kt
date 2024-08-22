@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.transfer.widget
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
@@ -13,10 +12,8 @@ import android.text.style.LineHeightSpan
 import android.text.style.ReplacementSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
-import androidx.core.view.marginTop
 import one.mixin.android.R
 import one.mixin.android.api.response.SafeTransactionRecipient
 import one.mixin.android.databinding.ItemTransferRecipientBinding

@@ -10,7 +10,6 @@
         <item name="text_remarks">@color/textRemarksNight</item>
         <item name="text_blue">@color/colorLightBlue</item>
         <item name="text_subtitle">@color/textSubtitleNight</item>
-        <item name="text_label">@color/textLabelNight</item>
 
         <item name="text_default">@color/textPrimaryNight</item>
         <item name="text_checked">@color/textPrimaryNight</item>
@@ -48,7 +47,6 @@
         <item name="bg_translucence">@color/bgTranslucenceNight</item>
         <item name="bg_pin_content">@drawable/chat_bubble_pin_message_night</item>
         <item name="bg_flag">@color/bgFlagNight</item>
-        <item name="bg_label">@color/bgLabelNight</item>
 
         <item name="bg_action_button">@drawable/bg_button_action_night</item>
         <item name="bg_tip_info">@color/bgTipInfoNight</item>

@@ -271,7 +271,7 @@ class TransferContent : LinearLayout {
             // }
             safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients, safeMultisigsBiometricItem.asset?.symbol?:"")
             safeReceives.isVisible = true
-            safeSender.setContent(R.string.Sender, safeAccount.address)
+            safeSender.setContent(R.string.Sender, safeAccount.address, selectable = true)
             safeSender.isVisible = true
             safe.setContent(R.string.SAFE, safeAccount.name)
             safe.isVisible = true

@@ -28,7 +28,6 @@
         <item name="text_remarks">@color/textRemarks</item>
         <item name="text_blue">@color/colorDarkBlue</item>
         <item name="text_subtitle">@color/textSubtitle</item>
-        <item name="text_label">@color/textLabel</item>
 
         <item name="text_default">@color/textPrimary</item>
         <item name="text_checked">@color/textPrimary</item>
@@ -72,7 +71,6 @@
         <item name="bg_tip_info_border">@color/bgTipInfoBorder</item>
         <item name="bg_tip_warning">@color/bgTipWarning</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
-        <item name="bg_label">@color/bgLabel</item>
 
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>

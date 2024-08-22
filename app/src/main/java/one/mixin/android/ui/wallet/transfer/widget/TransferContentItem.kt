@@ -1,16 +1,10 @@
 package one.mixin.android.ui.wallet.transfer.widget
 
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.RectF
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.Spanned
 import android.text.style.RelativeSizeSpan
-import android.text.style.ReplacementSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
@@ -47,6 +41,7 @@ class TransferContentItem : RelativeLayout {
         contentStr: String,
         foot: String? = null,
         token: TokenItem? = null,
+        selectable: Boolean = false
     ) {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
@@ -54,6 +49,7 @@ class TransferContentItem : RelativeLayout {
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot
             tokenIv.isVisible = token != null
+            content.setTextIsSelectable(selectable)
             token?.let { t ->
                 tokenIv.loadImage(t.iconUrl, R.drawable.ic_avatar_place_holder, transformation = if (t.collectionHash != null) CoilRoundedHexagonTransformation() else null)
             }
