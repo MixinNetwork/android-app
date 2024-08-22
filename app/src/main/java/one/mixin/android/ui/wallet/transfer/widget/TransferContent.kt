@@ -264,10 +264,11 @@ class TransferContent : LinearLayout {
             total.isVisible = false
             networkFee.isVisible = false
 
-            if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
-                memo.isVisible = true
-                memo.setContent(R.string.Note, safeMultisigsBiometricItem.memo ?: "")
-            }
+            // disable note
+            // if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
+            //     memo.isVisible = true
+            //     memo.setContent(R.string.Note, safeMultisigsBiometricItem.memo ?: "")
+            // }
             safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients, safeMultisigsBiometricItem.asset?.symbol?:"")
             safeReceives.isVisible = true
             safeSender.setContent(R.string.Sender, safeAccount.address)
