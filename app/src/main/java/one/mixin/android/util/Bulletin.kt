@@ -1,6 +1,7 @@
 package one.mixin.android.util
 
 import androidx.core.app.NotificationManagerCompat
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
@@ -10,6 +11,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.vo.Account
 import one.mixin.android.widget.BulletinView
 
 class BulletinBoard {
@@ -45,6 +47,62 @@ fun interface Bulletin {
             return bulletin.show(next)
         }
     }
+}
+
+class NewVersionBulletin(
+    private val bulletinView: BulletinView,
+    private val account: Account?,
+    private val activity: MainActivity,
+    private val onClose: (BulletinView.Type) -> Unit,
+) : Bulletin {
+    companion object {
+        const val PREF_NEW_VERSION = "pref_new_version"
+    }
+
+    private val context = bulletinView.context
+
+    override fun show(chain: Bulletin.Chain): Boolean {
+        val appVersion = account?.system?.messenger
+        if (appVersion != null) {
+            val newVersionTime = context.defaultSharedPreferences.getLong(PREF_NEW_VERSION, 0)
+            if (System.currentTimeMillis() - newVersionTime > INTERVAL_24_HOURS && compareVersions(appVersion.version.replace("v", "")) > 0) {
+                bulletinView.setTypeAndCallback(BulletinView.Type.NewVersion, bulletinNewVersionCallback)
+                return true
+            }
+        }
+        return chain.proceed()
+    }
+
+    private fun compareVersions(remoteVersion: String): Int {
+        val remoteVersionParts = remoteVersion.split(".")
+        val localVersionParts = BuildConfig.VERSION_NAME.split(".")
+
+        val maxLength = maxOf(remoteVersionParts.size, localVersionParts.size)
+
+        for (i in 0 until maxLength) {
+            val v1 = remoteVersionParts.getOrNull(i)?.toIntOrNull() ?: 0
+            val v2 = localVersionParts.getOrNull(i)?.toIntOrNull() ?: 0
+            if (v1 != v2) {
+                return v1.compareTo(v2)
+            }
+        }
+        return 0
+    }
+
+    private val bulletinNewVersionCallback =
+        object : BulletinView.Callback {
+            override fun onClose() {
+                context.defaultSharedPreferences.putLong(
+                    PREF_NEW_VERSION,
+                    System.currentTimeMillis(),
+                )
+                onClose(BulletinView.Type.NewVersion)
+            }
+
+            override fun onSetting() {
+                activity.showUpdate(account?.system?.messenger?.releaseUrl)
+            }
+        }
 }
 
 class NewWalletBulletin(

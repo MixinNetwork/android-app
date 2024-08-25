@@ -16,6 +16,7 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
     private val settingView get() = binding.headerSettings
 
     enum class Type {
+        NewVersion,
         NewWallet,
         Notification,
         EmergencyContact,
@@ -38,6 +39,11 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
         this.type = type
         this.callback = callback
         when (type) {
+            Type.NewVersion -> {
+                titleView.setText(R.string.New_Update_Available)
+                contentView.setText(R.string.New_Update_Available_desc)
+                settingView.setText(R.string.Update_Now)
+            }
             Type.NewWallet -> {
                 titleView.setText(R.string.Get_a_new_wallet)
                 contentView.setText(R.string.new_wallet_hint)

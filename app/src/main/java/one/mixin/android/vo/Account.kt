@@ -57,7 +57,9 @@ data class Account(
     @SerializedName("salt_base64")
     var salt: String?,
     @SerializedName("membership")
-    val membership: Membership?
+    val membership: Membership?,
+    @SerializedName("system")
+    val system: AppVersion?
 )
 
 fun Account.toUser(): User {

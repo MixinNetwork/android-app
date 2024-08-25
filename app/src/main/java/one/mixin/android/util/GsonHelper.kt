@@ -59,7 +59,6 @@ object GsonHelper {
         }
     }
 
-
     class WithdrawalMemoPossibilityAdapter : JsonDeserializer<WithdrawalMemoPossibility?> {
         override fun deserialize(
             json: JsonElement?,

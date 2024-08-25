@@ -12,6 +12,7 @@ import android.content.IntentSender
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
@@ -85,6 +86,9 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isPlayStoreInstalled
+import one.mixin.android.extension.openExternalUrl
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
@@ -160,6 +164,7 @@ import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -952,6 +957,52 @@ class MainActivity : BlazeBaseActivity() {
 
     fun openWallet() {
         navigationController.pushWallet(walletFragment)
+    }
+
+    fun showUpdate(releaseUrl: String?) {
+        if (isPlayStoreInstalled()) {
+            appUpdateManager
+                .appUpdateInfo
+                .addOnSuccessListener { appUpdateInfo ->
+                    if (appUpdateInfo.updateAvailability()
+                        == UpdateAvailability.UPDATE_AVAILABLE
+                    ) {
+                        appUpdateManager.startUpdateFlowForResult(
+                            appUpdateInfo,
+                            activityResultLauncher,
+                            AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
+                        )
+                    } else {
+                        openMarket()
+                        Timber.e("No availability Update")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    openMarket()
+                    Timber.e(e)
+                }
+                .addOnCanceledListener {
+                    Timber.e("Update cancel")
+                }
+        } else {
+            releaseUrl?.let { url ->
+                openExternalUrl(url)
+            }
+        }
+    }
+
+    private val activityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            // Handle the case where the update was not successful
+            openMarket()
+        } else {
+            defaultSharedPreferences.putLong(
+                PREF_NEW_VERSION,
+                System.currentTimeMillis(),
+            )
+        }
     }
 
     fun hideSearchLoading() {

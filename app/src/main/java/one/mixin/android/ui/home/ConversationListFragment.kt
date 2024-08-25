@@ -79,6 +79,7 @@ import one.mixin.android.util.BulletinBoard
 import one.mixin.android.util.EmergencyContactBulletin
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.NewVersionBulletin
 import one.mixin.android.util.NewWalletBulletin
 import one.mixin.android.util.NotificationBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -738,16 +739,16 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onResume() {
         super.onResume()
-
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-
+            val account = Session.getAccount()
             bulletinBoard.clear()
             val shown =
                 bulletinBoard
-                    .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
                     .addBulletin(NotificationBulletin(bulletinView, ::onClose))
+                    .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
                     .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
+                    .addBulletin(NewVersionBulletin(bulletinView, account, requireActivity() as MainActivity, ::onClose))
                     .post()
             messageAdapter.setShowHeader(shown, binding.messageRv)
         }
