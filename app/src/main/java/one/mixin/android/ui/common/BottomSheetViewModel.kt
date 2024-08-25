@@ -1334,4 +1334,6 @@ class BottomSheetViewModel
         suspend fun refreshInscription(inscriptionHash: String): String? = withContext(Dispatchers.IO) {
             return@withContext tokenRepository.refreshInscription(inscriptionHash)
         }
+
+        fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
     }

@@ -1,6 +1,8 @@
 package one.mixin.android.api.response
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import java.util.UUID.nameUUIDFromBytes
 
 data class TransactionResponse(
@@ -43,6 +45,8 @@ data class TransactionResponse(
     val views: List<String>?,
     @SerializedName("inscription_hash")
     val inscriptionHash: String?,
+    @SerializedName("safe")
+    val safe: SafeAccount?
 ) {
     val getSnapshotId: String
         get() {
@@ -64,6 +68,33 @@ data class Receiver(
     @SerializedName("withdrawal_hash")
     val withdrawalHash: String?,
 )
+
+@Parcelize
+data class SafeTransactionRecipient(
+    val address: String,
+    val amount: String,
+    var label: String?
+) : Parcelable
+
+@Parcelize
+data class SafeTransaction(
+    @SerializedName("asset_id")
+    val assetId: String,
+    val recipients: List<SafeTransactionRecipient>
+) : Parcelable
+
+@Parcelize
+data class SafeOperation(
+    val transaction: SafeTransaction
+) : Parcelable
+
+@Parcelize
+data class SafeAccount(
+    val id: String,
+    val name: String,
+    val address: String,
+    val operation: SafeOperation
+) : Parcelable
 
 fun getTransactionResult(
     transactionList: List<TransactionResponse>?,

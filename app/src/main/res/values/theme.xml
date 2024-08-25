@@ -12,7 +12,6 @@
     <attr name="text_remarks" format="color|reference" />
     <attr name="text_subtitle" format="color|reference" />
     <attr name="text_blue" format="color|reference" />
-
     <attr name="text_default" format="color|reference" />
     <attr name="text_checked" format="color|reference" />
 

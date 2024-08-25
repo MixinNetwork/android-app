@@ -627,6 +627,7 @@
     <string name="multisig_receivers_threshold">交易接收人（%1$s）</string>
     <string name="multisig_state_signed">您已经对这笔交易进行了签名，您无法再次签名。</string>
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
+    <string name="multisig_state_paid">这笔交易已成功收集到足够的签名，当前签名已被自动忽略。</string>
     <string name="Multisig_Transaction">多重签名交易</string>
     <string name="Mute">静音</string>
     <string name="Mute_until">直到 %1$s</string>
@@ -1395,7 +1396,7 @@
     <string name="Withdrawal_Failed">提现失败</string>
     <string name="Multisig_Signing_Failed">多签交易失败</string>
     <string name="Multisig_Signing_Successful">多签交易成功</string>
-    <string name="multisig_signing_successful_description">这笔交易已经成功收集到足够的签名，当前签名自动自动忽略</string>
+    <string name="multisig_signing_successful_description">这笔交易已经成功收集到足够的签名，当前签名自动自动忽略。</string>
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
@@ -1606,4 +1607,19 @@
     <string name="low_24h">24小时最低</string>
     <string name="vol_24h">24小时交易量</string>
     <string name="Market_Cap">市值</string>
+    <string name="signature_request_from">该签名请求来自 %1$s。</string>
+    <string name="Reject">拒绝</string>
+    <string name="Note">备注</string>
+    <string name="Approve_Transaction">批准交易</string>
+    <string name="Approving_Transaction">正在批准</string>
+    <string name="Transaction_Approved">批准成功</string>
+    <string name="Approving_Transaction_Failed">批准失败</string>
+    <string name="Approve">批准</string>
+    <string name="Reject_Transaction">拒绝交易</string>
+    <string name="Rejecting_Transaction">正在拒绝</string>
+    <string name="Transaction_Rejected">拒绝成功</string>
+    <string name="Rejecting_Transaction_Failed">拒绝失败</string>
+    <string name="SAFE">金库</string>
+    <string name="multisig_safe_state_signed">您已经批准了这笔交易，您无法再次批准。</string>
+    <string name="multisig_safe_state_unlocked">这笔交易已经被其他人拒绝，您无法再次拒绝。</string>
 </resources>

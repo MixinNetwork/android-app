@@ -41,6 +41,7 @@ class TransferContentItem : RelativeLayout {
         contentStr: String,
         foot: String? = null,
         token: TokenItem? = null,
+        selectable: Boolean = false
     ) {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
@@ -48,6 +49,7 @@ class TransferContentItem : RelativeLayout {
             footer.isVisible = !foot.isNullOrBlank()
             footer.text = foot
             tokenIv.isVisible = token != null
+            content.setTextIsSelectable(selectable)
             token?.let { t ->
                 tokenIv.loadImage(t.iconUrl, R.drawable.ic_avatar_place_holder, transformation = if (t.collectionHash != null) CoilRoundedHexagonTransformation() else null)
             }
@@ -60,7 +62,7 @@ class TransferContentItem : RelativeLayout {
         label: String,
     ) {
         _binding.apply {
-            title.setText(context.getString(titleResId).uppercase())
+            title.text = context.getString(titleResId).uppercase()
             footer.isVisible = false
 
             val fullText = "$contentStr $label"
@@ -78,4 +80,5 @@ class TransferContentItem : RelativeLayout {
             content.text = spannableString
         }
     }
+
 }

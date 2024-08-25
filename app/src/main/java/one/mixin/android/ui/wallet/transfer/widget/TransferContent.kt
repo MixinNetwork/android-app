@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -69,7 +70,11 @@ class TransferContent : LinearLayout {
         receiver: List<User>,
         userClick: (User) -> Unit,
     ) {
-        renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver, userClick)
+        if (safeMultisigsBiometricItem.safe != null) {
+            renderSafeMultisigsTransfer(safeMultisigsBiometricItem, safeMultisigsBiometricItem.safe)
+        } else {
+            renderMultisigsTransfer(safeMultisigsBiometricItem, sender, receiver, userClick)
+        }
     }
 
     private fun amountAs(
@@ -88,7 +93,7 @@ class TransferContent : LinearLayout {
             } catch (e: NumberFormatException) {
                 BigDecimal.ZERO
             }
-        return "${value.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}"
+        return "${Fiats.getSymbol()}${value.numberFormat2()}"
     }
 
     private fun formatWithdrawBiometricItem(withdrawBiometricItem: WithdrawBiometricItem): Pair<String, String> {
@@ -245,6 +250,32 @@ class TransferContent : LinearLayout {
 
             val tokenItem = safeMultisigsBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderSafeMultisigsTransfer(
+        safeMultisigsBiometricItem: SafeMultisigsBiometricItem,
+        safeAccount: SafeAccount,
+    ) {
+        _binding.apply {
+            amount.setContent(R.string.Total_Amount, "${safeMultisigsBiometricItem.amount} ${safeMultisigsBiometricItem.asset?.symbol}", amountAs(safeMultisigsBiometricItem.amount, safeMultisigsBiometricItem.asset!!), token = safeMultisigsBiometricItem.asset)
+            receive.isVisible = false
+            sender.isVisible = false
+            total.isVisible = false
+            networkFee.isVisible = false
+
+            // disable note
+            // if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
+            //     memo.isVisible = true
+            //     memo.setContent(R.string.Note, safeMultisigsBiometricItem.memo ?: "")
+            // }
+            safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients, safeMultisigsBiometricItem.asset?.symbol?:"")
+            safeReceives.isVisible = true
+            safeSender.setContent(R.string.Sender, safeAccount.address, selectable = true)
+            safeSender.isVisible = true
+            safe.setContent(R.string.SAFE, safeAccount.name)
+            safe.isVisible = true
+            network.isVisible = false
         }
     }
 
