@@ -1648,7 +1648,7 @@
     <string name="New_Update_Available_desc">We update the app regularly so we can make \nit better for you</string>
     <string name="Update_Now">Update Now</string>
     <string name="Market_Cap">Market Cap</string>
-    <string name="Approve">Apporeve</string>
+    <string name="Approve">Approve</string>
     <string name="Reject">Reject</string>
     <string name="Note">Note</string>
     <string name="signature_request_from">This signature request is issued by %1$s.</string>
