@@ -136,6 +136,7 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -143,6 +144,8 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.web3.EthereumFragment
+import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -1087,6 +1090,17 @@ class MainActivity : BlazeBaseActivity() {
         val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
         val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
+    }
+
+    override fun onResumeFragments() {
+        super.onResumeFragments()
+        val fragments = supportFragmentManager.fragments
+        if (fragments.size > 0) {
+            fragments.filter { it != null && it is Web3Fragment && it.isVisible }
+                .forEach {
+                    (it as Web3Fragment).updateUI()
+                }
+        }
     }
 
     companion object {

@@ -283,6 +283,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -382,7 +383,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             } else {
                 assets = it
                 assetsAdapter.setAssetList(it)
-
+                // Refresh the entire list when the fiat currency changes
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
                 lifecycleScope.launch {
                     var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
                     if (bitcoin == null) {
@@ -408,6 +413,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         }
         checkPin()
     }
+
+    private var lastFiatCurrency :String? = null
 
     override fun onHiddenChanged(hidden: Boolean) {
         if (!hidden) {

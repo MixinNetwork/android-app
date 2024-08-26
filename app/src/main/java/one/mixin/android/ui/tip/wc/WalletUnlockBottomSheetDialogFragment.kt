@@ -24,7 +24,7 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
-import one.mixin.android.tip.wc.WCUnlockEvent
+import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
@@ -225,13 +225,13 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                     PropertyHelper.updateKeyValue(SOLANA_ADDRESS, address)
                     JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, address)
-                    RxBus.publish(WCUnlockEvent())
+                    RxBus.publish(WCChangeEvent())
                     keyViewModel.success(address)
                 } else {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                     PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
                     JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, address)
-                    RxBus.publish(WCUnlockEvent())
+                    RxBus.publish(WCChangeEvent())
                     keyViewModel.success(address)
                 }
             }

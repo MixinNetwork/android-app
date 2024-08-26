@@ -41,8 +41,8 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.WCUnlockEvent
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.tip.wc.WCChangeEvent
+import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
@@ -61,7 +61,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
 @AndroidEntryPoint
-class EthereumFragment : BaseFragment() {
+class EthereumFragment : Web3Fragment() {
     companion object {
         const val TAG = "EthereumFragment"
     }
@@ -145,7 +145,7 @@ class EthereumFragment : BaseFragment() {
                 walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
             }
         }
-        RxBus.listen(WCUnlockEvent::class.java)
+        RxBus.listen(WCChangeEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { _ ->
                 updateUI()
@@ -181,7 +181,7 @@ class EthereumFragment : BaseFragment() {
 
     private var address: String? = null
 
-    fun updateUI() {
+    override fun updateUI() {
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (isAdded) {
@@ -324,10 +324,4 @@ class EthereumFragment : BaseFragment() {
         }
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            updateUI()
-        }
-    }
 }

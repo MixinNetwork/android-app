@@ -11,7 +11,7 @@ import one.mixin.android.api.MixinResponseException
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.WCUnlockEvent
+import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ParticipantSession
@@ -57,7 +57,7 @@ class RefreshDappJob : BaseJob(
                         }
                     }
                 }
-                RxBus.publish(WCUnlockEvent())
+                RxBus.publish(WCChangeEvent())
             } else if (response.errorCode == 401) {
                 getBotPublicKey()
             } else {

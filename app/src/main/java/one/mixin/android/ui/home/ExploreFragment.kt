@@ -217,8 +217,8 @@ class ExploreFragment : BaseFragment() {
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (!hidden) {
-            ethereumFragment.updateUI()
-            solanaFragment.updateUI()
+            if (ethereumFragment.isVisible) ethereumFragment.updateUI()
+            if (solanaFragment.isVisible) solanaFragment.updateUI()
         }
     }
 
