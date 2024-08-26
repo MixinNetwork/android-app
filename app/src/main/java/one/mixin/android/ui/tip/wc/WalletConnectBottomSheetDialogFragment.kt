@@ -32,6 +32,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
@@ -42,6 +43,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -375,6 +377,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     }
                                 if (sendError == null) {
                                     processCompleted = true
+                                    RxBus.publish(WCChangeEvent())
                                     Step.Done
                                 } else {
                                     errorInfo = sendError
@@ -386,6 +389,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         } else {
                             processCompleted = true
+                            RxBus.publish(WCChangeEvent())
                             Step.Done
                         }
                 } else {

@@ -41,8 +41,7 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.WCUnlockEvent
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
@@ -60,7 +59,6 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
-import timber.log.Timber
 
 @AndroidEntryPoint
 class EthereumFragment : Web3Fragment() {
@@ -147,7 +145,7 @@ class EthereumFragment : Web3Fragment() {
                 walletRv.addItemDecoration(SpacesItemDecoration(4.dp, true))
             }
         }
-        RxBus.listen(WCUnlockEvent::class.java)
+        RxBus.listen(WCChangeEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { _ ->
                 updateUI()
@@ -184,7 +182,6 @@ class EthereumFragment : Web3Fragment() {
     private var address: String? = null
 
     override fun updateUI() {
-        Timber.e("update UI")
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (isAdded) {
