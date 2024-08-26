@@ -296,7 +296,7 @@ private fun TransferNotificationItem() {
                                 },
                                 successBlock = { response ->
                                     response.data?.let { account ->
-                                        Session.storeAccount(account)
+                                        Session.storeAccount(account, 21)
                                         threshold.value = account.transferNotificationThreshold
                                     }
                                 },
@@ -395,7 +395,7 @@ private fun TransferLargeAmountItem() {
                                 },
                                 successBlock = { response ->
                                     response.data?.let { account ->
-                                        Session.storeAccount(account)
+                                        Session.storeAccount(account, 22)
                                         threshold.value = account.transferConfirmationThreshold
                                     }
                                 },

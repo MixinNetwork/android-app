@@ -33,7 +33,7 @@ class RefreshAccountWorker
                 val account = response.data ?: return Result.failure()
                 val u = account.toUser()
                 userRepo.upsert(u)
-                Session.storeAccount(account)
+                Session.storeAccount(account, 29)
 
                 val receive =
                     MixinApplication.appContext.defaultSharedPreferences

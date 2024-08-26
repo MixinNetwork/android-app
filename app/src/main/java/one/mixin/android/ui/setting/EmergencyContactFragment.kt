@@ -133,7 +133,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
                     invokeNetwork = { viewModel.deleteEmergency(pinCode) },
                     successBlock = { response ->
                         val a = response.data as Account
-                        Session.storeAccount(a)
+                        Session.storeAccount(a, 11)
                         Session.setHasEmergencyContact(a.hasEmergencyContact)
                         setEmergencySet()
                     },

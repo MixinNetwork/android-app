@@ -74,7 +74,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             successBlock = {
                                 it.data?.let { account ->
-                                    Session.storeAccount(account)
+                                    Session.storeAccount(account, 14)
                                 }
                                 viewModel.preferences.setContacts()
                             },
@@ -110,7 +110,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             successBlock = {
                                 it.data?.let { account ->
-                                    Session.storeAccount(account)
+                                    Session.storeAccount(account, 16)
                                 }
                                 viewModel.preferences.setEveryBody()
                             },
@@ -152,7 +152,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             successBlock = {
                                 it.data?.let { account ->
-                                    Session.storeAccount(account)
+                                    Session.storeAccount(account, 15)
                                 }
                                 viewModel.groupPreferences.setContacts()
                             },
@@ -188,7 +188,7 @@ class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conve
                             },
                             successBlock = {
                                 it.data?.let { account ->
-                                    Session.storeAccount(account)
+                                    Session.storeAccount(account, 17)
                                 }
                                 viewModel.groupPreferences.setEveryBody()
                             },

@@ -421,7 +421,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         return@subscribe
                     }
                     r.data?.let { data ->
-                        Session.storeAccount(data)
+                        Session.storeAccount(data, 5)
                         bottomViewModel.insertUser(data.toUser())
                         refreshInfo(data)
                     }

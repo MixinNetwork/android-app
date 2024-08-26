@@ -57,7 +57,7 @@ fun PhoneNumberSettingPage() {
                     },
                     successBlock = {
                         it.data?.let { account ->
-                            Session.storeAccount(account)
+                            Session.storeAccount(account, 23)
                         }
                         when (source) {
                             SearchSource.EVERYBODY -> preferences.setEveryBody()

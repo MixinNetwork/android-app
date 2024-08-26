@@ -165,7 +165,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                 },
                 successBlock = {
                     it.data?.let { account ->
-                        Session.storeAccount(account)
+                        Session.storeAccount(account, 12)
                         if (isNotification) {
                             refreshNotification(account.transferNotificationThreshold)
                         } else {

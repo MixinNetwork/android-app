@@ -69,7 +69,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                                 return@subscribe
                             }
                             r.data?.let { data ->
-                                Session.storeAccount(data)
+                                Session.storeAccount(data, 8)
                                 mobileViewModel.insertUser(data.toUser())
                             }
 

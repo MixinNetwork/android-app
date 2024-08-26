@@ -61,7 +61,11 @@ object Session {
     private const val PREF_NAME_TOKEN = "pref_name_token"
     private const val PREF_ED25519_PRIVATE_KEY = "pref_ed25519_private_key"
 
-    fun storeAccount(account: Account) {
+    fun storeAccount(account: Account, flag:Int) {
+        if (self != null && account.membership != self?.membership){
+            Timber.e("Account membership changed: $flag ${account.membership?.plan} ${self?.membership?.plan}")
+            reportException(Exception("Account membership changed: $flag ${account.membership?.plan}"))
+        }
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))

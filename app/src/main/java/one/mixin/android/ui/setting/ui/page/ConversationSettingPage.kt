@@ -92,7 +92,7 @@ private fun SettingGroup(
                 },
                 successBlock = {
                     it.data?.let { account ->
-                        Session.storeAccount(account)
+                        Session.storeAccount(account, 19)
                     }
                     when (source) {
                         MessageSource.EVERYBODY -> preferences.setEveryBody()

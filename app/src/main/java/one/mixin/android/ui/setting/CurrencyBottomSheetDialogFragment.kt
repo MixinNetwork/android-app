@@ -93,7 +93,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 },
                 successBlock = {
                     it.data?.let { account ->
-                        Session.storeAccount(account)
+                        Session.storeAccount(account, 10)
                         callback?.onCurrencyClick(currency)
                         toast(R.string.Save_success)
                         dismiss()

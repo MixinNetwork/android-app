@@ -394,7 +394,7 @@ class InscriptionActivity : BaseActivity() {
                         toast(R.string.Success)
                     }
                     r.data?.let { data ->
-                        Session.storeAccount(data)
+                        Session.storeAccount(data, 6)
                         val u = data.toUser()
                         RxBus.publish(u)
                         web3ViewModel.insertUser(u)

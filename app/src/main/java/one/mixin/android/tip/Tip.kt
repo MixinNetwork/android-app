@@ -178,7 +178,7 @@ class Tip
             }
             val account = tipNetwork { accountService.getMeSuspend() }.getOrThrow()
             val pinTokenEncryptedSalt = account.salt?.base64RawURLDecode() ?: throw TipNullException("account has no salt")
-            Session.storeAccount(account)
+            Session.storeAccount(account, 1)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("no pin token")
             salt = aesDecrypt(pinToken, pinTokenEncryptedSalt)
             return salt
@@ -396,7 +396,7 @@ class Tip
             val newPin = encryptPinInternal(pinToken, pub + 1L.toBeByteArray())
             val pinRequest = PinRequest(newPin, oldEncryptedPin)
             val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
-            Session.storeAccount(account)
+            Session.storeAccount(account, 2)
         }
 
         @Throws(IOException::class, TipNetworkException::class)
@@ -438,7 +438,7 @@ class Tip
 
             val pinRequest = PinRequest(encryptedNewPin, encryptedOldPin, pinTokenEncryptedSalt, oldPinTokenEncryptedSalt?.base64RawURLEncode())
             val account = tipNetwork { accountService.updatePinSuspend(pinRequest) }.getOrThrow()
-            Session.storeAccount(account)
+            Session.storeAccount(account, 3)
         }
 
         @Throws(TipException::class)

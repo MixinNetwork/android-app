@@ -55,7 +55,7 @@ fun updateAccount(account: Account) {
     val db = MixinDatabase.getDatabase(MixinApplication.appContext)
     val u = account.toUser()
     db.userDao().insertUpdate(u, db.appDao())
-    Session.storeAccount(account)
+    Session.storeAccount(account, 0)
     val receive =
         MixinApplication.appContext.defaultSharedPreferences
             .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)

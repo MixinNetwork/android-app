@@ -202,7 +202,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                                     ?: return@withContext
                             viewModel.updatePhone(a.userId, phone)
                             a.phone = phone
-                            Session.storeAccount(a)
+                            Session.storeAccount(a, 9)
                         }
                     }
                     alert(getString(R.string.Changed))

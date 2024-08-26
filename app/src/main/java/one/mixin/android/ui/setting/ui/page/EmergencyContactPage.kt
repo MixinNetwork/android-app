@@ -247,7 +247,7 @@ private fun RemoveEmergencyButton(
                         invokeNetwork = { viewModel.deleteEmergency(pinCode) },
                         successBlock = { response ->
                             val a = response.data as Account
-                            Session.storeAccount(a)
+                            Session.storeAccount(a, 20)
                             Session.setHasEmergencyContact(a.hasEmergencyContact)
                             Timber.d("delete emergency contact success: ${a.hasEmergencyContact}")
                             onEmergencyAccountRemoved()

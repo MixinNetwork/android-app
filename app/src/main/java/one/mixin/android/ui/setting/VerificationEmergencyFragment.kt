@@ -114,7 +114,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                 },
                 successBlock = { response ->
                     val a = response.data as Account
-                    Session.storeAccount(a)
+                    Session.storeAccount(a, 18)
                     Session.setHasEmergencyContact(a.hasEmergencyContact)
                     activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
                         (it as? EmergencyContactFragment)?.setEmergencySet()

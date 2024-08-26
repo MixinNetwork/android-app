@@ -507,7 +507,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val meResp = accountService.getMeSuspend()
             if (meResp.isSuccess) {
                 val account = requireNotNull(meResp.data) { "required account can not be null" }
-                Session.storeAccount(account)
+                Session.storeAccount(account, 26)
                 if (account.hasSafe) {
                     return@runCatching true
                 }
@@ -546,7 +546,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {
-                Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
+                Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" }, 27)
                 true
             } else {
                 tipBundle.oldPin = null
@@ -605,7 +605,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         handleMixinResponse(
             invokeNetwork = { accountService.getMeSuspend() },
             successBlock = { r ->
-                r.data?.let { Session.storeAccount(it) }
+                r.data?.let { Session.storeAccount(it, 28) }
             },
         )
     }

@@ -149,7 +149,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             val meResp = accountService.getMeSuspend()
             if (meResp.isSuccess) {
                 val account = requireNotNull(meResp.data) { "required account can not be null" }
-                Session.storeAccount(account)
+                Session.storeAccount(account, 24)
                 if (account.hasSafe) {
                     dismiss()
                     toast(R.string.Successful)
@@ -185,7 +185,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 )
             if (resp.isSuccess) {
                 resp.data?.let { account ->
-                    Session.storeAccount(account)
+                    Session.storeAccount(account, 25)
                     dismiss()
                     toast(R.string.Successful)
                 }

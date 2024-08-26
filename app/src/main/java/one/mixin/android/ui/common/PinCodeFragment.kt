@@ -108,7 +108,7 @@ abstract class PinCodeFragment(
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
-        Session.storeAccount(account)
+        Session.storeAccount(account, 4)
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()

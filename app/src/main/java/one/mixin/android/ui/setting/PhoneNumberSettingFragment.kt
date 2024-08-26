@@ -91,7 +91,7 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
                 },
                 successBlock = {
                     it.data?.let { account ->
-                        Session.storeAccount(account)
+                        Session.storeAccount(account, 13)
                         when (account.acceptSearchSource) {
                             SearchSource.EVERYBODY.name -> viewModel.searchPreference.setEveryBody()
                             SearchSource.CONTACTS.name -> viewModel.searchPreference.setContacts()
