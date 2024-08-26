@@ -43,6 +43,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCUnlockEvent
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
@@ -59,9 +60,10 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.send.InputAddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
+import timber.log.Timber
 
 @AndroidEntryPoint
-class EthereumFragment : BaseFragment() {
+class EthereumFragment : Web3Fragment() {
     companion object {
         const val TAG = "EthereumFragment"
     }
@@ -181,7 +183,8 @@ class EthereumFragment : BaseFragment() {
 
     private var address: String? = null
 
-    fun updateUI() {
+    override fun updateUI() {
+        Timber.e("update UI")
         lifecycleScope.launch {
             val address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             if (isAdded) {
@@ -324,10 +327,4 @@ class EthereumFragment : BaseFragment() {
         }
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            updateUI()
-        }
-    }
 }
