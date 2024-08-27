@@ -1663,4 +1663,5 @@
     <string name="SAFE">SAFE</string>
     <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
+    <string name="watchlist_empty">Your watchlist is empty</string>
 </resources>
