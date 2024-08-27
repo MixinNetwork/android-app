@@ -144,8 +144,6 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
-import one.mixin.android.ui.home.web3.EthereumFragment
-import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -185,7 +183,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
-    lateinit var navigationController: NavigationController
+    private lateinit var navigationController: NavigationController
 
     @Inject
     lateinit var jobManager: MixinJobManager

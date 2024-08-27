@@ -196,8 +196,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
         fun bind(user: User) {
             binding.header.text =
-                if (user.fullName != null &&
-                    user.fullName.isNotEmpty()
+                if (!user.fullName.isNullOrEmpty()
                 ) {
                     user.fullName[0].toString()
                 } else {
@@ -216,7 +215,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             val account = Session.getAccount()
             if (self != null) {
                 binding.contactHeaderAvatar.setInfo(self.fullName, self.avatarUrl, self.userId)
-                binding.contactHeaderNameTv.text = self.fullName
+                binding.contactHeaderNameTv.setName(self)
                 binding.contactHeaderIdTv.text =
                     itemView.context.getString(R.string.contact_mixin_id, self.identityNumber)
                 binding.contactHeaderMobileTv.text =
