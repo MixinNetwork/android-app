@@ -13,12 +13,12 @@ import one.mixin.android.vo.ListConverter
 @TypeConverters(ListConverter::class)
 data class Market(
     @PrimaryKey
-    @SerializedName("key")
-    @ColumnInfo(name = "asset_id")
-    val assetId: String,
     @SerializedName("coin_id")
     @ColumnInfo(name = "coin_id")
     val coinId: String,
+    @SerializedName("key")
+    @ColumnInfo(name = "asset_id")
+    val assetId: String,
     @SerializedName("name")
     @ColumnInfo(name = "name")
     val name: String,

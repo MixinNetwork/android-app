@@ -1,5 +1,6 @@
 package one.mixin.android.api.service
 
+import com.google.protobuf.Mixin
 import one.mixin.android.BuildConfig
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OrderRequest
@@ -185,11 +186,17 @@ interface RouteService {
     ): MixinResponse<Market>
 
     @GET("markets")
-    suspend fun markets():MixinResponse<List<Market>>
+    suspend fun markets(@Query("category") category: String? = null, @Query("max") max: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
 
     @GET("markets/favorites")
     suspend fun favoritesMarkets():MixinResponse<List<Market>>
 
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
+
+    @POST("markets/{id}/favorite")
+    suspend fun favorite(@Path("id") coinId: String): MixinResponse<Market>
+
+    @POST("markets/{id}/unfavorite")
+    suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Market>
 }

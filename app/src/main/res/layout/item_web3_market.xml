@@ -25,16 +25,6 @@
         android:layout_toEndOf="@id/favorite"
         android:layout_centerVertical="true" />
 
-    <ImageView
-        android:id="@+id/market"
-        android:layout_width="60dp"
-        android:layout_height="34dp"
-        android:layout_marginEnd="2dp"
-        android:contentDescription="@null"
-        android:background="?attr/bg_window"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true" />
-
     <TextView
         android:id="@+id/asset_name"
         android:layout_width="wrap_content"
@@ -49,7 +39,6 @@
         android:id="@+id/asset_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
         android:textColor="?attr/text_assist"
@@ -78,8 +67,15 @@
         android:textColor="?attr/text_primary"
         android:textFontWeight="500"
         android:textSize="14sp"
-        android:gravity="end"
         android:layout_toStartOf="@id/market"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:id="@+id/market"
+        android:layout_width="60dp"
+        android:layout_height="34dp"
+        android:contentDescription="@null"
+        android:background="?attr/bg_window"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true" />
 

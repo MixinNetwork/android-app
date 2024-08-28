@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 59,
-    "identityHash": "af63f3b963fd9ad8f5be0e9cc1b85047",
+    "identityHash": "07dbc74bb67779a0f2fe369320da1081",
     "entities": [
       {
         "tableName": "users",
@@ -3049,17 +3049,17 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT NOT NULL, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT NOT NULL, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
         "fields": [
           {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "coinId",
-            "columnName": "coin_id",
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3217,7 +3217,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "asset_id"
+            "coin_id"
           ]
         },
         "indices": [],
@@ -3264,7 +3264,7 @@
       },
       {
         "tableName": "markets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `is_favored` INTEGER, `asset_id` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `is_favored` INTEGER, PRIMARY KEY(`coin_id`, `asset_id`))",
         "fields": [
           {
             "fieldPath": "coinId",
@@ -3273,16 +3273,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "isFavored",
-            "columnName": "is_favored",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
             "fieldPath": "assetId",
             "columnName": "asset_id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "isFavored",
+            "columnName": "is_favored",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -3349,7 +3349,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'af63f3b963fd9ad8f5be0e9cc1b85047')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07dbc74bb67779a0f2fe369320da1081')"
     ]
   }
 }

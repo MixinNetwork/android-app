@@ -8,7 +8,6 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.vo.ListConverter
 
 @Entity(tableName = "markets_extra", primaryKeys = ["coin_id", "asset_id"])
-@TypeConverters(ListConverter::class)
 data class MarketExtra(
     @SerializedName("coin_id")
     @ColumnInfo(name = "coin_id")

@@ -20,6 +20,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketsJob
+import one.mixin.android.job.UpdateFavoriteJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
@@ -62,6 +63,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         }
 
         jobManager.addJobInBackground(RefreshMarketsJob())
+        jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
         bindData()
     }
 
@@ -94,24 +96,29 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
     }
 
     private val adapter by lazy {
-        Web3MarketAdapter()
+        Web3MarketAdapter { coinId, isFavored->
+            jobManager.addJobInBackground(UpdateFavoriteJob(coinId,isFavored))
+        }
     }
 
-    class Web3MarketAdapter : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
+    class Web3MarketAdapter(val onClick: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
         var items: List<MarketItem> = emptyList()
 
         class ViewHolder(val binding: ItemWeb3MarketBinding) : RecyclerView.ViewHolder(binding.root) {
             @SuppressLint("CheckResult", "SetTextI18n")
-            fun bind(item: MarketItem) {
+            fun bind(item: MarketItem, onClick: (String, Boolean?) -> Unit) {
                 binding.apply {
                     val symbol = Fiats.getSymbol()
                     val rate = BigDecimal(Fiats.getRate())
-                    favorite.setImageResource(if(item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
+                    favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
+                    favorite.setOnClickListener {
+                        onClick.invoke(item.coinId, item.isFavored)
+                    }
                     icon.loadImage(item.iconUrl, R.drawable.ic_avatar_place_holder)
                     assetName.text = item.name
                     assetValue.text = item.totalVolume
                     price.text = "$symbol${BigDecimal(item.currentPrice).priceFormat()}"
-                    assetNumber.text = item.marketCapRank
+                    assetNumber.text = "${absoluteAdapterPosition + 1}"
                     val formatVol = try {
                         BigDecimal(item.totalVolume).multiply(rate).numberFormatCompact()
                     } catch (e: NumberFormatException) {
@@ -133,12 +140,10 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             return ViewHolder(ItemWeb3MarketBinding.inflate(LayoutInflater.from(parent.context)))
         }
 
-        // Bind data to item views
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind(items[position])
+            holder.bind(items[position], onClick)
         }
 
-        // Return the size of the dataset
         override fun getItemCount(): Int = items.size
     }
 }
