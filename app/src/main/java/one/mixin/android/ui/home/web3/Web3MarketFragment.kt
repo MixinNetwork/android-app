@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,6 +20,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.screenWidth
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketsJob
 import one.mixin.android.job.UpdateFavoriteJob
@@ -26,7 +29,8 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
-import timber.log.Timber
+import one.mixin.android.extension.dp
+import one.mixin.android.job.RefreshGlobalWeb3MarketJob
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -63,7 +67,11 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         }
 
         jobManager.addJobInBackground(RefreshMarketsJob())
+        jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
+        walletViewModel.getGlobalWeb3Market().observe(this.viewLifecycleOwner) {
+            // Todo
+        }
         bindData()
     }
 
@@ -97,7 +105,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
 
     private val adapter by lazy {
         Web3MarketAdapter { coinId, isFavored->
-            jobManager.addJobInBackground(UpdateFavoriteJob(coinId,isFavored))
+            jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
         }
     }
 
@@ -105,6 +113,15 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         var items: List<MarketItem> = emptyList()
 
         class ViewHolder(val binding: ItemWeb3MarketBinding) : RecyclerView.ViewHolder(binding.root) {
+            private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
+            private val verticalPadding by lazy { 6.dp }
+            init {
+                binding.container.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+                binding.price.updateLayoutParams<MarginLayoutParams> {
+                    marginEnd = horizontalPadding
+                }
+            }
+
             @SuppressLint("CheckResult", "SetTextI18n")
             fun bind(item: MarketItem, onClick: (String, Boolean?) -> Unit) {
                 binding.apply {
@@ -129,9 +146,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
                     } else {
                         ""
                     }
-                    market.loadImage("https://www.coingecko.com/coins/${item.marketCapRank}/sparkline.svg".apply {
-                        Timber.e(this)
-                    })
+                    market.loadImage(item.sparklineIn7d)
                 }
             }
         }

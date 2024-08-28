@@ -188,15 +188,12 @@ interface RouteService {
     @GET("markets")
     suspend fun markets(@Query("category") category: String? = null, @Query("max") max: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
 
-    @GET("markets/favorites")
-    suspend fun favoritesMarkets():MixinResponse<List<Market>>
-
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
 
     @POST("markets/{id}/favorite")
-    suspend fun favorite(@Path("id") coinId: String): MixinResponse<Market>
+    suspend fun favorite(@Path("id") coinId: String): MixinResponse<Unit>
 
     @POST("markets/{id}/unfavorite")
-    suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Market>
+    suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Unit>
 }

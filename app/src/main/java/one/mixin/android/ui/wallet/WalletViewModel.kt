@@ -362,4 +362,6 @@ class WalletViewModel
 
         fun getFavoredWeb3Markets() = tokenRepository.getFavoredWeb3Markets()
 
+        fun getGlobalWeb3Market() = tokenRepository.getGlobalWeb3Market()
+
     }

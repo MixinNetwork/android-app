@@ -3,10 +3,10 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.api.request.RouteInstrumentRequest
-import one.mixin.android.session.Session
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
-import one.mixin.android.vo.market.MarketExtra
+import one.mixin.android.vo.market.MarketFavored
+import one.mixin.android.vo.market.MarketId
 import timber.log.Timber
 
 class RefreshMarketsJob(val category: String = "all") : BaseJob(
@@ -25,18 +25,27 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
             },
             successBlock = { response ->
                 val list = response.data!!
+                val now = nowInUtc()
                 if (category == "favorite") {
-                    val marketExtraList: List<MarketExtra> = list.flatMap { market ->
-                        market.assetIds.map { assetId ->
-                            MarketExtra(
+                    val marketExtraList: List<MarketFavored> = list.map { market ->
+                            MarketFavored(
                                 coinId = market.coinId,
-                                assetId = assetId,
-                                isFavored = true
+                                isFavored = true,
+                                now
                             )
-                        }
                     }
-                    marketExtraDao.insertList(marketExtraList)
+                    marketFavoredDao.insertList(marketExtraList)
                 }
+                val ids = list.flatMap { market ->
+                    market.assetIds.map { assetId ->
+                        MarketId(
+                            coinId = market.coinId,
+                            assetId = assetId,
+                            now
+                        )
+                    }
+                }
+                marketIdsDao.insertList(ids)
                 try {
                     marketDao.insertList(list)
                 } catch (e: Exception) {

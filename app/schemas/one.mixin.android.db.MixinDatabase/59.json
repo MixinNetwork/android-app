@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 59,
-    "identityHash": "07dbc74bb67779a0f2fe369320da1081",
+    "identityHash": "842b6e18a0bef4ae0a2d4f64b9852410",
     "entities": [
       {
         "tableName": "users",
@@ -3263,8 +3263,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "markets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `is_favored` INTEGER, PRIMARY KEY(`coin_id`, `asset_id`))",
+        "tableName": "market_ids",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `asset_id`))",
         "fields": [
           {
             "fieldPath": "coinId",
@@ -3279,10 +3279,10 @@
             "notNull": true
           },
           {
-            "fieldPath": "isFavored",
-            "columnName": "is_favored",
-            "affinity": "INTEGER",
-            "notNull": false
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -3290,6 +3290,38 @@
           "columnNames": [
             "coin_id",
             "asset_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "market_favored",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
+        "fields": [
+          {
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavored",
+            "columnName": "is_favored",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "coin_id"
           ]
         },
         "indices": [],
@@ -3349,7 +3381,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07dbc74bb67779a0f2fe369320da1081')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '842b6e18a0bef4ae0a2d4f64b9852410')"
     ]
   }
 }

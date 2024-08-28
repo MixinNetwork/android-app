@@ -114,7 +114,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
-import one.mixin.android.vo.market.MarketExtra
+import one.mixin.android.vo.market.MarketFavored
+import one.mixin.android.vo.market.MarketId
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -172,7 +173,8 @@ import kotlin.math.min
         (InscriptionItem::class),
         (Market::class),
         (HistoryPrice::class),
-        (MarketExtra::class),
+        (MarketId::class),
+        (MarketFavored::class),
         (GlobalMarket::class),
     ],
     version = CURRENT_VERSION,
@@ -261,7 +263,9 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao
 
-    abstract fun marketExtraDao(): MarketExtraDao
+    abstract fun marketIdsDao(): MarketIdsDao
+
+    abstract fun marketFavoredDao(): MarketFavoredDao
 
     abstract fun globalMarketDao(): GlobalMarketDao
 
@@ -335,7 +339,6 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_55_56,
                                 MIGRATION_56_57,
                                 MIGRATION_57_58,
-                                MIGRATION_58_59,
                                 MIGRATION_58_59,
                             )
                             .enableMultiInstanceInvalidation()

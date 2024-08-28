@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="6dp"
@@ -14,7 +15,7 @@
         android:src="@drawable/ic_asset_favorites"
         android:background="@drawable/mixin_ripple_small"
         android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true" />
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/icon"
@@ -25,48 +26,53 @@
         android:layout_toEndOf="@id/favorite"
         android:layout_centerVertical="true" />
 
-    <TextView
-        android:id="@+id/asset_name"
+    <RelativeLayout
+        android:id="@+id/name_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:textColor="?attr/text_primary"
-        android:textSize="14sp"
         android:layout_toEndOf="@id/icon"
-        android:layout_alignTop="@id/icon" />
+        android:layout_alignTop="@id/icon"
+        android:layout_alignBottom="@id/icon">
 
-    <TextView
-        android:id="@+id/asset_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:textColor="?attr/text_assist"
-        android:textSize="12sp"
-        android:background="@drawable/bg_round_4_solid_light_gray"
-        android:layout_below="@id/asset_name"
-        android:layout_alignStart="@id/asset_name"
-        android:layout_alignBottom="@id/icon" />
+        <TextView
+            android:id="@+id/asset_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/asset_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:textColor="?attr/text_assist"
-        android:textSize="12sp"
-        android:layout_below="@id/asset_name"
-        android:layout_toEndOf="@id/asset_number"
-        android:layout_alignBottom="@id/icon" />
+        <TextView
+            android:id="@+id/asset_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:layout_below="@id/asset_name"
+            android:layout_alignStart="@id/asset_name" />
+
+        <TextView
+            android:id="@+id/asset_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:layout_below="@id/asset_name"
+            android:layout_toEndOf="@id/asset_number" />
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
         android:textColor="?attr/text_primary"
         android:textFontWeight="500"
         android:textSize="14sp"
+        android:gravity="end"
+        android:layout_toEndOf="@id/name_layout"
         android:layout_toStartOf="@id/market"
         android:layout_centerVertical="true" />
 
