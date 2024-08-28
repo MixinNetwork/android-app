@@ -143,8 +143,8 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun postRawTx(rawTx: String) {
-            val resp = assetRepo.postRawTx(PostTxRequest(rawTx))
+        suspend fun postRawTx(rawTx: String, web3ChainId: Int) {
+            val resp = assetRepo.postRawTx(PostTxRequest(rawTx, web3ChainId))
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException

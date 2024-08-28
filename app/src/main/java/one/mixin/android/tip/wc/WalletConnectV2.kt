@@ -524,7 +524,7 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    private fun approveRequestInternal(
+    fun approveRequestInternal(
         result: String,
         sessionRequest: Wallet.Model.SessionRequest,
     ) {

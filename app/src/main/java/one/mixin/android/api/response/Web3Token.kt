@@ -12,6 +12,7 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -150,6 +151,15 @@ fun Web3Token.getChainIdFromName(): String {
 
 fun Web3Token.isSolana(): Boolean {
     return chainName.equals("solana", true)
+}
+
+fun Web3Token.getWeb3ChainId(): Int {
+    return when {
+        chainName.equals("ethereum", true) -> Web3ChainId.EthChainId
+        chainName.equals("polygon", true) -> Web3ChainId.PolygonChainId
+        chainName.equals("solana", true) -> Web3ChainId.SolanaChainId
+        else -> Web3ChainId.MixinChainId
+    }
 }
 
 fun Web3Token.isSolToken(): Boolean {
@@ -332,4 +342,32 @@ fun Web3Token.copy(
 
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
     return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
+}
+
+@Suppress("ConstPropertyName")
+object Web3ChainId {
+    // bip44
+    const val BtcChainId  = 0
+    const val SolanaChainId = 501
+    const val MixinChainId = 2365
+
+    // eip155
+    const val EthChainId = 1
+    const val PolygonChainId = 137
+
+    fun getChainType(id: Int): ChainType {
+        return when(id) {
+            EthChainId, PolygonChainId -> ChainType.ethereum
+            SolanaChainId -> ChainType.solana
+            else -> ChainType.solana
+        }
+    }
+
+    fun getChain(id: Int): Chain {
+        return when(id) {
+            EthChainId -> Chain.Ethereum
+            PolygonChainId -> Chain.Polygon
+            else -> Chain.Solana
+        }
+    }
 }
