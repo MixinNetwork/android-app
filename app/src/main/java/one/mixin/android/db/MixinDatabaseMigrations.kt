@@ -488,6 +488,21 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("ALTER TABLE `users` ADD COLUMN `membership` TEXT")
                 }
             }
+
+        val MIGRATION_59_58: Migration =
+            object : Migration(59, 58) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DROP TABLE IF EXISTS `web3_markets`")
+                    db.execSQL("DROP TABLE IF EXISTS `web3_markets_extra`")
+                    db.execSQL("DROP TABLE IF EXISTS `markets_extra`")
+                    db.execSQL("DROP TABLE IF EXISTS `market_coins`")
+                    db.execSQL("DROP TABLE IF EXISTS `market_ids`")
+                    db.execSQL("DROP TABLE IF EXISTS `market_favored`")
+                    db.execSQL("DROP TABLE IF EXISTS `global_market`")
+                    db.execSQL("DROP TABLE IF EXISTS `markets`")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `markets` (`asset_id` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
