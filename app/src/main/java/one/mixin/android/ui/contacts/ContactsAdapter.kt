@@ -20,6 +20,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
+import one.mixin.android.vo.toUser
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
     RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
@@ -85,6 +86,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                     TYPE_CONTACT
                 }
             }
+
             position < POS_FRIEND + friendSize -> TYPE_FRIEND
             else -> TYPE_CONTACT
         }
@@ -132,15 +134,18 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     ) {
         when (holder) {
             is HeadViewHolder -> {
-                holder.bind(me, mContactListener)
+                holder.bind(requireNotNull(Session.getAccount()), mContactListener)
             }
+
             is FootViewHolder -> {
                 holder.bind(mContactListener, friendSize)
             }
+
             is ContactViewHolder -> {
                 val user: User = users[getPosition(position)]
                 holder.bind(user, mContactListener)
             }
+
             else -> {
                 holder as FriendViewHolder
                 val user: User = users[getPosition(position)]
@@ -181,10 +186,6 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         }
     }
 
-    fun removeFooter() {
-        mFooterView = null
-    }
-
     fun setContactListener(listener: ContactListener) {
         mContactListener = listener
     }
@@ -196,8 +197,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
         fun bind(user: User) {
             binding.header.text =
-                if (user.fullName != null &&
-                    user.fullName.isNotEmpty()
+                if (!user.fullName.isNullOrEmpty()
                 ) {
                     user.fullName[0].toString()
                 } else {
@@ -210,27 +210,16 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     class HeadViewHolder(val binding: ViewContactHeaderBinding) : ViewHolder(binding.root) {
         fun bind(
-            self: User?,
+            account: Account,
             listener: ContactListener?,
         ) {
-            val account = Session.getAccount()
-            if (self != null) {
-                binding.contactHeaderAvatar.setInfo(self.fullName, self.avatarUrl, self.userId)
-                binding.contactHeaderNameTv.text = self.fullName
-                binding.contactHeaderIdTv.text =
-                    itemView.context.getString(R.string.contact_mixin_id, self.identityNumber)
-                binding.contactHeaderMobileTv.text =
-                    itemView.context.getString(R.string.contact_mobile, self.phone)
-            } else {
-                if (account != null) {
-                    binding.contactHeaderAvatar.setInfo(account.fullName, account.avatarUrl, account.userId)
-                    binding.contactHeaderNameTv.setName(account)
-                    binding.contactHeaderIdTv.text =
-                        itemView.context.getString(R.string.contact_mixin_id, account.identityNumber)
-                    binding.contactHeaderMobileTv.text =
-                        itemView.context.getString(R.string.contact_mobile, account.phone)
-                }
-            }
+            val self = account.toUser()
+            binding.contactHeaderAvatar.setInfo(account.fullName, account.avatarUrl, account.userId)
+            binding.contactHeaderNameTv.setName(account)
+            binding.contactHeaderIdTv.text =
+                itemView.context.getString(R.string.contact_mixin_id, account.identityNumber)
+            binding.contactHeaderMobileTv.text =
+                itemView.context.getString(R.string.contact_mobile, account.phone)
             if (listener != null) {
                 binding.contactHeaderRl.setOnClickListener { listener.onHeaderRl() }
                 binding.newGroupRl.setOnClickListener { listener.onNewGroup() }
@@ -239,7 +228,6 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 binding.receiveFl.setOnClickListener { listener.onReceiveQr(self) }
             }
         }
-
     }
 
     class FootViewHolder(val binding: ViewContactListEmptyBinding) : ViewHolder(binding.root) {
