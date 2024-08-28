@@ -24,9 +24,9 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
-import one.mixin.android.vo.market.Web3Market
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
@@ -185,5 +185,11 @@ interface RouteService {
     ): MixinResponse<Market>
 
     @GET("markets")
-    suspend fun markets():MixinResponse<List<Web3Market>>
+    suspend fun markets():MixinResponse<List<Market>>
+
+    @GET("markets/favorites")
+    suspend fun favoritesMarkets():MixinResponse<List<Market>>
+
+    @GET("markets/globals")
+    suspend fun globalMarket():MixinResponse<GlobalMarket>
 }

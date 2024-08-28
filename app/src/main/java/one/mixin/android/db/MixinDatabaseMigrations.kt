@@ -488,6 +488,18 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("ALTER TABLE `users` ADD COLUMN `membership` TEXT")
                 }
             }
+
+        val MIGRATION_58_59: Migration =
+            object : Migration(58, 59) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DROP TABLE IF EXISTS `markets`")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `markets` (`asset_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT NOT NULL, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `markets_extra` (`coin_id` TEXT NOT NULL, `is_favored` INTEGER, `asset_id` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `asset_id`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `global_market` (`market_cap` TEXT NOT NULL, `market_cap_change_percentage` TEXT NOT NULL, `volume` TEXT NOT NULL, `volume_change_percentage` TEXT NOT NULL, `dominance` TEXT NOT NULL, `dominance_percentage` TEXT NOT NULL, PRIMARY KEY(`market_cap`))")
+                }
+            }
+
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

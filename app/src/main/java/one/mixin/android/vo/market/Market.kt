@@ -3,16 +3,31 @@ package one.mixin.android.vo.market
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.vo.ListConverter
 
 @Entity(
     tableName = "markets",
 )
+@TypeConverters(ListConverter::class)
 data class Market(
     @PrimaryKey
     @SerializedName("key")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
+    @SerializedName("coin_id")
+    @ColumnInfo(name = "coin_id")
+    val coinId: String,
+    @SerializedName("name")
+    @ColumnInfo(name = "name")
+    val name: String,
+    @SerializedName("symbol")
+    @ColumnInfo(name = "symbol")
+    val symbol: String,
+    @SerializedName("icon_url")
+    @ColumnInfo(name = "icon_url")
+    val iconUrl: String,
     @SerializedName("current_price")
     @ColumnInfo(name = "current_price")
     val currentPrice: String,
@@ -70,6 +85,12 @@ data class Market(
     @SerializedName("atl_date")
     @ColumnInfo(name = "atl_date")
     val atlDate: String,
+    @SerializedName("asset_ids")
+    @ColumnInfo(name = "asset_ids")
+    val assetIds: List<String>,
+    @SerializedName("sparkline_in_7d")
+    @ColumnInfo(name = "sparkline_in_7d")
+    val sparklineIn7d: String,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String

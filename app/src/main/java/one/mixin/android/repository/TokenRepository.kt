@@ -1032,5 +1032,8 @@ class TokenRepository
 
     fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 
-    suspend fun web3Markets() = routeService.markets()
+    fun getWeb3Markets() = marketDao.getWeb3Markets()
+
+    fun getFavoredWeb3Markets() = marketDao.getFavoredWeb3Markets()
+
 }

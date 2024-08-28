@@ -60,7 +60,7 @@
             app:layout_scrollFlags="enterAlways">
 
             <RadioGroup
-                android:id="@+id/radio_group_collectibles"
+                android:id="@+id/radio_group_market"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -70,7 +70,7 @@
                 android:padding="1dp">
 
                 <androidx.appcompat.widget.AppCompatRadioButton
-                    android:id="@+id/radio_collectibles"
+                    android:id="@+id/radio_favorites"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:button="@null"
@@ -79,7 +79,7 @@
                     android:checked="true"
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
-                    android:paddingStart="8dp"
+                    android:paddingStart="12dp"
                     android:paddingEnd="4dp" />
 
                 <View
@@ -89,7 +89,7 @@
                     android:layout_gravity="center_vertical" />
 
                 <androidx.appcompat.widget.AppCompatRadioButton
-                    android:id="@+id/radio_collection"
+                    android:id="@+id/radio_all"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:button="@null"
@@ -98,7 +98,7 @@
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
                     android:paddingStart="4dp"
-                    android:paddingEnd="8dp" />
+                    android:paddingEnd="12dp" />
 
             </RadioGroup>
 

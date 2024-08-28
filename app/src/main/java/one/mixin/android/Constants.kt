@@ -80,6 +80,7 @@ object Constants {
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
+        const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
         const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
@@ -148,7 +149,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 58
+        const val CURRENT_VERSION = 59
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
