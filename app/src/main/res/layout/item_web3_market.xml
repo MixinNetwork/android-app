@@ -49,6 +49,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
+            android:gravity="center"
             android:textColor="?attr/text_assist"
             android:textSize="12sp"
             android:layout_below="@id/asset_symbol"
@@ -76,7 +77,8 @@
         android:gravity="end"
         android:layout_toEndOf="@id/name_layout"
         android:layout_toStartOf="@id/market"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"/>
 
     <ImageView
         android:id="@+id/market"

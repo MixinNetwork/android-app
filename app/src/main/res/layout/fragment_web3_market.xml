@@ -66,7 +66,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/bg_white"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="10dp"
             app:layout_scrollFlags="enterAlways">
 
             <RadioGroup
@@ -119,11 +119,12 @@
                 android:orientation="horizontal"
                 android:background="@drawable/bg_inscription_radio"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
                 android:layout_marginEnd="16dp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:gravity="center_vertical">
+                android:gravity="center"
+                android:layout_alignTop="@id/radio_group_market"
+                android:layout_alignBottom="@id/radio_group_market">
 
                 <TextView
                     android:id="@+id/drop_tv"
@@ -142,6 +143,55 @@
 
             </LinearLayout>
 
+            <RelativeLayout
+                android:id="@+id/title_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/radio_group_market"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:text="@string/Market_Cap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/text_assist"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20dp" />
+
+                <ImageView
+                    android:id="@+id/icon"
+                    android:src="@drawable/ic_small_drop_down"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/title"
+                    android:layout_alignTop="@id/title"
+                    android:layout_alignBottom="@id/title"
+                    android:layout_marginStart="4dp"/>
+
+                <TextView
+                    android:id="@+id/Pirce"
+                    android:text="@string/Price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/text_assist"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/percentage"
+                    android:layout_marginEnd="76dp" />
+
+                <TextView
+                    android:id="@+id/percentage"
+                    android:text="@string/day_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/text_assist"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
         </RelativeLayout>
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -52,6 +52,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
     lateinit var jobManager: MixinJobManager
 
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val horizontalPadding by lazy { requireContext().screenWidth() / 20 }
 
     @SuppressLint("SetTextI18n", "DefaultLocale", "NotifyDataSetChanged")
     override fun onViewCreated(
@@ -72,6 +73,9 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
                 } else {
                     TYPE_ALL
                 }
+            }
+            percentage.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = horizontalPadding
             }
         }
 
@@ -103,6 +107,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
     private fun bindData() {
         when (type) {
             TYPE_ALL -> {
+                binding.title.setText(R.string.Market_Cap)
                 walletViewModel.getWeb3Markets().observe(this.viewLifecycleOwner) { list ->
                     adapter.items = list
                     adapter.notifyDataSetChanged()
@@ -110,6 +115,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             }
 
             else -> {
+                binding.title.setText(R.string.Watchlist)
                 walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
                     adapter.items = list
                     adapter.notifyDataSetChanged()
