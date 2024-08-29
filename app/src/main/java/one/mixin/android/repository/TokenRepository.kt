@@ -49,6 +49,7 @@ import one.mixin.android.db.GlobalMarketDao
 import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
+import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.MarketDao
@@ -138,6 +139,7 @@ class TokenRepository
         private val historyPriceDao: HistoryPriceDao,
         private val marketDao: MarketDao,
         private val globalMarketDao: GlobalMarketDao,
+        private val marketCoinDao: MarketCoinDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -1038,5 +1040,7 @@ class TokenRepository
     fun getFavoredWeb3Markets() = marketDao.getFavoredWeb3Markets()
 
     fun getGlobalWeb3Market() = globalMarketDao.getGlobalWeb3Market()
+
+    suspend fun findTokenByCoinId(coinId: String) = marketCoinDao.findTokenByCoinId(coinId)
 
 }

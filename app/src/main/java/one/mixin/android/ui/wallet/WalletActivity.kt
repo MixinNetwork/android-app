@@ -12,6 +12,7 @@ import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
@@ -81,12 +82,16 @@ class WalletActivity : BlazeBaseActivity() {
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
                 navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
             }
-
             Destination.Buy -> {
                 navGraph.setStartDestination(R.id.wallet_calculate)
                 val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
                 routeProfile = intent.getParcelableExtraCompat(ARGS_ROUTE_PROFILE, RouteProfile::class.java)
                 navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) } })
+            }
+            Destination.Market -> {
+                navGraph.setStartDestination(R.id.market_fragment)
+                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
+                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_TOKEN, token) })
             }
         }
     }
@@ -102,6 +107,7 @@ class WalletActivity : BlazeBaseActivity() {
         Address,
         Contact,
         Buy,
+        Market,
     }
 
     companion object {

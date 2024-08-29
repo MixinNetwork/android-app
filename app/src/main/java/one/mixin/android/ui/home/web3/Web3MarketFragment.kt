@@ -8,8 +8,10 @@ import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -31,6 +33,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.extension.dp
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Destination
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -115,12 +119,20 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
     }
 
     private val adapter by lazy {
-        Web3MarketAdapter { coinId, isFavored ->
+        Web3MarketAdapter ({coinId->
+            lifecycleScope.launch {
+                val token =  walletViewModel.findTokenByCoinId(coinId)
+                if (token != null) {
+                    // Todo replace market
+                    WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
+                }
+            }
+        }, { coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
-        }
+        })
     }
 
-    class Web3MarketAdapter(val onClick: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
+    class Web3MarketAdapter(private val onClick: (String) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
         var items: List<MarketItem> = emptyList()
 
         class ViewHolder(val binding: ItemWeb3MarketBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -135,13 +147,14 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             }
 
             @SuppressLint("CheckResult", "SetTextI18n")
-            fun bind(item: MarketItem, onClick: (String, Boolean?) -> Unit) {
+            fun bind(item: MarketItem, onClick: (String) -> Unit,onFavorite: (String, Boolean?) -> Unit) {
                 binding.apply {
+                    root.setOnClickListener { onClick.invoke(item.coinId) }
                     val symbol = Fiats.getSymbol()
                     val rate = BigDecimal(Fiats.getRate())
                     favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
                     favorite.setOnClickListener {
-                        onClick.invoke(item.coinId, item.isFavored)
+                        onFavorite.invoke(item.coinId, item.isFavored)
                     }
                     icon.loadImage(item.iconUrl, R.drawable.ic_avatar_place_holder)
                     assetSymbol.text = item.symbol
@@ -168,7 +181,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind(items[position], onClick)
+            holder.bind(items[position], onClick, onFavorite)
         }
 
         override fun getItemCount(): Int = items.size
