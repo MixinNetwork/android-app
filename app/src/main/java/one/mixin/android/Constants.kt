@@ -84,6 +84,7 @@ object Constants {
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
         const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
+        const val PREF_GLOBAL_MARKET = "pref_global_market"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"

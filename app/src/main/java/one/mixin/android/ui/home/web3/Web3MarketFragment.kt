@@ -10,13 +10,19 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentWeb3MarketBinding
 import one.mixin.android.databinding.ItemWeb3MarketBinding
+import one.mixin.android.event.CallEvent
+import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
@@ -32,9 +38,14 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.fromJson
+import one.mixin.android.extension.putString
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.market.GlobalMarket
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -82,16 +93,30 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         jobManager.addJobInBackground(RefreshMarketsJob())
         jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
-        walletViewModel.getGlobalWeb3Market().observe(this.viewLifecycleOwner) {
-            if (it != null) {
-                binding.apply {
-                    marketCap.render(R.string.Market_Cap, it.marketCap, BigDecimal(it.marketCapChangePercentage))
-                    volume.render(R.string.Volume, it.volume, BigDecimal(it.volumeChangePercentage))
-                    dominance.render(R.string.Dominance, BigDecimal(it.dominancePercentage), it.dominance)
+        loadGlobalMarket()
+        RxBus.listen(GlobalMarketEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { _ ->
+                loadGlobalMarket()
+            }
+        bindData()
+    }
+
+    private fun loadGlobalMarket() {
+        try {
+            defaultSharedPreferences.getString(PREF_GLOBAL_MARKET, null)?.let { json ->
+                GsonHelper.customGson.fromJson(json, GlobalMarket::class.java)?.let {
+                    binding.apply {
+                        marketCap.render(R.string.Market_Cap, it.marketCap, BigDecimal(it.marketCapChangePercentage))
+                        volume.render(R.string.Volume, it.volume, BigDecimal(it.volumeChangePercentage))
+                        dominance.render(R.string.Dominance, BigDecimal(it.dominancePercentage), it.dominance)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Timber.e(e)
         }
-        bindData()
     }
 
     private var type = MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_MARKET_TYPE, TYPE_ALL)

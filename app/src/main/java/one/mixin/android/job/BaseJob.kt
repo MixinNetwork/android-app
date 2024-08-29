@@ -41,7 +41,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.FavoriteAppDao
-import one.mixin.android.db.GlobalMarketDao
 import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.InscriptionCollectionDao
@@ -320,10 +319,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var marketIdsDao: MarketCoinDao
-
-    @Inject
-    @Transient
-    lateinit var globalMarketDao: GlobalMarketDao
 
     @Inject
     @Transient

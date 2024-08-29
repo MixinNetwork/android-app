@@ -16,9 +16,6 @@ data class Market(
     @SerializedName("coin_id")
     @ColumnInfo(name = "coin_id")
     val coinId: String,
-    @SerializedName("key")
-    @ColumnInfo(name = "asset_id")
-    val assetId: String,
     @SerializedName("name")
     @ColumnInfo(name = "name")
     val name: String,
@@ -49,9 +46,18 @@ data class Market(
     @SerializedName("price_change_24h")
     @ColumnInfo(name = "price_change_24h")
     val priceChange24h: String,
+    @SerializedName("price_change_percentage_1h")
+    @ColumnInfo(name = "price_change_percentage_1h")
+    val priceChangePercentage1H: String,
     @SerializedName("price_change_percentage_24h")
     @ColumnInfo(name = "price_change_percentage_24h")
-    val priceChangePercentage24h: String,
+    val priceChangePercentage24H: String,
+    @SerializedName("price_change_percentage_7d")
+    @ColumnInfo(name = "price_change_percentage_7d")
+    val priceChangePercentage7D: String,
+    @SerializedName("price_change_percentage_30d")
+    @ColumnInfo(name = "price_change_percentage_30d")
+    val priceChangePercentage30D: String,
     @SerializedName("market_cap_change_24h")
     @ColumnInfo(name = "market_cap_change_24h")
     val marketCapChange24h: String,

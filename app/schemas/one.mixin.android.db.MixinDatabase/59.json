@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 59,
-    "identityHash": "bce36696a05777489c7f1d26417a3632",
+    "identityHash": "93af0b071593c5429728e06338fd3683",
     "entities": [
       {
         "tableName": "users",
@@ -3049,17 +3049,11 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_1h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `price_change_percentage_7d` TEXT NOT NULL, `price_change_percentage_30d` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
         "fields": [
           {
             "fieldPath": "coinId",
             "columnName": "coin_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3124,8 +3118,26 @@
             "notNull": true
           },
           {
-            "fieldPath": "priceChangePercentage24h",
+            "fieldPath": "price_changePercentage1H",
+            "columnName": "price_change_percentage_1h",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceChangePercentage24H",
             "columnName": "price_change_percentage_24h",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceChangePercentage7D",
+            "columnName": "price_change_percentage_7d",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceChangePercentage30D",
+            "columnName": "price_change_percentage_30d",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3325,62 +3337,12 @@
         },
         "indices": [],
         "foreignKeys": []
-      },
-      {
-        "tableName": "global_market",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_cap` TEXT NOT NULL, `market_cap_change_percentage` TEXT NOT NULL, `volume` TEXT NOT NULL, `volume_change_percentage` TEXT NOT NULL, `dominance` TEXT NOT NULL, `dominance_percentage` TEXT NOT NULL, PRIMARY KEY(`market_cap`))",
-        "fields": [
-          {
-            "fieldPath": "marketCap",
-            "columnName": "market_cap",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "marketCapChangePercentage",
-            "columnName": "market_cap_change_percentage",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "volume",
-            "columnName": "volume",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "volumeChangePercentage",
-            "columnName": "volume_change_percentage",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "dominance",
-            "columnName": "dominance",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "dominancePercentage",
-            "columnName": "dominance_percentage",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "market_cap"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bce36696a05777489c7f1d26417a3632')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '93af0b071593c5429728e06338fd3683')"
     ]
   }
 }

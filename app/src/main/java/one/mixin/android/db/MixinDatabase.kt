@@ -111,7 +111,6 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
-import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketFavored
@@ -175,7 +174,6 @@ import kotlin.math.min
         (HistoryPrice::class),
         (MarketCoin::class),
         (MarketFavored::class),
-        (GlobalMarket::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -266,8 +264,6 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun marketCoinDao(): MarketCoinDao
 
     abstract fun marketFavoredDao(): MarketFavoredDao
-
-    abstract fun globalMarketDao(): GlobalMarketDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

@@ -362,7 +362,5 @@ class WalletViewModel
 
         fun getFavoredWeb3Markets() = tokenRepository.getFavoredWeb3Markets()
 
-        fun getGlobalWeb3Market() = tokenRepository.getGlobalWeb3Market()
-
         suspend fun findTokenByCoinId(coinId: String) =  tokenRepository.findTokenByCoinId(coinId)
 }

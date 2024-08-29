@@ -8,7 +8,7 @@ import one.mixin.android.vo.market.MarketItem
 
 @Dao
 interface MarketDao : BaseDao<Market> {
-    @Query("SELECT * FROM markets WHERE asset_id = :assetId")
+    @Query("SELECT m.* FROM markets m LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     fun marketById(assetId: String): LiveData<Market?>
 
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id ORDER BY CAST(m.market_cap_rank AS INTEGER) ASC, CAST(m.market_cap AS INTEGER) DESC")
