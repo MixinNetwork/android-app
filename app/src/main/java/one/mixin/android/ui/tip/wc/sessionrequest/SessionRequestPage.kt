@@ -95,7 +95,7 @@ fun SessionRequestPage(
     val signType =
         if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
             0
-        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.toBigInt(sessionRequestUI.data.value) == BigInteger.ZERO)) {
+        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.decodeQuantity(sessionRequestUI.data.value) == BigInteger.ZERO)) {
             2
         } else {
             1
@@ -242,7 +242,7 @@ fun SessionRequestPage(
                             TransactionPreview(
                                 balance =
                                     Convert.fromWei(
-                                        Numeric.toBigInt(
+                                        Numeric.decodeQuantity(
                                             sessionRequestUI.data.value ?: "0",
                                         ).toBigDecimal(),
                                         Convert.Unit.ETHER,

@@ -20,32 +20,32 @@ data class TipGas(
         tx: WCEthereumTransaction,
     ) : this(
         assetId,
-        gasPrice.max(tx.gasPrice?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO),
-        gasLimit.max(tx.gasLimit?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO).run {
+        gasPrice.max(tx.gasPrice?.run { Numeric.decodeQuantity(this) } ?: BigInteger.ZERO),
+        gasLimit.max(tx.gasLimit?.run { Numeric.decodeQuantity(this) } ?: BigInteger.ZERO).run {
             if (this == BigInteger.ZERO) {
                 this
             } else {
                 this.plus(this.divide(BigInteger.valueOf(2)))
             }
         },
-        ethMaxPriorityFeePerGas.max(tx.maxPriorityFeePerGas?.run { Numeric.toBigInt(this) } ?: BigInteger.ZERO),
+        ethMaxPriorityFeePerGas.max(tx.maxPriorityFeePerGas?.run { Numeric.decodeQuantity(this) } ?: BigInteger.ZERO).run {
+            this.plus(this.divide(BigInteger.valueOf(8)))
+        },
     )
 
     fun maxFeePerGas(maxFeePerGas: BigInteger): BigInteger {
-        return gasPrice.max(maxFeePerGas).run {
-            plus(this.divide(BigInteger.valueOf(5)))
-        }
+        return (gasPrice.add(ethMaxPriorityFeePerGas)).max(maxFeePerGas)
     }
 }
 
 fun TipGas.displayValue(maxFee: String?): BigDecimal? {
-    val maxFeePerGas = maxFee?.let { Numeric.toBigInt(it) } ?: BigInteger.ZERO
+    val maxFeePerGas = maxFee?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO
     val gas = maxFeePerGas(maxFeePerGas)
     return Convert.fromWei(gas.run { BigDecimal(this) }.multiply(gasLimit.run { BigDecimal(this) }), Convert.Unit.ETHER)
 }
 
 fun TipGas.displayGas(maxFee: String?): BigDecimal? {
-    val maxFeePerGas = maxFee?.let { Numeric.toBigInt(it) } ?: BigInteger.ZERO
+    val maxFeePerGas = maxFee?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO
     val gas = maxFeePerGas(maxFeePerGas)
     return Convert.fromWei(gas.run { BigDecimal(this) }, Convert.Unit.GWEI).setScale(2, RoundingMode.UP)
 }

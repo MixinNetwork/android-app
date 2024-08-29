@@ -85,7 +85,7 @@ class WalletConnectBottomSheetViewModel
                     try {
                         this.gasPrice
                     } catch (e: MessageDecodingException) {
-                        result?.run { Numeric.toBigInt(this) }
+                        result?.run { Numeric.decodeQuantity(this) }
                     }
                 }
             }
@@ -96,7 +96,7 @@ class WalletConnectBottomSheetViewModel
                     try {
                         this.maxPriorityFeePerGas
                     } catch (e: MessageDecodingException) {
-                        result?.run { Numeric.toBigInt(this) }
+                        result?.run { Numeric.decodeQuantity(this) }
                     }
                 }
             }

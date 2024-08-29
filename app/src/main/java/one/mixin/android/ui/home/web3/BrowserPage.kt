@@ -242,7 +242,7 @@ fun BrowserPage(
                     TransactionPreview(
                         balance =
                             Convert.fromWei(
-                                Numeric.toBigInt(transaction?.value ?: "0").toBigDecimal(),
+                                Numeric.decodeQuantity(transaction?.value ?: "0").toBigDecimal(),
                                 Convert.Unit.ETHER,
                             ),
                         chain,
@@ -323,7 +323,7 @@ fun BrowserPage(
                         confirmAction = showPin,
                     )
                 }
-                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
+                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.decodeQuantity(transaction.value) == BigInteger.ZERO)) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
