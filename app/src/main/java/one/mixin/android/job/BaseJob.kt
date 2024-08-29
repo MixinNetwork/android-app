@@ -56,7 +56,7 @@ import one.mixin.android.db.OutputDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
-import one.mixin.android.db.MarketCoinDao
+import one.mixin.android.db.MarketDao
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -71,7 +71,7 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.MarketFavoredDao
-import one.mixin.android.db.MarketIdsDao
+import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
@@ -311,7 +311,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var marketCoinDao: MarketCoinDao
+    lateinit var marketDao: MarketDao
 
     @Inject
     @Transient
@@ -319,7 +319,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var marketIdsDao: MarketIdsDao
+    lateinit var marketIdsDao: MarketCoinDao
 
     @Inject
     @Transient

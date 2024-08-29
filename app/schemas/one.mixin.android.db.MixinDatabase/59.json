@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 59,
-    "identityHash": "d645924752ce5a4fd78026d12fb068d7",
+    "identityHash": "bce36696a05777489c7f1d26417a3632",
     "entities": [
       {
         "tableName": "users",
@@ -3048,7 +3048,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "market_coins",
+        "tableName": "markets",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
         "fields": [
           {
@@ -3263,18 +3263,18 @@
         "foreignKeys": []
       },
       {
-        "tableName": "market_ids",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `asset_id`))",
+        "tableName": "market_coins",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
-            "fieldPath": "coinId",
-            "columnName": "coin_id",
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3288,7 +3288,6 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "coin_id",
             "asset_id"
           ]
         },
@@ -3381,7 +3380,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd645924752ce5a4fd78026d12fb068d7')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bce36696a05777489c7f1d26417a3632')"
     ]
   }
 }

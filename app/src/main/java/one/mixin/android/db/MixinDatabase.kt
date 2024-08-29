@@ -113,9 +113,9 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
-import one.mixin.android.vo.market.MarketCoin
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketFavored
-import one.mixin.android.vo.market.MarketId
+import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -171,9 +171,9 @@ import kotlin.math.min
         (RawTransaction::class),
         (InscriptionCollection::class),
         (InscriptionItem::class),
-        (MarketCoin::class),
+        (Market::class),
         (HistoryPrice::class),
-        (MarketId::class),
+        (MarketCoin::class),
         (MarketFavored::class),
         (GlobalMarket::class),
     ],
@@ -261,9 +261,9 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun historyPriceDao(): HistoryPriceDao
 
-    abstract fun marketCoinDao(): MarketCoinDao
+    abstract fun marketDao(): MarketDao
 
-    abstract fun marketIdsDao(): MarketIdsDao
+    abstract fun marketCoinDao(): MarketCoinDao
 
     abstract fun marketFavoredDao(): MarketFavoredDao
 

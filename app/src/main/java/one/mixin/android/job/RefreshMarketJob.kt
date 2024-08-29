@@ -16,7 +16,7 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
         val response = routeService.market(assetId)
         if (response.isSuccess && response.data != null) {
             response.data?.let {
-                marketCoinDao.insert(it)
+                marketDao.insert(it)
             }
         }
     }

@@ -6,7 +6,6 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketFavored
-import one.mixin.android.vo.market.MarketId
 
 class UpdateFavoriteJob(private val coinId: String, private val isFavored: Boolean?) : BaseJob(
     Params(PRIORITY_UI_HIGH)

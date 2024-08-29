@@ -6,7 +6,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketFavored
-import one.mixin.android.vo.market.MarketId
+import one.mixin.android.vo.market.MarketCoin
 import timber.log.Timber
 
 class RefreshMarketsJob(val category: String = "all") : BaseJob(
@@ -36,14 +36,14 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                     }
                     marketFavoredDao.insertList(marketExtraList)
                 }
-                marketCoinDao.insertList(list)
+                marketDao.insertList(list)
                 val ids = list.flatMap { market ->
                     Timber.e("${market.coinId} ${market.assetIds}")
                     market.assetIds?.map { assetId ->
-                        MarketId(
+                        MarketCoin(
                             coinId = market.coinId,
                             assetId = assetId,
-                            now
+                            createdAt = now
                         )
                     }?: emptyList()
                 }

@@ -26,7 +26,7 @@ import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
-import one.mixin.android.vo.market.MarketCoin
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
@@ -182,10 +182,10 @@ interface RouteService {
     @GET("markets/{id}")
     suspend fun market(
         @Path("id") assetId: String,
-    ): MixinResponse<MarketCoin>
+    ): MixinResponse<Market>
 
     @GET("markets")
-    suspend fun markets(@Query("category") category: String? = null, @Query("max") max: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<MarketCoin>>
+    suspend fun markets(@Query("category") category: String? = null, @Query("max") max: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
 
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
