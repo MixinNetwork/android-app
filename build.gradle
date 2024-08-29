@@ -88,7 +88,7 @@ buildscript {
         ext.robolectricVersion = '4.13'
 
         ext.gsonVersion = '2.11.0'
-        ext.serializationVersion = '1.7.1'
+        ext.serializationVersion = '1.7.2'
         ext.autodisposeVersion = '1.4.1'
         ext.jsoupVersion = '1.13.1'
         ext.isoparserVersion = '1.0.6'
