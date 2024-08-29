@@ -8,5 +8,5 @@ import one.mixin.android.vo.market.GlobalMarket
 @Dao
 interface GlobalMarketDao : BaseDao<GlobalMarket> {
     @Query("SELECT * FROM global_market")
-    fun getGlobalWeb3Market(): LiveData<GlobalMarket>
+    fun getGlobalWeb3Market(): LiveData<GlobalMarket?>
 }

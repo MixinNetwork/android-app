@@ -75,7 +75,13 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
         walletViewModel.getGlobalWeb3Market().observe(this.viewLifecycleOwner) {
-            // Todo
+            if (it != null) {
+                binding.apply {
+                    marketCap.render(R.string.Market_Cap, it.marketCap, BigDecimal(it.marketCapChangePercentage))
+                    volume.render(R.string.Volume, it.volume, BigDecimal(it.volumeChangePercentage))
+                    dominance.render(R.string.Dominance, BigDecimal(it.dominancePercentage), it.dominance)
+                }
+            }
         }
         bindData()
     }
@@ -109,7 +115,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
     }
 
     private val adapter by lazy {
-        Web3MarketAdapter { coinId, isFavored->
+        Web3MarketAdapter { coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
         }
     }
@@ -120,6 +126,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         class ViewHolder(val binding: ItemWeb3MarketBinding) : RecyclerView.ViewHolder(binding.root) {
             private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
             private val verticalPadding by lazy { 6.dp }
+
             init {
                 binding.container.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
                 binding.price.updateLayoutParams<MarginLayoutParams> {

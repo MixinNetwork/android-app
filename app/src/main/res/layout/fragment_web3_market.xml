@@ -26,28 +26,38 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <View
-                    android:layout_width="120dp"
-                    android:layout_height="90dp"
-                    android:background="@drawable/bg_market_gradient" />
+                <one.mixin.android.ui.home.web3.widget.MarketCard
+                    android:id="@+id/market_cap"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_market_gradient"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="14dp"/>
 
-                <View
-                    android:layout_width="120dp"
-                    android:layout_height="90dp"
+                <one.mixin.android.ui.home.web3.widget.MarketCard
+                    android:id="@+id/volume"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:background="@drawable/bg_market_gradient" />
+                    android:background="@drawable/bg_market_gradient"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="14dp"/>
 
-                <View
-                    android:layout_width="120dp"
-                    android:layout_height="90dp"
+                <one.mixin.android.ui.home.web3.widget.MarketCard
+                    android:id="@+id/dominance"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:background="@drawable/bg_market_gradient" />
+                    android:background="@drawable/bg_market_gradient"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="14dp"/>
 
-                <View
-                    android:layout_width="120dp"
-                    android:layout_height="90dp"
-                    android:layout_marginStart="12dp"
-                    android:background="@drawable/bg_chain_gradient" />
             </LinearLayout>
         </HorizontalScrollView>
 
