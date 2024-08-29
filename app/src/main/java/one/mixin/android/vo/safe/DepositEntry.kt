@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.vo.ListConverter
+import one.mixin.android.db.converter.ListConverter
 
 @Entity(tableName = "deposit_entries")
 @TypeConverters(ListConverter::class)

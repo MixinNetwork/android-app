@@ -11,6 +11,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.db.converter.ListConverter
 
 interface BotInterface {
     fun getBotId(): String

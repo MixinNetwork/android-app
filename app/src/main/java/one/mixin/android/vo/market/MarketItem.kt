@@ -2,9 +2,10 @@ package one.mixin.android.vo.market
 
 import androidx.room.ColumnInfo
 import androidx.room.TypeConverters
-import one.mixin.android.vo.ListConverter
+import one.mixin.android.db.converter.ListConverter
+import one.mixin.android.db.converter.OptionalListConverter
 
-@TypeConverters(ListConverter::class)
+@TypeConverters(OptionalListConverter::class)
 data class MarketItem(
     @ColumnInfo(name = "coin_id")
     val coinId: String,
@@ -27,7 +28,7 @@ data class MarketItem(
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
     @ColumnInfo(name = "asset_ids")
-    val assetIds: List<String>,
+    val assetIds: List<String>?,
     @ColumnInfo(name = "sparkline_in_7d")
     val sparklineIn7d: String,
     @ColumnInfo(name = "is_favored")

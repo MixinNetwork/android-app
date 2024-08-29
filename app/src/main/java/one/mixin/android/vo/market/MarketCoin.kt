@@ -5,12 +5,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.vo.ListConverter
+import one.mixin.android.db.converter.OptionalListConverter
 
 @Entity(
     tableName = "market_coins",
 )
-@TypeConverters(ListConverter::class)
+@TypeConverters(OptionalListConverter::class)
 data class MarketCoin(
     @PrimaryKey
     @SerializedName("coin_id")

@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.TypeConverters
+import one.mixin.android.db.converter.ListConverter
 
 @TypeConverters(ListConverter::class)
 class ParticipantSessionMinimal(

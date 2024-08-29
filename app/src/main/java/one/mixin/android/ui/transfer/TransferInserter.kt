@@ -10,7 +10,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
-import one.mixin.android.vo.ListConverter
+import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Participant
