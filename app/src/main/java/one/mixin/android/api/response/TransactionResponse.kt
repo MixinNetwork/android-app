@@ -81,11 +81,11 @@ data class SafeTransaction(
     @SerializedName("asset_id")
     val assetId: String,
     val recipients: List<SafeTransactionRecipient>,
-    val note: String?
 ) : Parcelable
 
 @Parcelize
 data class SafeOperation(
+    val note: String?,
     val transaction: SafeTransaction
 ) : Parcelable
 
