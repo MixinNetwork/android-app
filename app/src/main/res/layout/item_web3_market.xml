@@ -36,7 +36,7 @@
         android:layout_alignBottom="@id/icon">
 
         <TextView
-            android:id="@+id/asset_name"
+            android:id="@+id/asset_symbol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/text_primary"
@@ -50,8 +50,9 @@
             android:paddingEnd="4dp"
             android:textColor="?attr/text_assist"
             android:textSize="12sp"
-            android:layout_below="@id/asset_name"
-            android:layout_alignStart="@id/asset_name" />
+            android:layout_below="@id/asset_symbol"
+            android:background="@drawable/bg_round_4_solid_light_gray"
+            android:layout_alignStart="@id/asset_symbol" />
 
         <TextView
             android:id="@+id/asset_value"
@@ -60,7 +61,7 @@
             android:layout_marginStart="4dp"
             android:textColor="?attr/text_assist"
             android:textSize="12sp"
-            android:layout_below="@id/asset_name"
+            android:layout_below="@id/asset_symbol"
             android:layout_toEndOf="@id/asset_number" />
     </RelativeLayout>
 
@@ -81,7 +82,6 @@
         android:layout_width="60dp"
         android:layout_height="34dp"
         android:contentDescription="@null"
-        android:background="?attr/bg_window"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true" />
 

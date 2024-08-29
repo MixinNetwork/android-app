@@ -205,7 +205,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideMarketDao(db: MixinDatabase) = db.marketDao()
+    fun provideMarketCoinDao(db: MixinDatabase) = db.marketCoinDao()
 
     @Singleton
     @Provides

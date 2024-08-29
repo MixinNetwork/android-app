@@ -7,8 +7,8 @@ import one.mixin.android.extension.equalsIgnoreCase
 
 object ListConverter {
     @TypeConverter
-    fun fromString(value: String?): List<String> {
-        if (value.isNullOrEmpty() || value.equalsIgnoreCase("null")) return emptyList()
+    fun fromString(value: String?): List<String>? {
+        if (value.isNullOrEmpty() || value.equalsIgnoreCase("null")) return null
         val listType = object : TypeToken<List<String?>?>() {}.type
         return Gson().fromJson(value, listType)
     }

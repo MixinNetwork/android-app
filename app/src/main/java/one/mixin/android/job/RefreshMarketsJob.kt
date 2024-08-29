@@ -11,7 +11,7 @@ import timber.log.Timber
 
 class RefreshMarketsJob(val category: String = "all") : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork(),
+        .groupBy(GROUP).addTags(category).requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L
@@ -36,21 +36,18 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                     }
                     marketFavoredDao.insertList(marketExtraList)
                 }
+                marketCoinDao.insertList(list)
                 val ids = list.flatMap { market ->
-                    market.assetIds.map { assetId ->
+                    Timber.e("${market.coinId} ${market.assetIds}")
+                    market.assetIds?.map { assetId ->
                         MarketId(
                             coinId = market.coinId,
                             assetId = assetId,
                             now
                         )
-                    }
+                    }?: emptyList()
                 }
                 marketIdsDao.insertList(ids)
-                try {
-                    marketDao.insertList(list)
-                } catch (e: Exception) {
-                    Timber.e("error ${e.message}")
-                }
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))

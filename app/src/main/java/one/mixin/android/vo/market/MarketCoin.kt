@@ -8,10 +8,10 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.vo.ListConverter
 
 @Entity(
-    tableName = "markets",
+    tableName = "market_coins",
 )
 @TypeConverters(ListConverter::class)
-data class Market(
+data class MarketCoin(
     @PrimaryKey
     @SerializedName("coin_id")
     @ColumnInfo(name = "coin_id")
@@ -87,7 +87,7 @@ data class Market(
     val atlDate: String,
     @SerializedName("asset_ids")
     @ColumnInfo(name = "asset_ids")
-    val assetIds: List<String>,
+    val assetIds: List<String>?,
     @SerializedName("sparkline_in_7d")
     @ColumnInfo(name = "sparkline_in_7d")
     val sparklineIn7d: String,

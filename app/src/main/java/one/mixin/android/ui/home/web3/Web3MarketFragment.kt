@@ -57,6 +57,11 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             rv.adapter = adapter
+            if (type == TYPE_ALL) {
+                radioAll.isChecked = true
+            } else {
+                radioFavorites.isChecked = true
+            }
             radioGroupMarket.setOnCheckedChangeListener { _, id ->
                 type = if (id == R.id.radio_favorites) {
                     TYPE_FOV
@@ -132,9 +137,9 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
                         onClick.invoke(item.coinId, item.isFavored)
                     }
                     icon.loadImage(item.iconUrl, R.drawable.ic_avatar_place_holder)
-                    assetName.text = item.name
+                    assetSymbol.text = item.symbol
                     assetValue.text = item.totalVolume
-                    price.text = "$symbol${BigDecimal(item.currentPrice).priceFormat()}"
+                    price.text = "$symbol${BigDecimal(item.currentPrice).multiply(rate).priceFormat()}"
                     assetNumber.text = "${absoluteAdapterPosition + 1}"
                     val formatVol = try {
                         BigDecimal(item.totalVolume).multiply(rate).numberFormatCompact()
