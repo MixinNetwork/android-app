@@ -7,6 +7,7 @@ import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.response.EthEstimateGas
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -25,7 +26,9 @@ data class TipGas(
         tx: WCEthereumTransaction,
     ) : this(
         assetId,
-        baseGas.max(tx.gasPrice?.run { Numeric.decodeQuantity(this) } ?: BigInteger.ZERO),
+        baseGas.max(tx.gasPrice?.run { Numeric.decodeQuantity(this) } ?: BigInteger.ZERO).run {
+            this.plus(this.divide(BigInteger.valueOf(10)))  // more 10% base gas
+        },
         gasLimit.max(tx.gasLimit?.run { Numeric.decodeQuantity(this) } ?: BigInteger.ZERO).run {
             if (this == BigInteger.ZERO) {
                 this
@@ -71,6 +74,7 @@ fun buildTipGas(assetId: String, chain: Chain, tx: WCEthereumTransaction): TipGa
             result?.run { Numeric.decodeQuantity(this) }
         }
     } ?: return null
+    Timber.d("@@@ baseGas $baseGas, gasLimit $gasLimit, maxPriorityFeePerGas $maxPriorityFeePerGas")
     return TipGas(assetId, baseGas, gasLimit, maxPriorityFeePerGas, tx)
 }
 
