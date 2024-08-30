@@ -185,7 +185,7 @@ interface RouteService {
     ): MixinResponse<Market>
 
     @GET("markets")
-    suspend fun markets(@Query("category") category: String? = null, @Query("max") max: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
+    suspend fun markets(@Query("category") category: String? = null, @Query("limit") limit: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
 
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>

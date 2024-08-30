@@ -1668,4 +1668,7 @@
     <string name="Volume">Volume</string>
     <string name="week_percentage">7d %</string>
     <string name="Watchlist">Watchlist</string>
+    <string name="top_100">Top 100</string>
+    <string name="top_200">Top 200</string>
+    <string name="top_500">Top 500</string>
 </resources>

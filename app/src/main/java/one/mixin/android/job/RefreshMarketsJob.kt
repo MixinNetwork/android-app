@@ -21,7 +21,7 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
     override fun onRun(): Unit = runBlocking {
         requestRouteAPI(
             invokeNetwork = {
-                routeService.markets(category = category)
+                routeService.markets(category = category, limit = 500)
             },
             successBlock = { response ->
                 val list = response.data!!

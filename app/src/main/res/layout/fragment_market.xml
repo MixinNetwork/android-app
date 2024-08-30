@@ -114,6 +114,36 @@
 
             </RadioGroup>
 
+            <LinearLayout
+                android:id="@+id/drop_sort"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_inscription_radio"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="16dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_alignTop="@id/radio_group_market"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/drop_tv"
+                    android:textColor="?attr/text_primary"
+                    android:text="@string/top_100"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:id="@+id/sort_arrow"
+                    android:src="@drawable/ic_sort_arrow_down"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
             <RelativeLayout
                 android:id="@+id/title_layout"
                 android:layout_width="wrap_content"
@@ -142,15 +172,15 @@
                     android:layout_marginStart="4dp" />
 
                 <TextView
-                    android:id="@+id/Pirce"
+                    android:id="@+id/pirce"
                     android:text="@string/Price"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
                     android:textColor="?attr/text_assist"
                     android:layout_centerVertical="true"
-                    android:layout_toStartOf="@id/percentage"
-                    android:layout_marginEnd="76dp" />
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="60dp" />
 
                 <TextView
                     android:id="@+id/percentage"

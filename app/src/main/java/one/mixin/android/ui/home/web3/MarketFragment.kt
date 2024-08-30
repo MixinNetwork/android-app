@@ -2,10 +2,13 @@ package one.mixin.android.ui.home.web3
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
+import androidx.appcompat.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -27,6 +30,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.event.GlobalMarketEvent
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
@@ -36,14 +40,19 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketsJob
 import one.mixin.android.job.UpdateFavoriteJob
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.Web3Fragment
+import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
+import one.mixin.android.ui.home.inscription.menu.SortMenuData
+import one.mixin.android.ui.home.web3.market.TopMenuAdapter
+import one.mixin.android.ui.home.web3.market.TopMenuData
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.util.GsonHelper
@@ -81,10 +90,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 radioAll.isChecked = true
                 markets.isVisible = true
                 watchlist.isVisible = false
+                binding.dropSort.isVisible = true
             } else {
                 radioFavorites.isChecked = true
                 markets.isVisible = false
                 watchlist.isVisible = true
+                binding.dropSort.isVisible = false
             }
             radioGroupMarket.setOnCheckedChangeListener { _, id ->
                 type = if (id == R.id.radio_favorites) {
@@ -93,13 +104,27 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     TYPE_ALL
                 }
             }
+            pirce.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = horizontalPadding * 2 + 60.dp
+            }
             percentage.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = horizontalPadding
+            }
+            title.updateLayoutParams<MarginLayoutParams> {
+                marginStart = horizontalPadding
             }
             root.doOnPreDraw {
                 empty.updateLayoutParams<MarginLayoutParams> {
                     topMargin = appBarLayout.height
                 }
+            }
+
+            dropSort.setOnClickListener {
+                binding.sortArrow.animate().rotation(-180f).setDuration(200).start()
+                menuAdapter.checkPosition = top
+                menuAdapter.notifyDataSetChanged()
+                onMenuShow()
+                sortMenu.show()
             }
         }
         updateUI()
@@ -147,6 +172,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 defaultSharedPreferences.putInt(Constants.Account.PREF_MARKET_TYPE, value)
                 when (type) {
                     TYPE_ALL -> {
+                        binding.dropSort.isVisible = true
                         binding.title.setText(R.string.Market_Cap)
                         binding.markets.isVisible = true
                         binding.watchlist.isVisible = false
@@ -155,6 +181,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     }
 
                     else -> {
+                        binding.dropSort.isVisible = false
                         binding.title.setText(R.string.Watchlist)
                         binding.markets.isVisible = false
                         if (watchlistAdapter.itemCount == 0) {
@@ -171,13 +198,32 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun bindData() {
-        walletViewModel.getWeb3Markets().observe(this.viewLifecycleOwner) { list ->
-            marketsAdapter.items = list
+    private var top = 0 // 0 is top100, 1 is top200, 2 is top500
+        set(value) {
+            if (field != value) {
+                field = value
+                bindData()
+            }
         }
 
-        walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
+    @SuppressLint("NotifyDataSetChanged")
+    private fun bindData() {
+        val limit = when (top) {
+            1 -> 200
+            2 -> 500
+            else -> 100
+        }
+        binding.dropTv.setText(
+            when (top) {
+                1 -> R.string.top_200
+                2 -> R.string.top_500
+                else -> R.string.top_100
+            }
+        )
+        walletViewModel.getWeb3Markets(limit).observe(this.viewLifecycleOwner) { list ->
+            marketsAdapter.items = list
+        }
+        walletViewModel.getFavoredWeb3Markets(limit).observe(this.viewLifecycleOwner) { list ->
             if (list.isEmpty() && type == TYPE_FOV) {
                 binding.titleLayout.isVisible = false
                 binding.empty.isVisible = true
@@ -200,7 +246,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private var job: Job? = null
 
     private val watchlistAdapter by lazy {
-        Web3MarketAdapter({ marketItem ->
+        Web3MarketAdapter(true, { marketItem ->
             lifecycleScope.launch {
                 val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
                 if (token != null) {
@@ -215,7 +261,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     }
 
     private val marketsAdapter by lazy {
-        Web3MarketAdapter({ marketItem ->
+        Web3MarketAdapter(false, { marketItem ->
             lifecycleScope.launch {
                 val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
                 if (token != null) {
@@ -227,6 +273,47 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         }, { coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
         })
+    }
+
+    private val onMenuShow = {
+        binding.dropSort.setBackgroundResource(R.drawable.bg_inscription_drop)
+        binding.dropTv.setTextColor(0xFF4B7CDD.toInt())
+    }
+
+    private val sortMenu by lazy {
+        ListPopupWindow(requireContext()).apply {
+            anchorView = binding.dropSort
+            setAdapter(menuAdapter)
+            setOnItemClickListener { _, _, position, _ ->
+                top = position
+                dismiss()
+            }
+            width = requireContext().dpToPx(250f)
+            height = ListPopupWindow.WRAP_CONTENT
+            isModal = true
+            setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
+            setDropDownGravity(Gravity.END)
+            horizontalOffset = requireContext().dpToPx(2f)
+            verticalOffset = requireContext().dpToPx(10f)
+            setOnDismissListener {
+                onMenuDismiss()
+                binding.sortArrow.animate().rotation(0f).setDuration(200).start()
+            }
+        }
+    }
+
+    private val onMenuDismiss = {
+        binding.dropSort.setBackgroundResource(R.drawable.bg_inscription_radio)
+        binding.dropTv.setTextColor(requireContext().colorAttr(R.attr.text_primary))
+    }
+
+    private val menuAdapter: TopMenuAdapter by lazy {
+        val menuItems = listOf(
+            TopMenuData(100, R.string.top_100),
+            TopMenuData(200, R.string.top_200),
+            TopMenuData(500, R.string.top_500),
+        )
+        TopMenuAdapter(requireContext(), menuItems)
     }
 
     class MarketDiffCallback(
@@ -246,7 +333,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         }
     }
 
-    class Web3MarketAdapter(private val onClick: (MarketItem) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
+    class Web3MarketAdapter(private val sourceRank: Boolean, private val onClick: (MarketItem) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
         var items: List<MarketItem> = emptyList()
             set(value) {
                 val diffResult = DiffUtil.calculateDiff(MarketDiffCallback(field, value))
@@ -266,7 +353,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
 
             @SuppressLint("CheckResult", "SetTextI18n")
-            fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
+            fun bind(item: MarketItem, sourceRank: Boolean, onClick: (MarketItem) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
                 binding.apply {
                     root.setOnClickListener { onClick.invoke(item) }
                     val symbol = Fiats.getSymbol()
@@ -279,7 +366,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     assetSymbol.text = item.symbol
                     assetValue.text = item.totalVolume
                     price.text = "$symbol${BigDecimal(item.currentPrice).multiply(rate).priceFormat()}"
-                    assetNumber.text = "${absoluteAdapterPosition + 1}"
+                    assetNumber.text = if (sourceRank) item.marketCapRank else "${absoluteAdapterPosition + 1}"
                     val formatVol = try {
                         BigDecimal(item.totalVolume).multiply(rate).numberFormatCompact()
                     } catch (e: NumberFormatException) {
@@ -300,7 +387,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind(items[position], onClick, onFavorite)
+            holder.bind(items[position], sourceRank, onClick, onFavorite)
         }
 
         override fun getItemCount(): Int = items.size

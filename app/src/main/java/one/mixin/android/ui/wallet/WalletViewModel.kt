@@ -358,9 +358,9 @@ class WalletViewModel
 
     fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
 
-    fun getWeb3Markets() = tokenRepository.getWeb3Markets()
+    fun getWeb3Markets(limit:Int)= tokenRepository.getWeb3Markets(limit)
 
-    fun getFavoredWeb3Markets() = tokenRepository.getFavoredWeb3Markets()
+    fun getFavoredWeb3Markets(limit:Int) = tokenRepository.getFavoredWeb3Markets(limit)
 
     suspend fun findTokenByCoinId(coinId: String): TokenItem? = tokenRepository.findTokenByCoinId(coinId)
 }
