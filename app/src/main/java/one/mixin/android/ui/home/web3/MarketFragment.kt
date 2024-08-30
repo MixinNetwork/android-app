@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
@@ -41,6 +43,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.extension.dp
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
+import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.util.GsonHelper
@@ -50,7 +53,7 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MarketFragment : BaseFragment(R.layout.fragment_market) {
+class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     companion object {
         const val TAG = "MarketFragment"
         private const val TYPE_ALL = 0
@@ -72,11 +75,16 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            rv.adapter = adapter
+            watchlist.adapter = watchlistAdapter
+            markets.adapter = marketsAdapter
             if (type == TYPE_ALL) {
                 radioAll.isChecked = true
+                markets.isVisible = true
+                watchlist.isVisible = false
             } else {
                 radioFavorites.isChecked = true
+                markets.isVisible = false
+                watchlist.isVisible = true
             }
             radioGroupMarket.setOnCheckedChangeListener { _, id ->
                 type = if (id == R.id.radio_favorites) {
@@ -94,7 +102,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 }
             }
         }
-        refresh()
+        updateUI()
         loadGlobalMarket()
         RxBus.listen(GlobalMarketEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -103,6 +111,17 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                 loadGlobalMarket()
             }
         bindData()
+        view.viewTreeObserver.addOnGlobalLayoutListener {
+            if (view.isShown) {
+                if (job?.isActive == true) return@addOnGlobalLayoutListener
+                job = lifecycleScope.launch {
+                    delay(60000)
+                    updateUI()
+                }
+            } else {
+                job?.cancel()
+            }
+        }
     }
 
     private fun loadGlobalMarket() {
@@ -126,56 +145,82 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             if (field != value) {
                 field = value
                 defaultSharedPreferences.putInt(Constants.Account.PREF_MARKET_TYPE, value)
-                bindData()
+                when (type) {
+                    TYPE_ALL -> {
+                        binding.title.setText(R.string.Market_Cap)
+                        binding.markets.isVisible = true
+                        binding.watchlist.isVisible = false
+                        binding.titleLayout.isVisible = true
+                        binding.empty.isVisible = false
+                    }
+
+                    else -> {
+                        binding.title.setText(R.string.Watchlist)
+                        binding.markets.isVisible = false
+                        if (watchlistAdapter.itemCount == 0) {
+                            binding.titleLayout.isVisible = false
+                            binding.empty.isVisible = true
+                            binding.watchlist.isVisible = false
+                        } else {
+                            binding.titleLayout.isVisible = true
+                            binding.empty.isVisible = false
+                            binding.watchlist.isVisible = true
+                        }
+                    }
+                }
             }
         }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun bindData() {
-        when (type) {
-            TYPE_ALL -> {
-                binding.title.setText(R.string.Market_Cap)
-                walletViewModel.getWeb3Markets().observe(this.viewLifecycleOwner) { list ->
-                    binding.rv.isVisible = true
-                    binding.empty.isVisible = false
-                    binding.titleLayout.isVisible = true
-                    adapter.items = list
-                    adapter.notifyDataSetChanged()
-                }
-            }
+        walletViewModel.getWeb3Markets().observe(this.viewLifecycleOwner) { list ->
+            marketsAdapter.items = list
+        }
 
-            else -> {
-                binding.title.setText(R.string.Watchlist)
-                walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
-                    if (list.isEmpty()) {
-                        binding.empty.isVisible = true
-                        binding.rv.isVisible = false
-                        binding.titleLayout.isVisible = false
-                    } else {
-                        binding.rv.isVisible = true
-                        binding.empty.isVisible = false
-                        binding.titleLayout.isVisible = true
-                        adapter.items = list
-                        adapter.notifyDataSetChanged()
-                    }
-                }
+        walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
+            if (list.isEmpty() && type == TYPE_FOV) {
+                binding.titleLayout.isVisible = false
+                binding.empty.isVisible = true
+                binding.watchlist.isVisible = false
+            } else if (type == TYPE_FOV) {
+                binding.titleLayout.isVisible = true
+                binding.empty.isVisible = false
+                binding.watchlist.isVisible = true
             }
+            watchlistAdapter.items = list
         }
     }
 
-    fun refresh() {
+    override fun updateUI() {
         jobManager.addJobInBackground(RefreshMarketsJob())
         jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
     }
 
-    private val adapter by lazy {
+    private var job: Job? = null
+
+    private val watchlistAdapter by lazy {
         Web3MarketAdapter({ marketItem ->
             lifecycleScope.launch {
                 val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
                 if (token != null) {
                     WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
-                } else{
+                } else {
+                    WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                }
+            }
+        }, { coinId, isFavored ->
+            jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
+        })
+    }
+
+    private val marketsAdapter by lazy {
+        Web3MarketAdapter({ marketItem ->
+            lifecycleScope.launch {
+                val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
+                if (token != null) {
+                    WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
+                } else {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
             }

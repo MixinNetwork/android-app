@@ -245,7 +245,7 @@ class ExploreFragment : BaseFragment() {
         if (!hidden) {
             if (ethereumFragment.isVisible) ethereumFragment.updateUI()
             if (solanaFragment.isVisible) solanaFragment.updateUI()
-            if (marketFragment.isVisible) marketFragment.refresh()
+            if (marketFragment.isVisible) marketFragment.updateUI()
         }
     }
 

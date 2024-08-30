@@ -18,8 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:layout_marginBottom="20dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
@@ -114,37 +114,6 @@
 
             </RadioGroup>
 
-            <LinearLayout
-                android:id="@+id/drop_sort"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:orientation="horizontal"
-                android:background="@drawable/bg_inscription_radio"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="16dp"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:gravity="center"
-                android:layout_alignTop="@id/radio_group_market"
-                android:layout_alignBottom="@id/radio_group_market">
-
-                <TextView
-                    android:id="@+id/drop_tv"
-                    android:textColor="?attr/text_primary"
-                    android:text="@string/Recent"
-                    android:textSize="14sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp" />
-
-                <ImageView
-                    android:id="@+id/sort_arrow"
-                    android:src="@drawable/ic_sort_arrow_down"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
             <RelativeLayout
                 android:id="@+id/title_layout"
                 android:layout_width="wrap_content"
@@ -185,7 +154,7 @@
 
                 <TextView
                     android:id="@+id/percentage"
-                    android:text="@string/day_percentage"
+                    android:text="@string/week_percentage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"
@@ -199,7 +168,14 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv"
+        android:id="@+id/watchlist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/markets"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -233,8 +209,8 @@
             android:layout_centerVertical="true"
             android:layout_marginBottom="8dp"
             android:text="@string/watchlist_empty"
-            android:textColor="?attr/text_assist"
-            android:textSize="20sp" />
+            android:textColor="?attr/music_text"
+            android:textSize="14sp" />
 
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1625,4 +1625,8 @@
     <string name="SAFE">金库</string>
     <string name="multisig_safe_state_signed">您已经批准了这笔交易，您无法再次批准。</string>
     <string name="multisig_safe_state_unlocked">这笔交易已经被其他人拒绝，您无法再次拒绝。</string>
+    <string name="watchlist_empty">您的自选列表为空</string>
+    <string name="Dominance">主导</string>
+    <string name="Volume">交易量</string>
+    <string name="Watchlist">自选列表</string>
 </resources>

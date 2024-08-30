@@ -1666,6 +1666,6 @@
     <string name="watchlist_empty">Your watchlist is empty</string>
     <string name="Dominance">Dominance</string>
     <string name="Volume">Volume</string>
-    <string name="day_percentage">24h %</string>
+    <string name="week_percentage">7d %</string>
     <string name="Watchlist">Watchlist</string>
 </resources>
