@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -12,11 +13,14 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
@@ -85,6 +89,19 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 watchlist.isVisible = true
                 binding.dropSort.isVisible = false
             }
+            val itemDecoration = object : RecyclerView.ItemDecoration() {
+                override fun getItemOffsets(
+                    outRect: Rect,
+                    view: View,
+                    parent: RecyclerView,
+                    state: RecyclerView.State,
+                ) {
+                    super.getItemOffsets(outRect, view, parent, state)
+                    outRect.bottom = 20.dp
+                }
+            }
+            markets.addItemDecoration(itemDecoration)
+            watchlist.addItemDecoration(itemDecoration)
             radioGroupMarket.setOnCheckedChangeListener { _, id ->
                 type = if (id == R.id.radio_favorites) {
                     TYPE_FOV
@@ -208,20 +225,27 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 else -> R.string.top_100
             }
         )
-        walletViewModel.getWeb3Markets(limit).observe(this.viewLifecycleOwner) { list ->
-            marketsAdapter.items = list
-        }
-        walletViewModel.getFavoredWeb3Markets(limit).observe(this.viewLifecycleOwner) { list ->
-            if (list.isEmpty() && type == TYPE_FOV) {
-                binding.titleLayout.isVisible = false
-                binding.empty.isVisible = true
-                binding.watchlist.isVisible = false
-            } else if (type == TYPE_FOV) {
-                binding.titleLayout.isVisible = true
-                binding.empty.isVisible = false
-                binding.watchlist.isVisible = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            walletViewModel.getWeb3Markets(limit).collectLatest { pagingData ->
+                marketsAdapter.submitData(pagingData)
             }
-            watchlistAdapter.items = list
+
+            walletViewModel.getFavoredWeb3Markets(limit).collectLatest { pagingData ->
+                watchlistAdapter.submitData(pagingData)
+            }
+
+            watchlistAdapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = watchlistAdapter.itemCount == 0 && loadStates.refresh is LoadState.NotLoading
+                if (isEmpty && type == TYPE_FOV) {
+                    binding.titleLayout.isVisible = false
+                    binding.empty.isVisible = true
+                    binding.watchlist.isVisible = false
+                } else if (type == TYPE_FOV) {
+                    binding.titleLayout.isVisible = true
+                    binding.empty.isVisible = false
+                    binding.watchlist.isVisible = true
+                }
+            }
         }
     }
 
@@ -303,5 +327,4 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         )
         TopMenuAdapter(requireContext(), menuItems)
     }
-
 }

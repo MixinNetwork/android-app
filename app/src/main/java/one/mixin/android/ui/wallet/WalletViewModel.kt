@@ -9,10 +9,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -38,6 +41,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
@@ -358,9 +362,26 @@ class WalletViewModel
 
     fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
 
-    fun getWeb3Markets(limit:Int)= tokenRepository.getWeb3Markets(limit)
+    fun getWeb3Markets(limit: Int):
+        Flow<PagingData<MarketItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { tokenRepository.getWeb3Markets(limit) }
+        ).flow
+    }
 
-    fun getFavoredWeb3Markets(limit:Int) = tokenRepository.getFavoredWeb3Markets(limit)
+    fun getFavoredWeb3Markets(limit:Int): Flow<PagingData<MarketItem>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(limit) }
+        ).flow
+    }
 
     suspend fun findTokenByCoinId(coinId: String): TokenItem? = tokenRepository.findTokenByCoinId(coinId)
 }

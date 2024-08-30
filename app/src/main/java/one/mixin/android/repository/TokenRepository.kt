@@ -8,6 +8,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.liveData
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
@@ -89,6 +90,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -1037,9 +1039,9 @@ class TokenRepository
 
     fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 
-    fun getWeb3Markets(limit: Int) = marketDao.getWeb3Markets(limit)
+    fun getWeb3Markets(limit: Int): PagingSource<Int, MarketItem> = marketDao.getWeb3Markets(limit)
 
-    fun getFavoredWeb3Markets(limit: Int) = marketDao.getFavoredWeb3Markets(limit)
+    fun getFavoredWeb3Markets(limit: Int): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(limit)
 
     suspend fun findTokenByCoinId(coinId: String) = marketCoinDao.findTokenByCoinId(coinId)
 
