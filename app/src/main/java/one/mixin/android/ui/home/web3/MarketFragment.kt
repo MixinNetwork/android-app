@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -142,6 +143,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
                     adapter.notifyDataSetChanged()
                 }
             }
+
             else -> {
                 binding.title.setText(R.string.Watchlist)
                 walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
@@ -181,15 +183,37 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         })
     }
 
+    class MarketDiffCallback(
+        private val oldList: List<MarketItem>,
+        private val newList: List<MarketItem>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize() = oldList.size
+
+        override fun getNewListSize() = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].coinId == newList[newItemPosition].coinId
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
+    }
+
     class Web3MarketAdapter(private val onClick: (String) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
         var items: List<MarketItem> = emptyList()
+            set(value) {
+                val diffResult = DiffUtil.calculateDiff(MarketDiffCallback(field, value))
+                field = value
+                diffResult.dispatchUpdatesTo(this)
+            }
 
         class ViewHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(binding.root) {
             private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
             private val verticalPadding by lazy { 6.dp }
 
             init {
-                binding.container.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+                binding.container.setPadding(horizontalPadding - 4.dp, verticalPadding, horizontalPadding, verticalPadding)
                 binding.price.updateLayoutParams<MarginLayoutParams> {
                     marginEnd = horizontalPadding
                 }
