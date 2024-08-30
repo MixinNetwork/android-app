@@ -39,6 +39,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
 import one.mixin.android.job.RefreshMarketsJob
 import one.mixin.android.job.UpdateFavoriteJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.home.web3.market.TopMenuAdapter
 import one.mixin.android.ui.home.web3.market.TopMenuData
@@ -211,6 +212,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
 
+    private var lastFiatCurrency :String? = null
+
     @SuppressLint("NotifyDataSetChanged")
     private fun bindData() {
         val limit = when (top) {
@@ -228,12 +231,20 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         viewLifecycleOwner.lifecycleScope.launch {
             walletViewModel.getWeb3Markets(limit).collectLatest { pagingData ->
                 marketsAdapter.submitData(pagingData)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    marketsAdapter.notifyDataSetChanged()
+                }
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
             walletViewModel.getFavoredWeb3Markets(limit).collectLatest { pagingData ->
                 watchlistAdapter.submitData(pagingData)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    watchlistAdapter.notifyDataSetChanged()
+                }
             }
         }
 
