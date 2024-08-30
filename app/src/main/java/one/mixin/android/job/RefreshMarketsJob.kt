@@ -7,7 +7,6 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketCoin
-import timber.log.Timber
 
 class RefreshMarketsJob(val category: String = "all") : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -38,7 +37,6 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                 }
                 marketDao.insertList(list)
                 val ids = list.flatMap { market ->
-                    Timber.e("${market.coinId} ${market.assetIds}")
                     market.assetIds?.map { assetId ->
                         MarketCoin(
                             coinId = market.coinId,
@@ -47,7 +45,7 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                         )
                     }?: emptyList()
                 }
-                marketIdsDao.insertList(ids)
+                marketCoinDao.insertList(ids)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))

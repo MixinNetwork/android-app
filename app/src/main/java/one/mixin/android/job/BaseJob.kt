@@ -318,7 +318,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var marketIdsDao: MarketCoinDao
+    lateinit var marketCoinDao: MarketCoinDao
 
     @Inject
     @Transient
