@@ -638,7 +638,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = web3tokens.isNullOrEmpty()
-    private fun getSource(): String = if (web3tokens.isNullOrEmpty()) "exin" else ""
+    private fun getSource(): String = if (web3tokens.isNullOrEmpty()) "mixin" else ""
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

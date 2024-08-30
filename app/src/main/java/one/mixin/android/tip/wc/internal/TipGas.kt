@@ -74,7 +74,7 @@ fun buildTipGas(assetId: String, chain: Chain, tx: WCEthereumTransaction): TipGa
             result?.run { Numeric.decodeQuantity(this) }
         }
     } ?: return null
-    Timber.d("@@@ baseGas $baseGas, gasLimit $gasLimit, maxPriorityFeePerGas $maxPriorityFeePerGas")
+    Timber.d("baseGas $baseGas, gasLimit $gasLimit, maxPriorityFeePerGas $maxPriorityFeePerGas")
     return TipGas(assetId, baseGas, gasLimit, maxPriorityFeePerGas, tx)
 }
 
