@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -88,6 +90,11 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             percentage.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = horizontalPadding
             }
+            root.doOnPreDraw {
+                empty.updateLayoutParams<MarginLayoutParams> {
+                    topMargin = appBarLayout.height
+                }
+            }
         }
 
         jobManager.addJobInBackground(RefreshMarketsJob())
@@ -134,6 +141,9 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             TYPE_ALL -> {
                 binding.title.setText(R.string.Market_Cap)
                 walletViewModel.getWeb3Markets().observe(this.viewLifecycleOwner) { list ->
+                    binding.rv.isVisible = true
+                    binding.empty.isVisible = false
+                    binding.titleLayout.isVisible = true
                     adapter.items = list
                     adapter.notifyDataSetChanged()
                 }
@@ -142,17 +152,26 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             else -> {
                 binding.title.setText(R.string.Watchlist)
                 walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
-                    adapter.items = list
-                    adapter.notifyDataSetChanged()
+                    if (list.isEmpty()) {
+                        binding.empty.isVisible = true
+                        binding.rv.isVisible = false
+                        binding.titleLayout.isVisible = false
+                    } else {
+                        binding.rv.isVisible = true
+                        binding.empty.isVisible = false
+                        binding.titleLayout.isVisible = true
+                        adapter.items = list
+                        adapter.notifyDataSetChanged()
+                    }
                 }
             }
         }
     }
 
     private val adapter by lazy {
-        Web3MarketAdapter ({coinId->
+        Web3MarketAdapter({ coinId ->
             lifecycleScope.launch {
-                val token =  walletViewModel.findTokenByCoinId(coinId)
+                val token = walletViewModel.findTokenByCoinId(coinId)
                 if (token != null) {
                     // Todo replace market
                     WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
@@ -178,7 +197,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
             }
 
             @SuppressLint("CheckResult", "SetTextI18n")
-            fun bind(item: MarketItem, onClick: (String) -> Unit,onFavorite: (String, Boolean?) -> Unit) {
+            fun bind(item: MarketItem, onClick: (String) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
                 binding.apply {
                     root.setOnClickListener { onClick.invoke(item.coinId) }
                     val symbol = Fiats.getSymbol()

@@ -9,17 +9,19 @@
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:elevation="0dp">
 
         <!-- This view will shrink and disappear -->
         <HorizontalScrollView
+            android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="20dp"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -34,7 +36,7 @@
                     android:paddingStart="16dp"
                     android:paddingTop="14dp"
                     android:paddingEnd="16dp"
-                    android:paddingBottom="14dp"/>
+                    android:paddingBottom="14dp" />
 
                 <one.mixin.android.ui.home.web3.widget.MarketCard
                     android:id="@+id/volume"
@@ -45,7 +47,7 @@
                     android:paddingStart="16dp"
                     android:paddingTop="14dp"
                     android:paddingEnd="16dp"
-                    android:paddingBottom="14dp"/>
+                    android:paddingBottom="14dp" />
 
                 <one.mixin.android.ui.home.web3.widget.MarketCard
                     android:id="@+id/dominance"
@@ -56,18 +58,18 @@
                     android:paddingStart="16dp"
                     android:paddingTop="14dp"
                     android:paddingEnd="16dp"
-                    android:paddingBottom="14dp"/>
+                    android:paddingBottom="14dp" />
 
             </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- The view that stays at the top -->
+        <!-- This view will shrink and disappear -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/bg_white"
-            android:layout_marginBottom="10dp"
-            app:layout_scrollFlags="enterAlways">
+            app:layout_scrollFlags="enterAlways"
+            android:layout_marginBottom="10dp">
 
             <RadioGroup
                 android:id="@+id/radio_group_market"
@@ -168,7 +170,7 @@
                     android:layout_toEndOf="@id/title"
                     android:layout_alignTop="@id/title"
                     android:layout_alignBottom="@id/title"
-                    android:layout_marginStart="4dp"/>
+                    android:layout_marginStart="4dp" />
 
                 <TextView
                     android:id="@+id/Pirce"
@@ -196,7 +198,6 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv"
         android:layout_width="match_parent"
@@ -208,7 +209,7 @@
         android:id="@+id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/bg_window"
+        android:background="?attr/bg_white"
         android:orientation="vertical"
         android:padding="64dp"
         android:visibility="gone"

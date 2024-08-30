@@ -123,6 +123,7 @@ class ExploreFragment : BaseFragment() {
                 0 -> {
                     exploreVa.displayedChild = 0
                     radioFavorite.isChecked = true
+                    radioMarket.isChecked = false
                     radioEth.isChecked = false
                     radioSolana.isChecked = false
                 }
@@ -130,7 +131,7 @@ class ExploreFragment : BaseFragment() {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
                     radioMarket.isChecked = true
-                    radioEth.isChecked = true
+                    radioEth.isChecked = false
                     radioSolana.isChecked = false
                     navigate(marketFragment, Web3MarketFragment.TAG)
                 }
@@ -138,16 +139,16 @@ class ExploreFragment : BaseFragment() {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
                     radioMarket.isChecked = false
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = true
+                    radioEth.isChecked = true
+                    radioSolana.isChecked = false
                     navigate(solanaFragment, SolanaFragment.TAG)
                 }
-                else -> {
+                3 -> {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
                     radioMarket.isChecked = false
-                    radioEth.isChecked = true
-                    radioSolana.isChecked = false
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = true
                     navigate(ethereumFragment, EthereumFragment.TAG)
                 }
             }
