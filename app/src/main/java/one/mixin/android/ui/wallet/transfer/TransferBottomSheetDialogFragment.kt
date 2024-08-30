@@ -26,6 +26,7 @@ import one.mixin.android.api.ResponseError
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
+import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BotCloseEvent
@@ -121,7 +122,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (item.safe != null) {
                 binding.bottom.setText(if(item.action == "sign") R.string.Approve else R.string.Reject)
             }
-            if (t.state == PaymentStatus.paid.name) {
+            if (t.state == PaymentStatus.paid.name || t.state == SignatureState.signed.name) {
                 transferViewModel.updateStatus(TransferStatus.SIGNED)
                 binding.transferAlert.isVisible = false
             }
@@ -277,7 +278,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (multisigsBiometricItem.safe != null) {
                         if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
                             TransferType.safeSigned
-                        }else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
                             TransferType.reject
                         } else {
                             TransferType.approve
