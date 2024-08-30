@@ -229,13 +229,17 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             walletViewModel.getWeb3Markets(limit).collectLatest { pagingData ->
                 marketsAdapter.submitData(pagingData)
             }
+        }
 
+        viewLifecycleOwner.lifecycleScope.launch {
             walletViewModel.getFavoredWeb3Markets(limit).collectLatest { pagingData ->
                 watchlistAdapter.submitData(pagingData)
             }
+        }
 
-            watchlistAdapter.loadStateFlow.collectLatest { loadStates ->
-                val isEmpty = watchlistAdapter.itemCount == 0 && loadStates.refresh is LoadState.NotLoading
+        viewLifecycleOwner.lifecycleScope.launch {
+            watchlistAdapter.loadStateFlow.collectLatest { _ ->
+                val isEmpty = watchlistAdapter.itemCount == 0
                 if (isEmpty && type == TYPE_FOV) {
                     binding.titleLayout.isVisible = false
                     binding.empty.isVisible = true
