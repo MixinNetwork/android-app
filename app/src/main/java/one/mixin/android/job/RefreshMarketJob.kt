@@ -19,7 +19,7 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
         if (response.isSuccess && response.data != null) {
             response.data?.let {
                 marketDao.insert(it)
-                marketCoinDao.insertList(   it.assetIds?.map { assetId ->
+                marketCoinDao.insertIgnoreList(it.assetIds?.map { assetId ->
                     MarketCoin(
                         coinId = it.coinId,
                         assetId = assetId,

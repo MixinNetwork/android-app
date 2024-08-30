@@ -43,9 +43,9 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                             assetId = assetId,
                             createdAt = now
                         )
-                    }?: emptyList()
+                    } ?: emptyList()
                 }
-                marketCoinDao.insertList(ids)
+                marketCoinDao.insertIgnoreList(ids)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
