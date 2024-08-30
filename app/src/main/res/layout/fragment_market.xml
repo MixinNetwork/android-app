@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:background="?attr/bg_white"
             app:layout_scrollFlags="enterAlways"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="4dp">
 
             <RadioGroup
                 android:id="@+id/radio_group_market"

@@ -98,7 +98,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     state: RecyclerView.State,
                 ) {
                     super.getItemOffsets(outRect, view, parent, state)
-                    outRect.bottom = 20.dp
+                    outRect.bottom = 8.dp
                 }
             }
             markets.addItemDecoration(itemDecoration)

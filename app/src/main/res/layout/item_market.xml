@@ -3,8 +3,8 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="6dp"
-    android:paddingBottom="6dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
     android:foreground="?android:attr/selectableItemBackground">
 
     <ImageView
