@@ -13,10 +13,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -90,8 +92,16 @@ class WalletActivity : BlazeBaseActivity() {
             }
             Destination.Market -> {
                 navGraph.setStartDestination(R.id.market_fragment_details)
-                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
-                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_TOKEN, token) })
+                val marketItem = intent.getParcelableExtraCompat(ARGS_MARKET, MarketItem::class.java)
+                val token = intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)
+                navController.setGraph(navGraph, Bundle().apply {
+                    marketItem?.let {
+                        putParcelable(ARGS_MARKET, it)
+                    }
+                    token?.let {
+                        putParcelable(ARGS_TOKEN, it)
+                    }
+                })
             }
         }
     }
@@ -150,6 +160,19 @@ class WalletActivity : BlazeBaseActivity() {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
+                },
+            )
+        }
+
+        fun showWithMarket(
+            activity: Activity,
+            marketItem: MarketItem,
+            destination: Destination,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                    putExtra(ARGS_MARKET, marketItem)
                 },
             )
         }

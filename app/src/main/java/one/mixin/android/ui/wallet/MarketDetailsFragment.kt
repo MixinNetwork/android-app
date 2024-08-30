@@ -27,6 +27,7 @@ import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -35,6 +36,7 @@ import javax.inject.Inject
 class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     companion object {
         const val TAG = "MarketDetailsFragment"
+        const val ARGS_MARKET = "args_market"
     }
 
     private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
@@ -44,11 +46,13 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
-    lateinit var asset: TokenItem
+    private var asset: TokenItem? = null
+    private var marketItem: MarketItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)!!
+        asset = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
+        marketItem = requireArguments().getParcelableCompat(ARGS_MARKET, MarketItem::class.java)
     }
 
     private val typeState = mutableStateOf("1D")
@@ -59,16 +63,25 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val changeUsd = BigDecimal(asset.changeUsd)
+
+        val changeUsd = BigDecimal(asset?.changeUsd ?: marketItem?.priceChange24h ?: "0")
         val isPositive = changeUsd > BigDecimal.ZERO
-        jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
+        (asset?.assetId ?: marketItem?.coinId)?.let {
+            jobManager.addJobInBackground(RefreshMarketJob(it))
+        }
         binding.apply {
             titleView.apply {
-                val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
-                if (sub != null)
-                    setSubTitle(asset.name, sub)
-                else
-                    titleTv.text = asset.name
+                asset.let { asset ->
+                    if (asset != null) {
+                        val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+                        if (sub != null)
+                            setSubTitle(asset.name, sub)
+                        else
+                            titleTv.text = asset.name
+                    } else {
+                        setSubTitle(marketItem?.symbol ?: "", marketItem?.name ?: "")
+                    }
+                }
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             }
             nameTitle.text = getString(R.string.Name).uppercase()
@@ -82,7 +95,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             marketVolCTitle.text = getString(R.string.vol_24h).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
-            icon.loadToken(asset)
+
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 typeState.value =
                     when (checkedId) {
@@ -108,43 +121,65 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         }
                     }
             }
-            balanceRl.setOnClickListener {
-                requireActivity().onBackPressedDispatcher.onBackPressed()
-            }
-            balance.text = "${asset.balance} ${asset.symbol}"
-            value.text = try {
-                if (asset.fiat().toFloat() == 0f) {
-                    "≈ ${Fiats.getSymbol()}0.00"
+
+            asset.let { asset ->
+                if (asset != null) {
+                    chainTitle.isVisible = true
+                    chain.isVisible = true
+                    contactAddressTitle.isVisible = true
+                    address.isVisible = true
+                    addressSub.isVisible = true
+                    balanceRl.isVisible = true
+                    icon.loadToken(asset)
+                    balanceRl.setOnClickListener {
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                    }
+                    balance.text = "${asset.balance} ${asset.symbol}"
+                    chain.text = asset.chainName
+                    address.text = asset.assetKey
+                    if (asset.priceUsd == "0") {
+                        rise.visibility = GONE
+                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        priceRise.text = "0.00%"
+                    } else {
+                        priceRise.visibility = VISIBLE
+                        if (asset.changeUsd.isNotEmpty()) {
+                            currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                            rise.text = currentRise
+                            priceRise.text = currentRise
+                            rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                            priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        } else {
+                            rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                            rise.text = "0.00%"
+                        }
+                    }
+                    value.text = try {
+                        if (asset.fiat().toFloat() == 0f) {
+                            "≈ ${Fiats.getSymbol()}0.00"
+                        } else {
+                            "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                        }
+                    } catch (ignored: NumberFormatException) {
+                        "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                    }
+                    name.text = asset.name
+                    symbol.text = asset.symbol
                 } else {
-                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-                }
-            } catch (ignored: NumberFormatException) {
-                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-            }
-            if (asset.priceUsd == "0") {
-                rise.visibility = GONE
-                priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                priceRise.text = "0.00%"
-            } else {
-                priceRise.visibility = VISIBLE
-                if (asset.changeUsd.isNotEmpty()) {
-                    currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    rise.text = currentRise
-                    priceRise.text = currentRise
-                    rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                    priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                } else {
-                    rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                    rise.text = "0.00%"
+                    chainTitle.isVisible = false
+                    chain.isVisible = false
+                    contactAddressTitle.isVisible = false
+                    address.isVisible = false
+                    addressSub.isVisible = false
+                    balanceRl.isVisible = false
+                    name.text = marketItem?.name
+                    symbol.text = marketItem?.symbol
+                    icon.loadToken(marketItem!!)
                 }
             }
 
-            name.text = asset.name
-            symbol.text = asset.symbol
-            chain.text = asset.chainName
-            address.text = asset.assetKey
             market.setContent {
-                Market(typeState.value, asset.assetId, { percentageChange->
+                Market(typeState.value, asset?.assetId ?: marketItem?.coinId!!, { percentageChange ->
                     if (percentageChange == null) {
                         currentRise = percentageChange
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
@@ -154,7 +189,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         currentRise = String.format("%.2f%%", percentageChange)
                         priceRise.text = currentRise
                     }
-                },{ price, percentageChange ->
+                }, { price, percentageChange ->
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
@@ -172,7 +207,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
         }
 
-        walletViewModel.marketById(asset.assetId).observe(this.viewLifecycleOwner) { info->
+        if (asset != null) {
+            walletViewModel.marketById(asset?.assetId!!)
+        } else {
+            walletViewModel.marketByCoinId(marketItem?.coinId!!)
+        }.observe(this.viewLifecycleOwner) { info ->
             if (info != null) {
                 binding.apply {
                     currentPrice = priceFormat(info.currentPrice)
@@ -187,7 +226,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         circulationSupply.setTextColor(textAssist)
                     } else {
                         circulationSupply.setTextColor(textPrimary)
-                        circulationSupply.text = "${info.circulatingSupply.numberFormat8()} ${asset.symbol}"
+                        circulationSupply.text = "${info.circulatingSupply.numberFormat8()} ${asset?.symbol ?: marketItem?.symbol}"
                     }
 
                     if (info.marketCap == "0" || info.marketCap.isBlank()) {
@@ -197,7 +236,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         marketCap.setTextColor(textPrimary)
                         marketCap.text = capFormat(info.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
                     }
-                    totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset.symbol}"
+                    totalSupply.text = "${info.totalSupply.numberFormat8()} ${asset?.symbol ?: marketItem?.symbol}"
 
                     highValue.text = priceFormat(info.ath)
                     highTime.isVisible = true
@@ -292,6 +331,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         return getString(R.string.N_A)
     }
 
-    private var currentPrice:String? = null
-    private var currentRise:String? = null
+    private var currentPrice: String? = null
+    private var currentRise: String? = null
 }

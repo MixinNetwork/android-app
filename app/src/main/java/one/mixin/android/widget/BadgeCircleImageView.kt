@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 
 open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
@@ -62,6 +63,11 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
 
     fun loadToken(tokenItem: TokenItem) {
         loadToken(tokenItem.iconUrl, tokenItem.chainIconUrl, tokenItem.collectionHash)
+    }
+
+    fun loadToken(marketItem: MarketItem) {
+        binding.badge.isVisible = false
+        binding.bg.loadImage(marketItem.iconUrl, R.drawable.ic_avatar_place_holder)
     }
 
     fun loadToken(

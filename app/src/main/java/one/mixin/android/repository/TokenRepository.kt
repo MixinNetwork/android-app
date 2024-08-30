@@ -1031,6 +1031,10 @@ class TokenRepository
         assetId: String,
     ) = marketDao.marketById(assetId)
 
+    fun marketByCoinId(
+        coinId: String,
+    ) = marketDao.marketByCoinId(coinId)
+
     fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 
     fun getWeb3Markets() = marketDao.getWeb3Markets()

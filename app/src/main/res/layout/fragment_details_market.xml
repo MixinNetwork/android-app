@@ -418,6 +418,7 @@
                         android:layout_marginTop="8dp" />
 
                     <TextView
+                        android:id="@+id/address_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/address_warning"

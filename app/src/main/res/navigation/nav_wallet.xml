@@ -78,6 +78,10 @@
         <argument
             android:name="args_token"
             app:argType="one.mixin.android.vo.safe.TokenItem" />
+
+        <argument
+            android:name="args_market"
+            app:argType="one.mixin.android.vo.market.MarketItem" />
     </fragment>
 
     <fragment

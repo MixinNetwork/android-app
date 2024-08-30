@@ -170,12 +170,13 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
     }
 
     private val adapter by lazy {
-        Web3MarketAdapter({ coinId ->
+        Web3MarketAdapter({ marketItem ->
             lifecycleScope.launch {
-                val token = walletViewModel.findTokenByCoinId(coinId)
+                val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
                 if (token != null) {
-                    // Todo replace market
                     WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
+                } else{
+                    WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
             }
         }, { coinId, isFavored ->
@@ -200,7 +201,7 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
         }
     }
 
-    class Web3MarketAdapter(private val onClick: (String) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
+    class Web3MarketAdapter(private val onClick: (MarketItem) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
         var items: List<MarketItem> = emptyList()
             set(value) {
                 val diffResult = DiffUtil.calculateDiff(MarketDiffCallback(field, value))
@@ -220,9 +221,9 @@ class MarketFragment : BaseFragment(R.layout.fragment_market) {
             }
 
             @SuppressLint("CheckResult", "SetTextI18n")
-            fun bind(item: MarketItem, onClick: (String) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
+            fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
                 binding.apply {
-                    root.setOnClickListener { onClick.invoke(item.coinId) }
+                    root.setOnClickListener { onClick.invoke(item) }
                     val symbol = Fiats.getSymbol()
                     val rate = BigDecimal(Fiats.getRate())
                     favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
