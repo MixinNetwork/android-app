@@ -367,7 +367,8 @@ class WalletViewModel
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
-                enablePlaceholders = false
+                prefetchDistance =10,
+                enablePlaceholders = true
             ),
             pagingSourceFactory = { tokenRepository.getWeb3Markets(limit) }
         ).flow
@@ -377,7 +378,8 @@ class WalletViewModel
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
-                enablePlaceholders = false
+                prefetchDistance =10,
+                enablePlaceholders = true
             ),
             pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(limit) }
         ).flow

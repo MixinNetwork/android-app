@@ -79,6 +79,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         binding.apply {
             watchlist.adapter = watchlistAdapter
             markets.adapter = marketsAdapter
+            watchlist.itemAnimator = null
+            markets.itemAnimator = null
             if (type == TYPE_ALL) {
                 radioAll.isChecked = true
                 markets.isVisible = true
@@ -212,7 +214,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
 
-    private var lastFiatCurrency :String? = null
+    private var lastFiatCurrency: String? = null
 
     @SuppressLint("NotifyDataSetChanged")
     private fun bindData() {
