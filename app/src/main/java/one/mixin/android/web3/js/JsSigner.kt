@@ -9,7 +9,6 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
@@ -210,7 +209,7 @@ object JsSigner {
         val nonce = transactionCount.transactionCount
         val v = Numeric.decodeQuantity(value)
 
-        val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas
+        val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
         val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
         Timber.e(

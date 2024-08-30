@@ -27,14 +27,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
-import one.mixin.android.api.response.getWeb3ChainId
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
@@ -45,8 +44,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
-import one.mixin.android.tip.wc.internal.displayValue
-import one.mixin.android.tip.wc.internal.toTransaction
+import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -255,10 +253,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
                 try {
-                    val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
-                    val gasLimit = viewModel.ethGasLimit(chain, transaction.toTransaction()) ?: return@onEach
-                    val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
-                    tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
+                    tipGas = withContext(Dispatchers.IO) {
+                        buildTipGas(chain.chainId, chain, transaction)
+                    } ?: return@onEach
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))

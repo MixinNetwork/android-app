@@ -40,8 +40,8 @@ import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.methods.request.Transaction
+import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.protocol.core.methods.response.EthEstimateGas
-import org.web3j.protocol.core.methods.response.EthGasPrice
 import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -241,8 +241,8 @@ object WalletConnectV2 : WalletConnect() {
         return getWeb3j(chain).ethEstimateGas(transaction).send()
     }
 
-    fun ethGasPrice(chain: Chain): EthGasPrice? {
-        return getWeb3j(chain).ethGasPrice().send()
+    fun ethBlock(chain: Chain): EthBlock? {
+        return getWeb3j(chain).ethGetBlockByNumber(DefaultBlockParameterName.PENDING, false).send()
     }
 
     fun ethMaxPriorityFeePerGas(chain: Chain): EthMaxPriorityFeePerGas? {
@@ -602,7 +602,7 @@ object WalletConnectV2 : WalletConnect() {
             throw IllegalArgumentException("TipGas is null")
         }
 
-        val maxPriorityFeePerGas = tipGas.ethMaxPriorityFeePerGas
+        val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
         val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
         Timber.e("$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.decodeQuantity(it) }} ")
