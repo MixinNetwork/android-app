@@ -11,7 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentMarketBinding
+import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.marketPriceFormat
@@ -32,12 +32,12 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MarketFragment : BaseFragment(R.layout.fragment_market) {
+class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     companion object {
-        const val TAG = "MarketFragment"
+        const val TAG = "MarketDetailsFragment"
     }
 
-    private val binding by viewBinding(FragmentMarketBinding::bind)
+    private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
 
     @Inject
     lateinit var jobManager: MixinJobManager

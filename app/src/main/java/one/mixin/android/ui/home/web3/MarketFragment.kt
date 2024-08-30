@@ -21,9 +21,8 @@ import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.databinding.FragmentWeb3MarketBinding
-import one.mixin.android.databinding.ItemWeb3MarketBinding
-import one.mixin.android.event.CallEvent
+import one.mixin.android.databinding.FragmentMarketBinding
+import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
@@ -40,8 +39,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.fromJson
-import one.mixin.android.extension.putString
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
@@ -52,14 +49,14 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
+class MarketFragment : BaseFragment(R.layout.fragment_market) {
     companion object {
         const val TAG = "MarketFragment"
         private const val TYPE_ALL = 0
         private const val TYPE_FOV = 1
     }
 
-    private val binding by viewBinding(FragmentWeb3MarketBinding::bind)
+    private val binding by viewBinding(FragmentMarketBinding::bind)
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -96,10 +93,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
                 }
             }
         }
-
-        jobManager.addJobInBackground(RefreshMarketsJob())
-        jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
-        jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
+        refresh()
         loadGlobalMarket()
         RxBus.listen(GlobalMarketEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -148,7 +142,6 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
                     adapter.notifyDataSetChanged()
                 }
             }
-
             else -> {
                 binding.title.setText(R.string.Watchlist)
                 walletViewModel.getFavoredWeb3Markets().observe(this.viewLifecycleOwner) { list ->
@@ -168,6 +161,12 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         }
     }
 
+    fun refresh() {
+        jobManager.addJobInBackground(RefreshMarketsJob())
+        jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
+        jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
+    }
+
     private val adapter by lazy {
         Web3MarketAdapter({ coinId ->
             lifecycleScope.launch {
@@ -185,7 +184,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
     class Web3MarketAdapter(private val onClick: (String) -> Unit, private val onFavorite: (String, Boolean?) -> Unit) : RecyclerView.Adapter<Web3MarketAdapter.ViewHolder>() {
         var items: List<MarketItem> = emptyList()
 
-        class ViewHolder(val binding: ItemWeb3MarketBinding) : RecyclerView.ViewHolder(binding.root) {
+        class ViewHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(binding.root) {
             private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
             private val verticalPadding by lazy { 6.dp }
 
@@ -227,7 +226,7 @@ class Web3MarketFragment : BaseFragment(R.layout.fragment_web3_market) {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            return ViewHolder(ItemWeb3MarketBinding.inflate(LayoutInflater.from(parent.context)))
+            return ViewHolder(ItemMarketBinding.inflate(LayoutInflater.from(parent.context)))
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {

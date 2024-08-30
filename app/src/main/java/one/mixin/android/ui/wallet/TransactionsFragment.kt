@@ -173,7 +173,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             marketRl.setOnClickListener {
                 view.navigate(
-                    R.id.action_transactions_to_market,
+                    R.id.action_transactions_to_market_details,
                     Bundle().apply {
                         putParcelable(ARGS_TOKEN, asset)
                     },

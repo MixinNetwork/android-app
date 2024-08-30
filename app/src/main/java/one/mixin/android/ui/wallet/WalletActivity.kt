@@ -89,7 +89,7 @@ class WalletActivity : BlazeBaseActivity() {
                 navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) } })
             }
             Destination.Market -> {
-                navGraph.setStartDestination(R.id.market_fragment)
+                navGraph.setStartDestination(R.id.market_fragment_details)
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
                 navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_TOKEN, token) })
             }
