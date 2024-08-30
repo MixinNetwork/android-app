@@ -276,7 +276,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     }
 
     private val onMenuShow = {
-        binding.dropSort.setBackgroundResource(R.drawable.bg_inscription_drop)
+        binding.dropSort.setBackgroundResource(R.drawable.bg_market_drop)
         binding.dropTv.setTextColor(0xFF4B7CDD.toInt())
     }
 
@@ -288,7 +288,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 top = position
                 dismiss()
             }
-            width = requireContext().dpToPx(250f)
+            width = ListPopupWindow.WRAP_CONTENT
             height = ListPopupWindow.WRAP_CONTENT
             isModal = true
             setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
@@ -303,7 +303,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     }
 
     private val onMenuDismiss = {
-        binding.dropSort.setBackgroundResource(R.drawable.bg_inscription_radio)
+        binding.dropSort.setBackgroundResource(R.drawable.bg_market_radio)
         binding.dropTv.setTextColor(requireContext().colorAttr(R.attr.text_primary))
     }
 
