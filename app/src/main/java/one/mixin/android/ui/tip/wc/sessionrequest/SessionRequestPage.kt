@@ -48,8 +48,6 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.displayGas
-import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
@@ -95,7 +93,7 @@ fun SessionRequestPage(
     val signType =
         if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
             0
-        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.toBigInt(sessionRequestUI.data.value) == BigInteger.ZERO)) {
+        } else if (sessionRequestUI.data is WCEthereumTransaction && (sessionRequestUI.data.value == null || Numeric.decodeQuantity(sessionRequestUI.data.value) == BigInteger.ZERO)) {
             2
         } else {
             1
@@ -242,7 +240,7 @@ fun SessionRequestPage(
                             TransactionPreview(
                                 balance =
                                     Convert.fromWei(
-                                        Numeric.toBigInt(
+                                        Numeric.decodeQuantity(
                                             sessionRequestUI.data.value ?: "0",
                                         ).toBigDecimal(),
                                         Convert.Unit.ETHER,

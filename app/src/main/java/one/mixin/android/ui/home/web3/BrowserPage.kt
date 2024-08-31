@@ -47,8 +47,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.displayGas
-import one.mixin.android.tip.wc.internal.displayValue
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.SolanaParsedTxPreview
@@ -242,7 +240,7 @@ fun BrowserPage(
                     TransactionPreview(
                         balance =
                             Convert.fromWei(
-                                Numeric.toBigInt(transaction?.value ?: "0").toBigDecimal(),
+                                Numeric.decodeQuantity(transaction?.value ?: "0").toBigDecimal(),
                                 Convert.Unit.ETHER,
                             ),
                         chain,
@@ -323,7 +321,7 @@ fun BrowserPage(
                         confirmAction = showPin,
                     )
                 }
-                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.toBigInt(transaction.value) == BigInteger.ZERO)) {
+                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.decodeQuantity(transaction.value) == BigInteger.ZERO)) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
