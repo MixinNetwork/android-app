@@ -20,11 +20,11 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.exploreEvm
+import one.mixin.android.ui.home.exploreSolana
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.receive.exploreEvm
-import one.mixin.android.web3.receive.exploreSolana
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint

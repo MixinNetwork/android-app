@@ -1665,10 +1665,10 @@
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
     <string name="watchlist_empty">Your watchlist is empty</string>
     <string name="Dominance">Dominance</string>
-    <string name="Volume">Volume</string>
+    <string name="volume_24h">24h Volume</string>
     <string name="week_percentage">7d %</string>
     <string name="Watchlist">Watchlist</string>
-    <string name="top_100">Top 100</string>
-    <string name="top_200">Top 200</string>
-    <string name="top_500">Top 500</string>
+    <string name="top_count">Top %1$d</string>
+    <string name="change_percent_period_day">%1$dD %%</string>
+    <string name="change_percent_period_hour">%1$dh %%</string>
 </resources>

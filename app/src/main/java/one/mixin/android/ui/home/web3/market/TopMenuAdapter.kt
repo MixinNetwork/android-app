@@ -23,7 +23,7 @@ class TopMenuAdapter(private val context: Context, private val items: List<TopMe
         val binding = MenuTopBinding.bind(convertView ?: LayoutInflater.from(context).inflate(R.layout.menu_top, parent, false))
         val item = getItem(position)
         binding.iv.isInvisible = checkPosition != position
-        binding.title.setText(item.title)
+        binding.title.text = binding.root.context.getString(R.string.top_count, item.top)
         return binding.root
     }
 }

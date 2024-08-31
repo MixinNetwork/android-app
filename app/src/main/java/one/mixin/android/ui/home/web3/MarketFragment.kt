@@ -13,7 +13,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -115,6 +114,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             pirce.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = horizontalPadding * 2 + 60.dp
             }
+            // Todo switch percentage
+            percentage.text = getString(R.string.change_percent_period_day, 7)
             percentage.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = horizontalPadding
             }
@@ -163,7 +164,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 GsonHelper.customGson.fromJson(json, GlobalMarket::class.java)?.let {
                     binding.apply {
                         marketCap.render(R.string.Market_Cap, it.marketCap, BigDecimal(it.marketCapChangePercentage))
-                        volume.render(R.string.Volume, it.volume, BigDecimal(it.volumeChangePercentage))
+                        volume.render(R.string.volume_24h, it.volume, BigDecimal(it.volumeChangePercentage))
                         dominance.render(R.string.Dominance, BigDecimal(it.dominancePercentage), it.dominance)
                     }
                 }
@@ -223,11 +224,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             2 -> 500
             else -> 100
         }
-        binding.dropTv.setText(
+        binding.dropTv.text = getString(
+            R.string.top_count,
             when (top) {
-                1 -> R.string.top_200
-                2 -> R.string.top_500
-                else -> R.string.top_100
+                1 -> 200
+                2 -> 500
+                else -> 100
             }
         )
         viewLifecycleOwner.lifecycleScope.launch {
@@ -338,9 +340,9 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
 
     private val menuAdapter: TopMenuAdapter by lazy {
         val menuItems = listOf(
-            TopMenuData(100, R.string.top_100),
-            TopMenuData(200, R.string.top_200),
-            TopMenuData(500, R.string.top_500),
+            TopMenuData(100),
+            TopMenuData(200),
+            TopMenuData(500),
         )
         TopMenuAdapter(requireContext(), menuItems)
     }
