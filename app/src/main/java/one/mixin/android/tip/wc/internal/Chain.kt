@@ -5,6 +5,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.extension.defaultSharedPreferences
 
 sealed class Chain(
@@ -42,6 +43,13 @@ sealed class Chain(
     val rpcUrl: String
         get() {
             return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
+        }
+
+    fun getWeb3ChainId(): Int =
+        when (this) {
+            Ethereum -> Web3ChainId.EthChainId
+            Polygon -> Web3ChainId.PolygonChainId
+            else -> Web3ChainId.SolanaChainId
         }
 }
 

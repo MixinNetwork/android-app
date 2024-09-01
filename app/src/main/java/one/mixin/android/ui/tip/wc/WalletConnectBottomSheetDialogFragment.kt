@@ -52,9 +52,9 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
-import one.mixin.android.tip.wc.internal.toTransaction
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -334,10 +334,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 if (version == WalletConnect.Version.V2) {
                     try {
-                        val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
-                        val gasLimit = viewModel.ethGasLimit(chain, tx.toTransaction()) ?: return@onEach
-                        val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
-                        tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, tx)
+                        tipGas = withContext(Dispatchers.IO) {
+                            buildTipGas(chain.chainId, chain, tx)
+                        } ?: return@onEach
                         (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
                     } catch (e: Exception) {
                         Timber.e(e)
@@ -369,11 +368,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        if (signedTransactionData is VersionedTransaction) {
-                                            viewModel.sendTransaction(signedTransactionData, sessionRequest)
-                                        } else {
-                                            viewModel.sendTransaction(version, chain, sessionRequest, signedTransactionData as String)
-                                        }
+                                        viewModel.sendTransaction(signedTransactionData, chain, sessionRequest)
                                     }
                                 if (sendError == null) {
                                     processCompleted = true

@@ -27,8 +27,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
+import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.web3.ParsedTx
@@ -42,8 +44,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
-import one.mixin.android.tip.wc.internal.displayValue
-import one.mixin.android.tip.wc.internal.toTransaction
+import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -68,6 +69,7 @@ import one.mixin.android.web3.send.InputAddressFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
+import org.web3j.crypto.Hash
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -251,10 +253,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
                 try {
-                    val gasPrice = viewModel.ethGasPrice(chain) ?: return@onEach
-                    val gasLimit = viewModel.ethGasLimit(chain, transaction.toTransaction()) ?: return@onEach
-                    val maxPriorityFeePerGas = viewModel.ethMaxPriorityFeePerGas(chain) ?: return@onEach
-                    tipGas = TipGas(chain.chainId, gasPrice, gasLimit, maxPriorityFeePerGas, transaction)
+                    tipGas = withContext(Dispatchers.IO) {
+                        buildTipGas(chain.chainId, chain, transaction)
+                    } ?: return@onEach
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
@@ -309,7 +310,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
                     val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName())
                     step = Step.Sending
-                    val hash = JsSigner.sendTransaction(hex, token?.getChainFromName())
+                    val hash = Hash.sha3(hex)
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId())
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -317,7 +319,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val sig = tx.signatures.first()
                     val rawTx = tx.serialize().base64Encode()
-                    viewModel.postRawTx(rawTx)
+                    viewModel.postRawTx(rawTx, Web3ChainId.SolanaChainId)
                     onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
@@ -333,6 +335,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 step = Step.Done
             } catch (e: Exception) {
+                onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, null);")
                 handleException(e)
             }
         }
@@ -387,7 +390,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else if (tipGas != null) {
                 val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
                 if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
-                    Convert.fromWei(Numeric.toBigInt(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
+                    Convert.fromWei(Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
                 } else {
                     maxGas > BigDecimal(chainToken.balance)
                 }
