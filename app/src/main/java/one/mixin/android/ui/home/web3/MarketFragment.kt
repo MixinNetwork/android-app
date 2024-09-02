@@ -268,10 +268,15 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         }
     }
 
+    private var timeIntervalSinceNow = 0L
     override fun updateUI() {
         jobManager.addJobInBackground(RefreshMarketsJob())
-        jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
+        if (System.currentTimeMillis() - timeIntervalSinceNow >= 5 * 60_000) {
+            //5 mins
+            timeIntervalSinceNow = System.currentTimeMillis()
+            jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
+        }
     }
 
     private var job: Job? = null
