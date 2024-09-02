@@ -3,8 +3,6 @@ package one.mixin.android.ui.home.web3.market
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.vo.market.MarketItem
 
