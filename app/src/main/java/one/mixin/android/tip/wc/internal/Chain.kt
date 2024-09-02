@@ -5,8 +5,8 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.web3.Web3ChainId
 
 sealed class Chain(
     val assetId: String,
@@ -48,7 +48,13 @@ sealed class Chain(
     fun getWeb3ChainId(): Int =
         when (this) {
             Ethereum -> Web3ChainId.EthChainId
+            Optimism -> Web3ChainId.OptimismChainId
+            BinanceSmartChain -> Web3ChainId.BscChainId
             Polygon -> Web3ChainId.PolygonChainId
+            Base -> Web3ChainId.BaseChainId
+            Arbitrum -> Web3ChainId.ArbitrumChainId
+            Avalanche -> Web3ChainId.AvalancheChainId
+            Blast -> Web3ChainId.BlastChainId
             else -> Web3ChainId.SolanaChainId
         }
 }
