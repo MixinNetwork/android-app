@@ -32,8 +32,10 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.translationX
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
 import one.mixin.android.job.RefreshMarketsJob
@@ -111,6 +113,20 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     TYPE_ALL
                 }
             }
+            if (isAsc) {
+                icon.rotation = 0f
+            } else {
+                icon.rotation = 180f
+            }
+            titleOrder.setOnClickListener {
+                if (isAsc) {
+                    icon.rotation = 180f
+                    isAsc = false
+                } else {
+                    icon.rotation = 0f
+                    isAsc = true
+                }
+            }
             pirce.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = horizontalPadding * 2 + 60.dp
             }
@@ -119,7 +135,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             percentage.updateLayoutParams<MarginLayoutParams> {
                 marginEnd = horizontalPadding
             }
-            title.updateLayoutParams<MarginLayoutParams> {
+            titleOrder.updateLayoutParams<MarginLayoutParams> {
                 marginStart = horizontalPadding
             }
             root.doOnPreDraw {
@@ -215,6 +231,15 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
 
+    private var isAsc = MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_MARKET_ASC, true)
+        set(value) {
+            if (field != value) {
+                field = value
+                bindData()
+                MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_MARKET_ASC, value)
+            }
+        }
+
     private var lastFiatCurrency: String? = null
 
     @SuppressLint("NotifyDataSetChanged")
@@ -224,6 +249,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             2 -> 500
             else -> 100
         }
+
         binding.dropTv.text = getString(
             R.string.top_count,
             when (top) {
@@ -233,7 +259,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         )
         viewLifecycleOwner.lifecycleScope.launch {
-            walletViewModel.getWeb3Markets(limit).collectLatest { pagingData ->
+            walletViewModel.getWeb3Markets(limit, isAsc).collectLatest { pagingData ->
                 marketsAdapter.submitData(pagingData)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()
@@ -243,7 +269,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            walletViewModel.getFavoredWeb3Markets(limit).collectLatest { pagingData ->
+            walletViewModel.getFavoredWeb3Markets(isAsc).collectLatest { pagingData ->
                 watchlistAdapter.submitData(pagingData)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()

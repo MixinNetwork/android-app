@@ -362,7 +362,7 @@ class WalletViewModel
 
     fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
 
-    fun getWeb3Markets(limit: Int):
+    fun getWeb3Markets(limit: Int, isAsc: Boolean):
         Flow<PagingData<MarketItem>> {
         return Pager(
             config = PagingConfig(
@@ -370,18 +370,18 @@ class WalletViewModel
                 prefetchDistance =10,
                 enablePlaceholders = true
             ),
-            pagingSourceFactory = { tokenRepository.getWeb3Markets(limit) }
+            pagingSourceFactory = { tokenRepository.getWeb3Markets(limit, isAsc) }
         ).flow
     }
 
-    fun getFavoredWeb3Markets(limit:Int): Flow<PagingData<MarketItem>> {
+    fun getFavoredWeb3Markets(isAsc: Boolean): Flow<PagingData<MarketItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
                 prefetchDistance =10,
                 enablePlaceholders = true
             ),
-            pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(limit) }
+            pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(isAsc) }
         ).flow
     }
 

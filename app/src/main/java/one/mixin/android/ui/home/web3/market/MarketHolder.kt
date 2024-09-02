@@ -27,7 +27,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
     }
 
     @SuppressLint("CheckResult", "SetTextI18n")
-    fun bind(item: MarketItem, sourceRank: Boolean, onClick: (MarketItem) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
+    fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
         binding.apply {
             root.setOnClickListener { onClick.invoke(item) }
             val symbol = Fiats.getSymbol()
@@ -40,7 +40,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             assetSymbol.text = item.symbol
             assetValue.text = item.totalVolume
             price.text = "$symbol${BigDecimal(item.currentPrice).multiply(rate).priceFormat()}"
-            assetNumber.text = if (sourceRank) item.marketCapRank else "${absoluteAdapterPosition + 1}"
+            assetNumber.text = item.marketCapRank
             val formatVol = try {
                 BigDecimal(item.totalVolume).multiply(rate).numberFormatCompact()
             } catch (e: NumberFormatException) {

@@ -1039,9 +1039,9 @@ class TokenRepository
 
     fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 
-    fun getWeb3Markets(limit: Int): PagingSource<Int, MarketItem> = marketDao.getWeb3Markets(limit)
+    fun getWeb3Markets(limit: Int, isAsc: Boolean): PagingSource<Int, MarketItem> = marketDao.getWeb3Markets(limit, isAsc)
 
-    fun getFavoredWeb3Markets(limit: Int): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(limit)
+    fun getFavoredWeb3Markets(isAsc: Boolean): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(isAsc)
 
     suspend fun findTokenByCoinId(coinId: String) = marketCoinDao.findTokenByCoinId(coinId)
 
