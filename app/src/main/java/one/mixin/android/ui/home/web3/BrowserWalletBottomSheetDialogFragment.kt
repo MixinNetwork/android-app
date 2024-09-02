@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.PriorityLevel
-import one.mixin.android.api.response.Web3ChainId
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.web3.ParsedTx
@@ -61,6 +60,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.InputFragment
+import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
