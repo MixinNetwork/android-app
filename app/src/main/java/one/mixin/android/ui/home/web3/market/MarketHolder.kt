@@ -8,6 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadSvg
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenWidth
@@ -51,7 +52,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             } else {
                 ""
             }
-            market.loadImage(item.sparklineIn7d)
+            market.loadSvg(item.sparklineIn7d)
         }
     }
 }

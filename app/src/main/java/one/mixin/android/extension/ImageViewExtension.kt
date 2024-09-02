@@ -7,7 +7,9 @@ import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import coil.dispose
+import coil.imageLoader
 import coil.load
+import coil.request.CachePolicy
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
@@ -30,9 +32,9 @@ fun ImageView.loadImage(
     base64Holder: String? = null,
     onSuccess: (
         (
-            request: ImageRequest,
-            result: SuccessResult,
-        ) -> Unit
+        request: ImageRequest,
+        result: SuccessResult,
+    ) -> Unit
     )? = null,
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
@@ -101,6 +103,17 @@ fun ImageView.loadImage(
         }
         allowHardware(false)
     }
+}
+
+fun ImageView.loadSvg(url: String) {
+    val imageRequest = ImageRequest.Builder(context)
+        .data(url)
+        .target(this)
+        .diskCachePolicy(CachePolicy.DISABLED)
+        .memoryCachePolicy(CachePolicy.DISABLED)
+        .build()
+
+    context.imageLoader.enqueue(imageRequest)
 }
 
 fun ImageView.clear() {
