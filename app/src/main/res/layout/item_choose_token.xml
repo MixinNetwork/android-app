@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/padding8"
+    android:background="@drawable/bg_round_choose_network"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/asset_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:textColor="?attr/text_minor"
+        android:layout_toEndOf="@id/asset_icon"
+        android:layout_alignParentTop="true"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/chain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:textColor="?attr/text_assist"
+        android:layout_toEndOf="@id/asset_icon"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/value"
+        android:layout_marginTop="6dp"
+        android:textSize="13sp" />
+
+</RelativeLayout>

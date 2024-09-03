@@ -1043,6 +1043,8 @@ class TokenRepository
 
     fun getFavoredWeb3Markets(isAsc: Boolean): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(isAsc)
 
-    suspend fun findTokenByCoinId(coinId: String) = marketCoinDao.findTokenByCoinId(coinId)
+    suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
+
+    suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
 
 }

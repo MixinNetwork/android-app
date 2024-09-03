@@ -8,6 +8,9 @@ import one.mixin.android.vo.safe.TokenItem
 
 @Dao
 interface MarketCoinDao : BaseDao<MarketCoin> {
-    @Query("$PREFIX_ASSET_ITEM LEFT JOIN market_coins mc on mc.asset_id = a1.asset_id WHERE mc.coin_id = :coinId LIMIT 1")
-    suspend fun findTokenByCoinId(coinId:String):TokenItem?
+    @Query("$PREFIX_ASSET_ITEM LEFT JOIN market_coins mc on mc.asset_id = a1.asset_id WHERE mc.coin_id = :coinId")
+    suspend fun findTokensByCoinId(coinId: String): List<TokenItem>
+
+    @Query("SELECT asset_id FROM market_coins WHERE coin_id = :coinId")
+    suspend fun findTokenIdsByCoinId(coinId: String): List<String>
 }

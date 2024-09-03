@@ -9,27 +9,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.math.BigDecimal
+import java.util.ArrayList
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -171,10 +179,53 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     contactAddressTitle.isVisible = false
                     address.isVisible = false
                     addressSub.isVisible = false
-                    balanceRl.isVisible = false
                     name.text = marketItem?.name
                     symbol.text = marketItem?.symbol
                     icon.loadToken(marketItem!!)
+                    lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                        Timber.e(error)
+                        balanceRl.isVisible = false
+                    }) {
+                        val ids = walletViewModel.findTokenIdsByCoinId(marketItem!!.coinId)
+                        val tokens = walletViewModel.findTokensByCoinId(marketItem!!.coinId)
+                        if (ids.isNotEmpty()) {
+                            val balances = tokens.sumOf { BigDecimal(it.balance) }
+                            val price = BigDecimal(marketItem!!.currentPrice).multiply(BigDecimal(Fiats.getRate())).multiply(balances)
+                            balance.text = "$balances ${marketItem?.symbol}"
+                            value.text = try {
+                                if (price == BigDecimal.ZERO) {
+                                    "≈ ${Fiats.getSymbol()}0.00"
+                                } else {
+                                    "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                                }
+                            } catch (ignored: NumberFormatException) {
+                                "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                            }
+                            balanceRl.setOnClickListener {
+                                lifecycleScope.launch {
+                                    if (ids.size >= tokens.size) {
+                                        val dialog =
+                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                setCancelable(false)
+                                            }
+                                        dialog.show()
+                                        walletViewModel.syncNoExistAsset(ids.subtract(tokens.map { it.assetId }.toSet()).toList())
+                                        dialog.dismiss()
+                                    }
+                                    ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(tokens) })
+                                        .apply {
+                                            callback = { token ->
+                                                activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions) }
+                                            }
+                                        }
+                                        .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                                }
+                            }
+                            balanceRl.isVisible = true
+                        } else {
+                            balanceRl.isVisible = false
+                        }
+                    }
                 }
             }
 

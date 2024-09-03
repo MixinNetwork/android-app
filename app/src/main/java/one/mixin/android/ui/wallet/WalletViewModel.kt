@@ -385,5 +385,7 @@ class WalletViewModel
         ).flow
     }
 
-    suspend fun findTokenByCoinId(coinId: String): TokenItem? = tokenRepository.findTokenByCoinId(coinId)
+    suspend fun findTokensByCoinId(coinId: String): List<TokenItem> = tokenRepository.findTokensByCoinId(coinId)
+
+    suspend fun findTokenIdsByCoinId(coinId: String) = tokenRepository.findTokenIdsByCoinId(coinId)
 }

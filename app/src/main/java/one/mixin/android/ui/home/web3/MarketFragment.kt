@@ -305,9 +305,9 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private val watchlistAdapter by lazy {
         Web3MarketAdapter(true, { marketItem ->
             lifecycleScope.launch {
-                val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
-                if (token != null) {
-                    WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
+                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                if (tokens.size == 1) {
+                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market)
                 } else {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
@@ -320,9 +320,9 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private val marketsAdapter by lazy {
         Web3MarketAdapter(false, { marketItem ->
             lifecycleScope.launch {
-                val token = walletViewModel.findTokenByCoinId(marketItem.coinId)
-                if (token != null) {
-                    WalletActivity.showWithToken(requireActivity(), token, Destination.Market)
+                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                if (tokens.size == 1) {
+                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market)
                 } else {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
