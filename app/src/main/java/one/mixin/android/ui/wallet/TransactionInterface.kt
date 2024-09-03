@@ -70,7 +70,7 @@ interface TransactionInterface {
                             asset.assetId,
                             snapshot,
                         )
-                        refreshPendingWithdrawal(
+                        refreshIncompleteSnapshot(
                             fragment,
                             contentBinding,
                             lifecycleScope,
@@ -96,7 +96,7 @@ interface TransactionInterface {
                 tokenItem.assetId,
                 snapshotItem,
             )
-            refreshPendingWithdrawal(
+            refreshIncompleteSnapshot(
                 fragment,
                 contentBinding,
                 lifecycleScope,
@@ -449,7 +449,7 @@ interface TransactionInterface {
         }
     }
 
-    private fun refreshPendingWithdrawal(
+    private fun refreshIncompleteSnapshot(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
         lifecycleScope: CoroutineScope,
@@ -457,7 +457,7 @@ interface TransactionInterface {
         snapshot: SnapshotItem,
         asset: TokenItem,
     ) {
-        if (!snapshot.hasTransactionDetails()) {
+        if (snapshot.isDataIncomplete()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
                     updateUI(fragment, contentBinding, asset, it)
