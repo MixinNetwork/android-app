@@ -139,13 +139,13 @@ data class SnapshotItem(
             SafeSnapshotType.snapshot
         }
 
-    fun hasTransactionDetails(): Boolean {
+    fun isDataIncomplete(): Boolean {
         if (type == SafeSnapshotType.withdrawal.name) {
             return withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
         } else if (type == SafeSnapshotType.deposit.name) {
             return deposit?.sender.isNullOrBlank()
         }
-        return true
+        return false
     }
 }
 
