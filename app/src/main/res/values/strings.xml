@@ -1673,5 +1673,5 @@
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
     <string name="Choose_Token">Choose %1$s Network</string>
-    <string name="choose_token_desc">" %1$s is issued on multiple networks"</string>
+    <string name="choose_token_desc">%1$s is issued on multiple networks</string>
 </resources>
