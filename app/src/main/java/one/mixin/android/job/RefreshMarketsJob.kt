@@ -43,7 +43,7 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                         marketDao.insertList(list)
                     }
                 } else {
-                    marketDao.insertList(list)
+                    marketDao.upsertList(list)
                 }
                 val ids = list.flatMap { market ->
                     market.assetIds?.map { assetId ->
