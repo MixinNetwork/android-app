@@ -13,6 +13,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_FROM_EXPLORE
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
@@ -93,6 +94,7 @@ class WalletActivity : BlazeBaseActivity() {
             Destination.Market -> {
                 navGraph.setStartDestination(R.id.market_fragment_details)
                 val marketItem = intent.getParcelableExtraCompat(ARGS_MARKET, MarketItem::class.java)
+                val fromExplore = intent.getBooleanExtra(ARGS_FROM_EXPLORE, false)
                 val token = intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)
                 navController.setGraph(navGraph, Bundle().apply {
                     marketItem?.let {
@@ -101,6 +103,7 @@ class WalletActivity : BlazeBaseActivity() {
                     token?.let {
                         putParcelable(ARGS_TOKEN, it)
                     }
+                    putBoolean(ARGS_FROM_EXPLORE, fromExplore)
                 })
             }
         }
@@ -130,11 +133,13 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             tokenItem: TokenItem,
             destination: Destination,
+            fromExplore: Boolean = false,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ASSET, tokenItem)
+                    putExtra(ARGS_FROM_EXPLORE, fromExplore)
                 },
             )
         }

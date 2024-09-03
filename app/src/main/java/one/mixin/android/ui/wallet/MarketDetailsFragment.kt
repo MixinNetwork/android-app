@@ -45,6 +45,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     companion object {
         const val TAG = "MarketDetailsFragment"
         const val ARGS_MARKET = "args_market"
+        const val ARGS_FROM_EXPLORE = "args_from_explore"
     }
 
     private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
@@ -56,11 +57,13 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private var asset: TokenItem? = null
     private var marketItem: MarketItem? = null
+    private var fromExplore: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         asset = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
         marketItem = requireArguments().getParcelableCompat(ARGS_MARKET, MarketItem::class.java)
+        fromExplore = requireArguments().getBoolean(ARGS_FROM_EXPLORE, false)
     }
 
     private val typeState = mutableStateOf("1D")
@@ -140,7 +143,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     balanceRl.isVisible = true
                     icon.loadToken(asset)
                     balanceRl.setOnClickListener {
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        if (fromExplore) { // from explore market
+                            WalletActivity.showWithToken(requireActivity(), asset, WalletActivity.Destination.Transactions)
+                        } else {
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }
                     }
                     balance.text = "${asset.balance} ${asset.symbol}"
                     chain.text = asset.chainName
@@ -209,7 +216,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             }
                             balanceRl.setOnClickListener {
                                 lifecycleScope.launch {
-                                    if (ids.size >= tokens.size) {
+                                    if (ids.size > tokens.size) {
                                         val dialog =
                                             indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                                                 setCancelable(false)

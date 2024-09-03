@@ -307,7 +307,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             lifecycleScope.launch {
                 val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
                 if (tokens.size == 1) {
-                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market)
+                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market, true)
                 } else {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
@@ -322,7 +322,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             lifecycleScope.launch {
                 val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
                 if (tokens.size == 1) {
-                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market)
+                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market, true)
                 } else {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
