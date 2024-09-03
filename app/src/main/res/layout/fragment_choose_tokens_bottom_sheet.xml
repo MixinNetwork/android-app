@@ -8,18 +8,45 @@
     android:orientation="vertical"
     android:paddingBottom="40dp">
 
-    <TextView
-        android:id="@+id/choose_network"
-        android:text="@string/Choose_Network"
-        android:layout_width="wrap_content"
-        android:textStyle="bold"
-        android:layout_marginTop="@dimen/margin20"
-        android:layout_marginStart="@dimen/margin16"
-        android:layout_marginEnd="@dimen/margin16"
-        android:layout_marginBottom="@dimen/padding8"
-        android:textColor="?attr/text_primary"
-        android:textSize="18sp"
-        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/choose_network"
+            android:text="@string/Choose_Token"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/choose_network_sub"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/choose_token_desc"
+            android:layout_below="@id/choose_network" />
+
+        <ImageView
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_circle_close"
+            android:background="@drawable/mixin_ripple"
+            tools:ignore="ContentDescription"/>
+
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/asset_rv"

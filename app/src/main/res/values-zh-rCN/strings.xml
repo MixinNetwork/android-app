@@ -1633,4 +1633,6 @@
     <string name="top_count">前 %1$d</string>
     <string name="change_percent_period_day">%1$d天 %%</string>
     <string name="change_percent_period_hour">%1$d小时 %%</string>
+    <string name="Choose_Token">选择 %1$s 网络</string>
+    <string name="choose_token_desc">%1$s 在多个网络上发布</string>
 </resources>

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentChooseTokensBottomSheetBinding
 import one.mixin.android.databinding.ItemChooseTokenBinding
 import one.mixin.android.extension.getParcelableArrayListCompat
@@ -26,7 +27,7 @@ class ChooseTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         fun newInstance(assets: ArrayList<TokenItem>) =
             ChooseTokensBottomSheetDialogFragment().withArgs {
-                assets.sortBy { BigDecimal(it.balance) }
+                assets.sortedByDescending { BigDecimal(it.balance) }
                 putParcelableArrayList(ASSETS, assets)
             }
     }
@@ -54,6 +55,11 @@ class ChooseTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             assetRv.adapter = adapter
             adapter.submitList(assets)
+            chooseNetwork.text = getString(R.string.Choose_Token, assets?.first()?.symbol ?: "")
+            chooseNetworkSub.text = getString(R.string.choose_token_desc, assets?.first()?.symbol ?: "")
+            close.setOnClickListener {
+                dismiss()
+            }
             adapter.callback = { t ->
                 callback?.invoke(t)
                 dismiss()

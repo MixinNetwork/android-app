@@ -151,16 +151,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         priceRise.text = "0.00%"
                     } else {
                         priceRise.visibility = VISIBLE
-                        if (asset.changeUsd.isNotEmpty()) {
-                            currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                            rise.text = currentRise
-                            priceRise.text = currentRise
-                            rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                            priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                        } else {
-                            rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                            rise.text = "0.00%"
-                        }
+                        currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                        rise.text = currentRise
+                        priceRise.text = currentRise
+                        rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                     }
                     value.text = try {
                         if (asset.fiat().toFloat() == 0f) {
@@ -200,6 +195,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 }
                             } catch (ignored: NumberFormatException) {
                                 "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                            }
+                                priceRise.visibility = VISIBLE
+                            if (marketItem?.priceChange24h?.isNotEmpty() == true) {
+                                currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                                rise.text = currentRise
+                                priceRise.text = currentRise
+                                rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                                priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                            } else {
+                                rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                                rise.text = "0.00%"
                             }
                             balanceRl.setOnClickListener {
                                 lifecycleScope.launch {
