@@ -50,9 +50,9 @@ import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MarketCoinDao
+import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
-import one.mixin.android.db.MarketDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TokenDao

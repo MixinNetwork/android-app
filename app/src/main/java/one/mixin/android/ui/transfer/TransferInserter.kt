@@ -3,6 +3,7 @@ package one.mixin.android.ui.transfer
 import android.database.SQLException
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
@@ -10,7 +11,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
-import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Participant

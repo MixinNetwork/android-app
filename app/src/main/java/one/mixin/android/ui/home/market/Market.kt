@@ -65,7 +65,7 @@ fun Market(assetId: String) {
 }
 
 @Composable
-fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighlightChange: (String?, Float?) -> Unit) {
+fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighlightChange: (String?, Float?) -> Unit, onLoading:(Boolean)->Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<WalletViewModel>()
     var responseState by remember { mutableStateOf<Result<List<Price>>>(Result.Loading) }
@@ -73,7 +73,9 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
     LaunchedEffect(type, assetId) {
         responseState = Result.Loading
         responseState = try {
+            onLoading.invoke(true)
             val data = viewModel.priceHistory(assetId, type)
+            onLoading.invoke(false)
             if (data.isSuccess) {
                 val list = data.data!!.data
                 if (list.isNotEmpty()) {
@@ -90,6 +92,7 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
                 Result.Error(Exception(context.getMixinErrorStringByCode(data.errorCode, data.errorDescription)))
             }
         } catch (e: Exception) {
+            onLoading.invoke(false)
             dataChange.invoke(null)
             Result.Error(e)
         }

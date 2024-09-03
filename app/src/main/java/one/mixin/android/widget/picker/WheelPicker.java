@@ -2,7 +2,13 @@ package one.mixin.android.widget.picker;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.*;
+import android.graphics.Camera;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.Region;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;

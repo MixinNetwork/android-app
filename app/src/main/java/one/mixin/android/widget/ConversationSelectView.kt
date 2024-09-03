@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.Checkable
 import android.widget.LinearLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewConversationSelectBinding
 import one.mixin.android.vo.ConversationMinimal

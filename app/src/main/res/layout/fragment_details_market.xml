@@ -11,6 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:rightIcon="@drawable/ic_share_arrow"
         app:layout_constraintTop_toTopOf="parent"
         app:need_divider="false"
         app:titleText="@string/Transactions" />
@@ -257,7 +258,6 @@
                         android:layout_marginTop="10dp"
                         android:text="@string/N_A"
                         tools:targetApi="p" />
-
                 </RelativeLayout>
             </FrameLayout>
 

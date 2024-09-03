@@ -2,9 +2,6 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
-import android.view.View
-import android.widget.ImageView
-import androidx.core.view.isVisible
 import kotlinx.parcelize.Parcelize
 import org.threeten.bp.Instant
 

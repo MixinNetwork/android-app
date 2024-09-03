@@ -57,6 +57,10 @@
 
     <color name="chainGradientStart">#F6F7FA</color>
     <color name="chainGradientEnd">#EEF0F3</color>
+
+    <color name="marketGradientStart">#4B7CDD</color>
+    <color name="marketGradientEnd">#81A4E7</color>
+
     <color name="iconChain">#AAFFFFFF</color>
 
     <color name="musicPlayed">#2F3032</color>

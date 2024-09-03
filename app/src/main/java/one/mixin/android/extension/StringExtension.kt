@@ -44,7 +44,6 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.text.DecimalFormat
-import java.text.NumberFormat
 import java.util.Arrays
 import java.util.Formatter
 import java.util.Locale

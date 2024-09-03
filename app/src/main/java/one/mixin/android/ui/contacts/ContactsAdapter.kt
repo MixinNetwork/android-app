@@ -1,11 +1,9 @@
 package one.mixin.android.ui.contacts
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
@@ -15,11 +13,9 @@ import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
-import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.toUser
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :

@@ -6,8 +6,8 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
-import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketCoin
+import one.mixin.android.vo.market.MarketFavored
 
 class RefreshMarketsJob(val category: String = "all") : BaseJob(
     Params(PRIORITY_UI_HIGH)

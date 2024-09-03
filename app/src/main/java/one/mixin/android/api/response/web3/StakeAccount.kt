@@ -1,10 +1,9 @@
 package one.mixin.android.api.response.web3
 
 import android.os.Parcelable
-import java.math.BigInteger
-
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import java.math.BigInteger
 
 @Parcelize
 data class StakeAccount(

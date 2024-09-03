@@ -572,6 +572,7 @@
     <string name="Link_desktop">链接桌面端</string>
     <string name="Link_desktop_failed">登录桌面端失败</string>
     <string name="Link_desktop_success">登录桌面端成功</string>
+    <string name="Link">链接</string>
     <string name="Links">链接</string>
     <string name="Live">直播</string>
     <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
