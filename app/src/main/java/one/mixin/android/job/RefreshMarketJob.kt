@@ -18,7 +18,13 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
         val response = routeService.market(assetId)
         if (response.isSuccess && response.data != null) {
             response.data?.let {
-                marketDao.insert(it)
+                val local = marketDao.findMarketById(it.coinId)
+                val market = if (local != null) {
+                    it.copy(marketCapRank = it.marketCapRank)
+                } else {
+                    it
+                }
+                marketDao.insert(market)
                 marketCoinDao.insertIgnoreList(it.assetIds?.map { assetId ->
                     MarketCoin(
                         coinId = it.coinId,

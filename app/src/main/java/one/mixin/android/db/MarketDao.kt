@@ -42,4 +42,11 @@ interface MarketDao : BaseDao<Market> {
             CASE WHEN :isAsc = 0 THEN CAST(limitedFavoredMarkets.market_cap_rank AS INTEGER) END DESC
         """)
     fun getFavoredWeb3Markets(isAsc: Boolean): PagingSource<Int, MarketItem>
+
+    @Query("SELECT * FROM markets WHERE coin_id = :coinId")
+    fun findMarketById(coinId: String): Market?
+
+    @Query("DELETE FROM markets WHERE CAST(market_cap_rank AS INTEGER) <= :top")
+    fun deleteTop(top: Int)
+
 }
