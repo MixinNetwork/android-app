@@ -11,6 +11,8 @@ data class PendingDeposit(
     val tag: String?,
     @SerializedName("transaction_hash")
     val transactionHash: String,
+    @SerializedName("sender")
+    val sender: String?,
     val amount: String,
     val confirmations: Int,
     @SerializedName("created_at")
@@ -32,7 +34,7 @@ fun PendingDeposit.toSnapshot(): SafeSnapshot =
         this.confirmations,
         "",
         "",
-        SafeDeposit(this.transactionHash),
+        SafeDeposit(this.transactionHash, this.sender ?: ""),
         null,
         null,
     )

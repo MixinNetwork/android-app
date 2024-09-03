@@ -114,6 +114,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
+import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -1177,10 +1178,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 null,
                 snapshot.snapshotId,
             )
-        snapshot.depositHash?.let {
-            safeSnapshotDao.deletePendingSnapshotByHash(it)
+        if (!snapshot.depositHash.isNullOrEmpty()) {
+            safeSnapshotDao.deletePendingSnapshotByHash(snapshot.depositHash)
+            safeSnapshotDao.insert(snapshot.copy(deposit = SafeDeposit(snapshot.depositHash, "")))
+        } else {
+            safeSnapshotDao.insert(snapshot)
         }
-        safeSnapshotDao.insert(snapshot)
+
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
