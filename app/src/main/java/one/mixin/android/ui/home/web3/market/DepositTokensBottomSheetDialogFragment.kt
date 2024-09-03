@@ -27,7 +27,7 @@ class ChooseTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         fun newInstance(assets: ArrayList<TokenItem>) =
             ChooseTokensBottomSheetDialogFragment().withArgs {
-                assets.sortedByDescending { BigDecimal(it.balance) }
+                assets.sortByDescending { BigDecimal(it.balance) }
                 putParcelableArrayList(ASSETS, assets)
             }
     }
