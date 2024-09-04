@@ -115,9 +115,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
             titleLayout.updatePadding(horizontalPadding)
             titleLayout.setOnSortChangedListener { sortOrder ->
-                binding.watchlist.layoutManager?.scrollToPosition(0)
-                binding.markets.layoutManager?.scrollToPosition(0)
                 bindData(sortOrder)
+                lifecycleScope.launch {
+                    delay(100)
+                    binding.watchlist.layoutManager?.scrollToPosition(0)
+                    binding.markets.layoutManager?.scrollToPosition(0)
+                }
             }
             root.doOnPreDraw {
                 empty.updateLayoutParams<MarginLayoutParams> {
