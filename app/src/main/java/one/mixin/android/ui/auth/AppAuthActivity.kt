@@ -2,6 +2,7 @@
 
 package one.mixin.android.ui.auth
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
@@ -12,8 +13,10 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import androidx.core.os.CancellationSignal
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.mattprecious.swirl.SwirlView
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -26,8 +29,10 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 
+@AndroidEntryPoint
 class AppAuthActivity : BaseActivity() {
     companion object {
         fun show(activity: Activity) {
@@ -41,13 +46,17 @@ class AppAuthActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAppAuthBinding
 
+    @SuppressLint("RestrictedApi")
     private var fingerprintManager: FingerprintManagerCompat? = null
     private var biometricManager: BiometricManager? = null
 
     private var hasEnrolledFingerprints = false
 
+    private var clearWhenPinSuccess = false
+
     private var cancellationSignal: CancellationSignal? = null
 
+    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
@@ -64,6 +73,17 @@ class AppAuthActivity : BaseActivity() {
         binding.swirl.setState(SwirlView.State.ON)
         binding.swirl.setOnClickListener {
             showPrompt()
+        }
+        binding.pinTv.setOnClickListener {
+            VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+                .setOnPinSuccess {
+                    if (clearWhenPinSuccess) {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
+                        defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                    }
+                    finishAndCheckNeed2GoUrlInterpreter()
+                }
+                .showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -99,6 +119,7 @@ class AppAuthActivity : BaseActivity() {
         moveTaskToBack(true)
     }
 
+    @SuppressLint("RestrictedApi")
     private fun showPrompt() {
         cancellationSignal?.cancel()
         cancellationSignal = CancellationSignal()
@@ -129,6 +150,7 @@ class AppAuthActivity : BaseActivity() {
         binding.info.text = errString
         binding.info.setTextColor(getColor(R.color.colorRed))
         binding.swirl.setState(SwirlView.State.ERROR)
+        binding.pinTv.isVisible = true
     }
 
     private fun finishAndCheckNeed2GoUrlInterpreter() {
@@ -180,10 +202,9 @@ class AppAuthActivity : BaseActivity() {
                     BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
                         showError(errString)
                     }
-                    BiometricPrompt.ERROR_NO_BIOMETRICS -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                        defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                        finishAndCheckNeed2GoUrlInterpreter()
+                    BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
+                        clearWhenPinSuccess = true
+                        showError(errString)
                     }
                     else -> {
                         refreshSwirl(errString, true)
@@ -200,6 +221,7 @@ class AppAuthActivity : BaseActivity() {
             }
         }
 
+    @SuppressLint("RestrictedApi")
     private val fingerprintCallback =
         object : FingerprintManagerCompat.AuthenticationCallback() {
             override fun onAuthenticationError(
@@ -213,10 +235,9 @@ class AppAuthActivity : BaseActivity() {
                     FingerprintManager.FINGERPRINT_ERROR_LOCKOUT, FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT -> {
                         showError(errString)
                     }
-                    FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                        defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                        finishAndCheckNeed2GoUrlInterpreter()
+                    FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS, FingerprintManager.FINGERPRINT_ERROR_HW_NOT_PRESENT, FingerprintManager.FINGERPRINT_ERROR_HW_UNAVAILABLE -> {
+                        clearWhenPinSuccess = true
+                        showError(errString)
                     }
                     else -> {
                         refreshSwirl(errString, true)
