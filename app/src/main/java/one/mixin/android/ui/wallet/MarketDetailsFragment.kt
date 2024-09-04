@@ -97,8 +97,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
-            chainTitle.text = getString(R.string.Chain).uppercase()
-            contactAddressTitle.text = getString(R.string.Contract_Address).uppercase()
             marketCapTitle.text = getString(R.string.Market_Cap).uppercase()
             circulationSupplyTitle.text = getString(R.string.Circulation_Supply).uppercase()
             totalSupplyTitle.text = getString(R.string.Total_Supply).uppercase()
@@ -135,11 +133,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
             asset.let { asset ->
                 if (asset != null) {
-                    chainTitle.isVisible = true
-                    chain.isVisible = true
-                    contactAddressTitle.isVisible = true
-                    address.isVisible = true
-                    addressSub.isVisible = true
                     balanceRl.isVisible = true
                     icon.loadToken(asset)
                     balanceRl.setOnClickListener {
@@ -150,8 +143,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         }
                     }
                     balance.text = "${asset.balance} ${asset.symbol}"
-                    chain.text = asset.chainName
-                    address.text = asset.assetKey
                     if (asset.priceUsd == "0") {
                         rise.visibility = GONE
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
@@ -176,11 +167,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     name.text = asset.name
                     symbol.text = asset.symbol
                 } else {
-                    chainTitle.isVisible = false
-                    chain.isVisible = false
-                    contactAddressTitle.isVisible = false
-                    address.isVisible = false
-                    addressSub.isVisible = false
                     name.text = marketItem?.name
                     symbol.text = marketItem?.symbol
                     icon.loadToken(marketItem!!)
@@ -230,13 +216,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                         toast(R.string.Data_error)
                                         return@launch
                                     }
-                                    ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
-                                        .apply {
-                                            callback = { token ->
-                                                activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions) }
+                                    if (nowTokens.size == 1) {
+                                        WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions)
+                                    } else {
+                                        ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
+                                            .apply {
+                                                callback = { token ->
+                                                    activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions) }
+                                                }
                                             }
-                                        }
-                                        .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                                            .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                                    }
                                 }
                             }
                             balanceRl.isVisible = true

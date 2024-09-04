@@ -381,51 +381,6 @@
                         android:textSize="16sp"
                         android:layout_marginTop="8dp" />
 
-                    <!-- Chain -->
-                    <TextView
-                        android:id="@+id/chain_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Chain"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/chain"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
-
-                    <!-- Contract Address -->
-                    <TextView
-                        android:id="@+id/contact_address_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Contract_Address"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
-
-                    <TextView
-                        android:id="@+id/address"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
-
-                    <TextView
-                        android:id="@+id/address_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/address_warning"
-                        android:textColor="@color/wallet_pink"
-                        android:textSize="12sp"
-                        android:layout_marginTop="8dp" />
-
                     <!-- Market Cap -->
                     <TextView
                         android:id="@+id/market_cap_title"

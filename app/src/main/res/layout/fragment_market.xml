@@ -68,8 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/bg_white"
-            app:layout_scrollFlags="enterAlways"
-            android:layout_marginBottom="4dp">
+            app:layout_scrollFlags="enterAlways">
 
             <RadioGroup
                 android:id="@+id/radio_group_market"
@@ -148,7 +147,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/radio_group_market"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="16dp"/>
 
         </RelativeLayout>
 
