@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 59,
-    "identityHash": "93af0b071593c5429728e06338fd3683",
+    "identityHash": "08302a691b4e628f46e26e862deb2b00",
     "entities": [
       {
         "tableName": "users",
@@ -3118,7 +3118,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "price_changePercentage1H",
+            "fieldPath": "priceChangePercentage1H",
             "columnName": "price_change_percentage_1h",
             "affinity": "TEXT",
             "notNull": true
@@ -3237,11 +3237,11 @@
       },
       {
         "tableName": "history_prices",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`, `type`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `type`))",
         "fields": [
           {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3267,7 +3267,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "asset_id",
+            "coin_id",
             "type"
           ]
         },
@@ -3342,7 +3342,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '93af0b071593c5429728e06338fd3683')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '08302a691b4e628f46e26e862deb2b00')"
     ]
   }
 }

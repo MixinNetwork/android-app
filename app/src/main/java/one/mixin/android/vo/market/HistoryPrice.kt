@@ -4,11 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "history_prices", primaryKeys = ["asset_id", "type"])
+@Entity(tableName = "history_prices", primaryKeys = ["coin_id", "type"])
 data class HistoryPrice(
-    @ColumnInfo(name = "asset_id")
-    @SerializedName("key")
-    val assetId: String,
+    @ColumnInfo(name = "coin_id")
+    @SerializedName("coin_id")
+    val coinId: String,
     @ColumnInfo(name = "type")
     @SerializedName("type")
     val type: String,

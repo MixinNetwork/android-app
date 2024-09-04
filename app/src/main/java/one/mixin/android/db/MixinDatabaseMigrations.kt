@@ -492,6 +492,8 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_58_59: Migration =
             object : Migration(58,59) {
                 override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DROP TABLE IF EXISTS `history_prices`")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `history_prices` (`coin_id` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `type`))")
                     db.execSQL("DROP TABLE IF EXISTS `markets`")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `markets` (`coin_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `current_price` TEXT NOT NULL, `market_cap` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `total_volume` TEXT NOT NULL, `high_24h` TEXT NOT NULL, `low_24h` TEXT NOT NULL, `price_change_24h` TEXT NOT NULL, `price_change_percentage_1h` TEXT NOT NULL, `price_change_percentage_24h` TEXT NOT NULL, `price_change_percentage_7d` TEXT NOT NULL, `price_change_percentage_30d` TEXT NOT NULL, `market_cap_change_24h` TEXT NOT NULL, `market_cap_change_percentage_24h` TEXT NOT NULL, `circulating_supply` TEXT NOT NULL, `total_supply` TEXT NOT NULL, `max_supply` TEXT NOT NULL, `ath` TEXT NOT NULL, `ath_change_percentage` TEXT NOT NULL, `ath_date` TEXT NOT NULL, `atl` TEXT NOT NULL, `atl_change_percentage` TEXT NOT NULL, `atl_date` TEXT NOT NULL, `asset_ids` TEXT, `sparkline_in_7d` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `market_coins` (`asset_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
