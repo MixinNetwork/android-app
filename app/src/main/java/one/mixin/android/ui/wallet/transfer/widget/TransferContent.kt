@@ -264,9 +264,9 @@ class TransferContent : LinearLayout {
             total.isVisible = false
             networkFee.isVisible = false
 
-            if (!safeAccount.operation.note.isNullOrBlank()) {
+            if (!safeAccount.operation.transaction.note.isNullOrBlank()) {
                 memo.isVisible = true
-                memo.setContent(R.string.Note, safeAccount.operation.note)
+                memo.setContent(R.string.Note, safeAccount.operation.transaction.note)
             }
             safeReceives.setContent(R.string.Receiver, safeAccount.operation.transaction.recipients, safeMultisigsBiometricItem.asset?.symbol?:"")
             safeReceives.isVisible = true
