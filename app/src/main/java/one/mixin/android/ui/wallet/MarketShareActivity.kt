@@ -8,6 +8,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import androidx.compose.ui.unit.IntSize
@@ -21,15 +24,19 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarketShareBinding
+import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.round
+import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.web.getScreenshot
+import one.mixin.android.ui.web.refreshScreenshot
 import java.io.File
 import java.io.FileOutputStream
 
@@ -39,6 +46,7 @@ class MarketShareActivity : BaseActivity() {
         private const val ARGS_NAME = "name"
         private var cover: Bitmap? = null
         fun show(context: Context, cover: Bitmap, name:String) {
+            refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, MarketShareActivity::class.java).apply {
                 putExtra(ARGS_NAME, name)
@@ -59,6 +67,14 @@ class MarketShareActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMarketShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        getScreenshot()?.let {
+            supportsS({
+                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR))
+            }, {
+                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+            })
+        }
         binding.test.round(8.dp)
         if (cover != null) {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 8.dp, (80 - 24 + 32).dp))

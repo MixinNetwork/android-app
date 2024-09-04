@@ -28,8 +28,7 @@
                 android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_round_window_8dp">
-
+                android:background="@drawable/bg_round_window_6dp">
 
                 <ImageView
                     android:id="@+id/image"
@@ -38,8 +37,8 @@
                     android:scaleType="centerCrop"
                     android:layout_marginTop="16dp"
                     android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp" />
-
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="@string/Market" />
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -111,7 +110,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="10dp"
-            android:background="@drawable/bg_round_white_8dp"
+            android:background="@drawable/bg_round_white_6dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
             android:gravity="center">
@@ -190,7 +189,6 @@
                     android:textSize="12sp"
                     android:textColor="?attr/text_primary" />
             </LinearLayout>
-
         </LinearLayout>
     </LinearLayout>
 
