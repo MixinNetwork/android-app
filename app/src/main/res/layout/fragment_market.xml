@@ -88,10 +88,10 @@
                     android:background="@drawable/ripple_half_circle_left"
                     android:drawableStart="@drawable/selector_market_favorites"
                     android:checked="true"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="4dp" />
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="6dp" />
 
                 <View
                     android:background="@color/color_gray"
@@ -106,10 +106,10 @@
                     android:button="@null"
                     android:background="@drawable/ripple_half_circle_right"
                     android:drawableStart="@drawable/selector_market_rank"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="12dp" />
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="14dp" />
 
             </RadioGroup>
 
