@@ -76,16 +76,30 @@
         android:textSize="14sp"
         android:gravity="end"
         android:layout_toEndOf="@id/name_layout"
-        android:layout_toStartOf="@id/market"
+        android:layout_toStartOf="@id/market_rl"
         android:layout_centerVertical="true"
         android:layout_marginEnd="16dp"/>
 
-    <ImageView
-        android:id="@+id/market"
+    <RelativeLayout
+        android:id="@id/market_rl"
         android:layout_width="60dp"
-        android:layout_height="34dp"
-        android:contentDescription="@null"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true">
 
+        <ImageView
+            android:id="@+id/market"
+            android:layout_width="60dp"
+            android:layout_height="34dp"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/market_percentage"
+            android:textSize="12sp"
+            android:layout_below="@id/market"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@id/market"
+            android:contentDescription="@null" />
+    </RelativeLayout>
 </RelativeLayout>
