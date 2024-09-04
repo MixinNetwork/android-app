@@ -284,8 +284,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
             }
-        }, { coinId, isFavored ->
-            jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
+        }, { symbol, coinId, isFavored ->
+            jobManager.addJobInBackground(UpdateFavoriteJob(symbol, coinId, isFavored))
         })
     }
 
@@ -299,8 +299,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                 }
             }
-        }, { coinId, isFavored ->
-            jobManager.addJobInBackground(UpdateFavoriteJob(coinId, isFavored))
+        }, { symbol, coinId, isFavored ->
+            jobManager.addJobInBackground(UpdateFavoriteJob(symbol, coinId, isFavored))
         })
     }
 

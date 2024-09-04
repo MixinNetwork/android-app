@@ -28,14 +28,14 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
     }
 
     @SuppressLint("CheckResult", "SetTextI18n")
-    fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, Boolean?) -> Unit) {
+    fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, String, Boolean?) -> Unit) {
         binding.apply {
             root.setOnClickListener { onClick.invoke(item) }
             val symbol = Fiats.getSymbol()
             val rate = BigDecimal(Fiats.getRate())
             favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
             favorite.setOnClickListener {
-                onFavorite.invoke(item.coinId, item.isFavored)
+                onFavorite.invoke(item.symbol, item.coinId, item.isFavored)
             }
             icon.loadImage(item.iconUrl, R.drawable.ic_avatar_place_holder)
             assetSymbol.text = item.symbol

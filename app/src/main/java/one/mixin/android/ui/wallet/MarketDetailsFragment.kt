@@ -225,7 +225,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                         walletViewModel.syncNoExistAsset(ids.subtract(tokens.map { it.assetId }.toSet()).toList())
                                         dialog.dismiss()
                                     }
-                                    ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(tokens) })
+                                    val nowTokens = walletViewModel.findTokensByCoinId(marketItem!!.coinId)
+                                    if (nowTokens.isEmpty()) {
+                                        toast(R.string.Data_error)
+                                        return@launch
+                                    }
+                                    ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
                                         .apply {
                                             callback = { token ->
                                                 activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions) }
