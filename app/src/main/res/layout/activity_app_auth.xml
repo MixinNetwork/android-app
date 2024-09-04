@@ -52,5 +52,20 @@
             android:textSize="16sp"
             android:textColor="?attr/text_assist"
             android:text="@string/Touch_the_fingerprint_sensor"/>
+
+        <TextView
+            android:id="@+id/pin_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginTop="36dp"
+            android:padding="20dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"
+            android:textSize="16sp"
+            android:textColor="?attr/text_blue"
+            android:text="@string/Verify_PIN"/>
     </LinearLayout>
 </RelativeLayout>

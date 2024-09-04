@@ -143,7 +143,7 @@ data class SnapshotItem(
         if (type == SafeSnapshotType.withdrawal.name) {
             return withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
         } else if (type == SafeSnapshotType.deposit.name) {
-            return deposit?.sender.isNullOrBlank()
+            return deposit?.depositHash.isNullOrBlank()
         }
         return false
     }
