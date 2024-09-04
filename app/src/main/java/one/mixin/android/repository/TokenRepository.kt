@@ -71,6 +71,7 @@ import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
@@ -1039,9 +1040,9 @@ class TokenRepository
 
     fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
 
-    fun getWeb3Markets(limit: Int, isAsc: Boolean): PagingSource<Int, MarketItem> = marketDao.getWeb3Markets(limit, isAsc)
+    fun getWeb3Markets(limit: Int, sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getWeb3Markets(limit, sort.value)
 
-    fun getFavoredWeb3Markets(isAsc: Boolean): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(isAsc)
+    fun getFavoredWeb3Markets(sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(sort.value)
 
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
 

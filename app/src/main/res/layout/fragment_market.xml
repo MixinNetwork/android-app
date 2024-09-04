@@ -143,61 +143,13 @@
 
             </LinearLayout>
 
-            <RelativeLayout
+            <one.mixin.android.ui.home.web3.widget.MarketTitleView
                 android:id="@+id/title_layout"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/radio_group_market"
-                android:layout_marginTop="20dp">
+                android:layout_marginTop="20dp"/>
 
-                <RelativeLayout
-                    android:id="@+id/title_order"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="20dp"
-                    android:background="?android:attr/selectableItemBackground">
-
-                    <TextView
-                        android:id="@+id/title"
-                        android:text="@string/Market_Cap"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="12sp"
-                        android:textColor="?attr/text_assist" />
-
-                    <ImageView
-                        android:id="@+id/icon"
-                        android:src="@drawable/ic_small_drop_down"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/title"
-                        android:layout_alignTop="@id/title"
-                        android:layout_alignBottom="@id/title"
-                        android:layout_marginStart="4dp" />
-                </RelativeLayout>
-
-                <TextView
-                    android:id="@+id/pirce"
-                    android:text="@string/Price"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="?attr/text_assist"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="60dp" />
-
-                <TextView
-                    android:id="@+id/percentage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="?attr/text_assist"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentEnd="true" />
-
-            </RelativeLayout>
         </RelativeLayout>
 
     </com.google.android.material.appbar.AppBarLayout>

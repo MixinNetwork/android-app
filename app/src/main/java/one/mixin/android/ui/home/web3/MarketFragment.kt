@@ -32,7 +32,6 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.translationX
@@ -45,6 +44,7 @@ import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.home.web3.market.TopMenuAdapter
 import one.mixin.android.ui.home.web3.market.TopMenuData
 import one.mixin.android.ui.home.web3.market.Web3MarketAdapter
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -113,30 +113,11 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     TYPE_ALL
                 }
             }
-            if (isAsc) {
-                icon.rotation = 0f
-            } else {
-                icon.rotation = 180f
-            }
-            titleOrder.setOnClickListener {
-                if (isAsc) {
-                    icon.rotation = 180f
-                    isAsc = false
-                } else {
-                    icon.rotation = 0f
-                    isAsc = true
-                }
-            }
-            pirce.updateLayoutParams<MarginLayoutParams> {
-                marginEnd = horizontalPadding * 2 + 60.dp
-            }
-            // Todo switch percentage
-            percentage.text = getString(R.string.change_percent_period_day, 7)
-            percentage.updateLayoutParams<MarginLayoutParams> {
-                marginEnd = horizontalPadding
-            }
-            titleOrder.updateLayoutParams<MarginLayoutParams> {
-                marginStart = horizontalPadding
+            titleLayout.updatePadding(horizontalPadding)
+            titleLayout.setOnSortChangedListener { sortOrder ->
+                binding.watchlist.layoutManager?.scrollToPosition(0)
+                binding.markets.layoutManager?.scrollToPosition(0)
+                bindData(sortOrder)
             }
             root.doOnPreDraw {
                 empty.updateLayoutParams<MarginLayoutParams> {
@@ -160,7 +141,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             .subscribe { _ ->
                 loadGlobalMarket()
             }
-        bindData()
+        bindData(binding.titleLayout.currentSort ?: MarketSort.RANK_ASCENDING)
         view.viewTreeObserver.addOnGlobalLayoutListener {
             if (view.isShown) {
                 if (job?.isActive == true) return@addOnGlobalLayoutListener
@@ -198,7 +179,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 when (type) {
                     TYPE_ALL -> {
                         binding.dropSort.isVisible = true
-                        binding.title.setText(R.string.Market_Cap)
+                        binding.titleLayout.setText(R.string.Market_Cap)
                         binding.markets.isVisible = true
                         binding.watchlist.isVisible = false
                         binding.titleLayout.isVisible = true
@@ -207,7 +188,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
 
                     else -> {
                         binding.dropSort.isVisible = false
-                        binding.title.setText(R.string.Watchlist)
+                        binding.titleLayout.setText(R.string.Watchlist)
                         binding.markets.isVisible = false
                         if (watchlistAdapter.itemCount == 0) {
                             binding.titleLayout.isVisible = false
@@ -227,23 +208,14 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         set(value) {
             if (field != value) {
                 field = value
-                bindData()
-            }
-        }
-
-    private var isAsc = MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_MARKET_ASC, true)
-        set(value) {
-            if (field != value) {
-                field = value
-                bindData()
-                MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_MARKET_ASC, value)
+                bindData(binding.titleLayout.currentSort ?: MarketSort.RANK_ASCENDING)
             }
         }
 
     private var lastFiatCurrency: String? = null
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun bindData() {
+    private fun bindData(order: MarketSort) {
         val limit = when (top) {
             1 -> 200
             2 -> 500
@@ -259,7 +231,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         )
         viewLifecycleOwner.lifecycleScope.launch {
-            walletViewModel.getWeb3Markets(limit, isAsc).collectLatest { pagingData ->
+            walletViewModel.getWeb3Markets(limit, order).collectLatest { pagingData ->
                 marketsAdapter.submitData(pagingData)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()
@@ -269,7 +241,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            walletViewModel.getFavoredWeb3Markets(isAsc).collectLatest { pagingData ->
+            walletViewModel.getFavoredWeb3Markets(order).collectLatest { pagingData ->
                 watchlistAdapter.submitData(pagingData)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()

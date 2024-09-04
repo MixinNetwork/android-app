@@ -34,6 +34,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ParticipantSession
@@ -362,7 +363,7 @@ class WalletViewModel
 
     fun historyPriceById(assetId: String) = tokenRepository.historyPriceById(assetId)
 
-    fun getWeb3Markets(limit: Int, isAsc: Boolean):
+    fun getWeb3Markets(limit: Int, sort: MarketSort):
         Flow<PagingData<MarketItem>> {
         return Pager(
             config = PagingConfig(
@@ -370,18 +371,18 @@ class WalletViewModel
                 prefetchDistance =10,
                 enablePlaceholders = true
             ),
-            pagingSourceFactory = { tokenRepository.getWeb3Markets(limit, isAsc) }
+            pagingSourceFactory = { tokenRepository.getWeb3Markets(limit, sort) }
         ).flow
     }
 
-    fun getFavoredWeb3Markets(isAsc: Boolean): Flow<PagingData<MarketItem>> {
+    fun getFavoredWeb3Markets(sort: MarketSort): Flow<PagingData<MarketItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
                 prefetchDistance =10,
                 enablePlaceholders = true
             ),
-            pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(isAsc) }
+            pagingSourceFactory = { tokenRepository.getFavoredWeb3Markets(sort) }
         ).flow
     }
 
