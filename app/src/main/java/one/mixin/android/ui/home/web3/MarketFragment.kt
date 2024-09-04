@@ -179,7 +179,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             defaultSharedPreferences.getString(PREF_GLOBAL_MARKET, null)?.let { json ->
                 GsonHelper.customGson.fromJson(json, GlobalMarket::class.java)?.let {
                     binding.apply {
-                        marketCap.render(R.string.Market_Cap, it.marketCap, BigDecimal(it.marketCapChangePercentage))
+                        marketCap.render(R.string.Global_Market_Cap, it.marketCap, BigDecimal(it.marketCapChangePercentage))
                         volume.render(R.string.volume_24h, it.volume, BigDecimal(it.volumeChangePercentage))
                         dominance.render(R.string.Dominance, BigDecimal(it.dominancePercentage), it.dominance)
                     }

@@ -1611,6 +1611,7 @@
     <string name="New_Update_Available_desc">我们定期更新应用程序，以便为您提供更好的服务</string>
     <string name="Update_Now">现在升级</string>
     <string name="Market_Cap">市值</string>
+    <string name="Global_Market_Cap">全球总市值</string>
     <string name="signature_request_from">该签名请求来自 %1$s。</string>
     <string name="Reject">拒绝</string>
     <string name="Note">备注</string>
