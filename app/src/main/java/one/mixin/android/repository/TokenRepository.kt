@@ -1048,4 +1048,6 @@ class TokenRepository
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
 
+    suspend fun findMarketItemByAssetId(coinId: String) = marketDao.findMarketItemByAssetId(coinId)
+
 }

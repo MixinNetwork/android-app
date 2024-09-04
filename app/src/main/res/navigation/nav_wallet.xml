@@ -76,12 +76,12 @@
         tools:layout="@layout/fragment_market">
 
         <argument
-            android:name="args_token"
-            app:argType="one.mixin.android.vo.safe.TokenItem" />
-
-        <argument
             android:name="args_market"
             app:argType="one.mixin.android.vo.market.MarketItem" />
+
+        <argument
+            android:name="args_asset_id"
+            app:argType="string" />
     </fragment>
 
     <fragment

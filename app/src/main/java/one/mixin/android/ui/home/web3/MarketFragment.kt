@@ -280,12 +280,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private val watchlistAdapter by lazy {
         Web3MarketAdapter(true, { marketItem ->
             lifecycleScope.launch {
-                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
-                if (tokens.size == 1) {
-                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market, true)
-                } else {
-                    WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
-                }
+                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
             }
         }, { symbol, coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(symbol, coinId, isFavored))
@@ -295,12 +290,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     private val marketsAdapter by lazy {
         Web3MarketAdapter(false, { marketItem ->
             lifecycleScope.launch {
-                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
-                if (tokens.size == 1) {
-                    WalletActivity.showWithToken(requireActivity(), tokens.first(), Destination.Market, true)
-                } else {
-                    WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
-                }
+                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
             }
         }, { symbol, coinId, isFavored ->
             jobManager.addJobInBackground(UpdateFavoriteJob(symbol, coinId, isFavored))

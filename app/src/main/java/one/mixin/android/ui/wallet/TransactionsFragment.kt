@@ -34,9 +34,11 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -45,6 +47,8 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
@@ -172,12 +176,21 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 }
             }
             marketRl.setOnClickListener {
-                view.navigate(
-                    R.id.action_transactions_to_market_details,
-                    Bundle().apply {
-                        putParcelable(ARGS_TOKEN, asset)
-                    },
-                )
+                lifecycleScope.launch {
+                    val market = walletViewModel.findMarketItemByAssetId(asset.assetId)
+                    if (market == null) {
+                        jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
+                        toast(R.string.Please_wait_a_bit)
+                        return@launch
+                    }
+                    view.navigate(
+                        R.id.action_transactions_to_market_details,
+                        Bundle().apply {
+                            putParcelable(ARGS_MARKET, market)
+                            putString(ARGS_ASSET_ID, asset.assetId)
+                        },
+                    )
+                }
             }
         }
 
