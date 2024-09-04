@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import coil.dispose
 import coil.imageLoader
 import coil.load
@@ -22,6 +23,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
+import one.mixin.android.R
 import one.mixin.android.util.StringSignature
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
@@ -105,15 +107,15 @@ fun ImageView.loadImage(
     }
 }
 
-fun ImageView.loadSvg(url: String) {
-    val imageRequest = ImageRequest.Builder(context)
-        .data(url)
-        .target(this)
-        .diskCachePolicy(CachePolicy.DISABLED)
-        .memoryCachePolicy(CachePolicy.DISABLED)
-        .build()
-
-    context.imageLoader.enqueue(imageRequest)
+fun ImageView.loadSvgWithTint(url: String, isRising: Boolean, isColorReversed: Boolean) {
+    val colorRes = when {
+        isRising && !isColorReversed -> R.color.wallet_green
+        isRising && isColorReversed -> R.color.wallet_pink
+        !isRising && !isColorReversed -> R.color.wallet_pink
+        else -> R.color.wallet_green
+    }
+    setColorFilter(ContextCompat.getColor(context, colorRes))
+    load(url)
 }
 
 fun ImageView.clear() {

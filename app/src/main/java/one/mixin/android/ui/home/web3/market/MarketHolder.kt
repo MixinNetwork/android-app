@@ -8,7 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadSvg
+import one.mixin.android.extension.loadSvgWithTint
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
@@ -43,11 +43,12 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             assetSymbol.text = item.symbol
             assetValue.text = item.totalVolume
             val percentage = BigDecimal(item.priceChangePercentage7D)
-            marketPercentage.text = "${item.priceChangePercentage7D.numberFormat2()}%"
-            if (percentage <= BigDecimal.ZERO) {
-                marketPercentage.textColorResource = R.color.wallet_pink
-            } else {
+            marketPercentage.text = "${percentage.numberFormat2()}%"
+            val isRising = percentage >= BigDecimal.ZERO
+            if (isRising) {
                 marketPercentage.textColorResource = R.color.wallet_green
+            } else {
+                marketPercentage.textColorResource = R.color.wallet_pink
             }
             price.text = "$symbol${BigDecimal(item.currentPrice).multiply(rate).priceFormat()}"
             assetNumber.text = item.marketCapRank
@@ -61,7 +62,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             } else {
                 ""
             }
-            market.loadSvg(item.sparklineIn7d)
+            market.loadSvgWithTint(item.sparklineIn7d, isRising, false)
         }
     }
 }
