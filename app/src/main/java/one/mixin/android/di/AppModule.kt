@@ -115,6 +115,7 @@ import org.chromium.net.CronetEngine
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -495,6 +496,9 @@ object AppModule {
         builder.dns(DNS)
         val client =
             builder.apply {
+                httpLoggingInterceptor?.let { interceptor ->
+                    addNetworkInterceptor(interceptor)
+                }
                 addInterceptor { chain ->
                     val requestId = UUID.randomUUID().toString()
                     val sourceRequest = chain.request()
@@ -510,9 +514,6 @@ object AppModule {
                     }
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
-                }
-                httpLoggingInterceptor?.let { interceptor ->
-                    addNetworkInterceptor(interceptor)
                 }
             }.build()
         val retrofit =

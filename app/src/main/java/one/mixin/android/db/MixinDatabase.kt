@@ -59,6 +59,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_54_55
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_55_56
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_56_57
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_57_58
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_58_59
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
@@ -112,6 +113,8 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketFavored
+import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -169,6 +172,8 @@ import kotlin.math.min
         (InscriptionItem::class),
         (Market::class),
         (HistoryPrice::class),
+        (MarketCoin::class),
+        (MarketFavored::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -256,6 +261,10 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketDao(): MarketDao
 
+    abstract fun marketCoinDao(): MarketCoinDao
+
+    abstract fun marketFavoredDao(): MarketFavoredDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
@@ -326,6 +335,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_55_56,
                                 MIGRATION_56_57,
                                 MIGRATION_57_58,
+                                MIGRATION_58_59,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

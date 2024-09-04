@@ -3,12 +3,12 @@ package one.mixin.android.repository
 import android.os.CancellationSignal
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.liveData
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +49,7 @@ import one.mixin.android.db.DepositDao
 import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
+import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.MarketDao
@@ -70,6 +71,7 @@ import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.util.ErrorHandler
@@ -89,6 +91,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -137,6 +140,7 @@ class TokenRepository
         private val inscriptionCollectionDao: InscriptionCollectionDao,
         private val historyPriceDao: HistoryPriceDao,
         private val marketDao: MarketDao,
+        private val marketCoinDao: MarketCoinDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -1030,5 +1034,18 @@ class TokenRepository
         assetId: String,
     ) = marketDao.marketById(assetId)
 
+    fun marketByCoinId(
+        coinId: String,
+    ) = marketDao.marketByCoinId(coinId)
+
     fun historyPriceById(assetId: String) = historyPriceDao.historyPriceById(assetId)
+
+    fun getWeb3Markets(limit: Int, sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getWeb3Markets(limit, sort.value)
+
+    fun getFavoredWeb3Markets(sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(sort.value)
+
+    suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
+
+    suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
+
 }

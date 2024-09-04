@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/favorite"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:contentDescription="@null"
+        android:padding="4dp"
+        android:src="@drawable/ic_asset_favorites"
+        android:background="@drawable/mixin_ripple_small"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true" />
+
+    <one.mixin.android.widget.CircleImageView
+        android:id="@+id/icon"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/bot_default"
+        android:layout_toEndOf="@id/favorite"
+        android:layout_centerVertical="true" />
+
+    <RelativeLayout
+        android:id="@+id/name_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@id/icon">
+
+        <TextView
+            android:id="@+id/asset_symbol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/asset_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:background="@drawable/bg_round_4_solid_light_gray"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/asset_symbol"
+            android:layout_alignStart="@id/asset_symbol" />
+
+        <TextView
+            android:id="@+id/asset_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:layout_toEndOf="@id/asset_number"
+            android:layout_alignTop="@id/asset_number"
+            android:layout_alignBottom="@id/asset_number"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/text_primary"
+        android:textFontWeight="600"
+        android:textSize="14sp"
+        android:gravity="end"
+        android:layout_toEndOf="@id/name_layout"
+        android:layout_toStartOf="@id/market"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"/>
+
+    <ImageView
+        android:id="@+id/market"
+        android:layout_width="60dp"
+        android:layout_height="34dp"
+        android:contentDescription="@null"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true" />
+
+</RelativeLayout>

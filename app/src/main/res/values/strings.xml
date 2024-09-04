@@ -1610,6 +1610,7 @@
     <string name="Price_data_unavailable">Price data unavailable</string>
     <string name="Balance">Balance</string>
     <string name="Market">Market</string>
+    <string name="Markets">Markets</string>
     <string name="view_all">View All</string>
     <string name="My_Balance">My Balance</string>
     <string name="All_Networks">All networks</string>
@@ -1648,6 +1649,7 @@
     <string name="New_Update_Available_desc">We update the app regularly so we can make \nit better for you</string>
     <string name="Update_Now">Update Now</string>
     <string name="Market_Cap">Market Cap</string>
+    <string name="Global_Market_Cap">Market Cap</string>
     <string name="Approve">Approve</string>
     <string name="Reject">Reject</string>
     <string name="Note">Note</string>
@@ -1663,4 +1665,15 @@
     <string name="SAFE">SAFE</string>
     <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
+    <string name="watchlist_empty">Your watchlist is empty</string>
+    <string name="Dominance">Dominance</string>
+    <string name="volume_24h">24h Volume</string>
+    <string name="week_percentage">7d %</string>
+    <string name="Watchlist">Watchlist</string>
+    <string name="top_count">Top %1$d</string>
+    <string name="change_percent_period_day">%1$dD %%</string>
+    <string name="change_percent_period_hour">%1$dh %%</string>
+    <string name="Choose_Token">Choose %1$s Network</string>
+    <string name="choose_token_desc">%1$s is issued on multiple networks</string>
+    <string name="watchlist_add_desc">%1$s is now on your watchlist!</string>
 </resources>

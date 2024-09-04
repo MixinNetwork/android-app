@@ -1572,6 +1572,7 @@
     <string name="Price_data_unavailable">价格数据不可用</string>
     <string name="Balance">余额</string>
     <string name="Market">行情</string>
+    <string name="Markets">行情</string>
     <string name="view_all">查看所有</string>
     <string name="My_Balance">我的余额</string>
     <string name="All_Networks">全部网络</string>
@@ -1610,6 +1611,7 @@
     <string name="New_Update_Available_desc">我们定期更新应用程序，以便为您提供更好的服务</string>
     <string name="Update_Now">现在升级</string>
     <string name="Market_Cap">市值</string>
+    <string name="Global_Market_Cap">全球总市值</string>
     <string name="signature_request_from">该签名请求来自 %1$s。</string>
     <string name="Reject">拒绝</string>
     <string name="Note">备注</string>
@@ -1625,4 +1627,14 @@
     <string name="SAFE">金库</string>
     <string name="multisig_safe_state_signed">您已经批准了这笔交易，您无法再次批准。</string>
     <string name="multisig_safe_state_unlocked">这笔交易已经被其他人拒绝，您无法再次拒绝。</string>
+    <string name="watchlist_empty">您的自选列表为空</string>
+    <string name="Dominance">市占率</string>
+    <string name="volume_24h">24 小时交易量</string>
+    <string name="Watchlist">自选列表</string>
+    <string name="top_count">前 %1$d</string>
+    <string name="change_percent_period_day">%1$d天 %%</string>
+    <string name="change_percent_period_hour">%1$d小时 %%</string>
+    <string name="Choose_Token">选择 %1$s 网络</string>
+    <string name="choose_token_desc">%1$s 在多个网络上发布</string>
+    <string name="watchlist_add_desc">%1$s 已经加入自选</string>
 </resources>

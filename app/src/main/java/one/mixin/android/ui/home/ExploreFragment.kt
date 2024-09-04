@@ -2,6 +2,7 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,6 +52,7 @@ import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -122,21 +124,35 @@ class ExploreFragment : BaseFragment() {
                 0 -> {
                     exploreVa.displayedChild = 0
                     radioFavorite.isChecked = true
+                    radioMarket.isChecked = false
                     radioEth.isChecked = false
                     radioSolana.isChecked = false
                 }
+
+                1 -> {
+                    exploreVa.displayedChild = 1
+                    radioFavorite.isChecked = false
+                    radioMarket.isChecked = true
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = false
+                    navigate(marketFragment, MarketFragment.TAG)
+                }
+
                 2 -> {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = true
-                    navigate(solanaFragment, SolanaFragment.TAG)
-                }
-                else -> {
-                    exploreVa.displayedChild = 1
-                    radioFavorite.isChecked = false
+                    radioMarket.isChecked = false
                     radioEth.isChecked = true
                     radioSolana.isChecked = false
+                    navigate(solanaFragment, SolanaFragment.TAG)
+                }
+
+                3 -> {
+                    exploreVa.displayedChild = 1
+                    radioFavorite.isChecked = false
+                    radioMarket.isChecked = false
+                    radioEth.isChecked = false
+                    radioSolana.isChecked = true
                     navigate(ethereumFragment, EthereumFragment.TAG)
                 }
             }
@@ -148,14 +164,20 @@ class ExploreFragment : BaseFragment() {
                         exploreVa.displayedChild = 0
                     }
 
-                    R.id.radio_eth -> {
+                    R.id.radio_market -> {
                         defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 1)
+                        exploreVa.displayedChild = 1
+                        navigate(marketFragment, MarketFragment.TAG)
+                    }
+
+                    R.id.radio_eth -> {
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 2)
                         exploreVa.displayedChild = 1
                         navigate(ethereumFragment, EthereumFragment.TAG)
                     }
 
                     R.id.radio_solana -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 2)
+                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 3)
                         exploreVa.displayedChild = 1
                         navigate(solanaFragment, SolanaFragment.TAG)
                     }
@@ -203,6 +225,11 @@ class ExploreFragment : BaseFragment() {
     private val ethereumFragment by lazy {
         EthereumFragment()
     }
+
+    private val marketFragment by lazy {
+        MarketFragment()
+    }
+
     private val solanaFragment by lazy {
         SolanaFragment()
     }
@@ -219,6 +246,7 @@ class ExploreFragment : BaseFragment() {
         if (!hidden) {
             if (ethereumFragment.isVisible) ethereumFragment.updateUI()
             if (solanaFragment.isVisible) solanaFragment.updateUI()
+            if (marketFragment.isVisible) marketFragment.updateUI()
         }
     }
 
@@ -469,3 +497,7 @@ class ExploreFragment : BaseFragment() {
         }
     }
 }
+
+fun exploreEvm(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 2
+
+fun exploreSolana(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 3

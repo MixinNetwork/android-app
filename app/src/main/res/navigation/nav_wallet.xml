@@ -62,8 +62,8 @@
             app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_market"
-            app:destination="@id/market_fragment"
+            android:id="@+id/action_transactions_to_market_details"
+            app:destination="@id/market_fragment_details"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
@@ -71,13 +71,17 @@
     </fragment>
 
     <fragment
-        android:id="@+id/market_fragment"
-        android:name="one.mixin.android.ui.wallet.MarketFragment"
+        android:id="@+id/market_fragment_details"
+        android:name="one.mixin.android.ui.wallet.MarketDetailsFragment"
         tools:layout="@layout/fragment_market">
 
         <argument
             android:name="args_token"
             app:argType="one.mixin.android.vo.safe.TokenItem" />
+
+        <argument
+            android:name="args_market"
+            app:argType="one.mixin.android.vo.market.MarketItem" />
     </fragment>
 
     <fragment

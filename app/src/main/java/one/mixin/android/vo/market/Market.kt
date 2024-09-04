@@ -3,16 +3,28 @@ package one.mixin.android.vo.market
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.db.converter.OptionalListConverter
 
 @Entity(
     tableName = "markets",
 )
+@TypeConverters(OptionalListConverter::class)
 data class Market(
     @PrimaryKey
-    @SerializedName("key")
-    @ColumnInfo(name = "asset_id")
-    val assetId: String,
+    @SerializedName("coin_id")
+    @ColumnInfo(name = "coin_id")
+    val coinId: String,
+    @SerializedName("name")
+    @ColumnInfo(name = "name")
+    val name: String,
+    @SerializedName("symbol")
+    @ColumnInfo(name = "symbol")
+    val symbol: String,
+    @SerializedName("icon_url")
+    @ColumnInfo(name = "icon_url")
+    val iconUrl: String,
     @SerializedName("current_price")
     @ColumnInfo(name = "current_price")
     val currentPrice: String,
@@ -34,9 +46,18 @@ data class Market(
     @SerializedName("price_change_24h")
     @ColumnInfo(name = "price_change_24h")
     val priceChange24h: String,
+    @SerializedName("price_change_percentage_1h")
+    @ColumnInfo(name = "price_change_percentage_1h")
+    val priceChangePercentage1H: String,
     @SerializedName("price_change_percentage_24h")
     @ColumnInfo(name = "price_change_percentage_24h")
-    val priceChangePercentage24h: String,
+    val priceChangePercentage24H: String,
+    @SerializedName("price_change_percentage_7d")
+    @ColumnInfo(name = "price_change_percentage_7d")
+    val priceChangePercentage7D: String,
+    @SerializedName("price_change_percentage_30d")
+    @ColumnInfo(name = "price_change_percentage_30d")
+    val priceChangePercentage30D: String,
     @SerializedName("market_cap_change_24h")
     @ColumnInfo(name = "market_cap_change_24h")
     val marketCapChange24h: String,
@@ -70,6 +91,12 @@ data class Market(
     @SerializedName("atl_date")
     @ColumnInfo(name = "atl_date")
     val atlDate: String,
+    @SerializedName("asset_ids")
+    @ColumnInfo(name = "asset_ids")
+    val assetIds: List<String>?,
+    @SerializedName("sparkline_in_7d")
+    @ColumnInfo(name = "sparkline_in_7d")
+    val sparklineIn7d: String,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String

@@ -16,10 +16,11 @@ import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceuceSelectionBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.exploreEvm
+import one.mixin.android.ui.home.exploreSolana
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.InputFragment
 import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
@@ -94,7 +95,3 @@ suspend fun getExploreAddress(context: Context): String {
         ""
     }
 }
-
-fun exploreEvm(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 1
-
-fun exploreSolana(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 2

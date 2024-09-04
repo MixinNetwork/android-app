@@ -24,6 +24,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.exploreSolana
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical"
+    android:paddingBottom="40dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/choose_network"
+            android:text="@string/Choose_Token"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/choose_network_sub"
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/choose_token_desc"
+            android:layout_below="@id/choose_network" />
+
+        <ImageView
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_circle_close"
+            android:background="@drawable/mixin_ripple"
+            tools:ignore="ContentDescription"/>
+
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/asset_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_white"
+        android:padding="@dimen/padding8"
+        app:layoutManager="LinearLayoutManager"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_choose_token" />
+</LinearLayout>

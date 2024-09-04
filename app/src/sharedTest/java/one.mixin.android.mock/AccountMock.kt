@@ -33,5 +33,7 @@ fun mockAccount(): Account {
         0.0,
         arrayListOf(),
         "",
+        null,
+        null
     )
 }
