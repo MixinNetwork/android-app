@@ -69,6 +69,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
+        const val ARGS_FROM_MARKET = "args_from_market"
     }
 
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
@@ -85,6 +86,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val walletViewModel by viewModels<WalletViewModel>()
 
     lateinit var asset: TokenItem
+
+    private val fromMarket by lazy {
+        requireArguments().getBoolean(ARGS_FROM_MARKET, false)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,6 +182,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             marketRl.setOnClickListener {
                 lifecycleScope.launch {
+                    if (fromMarket) {
+                        activity?.onBackPressedDispatcher?.onBackPressed()
+                        return@launch
+                    }
                     val market = walletViewModel.findMarketItemByAssetId(asset.assetId)
                     if (market == null) {
                         jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))

@@ -166,7 +166,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 if (assetId == nowTokens.first().assetId) {
                                     requireActivity().onBackPressedDispatcher.onBackPressed()
                                 } else {
-                                    WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions)
+                                    WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions, true)
                                 }
                             } else {
                                 ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
@@ -175,7 +175,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                             if (assetId == token.assetId) {
                                                 activity?.onBackPressedDispatcher?.onBackPressed()
                                             } else {
-                                                activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions) }
+                                                activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions, true) }
                                             }
                                         }
                                     }
