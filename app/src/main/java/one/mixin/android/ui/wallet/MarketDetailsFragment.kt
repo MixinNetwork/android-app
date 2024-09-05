@@ -138,8 +138,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE
-                    if (marketItem.priceChange24h.isNotEmpty()) {
-                        currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    if (marketItem.priceChangePercentage24H.isNotEmpty()) {
+                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                         rise.text = currentRise
                         priceRise.text = currentRise
                         rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
