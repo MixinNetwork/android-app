@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
     android:foreground="?android:attr/selectableItemBackground">
 
     <ImageView
@@ -39,6 +40,7 @@
             android:id="@+id/asset_symbol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
             android:textColor="?attr/text_primary"
             android:textSize="14sp" />
 
@@ -89,18 +91,20 @@
         android:layout_centerVertical="true">
 
         <ImageView
-            android:id="@+id/market"
+            android:id="@+id/sparkline"
             android:layout_width="60dp"
-            android:layout_height="34dp"
+            android:layout_height="28dp"
             android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/market_percentage"
             android:textSize="12sp"
-            android:layout_below="@id/market"
+            android:textFontWeight="500"
+            android:layout_below="@id/sparkline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignEnd="@id/market"
-            android:contentDescription="@null" />
+            android:layout_alignEnd="@id/sparkline"
+            android:contentDescription="@null"
+            tools:targetApi="p" />
     </RelativeLayout>
 </RelativeLayout>
