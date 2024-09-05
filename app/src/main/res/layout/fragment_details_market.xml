@@ -132,56 +132,6 @@
                     </RadioGroup>
 
                     <TextView
-                        android:id="@+id/market_low_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/low_24h"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="16dp"
-                        android:layout_below="@id/radio_group"
-                        android:layout_marginTop="30dp" />
-
-                    <TextView
-                        android:id="@+id/market_low"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_below="@id/market_low_title"
-                        android:layout_marginTop="11dp"
-                        android:textFontWeight="600"
-                        android:text="@string/N_A" />
-
-                    <TextView
-                        android:id="@+id/market_high_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/high_24h"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_marginStart="16dp"
-                        android:layout_below="@id/radio_group"
-                        android:layout_marginTop="30dp" />
-
-                    <TextView
-                        android:id="@+id/market_high"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:layout_below="@id/market_high_title"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp"
-                        android:layout_marginBottom="20dp"
-                        android:textFontWeight="600"
-                        android:text="@string/N_A" />
-
-
-                    <TextView
                         android:id="@+id/market_vol_c_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -190,7 +140,7 @@
                         android:textSize="12sp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="16dp"
-                        android:layout_below="@id/market_high"
+                        android:layout_below="@id/radio_group"
                         android:visibility="invisible"/>
 
                     <TextView
@@ -201,9 +151,8 @@
                         android:textSize="14sp"
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
-                        android:layout_below="@id/market_vol_u_title"
+                        android:layout_below="@id/market_vol_c_title"
                         android:layout_marginTop="11dp"
-                        android:layout_marginBottom="28dp"
                         android:textFontWeight="600"
                         android:text="@string/N_A"
                         android:visibility="invisible"/>
@@ -216,7 +165,8 @@
                         android:textColor="?attr/text_remarks"
                         android:textSize="12sp"
                         android:layout_marginStart="16dp"
-                        android:layout_below="@id/market_high" />
+                        android:layout_below="@id/radio_group"
+                        android:layout_marginTop="30dp"  />
 
                     <TextView
                         android:id="@+id/market_vol_u"
@@ -224,11 +174,59 @@
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
-                        android:layout_below="@id/market_vol_c_title"
+                        android:layout_below="@id/market_vol_u_title"
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="11dp"
+                        android:layout_marginBottom="20dp"
                         android:text="@string/N_A"
-                        android:textFontWeight="600"/>
+                        android:textFontWeight="600" />
+
+                    <TextView
+                        android:id="@+id/market_low_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/low_24h"
+                        android:textColor="?attr/text_remarks"
+                        android:textSize="12sp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginEnd="16dp"
+                        android:layout_below="@id/market_vol_u" />
+
+                    <TextView
+                        android:id="@+id/market_low"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_below="@id/market_low_title"
+                        android:layout_marginTop="11dp"
+                        android:layout_marginBottom="28dp"
+                        android:textFontWeight="600"
+                        android:text="@string/N_A" />
+
+                    <TextView
+                        android:id="@+id/market_high_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/high_24h"
+                        android:textColor="?attr/text_remarks"
+                        android:textSize="12sp"
+                        android:layout_marginStart="16dp"
+                        android:layout_below="@id/market_vol_u" />
+
+                    <TextView
+                        android:id="@+id/market_high"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp"
+                        android:layout_below="@id/market_high_title"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="11dp"
+                        android:textFontWeight="600"
+                        android:text="@string/N_A" />
 
                 </RelativeLayout>
             </FrameLayout>
