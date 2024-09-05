@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 
@@ -15,6 +16,7 @@ interface MarketDao : BaseDao<Market> {
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id WHERE m.coin_id = :coinId")
     fun marketByCoinId(coinId: String): LiveData<MarketItem?>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
        SELECT * FROM (
