@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
@@ -88,6 +89,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
 
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
+                requireActivity().heavyClickVibrate()
                 typeState.value =
                     when (checkedId) {
 
