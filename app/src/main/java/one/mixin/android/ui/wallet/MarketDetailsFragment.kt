@@ -225,7 +225,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)
                     marketLow.text = priceFormat(info.low24h)
-                    marketVolU.text = volFormat(info.totalVolume, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
+                    marketVolU.text = capFormat(info.totalVolume, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
 
                     if (info.circulatingSupply == "0") {
                         circulationSupply.text = getString(R.string.N_A)
