@@ -177,8 +177,8 @@
                         android:textSize="14sp"
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
+                        android:layout_marginTop="10dp"
                         android:layout_below="@id/market_vol_u_title"
-                        android:textFontWeight="600"
                         android:text="@string/N_A" />
 
                     <TextView
@@ -200,8 +200,8 @@
                         android:layout_below="@id/market_cap_stats_title"
                         android:layout_marginStart="16dp"
                         android:layout_marginBottom="20dp"
-                        android:text="@string/N_A"
-                        android:textFontWeight="600" />
+                        android:layout_marginTop="10dp"
+                        android:text="@string/N_A" />
 
                     <TextView
                         android:id="@+id/market_low_title"
@@ -225,7 +225,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_low_title"
                         android:layout_marginBottom="20dp"
-                        android:textFontWeight="600"
+                        android:layout_marginTop="10dp"
                         android:text="@string/N_A" />
 
                     <TextView
@@ -247,7 +247,7 @@
                         android:textSize="14sp"
                         android:layout_below="@id/market_high_title"
                         android:layout_marginStart="16dp"
-                        android:textFontWeight="600"
+                        android:layout_marginTop="10dp"
                         android:text="@string/N_A" />
 
                 </RelativeLayout>
