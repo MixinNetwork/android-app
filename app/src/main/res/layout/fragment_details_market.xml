@@ -100,6 +100,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginTop="16dp"
+                        android:layout_marginBottom="20dp"
                         android:orientation="horizontal"
                         android:gravity="center">
 
@@ -130,6 +131,32 @@
                             android:text="All" />
 
                     </RadioGroup>
+                </RelativeLayout>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/state_fl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/stats"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/text_minor"
+                        android:text="@string/Stats"
+                        android:layout_marginBottom="14dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"/>
 
                     <TextView
                         android:id="@+id/market_vol_c_title"
@@ -140,8 +167,8 @@
                         android:textSize="12sp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="16dp"
-                        android:layout_below="@id/radio_group"
-                        android:visibility="invisible"/>
+                        android:layout_below="@id/stats"
+                        android:visibility="invisible" />
 
                     <TextView
                         android:id="@+id/market_vol_c"
@@ -152,10 +179,9 @@
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_vol_c_title"
-                        android:layout_marginTop="11dp"
                         android:textFontWeight="600"
                         android:text="@string/N_A"
-                        android:visibility="invisible"/>
+                        android:visibility="invisible" />
 
                     <TextView
                         android:id="@+id/market_vol_u_title"
@@ -165,8 +191,7 @@
                         android:textColor="?attr/text_remarks"
                         android:textSize="12sp"
                         android:layout_marginStart="16dp"
-                        android:layout_below="@id/radio_group"
-                        android:layout_marginTop="30dp"  />
+                        android:layout_below="@id/stats" />
 
                     <TextView
                         android:id="@+id/market_vol_u"
@@ -176,7 +201,6 @@
                         android:textSize="14sp"
                         android:layout_below="@id/market_vol_u_title"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp"
                         android:layout_marginBottom="20dp"
                         android:text="@string/N_A"
                         android:textFontWeight="600" />
@@ -201,7 +225,6 @@
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_low_title"
-                        android:layout_marginTop="11dp"
                         android:layout_marginBottom="28dp"
                         android:textFontWeight="600"
                         android:text="@string/N_A" />
@@ -224,7 +247,6 @@
                         android:textSize="14sp"
                         android:layout_below="@id/market_high_title"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="11dp"
                         android:textFontWeight="600"
                         android:text="@string/N_A" />
 
