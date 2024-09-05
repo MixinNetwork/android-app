@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
@@ -88,6 +89,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
 
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
+                requireActivity().heavyClickVibrate()
                 typeState.value =
                     when (checkedId) {
 
@@ -136,8 +138,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE
-                    if (marketItem.priceChange24h.isNotEmpty()) {
-                        currentRise = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    if (marketItem.priceChangePercentage24H.isNotEmpty()) {
+                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                         rise.text = currentRise
                         priceRise.text = currentRise
                         rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink

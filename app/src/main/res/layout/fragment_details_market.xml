@@ -347,7 +347,6 @@
                         android:layout_alignTop="@id/value"
                         android:layout_marginStart="@dimen/margin16"
                         android:layout_marginEnd="20dp"
-                        android:layout_marginTop="4dp"
                         android:layout_alignParentEnd="true"
                         android:textSize="14sp"
                         android:textColor="@color/wallet_green" />
