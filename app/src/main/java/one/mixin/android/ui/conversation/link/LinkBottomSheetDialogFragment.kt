@@ -92,6 +92,8 @@ import one.mixin.android.ui.oldwallet.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.oldwallet.biometric.TransferBiometricItem
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -675,6 +677,23 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     else -> showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_MARKET, true)) {
+            val uri = Uri.parse(url)
+            val id = uri.lastPathSegment
+            lifecycleScope.launch {
+                if (id.isNullOrBlank()) {
+                    showError()
+                } else {
+                    val marketItem = linkViewModel.checkMarketById(id)
+                    if (marketItem == null) {
+                        showError(R.string.Data_error)
+                    } else {
+                        WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                    }
+                    dismiss()
+                }
+            }
+
         } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
             if (checkHasPin()) return
 

@@ -61,6 +61,9 @@ interface MarketDao : BaseDao<Market> {
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     suspend fun findMarketItemByAssetId(assetId: String): MarketItem?
 
+    @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id WHERE m.coin_id = :coinId")
+    suspend fun findMarketItemByCoinId(coinId: String): MarketItem?
+
     @Query("DELETE FROM markets WHERE CAST(market_cap_rank AS INTEGER) <= :top")
     fun deleteTop(top: Int): Int
 }

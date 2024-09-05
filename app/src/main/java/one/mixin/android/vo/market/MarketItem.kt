@@ -67,4 +67,40 @@ data class MarketItem(
     val sparklineIn7d: String,
     @ColumnInfo(name = "is_favored")
     var isFavored: Boolean?
-) : Parcelable
+) : Parcelable {
+    companion object {
+        fun fromMarket(market: Market): MarketItem {
+            return MarketItem(
+                coinId = market.coinId,
+                name = market.name,
+                symbol = market.symbol,
+                iconUrl = market.iconUrl,
+                currentPrice = market.currentPrice,
+                marketCap = market.marketCap,
+                marketCapRank = market.marketCapRank,
+                totalVolume = market.totalVolume,
+                high24h = market.high24h,
+                low24h = market.low24h,
+                priceChange24h = market.priceChange24h,
+                priceChangePercentage1H = market.priceChangePercentage1H,
+                priceChangePercentage24H = market.priceChangePercentage24H,
+                priceChangePercentage7D = market.priceChangePercentage7D,
+                priceChangePercentage30D = market.priceChangePercentage30D,
+                marketCapChange24h = market.marketCapChange24h,
+                marketCapChangePercentage24h = market.marketCapChangePercentage24h,
+                circulatingSupply = market.circulatingSupply,
+                totalSupply = market.totalSupply,
+                maxSupply = market.maxSupply,
+                ath = market.ath,
+                athChangePercentage = market.athChangePercentage,
+                athDate = market.athDate,
+                atl = market.atl,
+                atlChangePercentage = market.atlChangePercentage,
+                atlDate = market.atlDate,
+                assetIds = market.assetIds,
+                sparklineIn7d = market.sparklineIn7d,
+                isFavored = null
+            )
+        }
+    }
+}
