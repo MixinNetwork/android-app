@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/favorite"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:contentDescription="@null"
         android:padding="4dp"
         android:src="@drawable/ic_asset_favorites"
@@ -22,7 +22,7 @@
         android:id="@+id/icon"
         android:layout_width="38dp"
         android:layout_height="38dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="10dp"
         android:src="@drawable/bot_default"
         android:layout_toEndOf="@id/favorite"
         android:layout_centerVertical="true" />
@@ -32,7 +32,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_toEndOf="@id/icon">
+        android:layout_toEndOf="@id/icon"
+        android:layout_centerVertical="true">
 
         <TextView
             android:id="@+id/asset_symbol"
@@ -76,16 +77,30 @@
         android:textSize="14sp"
         android:gravity="end"
         android:layout_toEndOf="@id/name_layout"
-        android:layout_toStartOf="@id/market"
+        android:layout_toStartOf="@id/market_rl"
         android:layout_centerVertical="true"
         android:layout_marginEnd="16dp"/>
 
-    <ImageView
-        android:id="@+id/market"
+    <RelativeLayout
+        android:id="@id/market_rl"
         android:layout_width="60dp"
-        android:layout_height="34dp"
-        android:contentDescription="@null"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true">
 
+        <ImageView
+            android:id="@+id/market"
+            android:layout_width="60dp"
+            android:layout_height="34dp"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/market_percentage"
+            android:textSize="12sp"
+            android:layout_below="@id/market"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@id/market"
+            android:contentDescription="@null" />
+    </RelativeLayout>
 </RelativeLayout>

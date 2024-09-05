@@ -8,10 +8,12 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadSvg
+import one.mixin.android.extension.loadSvgWithTint
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import java.math.BigDecimal
@@ -33,17 +35,25 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             root.setOnClickListener { onClick.invoke(item) }
             val symbol = Fiats.getSymbol()
             val rate = BigDecimal(Fiats.getRate())
-            favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
+            favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_asset_favorites_checked else R.drawable.ic_asset_favorites)
             favorite.setOnClickListener {
                 onFavorite.invoke(item.symbol, item.coinId, item.isFavored)
             }
             icon.loadImage(item.iconUrl, R.drawable.ic_avatar_place_holder)
             assetSymbol.text = item.symbol
             assetValue.text = item.totalVolume
+            val percentage = BigDecimal(item.priceChangePercentage7D)
+            marketPercentage.text = "${percentage.numberFormat2()}%"
+            val isRising = percentage >= BigDecimal.ZERO
+            if (isRising) {
+                marketPercentage.textColorResource = R.color.wallet_green
+            } else {
+                marketPercentage.textColorResource = R.color.wallet_pink
+            }
             price.text = "$symbol${BigDecimal(item.currentPrice).multiply(rate).priceFormat()}"
             assetNumber.text = item.marketCapRank
             val formatVol = try {
-                BigDecimal(item.totalVolume).multiply(rate).numberFormatCompact()
+                BigDecimal(item.marketCap).multiply(rate).numberFormatCompact()
             } catch (e: NumberFormatException) {
                 null
             }
@@ -52,7 +62,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             } else {
                 ""
             }
-            market.loadSvg(item.sparklineIn7d)
+            market.loadSvgWithTint(item.sparklineIn7d, isRising, false)
         }
     }
 }

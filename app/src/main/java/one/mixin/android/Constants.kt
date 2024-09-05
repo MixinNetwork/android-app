@@ -125,7 +125,7 @@ object Constants {
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
         const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
         const val MIXIN_SWAP = "mixin://mixin.one/swap"
-
+        const val MIXIN_MARKET = "mixin://mixin.one/markets"
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_INSCRIPTION = "https://mixin.one/inscriptions"

@@ -65,6 +65,7 @@ import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.within6Hours
@@ -91,6 +92,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
@@ -1048,4 +1050,37 @@ class TokenRepository
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
 
+    suspend fun findMarketItemByAssetId(assetId: String) = marketDao.findMarketItemByAssetId(assetId)
+
+    private suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
+
+    suspend fun checkMarketById(id: String): MarketItem? {
+        val marketItem = if (id.isUUID()) {
+            findMarketItemByAssetId(id)
+        } else {
+            findMarketItemByCoinId(id)
+        }
+        if (marketItem != null) return marketItem
+        val response = routeService.market(id)
+        if (response.isSuccess && response.data != null) {
+            val data = response.data ?: return null
+            val local = marketDao.findMarketById(data.coinId)
+            val market = if (local != null) {
+                data.copy(marketCapRank = local.marketCapRank)
+            } else {
+                data
+            }
+            marketDao.insert(market)
+            marketCoinDao.insertIgnoreList(market.assetIds?.map { assetId ->
+                MarketCoin(
+                    coinId = market.coinId,
+                    assetId = assetId,
+                    createdAt = nowInUtc()
+                )
+            } ?: emptyList())
+            return MarketItem.fromMarket(market)
+        } else {
+            return null
+        }
+    }
 }

@@ -1676,4 +1676,5 @@
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist!</string>
+    <string name="Stats">Stats</string>
 </resources>

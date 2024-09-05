@@ -389,4 +389,6 @@ class WalletViewModel
     suspend fun findTokensByCoinId(coinId: String): List<TokenItem> = tokenRepository.findTokensByCoinId(coinId)
 
     suspend fun findTokenIdsByCoinId(coinId: String) = tokenRepository.findTokenIdsByCoinId(coinId)
+
+    suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 }

@@ -13,6 +13,10 @@
             android:name="args_asset"
             app:argType="one.mixin.android.vo.safe.TokenItem" />
 
+        <argument
+            android:name="args_from_market"
+            app:argType="boolean" />
+
         <action
             android:id="@+id/action_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
@@ -76,12 +80,12 @@
         tools:layout="@layout/fragment_market">
 
         <argument
-            android:name="args_token"
-            app:argType="one.mixin.android.vo.safe.TokenItem" />
-
-        <argument
             android:name="args_market"
             app:argType="one.mixin.android.vo.market.MarketItem" />
+
+        <argument
+            android:name="args_asset_id"
+            app:argType="string" />
     </fragment>
 
     <fragment

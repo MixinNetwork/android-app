@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentChooseTokensBottomSheetBinding
 import one.mixin.android.databinding.ItemChooseTokenBinding
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.getChainName
@@ -101,7 +102,7 @@ class ChooseTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         ) {
             binding.assetIcon.loadToken(tokenItem)
             binding.chain.text = getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey)
-            binding.value.text = "${tokenItem.balance} ${tokenItem.symbol}"
+            binding.value.text = "${tokenItem.balance.numberFormat8()} ${tokenItem.symbol}"
             binding.root.setOnClickListener {
                 callback?.invoke(tokenItem)
             }

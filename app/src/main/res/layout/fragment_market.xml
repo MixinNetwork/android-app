@@ -68,8 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/bg_white"
-            app:layout_scrollFlags="enterAlways"
-            android:layout_marginBottom="4dp">
+            app:layout_scrollFlags="enterAlways">
 
             <RadioGroup
                 android:id="@+id/radio_group_market"
@@ -89,10 +88,10 @@
                     android:background="@drawable/ripple_half_circle_left"
                     android:drawableStart="@drawable/selector_market_favorites"
                     android:checked="true"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="4dp" />
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="6dp" />
 
                 <View
                     android:background="@color/color_gray"
@@ -107,10 +106,10 @@
                     android:button="@null"
                     android:background="@drawable/ripple_half_circle_right"
                     android:drawableStart="@drawable/selector_market_rank"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="12dp" />
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="14dp" />
 
             </RadioGroup>
 
@@ -148,7 +147,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/radio_group_market"
-                android:layout_marginTop="20dp"/>
+                android:layout_marginTop="16dp"/>
 
         </RelativeLayout>
 

@@ -12,10 +12,9 @@ import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
-import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_FROM_EXPLORE
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
@@ -56,7 +55,11 @@ class WalletActivity : BlazeBaseActivity() {
             Destination.Transactions -> {
                 navGraph.setStartDestination(R.id.transactions_fragment)
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
-                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
+                val fromMarket = intent.getBooleanExtra(ARGS_FROM_MARKET, false)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putParcelable(ARGS_ASSET, token)
+                    putBoolean(ARGS_FROM_MARKET, fromMarket)
+                })
             }
             Destination.Search -> {
                 navGraph.setStartDestination(R.id.wallet_search_fragment)
@@ -94,16 +97,10 @@ class WalletActivity : BlazeBaseActivity() {
             Destination.Market -> {
                 navGraph.setStartDestination(R.id.market_fragment_details)
                 val marketItem = intent.getParcelableExtraCompat(ARGS_MARKET, MarketItem::class.java)
-                val fromExplore = intent.getBooleanExtra(ARGS_FROM_EXPLORE, false)
-                val token = intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)
                 navController.setGraph(navGraph, Bundle().apply {
                     marketItem?.let {
                         putParcelable(ARGS_MARKET, it)
                     }
-                    token?.let {
-                        putParcelable(ARGS_TOKEN, it)
-                    }
-                    putBoolean(ARGS_FROM_EXPLORE, fromExplore)
                 })
             }
         }
@@ -133,13 +130,13 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             tokenItem: TokenItem,
             destination: Destination,
-            fromExplore: Boolean = false,
+            fromMarket: Boolean = false
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ASSET, tokenItem)
-                    putExtra(ARGS_FROM_EXPLORE, fromExplore)
+                    putExtra(ARGS_FROM_MARKET, fromMarket)
                 },
             )
         }

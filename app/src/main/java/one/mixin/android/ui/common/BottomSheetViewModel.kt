@@ -38,6 +38,7 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
@@ -89,6 +90,7 @@ import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.OutputState
@@ -1336,4 +1338,6 @@ class BottomSheetViewModel
         }
 
         fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
+
+        suspend fun checkMarketById(id: String): MarketItem? = tokenRepository.checkMarketById(id)
     }
