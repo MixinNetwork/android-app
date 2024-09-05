@@ -159,32 +159,30 @@
                         android:layout_marginTop="20dp"/>
 
                     <TextView
-                        android:id="@+id/market_vol_c_title"
+                        android:id="@+id/market_vol_u_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/vol_24h"
+                        android:text="@string/Market_Cap"
                         android:textColor="?attr/text_remarks"
                         android:textSize="12sp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="16dp"
-                        android:layout_below="@id/stats"
-                        android:visibility="invisible" />
+                        android:layout_below="@id/stats" />
 
                     <TextView
-                        android:id="@+id/market_vol_c"
+                        android:id="@+id/market_vol_u"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
-                        android:layout_below="@id/market_vol_c_title"
+                        android:layout_below="@id/market_vol_u_title"
                         android:textFontWeight="600"
-                        android:text="@string/N_A"
-                        android:visibility="invisible" />
+                        android:text="@string/N_A" />
 
                     <TextView
-                        android:id="@+id/market_vol_u_title"
+                        android:id="@+id/market_cap_stats_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/vol_24h"
@@ -194,12 +192,12 @@
                         android:layout_below="@id/stats" />
 
                     <TextView
-                        android:id="@+id/market_vol_u"
+                        android:id="@+id/market_cap_stats"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="?attr/text_primary"
                         android:textSize="14sp"
-                        android:layout_below="@id/market_vol_u_title"
+                        android:layout_below="@id/market_cap_stats_title"
                         android:layout_marginStart="16dp"
                         android:layout_marginBottom="20dp"
                         android:text="@string/N_A"
@@ -214,6 +212,7 @@
                         android:textSize="12sp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginTop="20dp"
                         android:layout_below="@id/market_vol_u" />
 
                     <TextView
@@ -225,7 +224,7 @@
                         android:layout_marginEnd="16dp"
                         android:layout_alignParentEnd="true"
                         android:layout_below="@id/market_low_title"
-                        android:layout_marginBottom="28dp"
+                        android:layout_marginBottom="20dp"
                         android:textFontWeight="600"
                         android:text="@string/N_A" />
 
@@ -237,6 +236,7 @@
                         android:textColor="?attr/text_remarks"
                         android:textSize="12sp"
                         android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"
                         android:layout_below="@id/market_vol_u" />
 
                     <TextView

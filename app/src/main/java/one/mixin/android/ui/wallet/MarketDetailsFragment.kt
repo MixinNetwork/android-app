@@ -84,7 +84,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             totalSupplyTitle.text = getString(R.string.Total_Supply).uppercase()
             allTimeLowTitle.text = getString(R.string.All_Time_Low).uppercase()
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
-            marketVolCTitle.text = getString(R.string.vol_24h).uppercase()
+            marketCapStatsTitle.text = getString(R.string.Market_Cap).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
 
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -125,7 +125,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 if (ids.isNotEmpty()) {
                     val balances = tokens.sumOf { BigDecimal(it.balance) }
                     val price = BigDecimal(marketItem.currentPrice).multiply(BigDecimal(Fiats.getRate())).multiply(balances)
-                    balance.text = "$balances ${marketItem.symbol}"
+                    balance.text = "${balances.numberFormat8()} ${marketItem.symbol}"
                     value.text = try {
                         if (price == BigDecimal.ZERO) {
                             "≈ ${Fiats.getSymbol()}0.00"
@@ -225,7 +225,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)
                     marketLow.text = priceFormat(info.low24h)
-                    marketVolC.text = volFormat(info.totalVolume, BigDecimal(info.currentPrice))
                     marketVolU.text = volFormat(info.totalVolume, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
 
                     if (info.circulatingSupply == "0") {
@@ -238,10 +237,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                     if (info.marketCap == "0" || info.marketCap.isBlank()) {
                         marketCap.text = getString(R.string.N_A)
+                        marketCapStats.text = getString(R.string.N_A)
                         marketCap.setTextColor(textAssist)
+                        marketCapStats.setTextColor(textAssist)
                     } else {
                         marketCap.setTextColor(textPrimary)
+                        marketCapStats.setTextColor(textPrimary)
                         marketCap.text = capFormat(info.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
+                        marketCapStats.text = capFormat(info.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
                     }
                     totalSupply.text = "${info.totalSupply.numberFormat8()} ${marketItem.symbol}"
 
@@ -256,7 +259,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     marketCap.setTextColor(textPrimary)
                     marketHigh.setTextColor(textPrimary)
                     marketLow.setTextColor(textPrimary)
-                    marketVolC.setTextColor(textPrimary)
+                    marketCapStats.setTextColor(textPrimary)
                     marketVolU.setTextColor(textPrimary)
                     totalSupply.setTextColor(textPrimary)
                     highValue.setTextColor(textPrimary)
@@ -274,8 +277,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     marketHigh.setText(R.string.N_A)
                     marketLow.setTextColor(textAssist)
                     marketLow.setText(R.string.N_A)
-                    marketVolC.setTextColor(textAssist)
-                    marketVolC.setText(R.string.N_A)
+                    marketCapStats.setTextColor(textAssist)
+                    marketCapStats.setText(R.string.N_A)
                     marketVolU.setTextColor(textAssist)
                     marketVolU.setText(R.string.N_A)
                     circulationSupply.setTextColor(textAssist)
