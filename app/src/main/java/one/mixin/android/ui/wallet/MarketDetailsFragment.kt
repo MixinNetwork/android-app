@@ -139,14 +139,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                     priceRise.visibility = VISIBLE
                     if (marketItem.priceChangePercentage24H.isNotEmpty()) {
-                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
+                        val change = changeUsd.multiply(BigDecimal(Fiats.getRate()))
+                        currentRise = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.numberFormat2().replace("-", "")} (${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%)"
                         rise.text = currentRise
                         priceRise.text = currentRise
                         rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                         priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        riseTitle.isVisible = true
                     } else {
                         rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         rise.text = "0.00%"
+                        riseTitle.isVisible = false
                     }
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
