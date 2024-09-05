@@ -68,7 +68,7 @@ buildscript {
         ext.prism4jVersion = '2.0.0'
         ext.swirlVersion = '1.3.0'
         ext.indicatorseekbarVersion = '2.1.2'
-        ext.emojiVerison = '1.5.0-rc01'
+        ext.emojiVerison = '1.5.0'
         ext.cronetOkhttpVersion = '0.1.0'
         ext.diffUtilsVersion = '4.12'
         ext.argon2ktVersion = '0.0.1'
