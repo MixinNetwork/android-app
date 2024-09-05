@@ -35,7 +35,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             root.setOnClickListener { onClick.invoke(item) }
             val symbol = Fiats.getSymbol()
             val rate = BigDecimal(Fiats.getRate())
-            favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_market_favorites_checked else R.drawable.ic_market_favorites)
+            favorite.setImageResource(if (item.isFavored == true) R.drawable.ic_asset_favorites_checked else R.drawable.ic_asset_favorites)
             favorite.setOnClickListener {
                 onFavorite.invoke(item.symbol, item.coinId, item.isFavored)
             }
