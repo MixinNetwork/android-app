@@ -99,6 +99,7 @@
                 <data android:host="tip"/>
                 <data android:host="buy"/>
             </intent-filter>
+
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -107,16 +108,16 @@
 
                 <data android:scheme="https" />
                 <data android:host="mixin.one" />
-                <data android:pathPrefix="/code" />
-                <data android:pathPrefix="/pay" />
                 <data android:pathPrefix="/users" />
-                <data android:pathPrefix="/transfer" />
                 <data android:pathPrefix="/address" />
+                <data android:pathPrefix="/inscriptions" />
                 <data android:pathPrefix="/apps" />
+                <data android:pathPrefix="/pay" />
+                <data android:pathPrefix="/send" />
                 <data android:pathPrefix="/multisigs" />
-                <data android:pathPrefix="/conversations" />
-                <data android:pathPrefix="/tip" />
                 <data android:pathPrefix="/scheme" />
+                <data android:pathPrefix="/tip" />
+                <data android:pathPrefix="/swap" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
