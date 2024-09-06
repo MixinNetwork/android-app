@@ -87,6 +87,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             marketCapStatsTitle.text = getString(R.string.Market_Cap).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
+            riseTitle.text = getString(R.string.hours_count_short, 24)
 
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
@@ -94,23 +95,23 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     when (checkedId) {
 
                         R.id.radio_1d -> {
-                            "1D"
+                            getString(R.string.days_count_short, 1)
                         }
 
                         R.id.radio_1w -> {
-                            "1W"
+                            getString(R.string.weeks_count_short, 1)
                         }
 
                         R.id.radio_1m -> {
-                            "1M"
+                            getString(R.string.months_count_short, 1)
                         }
 
                         R.id.radio_ytd -> {
-                            "YTD"
+                            getString(R.string.ytd)
                         }
 
                         else -> {
-                            "ALL"
+                            getString(R.string.All)
                         }
                     }
             }
