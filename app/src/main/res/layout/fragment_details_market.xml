@@ -354,7 +354,7 @@
                         android:textColor="?attr/text_assist" />
 
                     <TextView
-                        android:id="@+id/rise"
+                        android:id="@+id/balance_change"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignTop="@id/value"
