@@ -145,7 +145,7 @@ class TransferContent : LinearLayout {
             receive.isVisible = true
             sender.isVisible = true
             sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
-            receive.setContent(R.plurals.Receiver_title, transferBiometricItem.users, null, userClick)
+            receive.setContent(R.plurals.Receiver_title, transferBiometricItem.users, transferBiometricItem.threshold.toInt(), userClick)
             total.isVisible = true
             total.setContent(R.string.Total, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!))
 
