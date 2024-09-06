@@ -68,7 +68,6 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
 import com.google.firebase.installations.FirebaseInstallations
-import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -1141,7 +1140,7 @@ fun PackageManager.getPackageInfoCompat(
     }
 
 fun Context.openMarket() {
-    if (isPlayStoreInstalled()) {
+    if (BuildConfig.IS_GOOGLE_PLAY && isPlayStoreInstalled()) {
         try {
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
