@@ -372,7 +372,7 @@ class WalletViewModel
                 enablePlaceholders = true
             ),
             pagingSourceFactory = { tokenRepository.getWeb3Markets(limit, sort) }
-        ).flow
+        ).flow.cachedIn(viewModelScope)
     }
 
     fun getFavoredWeb3Markets(sort: MarketSort): Flow<PagingData<MarketItem>> {
