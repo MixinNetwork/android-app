@@ -29,20 +29,14 @@ data class Address(
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String,
-    @ColumnInfo(name = "reserve")
-    val reserve: String,
-    @ColumnInfo(name = "fee")
-    val fee: String,
     @ColumnInfo(name = "tag")
     @SerializedName("tag")
     val tag: String?,
     @ColumnInfo(name = "dust")
     @SerializedName("dust")
-    val dust: String?,
-    @ColumnInfo(name = "fee_asset_id")
-    @SerializedName("fee_asset_id")
-    val feeAssetId: String,
+    val dust: String?
 ) : Parcelable
+
 
 fun Address.displayAddress(): String {
     return if (!tag.isNullOrEmpty()) {

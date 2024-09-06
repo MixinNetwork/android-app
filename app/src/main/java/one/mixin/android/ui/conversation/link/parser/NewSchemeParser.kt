@@ -278,7 +278,7 @@ class NewSchemeParser(
             val amount = result.amount
             val destination = result.destination
 
-            val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), "0", result.fee?.toPlainString() ?: "", null, null, asset.chainId)
+            val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), null, null)
             val fee = NetworkFee(feeAsset, result.fee!!.toPlainString())
             val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
             checkRawTransaction(withdrawBiometricItem)

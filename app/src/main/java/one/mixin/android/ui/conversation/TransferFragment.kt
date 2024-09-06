@@ -352,45 +352,24 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         lifecycleScope.launch {
             val token = t.asset ?: return@launch
             val address = t.address
-            if (address.feeAssetId.isBlank()) {
-                binding.apply {
-                    memoRl.isVisible = false
-                    networkHtv.isVisible = false
-                    dustHtv.isVisible = false
-                    reserveHtv.isVisible = false
-                    feeHtv.isVisible = false
-                    updateContinue(POST_PB)
+            updateContinue(POST_PB)
+            val dustDouble = address.dust?.toBigDecimalOrNull()
+            binding.apply {
+                memoRl.isVisible = isInnerTransfer()
+                networkHtv.isVisible = true
+                feeHtv.isVisible = true
+                networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
+                if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
+                    dustHtv.isVisible = true
+                    dustHtv.tail.text = "${address.dust} ${token.symbol}"
                 }
-            } else {
-                updateContinue(POST_PB)
-                val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
-                if (feeAsset == null) {
-                    jobManager.addJobInBackground(RefreshTokensJob(address.feeAssetId))
-                    return@launch
-                }
-                val reserveDouble = address.reserve.toBigDecimalOrNull()
-                val dustDouble = address.dust?.toBigDecimalOrNull()
-                binding.apply {
-                    memoRl.isVisible = isInnerTransfer()
-                    networkHtv.isVisible = true
-                    feeHtv.isVisible = true
-                    networkHtv.tail.text = getChainName(token.chainId, token.chainName, token.assetKey)
-                    if (dustDouble != null && dustDouble != BigDecimal.ZERO) {
-                        dustHtv.isVisible = true
-                        dustHtv.tail.text = "${address.dust} ${token.symbol}"
-                    }
-                    if (reserveDouble != null && reserveDouble != BigDecimal.ZERO) {
-                        reserveHtv.isVisible = true
-                        reserveHtv.tail.text = "${address.reserve} ${token.symbol}"
-                    }
-                }
-                var success = refreshFees(token, address)
-                while (!success) {
-                    success = refreshFees(token, address)
-                    delay(500)
-                }
-                updateFeeUI()
             }
+            var success = refreshFees(token, address)
+            while (!success) {
+                success = refreshFees(token, address)
+                delay(500)
+            }
+            updateFeeUI()
         }
 
     @SuppressLint("SetTextI18n")

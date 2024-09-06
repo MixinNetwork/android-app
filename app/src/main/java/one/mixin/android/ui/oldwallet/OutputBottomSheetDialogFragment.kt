@@ -262,7 +262,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             if (response.isSuccess) {
                 val address = response.data as Address
                 bottomViewModel.saveAddr(address)
-                return address.fee
+                return item.asset.assetId // todo check
             } else {
                 ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                 null
