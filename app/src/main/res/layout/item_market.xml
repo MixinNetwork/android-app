@@ -93,7 +93,7 @@
         <ImageView
             android:id="@+id/sparkline"
             android:layout_width="60dp"
-            android:layout_height="28dp"
+            android:layout_height="wrap_content"
             android:contentDescription="@null" />
 
         <TextView

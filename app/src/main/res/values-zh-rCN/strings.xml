@@ -527,6 +527,11 @@
         <item quantity="one">%d 小时</item>
         <item quantity="other">%d 小时</item>
     </plurals>
+    <string name="hours_count_short">%1$d小时</string>
+    <string name="days_count_short">%1$d天</string>
+    <string name="weeks_count_short">%1$d周</string>
+    <string name="months_count_short">%1$d月</string>
+    <string name="ytd">年初至今</string>
     <string name="how_are_you">嗨，你好吗？</string>
     <string name="i_am_good">我很好。"</string>
     <string name="I_know">我知道了</string>

@@ -87,7 +87,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             marketCapStatsTitle.text = getString(R.string.Market_Cap).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
-
+            riseTitle.text = getString(R.string.vol_24h).uppercase()
+            radio1d.text = getString(R.string.days_count_short, 1)
+            radio1w.text = getString(R.string.weeks_count_short, 1)
+            radio1m.text = getString(R.string.months_count_short, 1)
+            radioYtd.text = getString(R.string.ytd)
+            radioAll.text = getString(R.string.All)
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
                 typeState.value =
@@ -139,14 +144,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                     priceRise.visibility = VISIBLE
                     if (marketItem.priceChangePercentage24H.isNotEmpty()) {
-                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
+                        val change = changeUsd.multiply(BigDecimal(Fiats.getRate()))
+                        currentRise = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.numberFormat2().replace("-", "")} (${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%)"
                         rise.text = currentRise
                         priceRise.text = currentRise
                         rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                         priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        riseTitle.isVisible = true
                     } else {
                         rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         rise.text = "0.00%"
+                        riseTitle.isVisible = false
                     }
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
