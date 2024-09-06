@@ -49,7 +49,7 @@ class TransferContentReceiveItem : LinearLayout {
         userClick: (User) -> Unit,
     ) {
         _binding.apply {
-            if (threshold != null) {
+            if (threshold != null && users.size > 1) {
                 title.text = "${context.resources.getQuantityString(titleRes, users.size).uppercase()} ($threshold/${users.size})"
             } else {
                 title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
