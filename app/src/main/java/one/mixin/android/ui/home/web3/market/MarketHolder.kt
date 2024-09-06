@@ -20,7 +20,7 @@ import java.math.BigDecimal
 
 class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(binding.root) {
     private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
-    private val verticalPadding by lazy { 10.dp }
+    private val verticalPadding by lazy { 12.dp }
 
     init {
         binding.container.setPadding(horizontalPadding - 4.dp, verticalPadding, horizontalPadding, verticalPadding)
