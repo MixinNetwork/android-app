@@ -140,7 +140,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     if (hasSelect) {
                         onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                     } else {
-                        onItemListener.onActionClick(b.action, messageItem.userId)
+                        onItemListener.onActionClick(b.action, messageItem.userId, actionCard.appId)
                     }
                 }
             }
