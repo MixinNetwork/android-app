@@ -805,11 +805,12 @@ class ConversationFragment() :
             override fun onActionClick(
                 action: String,
                 userId: String,
+                appId: String?
             ) {
                 if (openInputAction(action)) return
 
                 lifecycleScope.launch {
-                    val app = chatViewModel.findAppById(userId)
+                    val app = chatViewModel.findAppById(appId ?: userId)
                     action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
