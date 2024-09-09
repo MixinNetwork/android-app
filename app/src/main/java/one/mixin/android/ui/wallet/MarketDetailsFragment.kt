@@ -78,7 +78,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 setSubTitle(marketItem.symbol, marketItem.name)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightIb.setOnClickListener {
-                    if (!isLoading) MarketShareActivity.show(requireContext(), marketRl.drawToBitmap(), asset?.symbol ?: marketItem?.symbol ?: "")
+                    if (!isLoading) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
