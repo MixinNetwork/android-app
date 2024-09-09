@@ -139,6 +139,15 @@
             android:contentDescription="@string/Next" />
     </one.mixin.android.widget.fabprogresscircle.FABProgressCircle>
 
+    <TextView
+        android:id="@+id/version"
+        android:layout_above="@+id/keyboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="?attr/text_remarks"
+        android:layout_marginBottom="20dp" />
+
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"
         android:layout_width="match_parent"

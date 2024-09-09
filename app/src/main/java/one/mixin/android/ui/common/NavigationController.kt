@@ -43,6 +43,8 @@ class NavigationController(mainActivity: MainActivity) {
         destinationFragment: Fragment,
     ) {
         try {
+            // Ensure any previous transactions are completed
+            fragmentManager.executePendingTransactions()
             val tx = fragmentManager.beginTransaction()
             val tag = destination.tag
             val f = fragmentManager.findFragmentByTag(tag)
@@ -56,7 +58,7 @@ class NavigationController(mainActivity: MainActivity) {
                     fragmentManager.findFragmentByTag(d.tag)?.let { tx.hide(it) }
                 }
             }
-            tx.commitAllowingStateLoss()
+            tx.commitNowAllowingStateLoss()
         } catch (e: Exception) {
             Timber.w(e)
         }
