@@ -22,6 +22,7 @@ import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -118,6 +119,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             mobileEt.showSoftInputOnFocus = false
             mobileEt.addTextChangedListener(mWatcher)
             mobileEt.requestFocus()
+            version.text = getString(R.string.current_version, BuildConfig.VERSION_NAME)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mobileEt.setAutofillHints(AUTOFILL_HINT_PHONE)
             }
