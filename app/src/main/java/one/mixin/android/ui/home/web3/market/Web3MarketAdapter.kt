@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.market
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
