@@ -403,11 +403,12 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onActionClick(
                 action: String,
                 userId: String?,
+                appId: String?
             ) {
                 if (openInputAction(action) || userId == null) return
 
                 lifecycleScope.launch {
-                    val app = userRepository.findAppById(userId)
+                    val app = userRepository.findAppById(appId ?: userId)
                     action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, app)
                 }
             }

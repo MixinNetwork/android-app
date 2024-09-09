@@ -185,7 +185,6 @@ allprojects {
         jcenter() {
             content {
                 includeModule("jp.wasabeef", "glide-transformations")
-                includeModule("com.github.warkiz.widget", "indicatorseekbar")
             }
         }
 
