@@ -1099,6 +1099,7 @@ class MessageAdapter(
         open fun onActionClick(
             action: String,
             userId: String,
+            appId: String? = null
         ) {}
 
         open fun onAppCardClick(

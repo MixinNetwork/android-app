@@ -369,7 +369,7 @@ dependencies {
     implementation "com.mapbox.maps:android:${mapboxSdkVersion}"
     implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
-    implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
+    implementation "com.github.SeniorZhai:IndicatorSeekBar:${indicatorseekbarVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
     implementation "io.github.java-diff-utils:java-diff-utils:${diffUtilsVersion}"
     implementation "com.github.tougee:argon2kt:${argon2ktVersion}"
