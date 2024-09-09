@@ -4,30 +4,25 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
-import androidx.compose.ui.unit.IntSize
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarketShareBinding
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getPublicDownloadPath
@@ -82,6 +77,9 @@ class MarketShareActivity : BaseActivity() {
             )
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         binding.test.round(8.dp)
+        binding.content.updateLayoutParams<MarginLayoutParams> {
+            topMargin = 20.dp
+        }
         if (cover != null) {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 8.dp, (80 - 24 + 32).dp))
         }
