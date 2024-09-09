@@ -1090,7 +1090,6 @@
     <string name="withdrawal_label">Etiqueta (por ejemplo, intercambios, carteras, etc.)</string>
     <string name="withdrawal_memo">Nota</string>
     <string name="withdrawal_minimum_amount">El importe mínimo de retiro es %1$s %2$s</string>
-    <string name="withdrawal_minimum_reserve">Reserva mínima: </string>
     <string name="withdrawal_minimum_withdrawal">Retiro mínimo: </string>
     <string name="withdrawal_network_fee">Tarifa de red: </string>
     <string name="withdrawal_no_memo">Sin nota</string>

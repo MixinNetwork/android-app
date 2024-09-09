@@ -1175,7 +1175,6 @@
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_memo">Memo</string>
     <string name="withdrawal_minimum_amount">Minimum withdraw amount is %1$s %2$s</string>
-    <string name="withdrawal_minimum_reserve">Minimum reserve: </string>
     <string name="withdrawal_minimum_withdrawal">Minimum withdrawal: </string>
     <string name="withdrawal_network_fee">Network fee: </string>
     <string name="withdrawal_no_memo">No Memo</string>

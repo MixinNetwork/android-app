@@ -261,7 +261,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {
-            handleAddressTransfer()
+            // do nothing
         }
         binding.titleView.rightIb.isVisible = false
         binding.continueTv.setOnClickListener {
@@ -269,36 +269,6 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
 
             operateKeyboard(false)
             prepareTransferBottom()
-        }
-    }
-
-    @Deprecated(message = "Old Transfer is deprecated")
-    private fun handleAddressTransfer() {
-        binding.avatar.setNet(requireContext().dpToPx(16f))
-        binding.expandIv.isVisible = false
-        binding.assetRl.setOnClickListener(null)
-        currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)
-        currentAsset?.let { updateAssetUI(it) }
-
-        val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
-        this.address = address
-        if (address == null || currentAsset == null) return
-
-        if (address.addressId.isBlank()) { // mock address
-            binding.titleView.setSubTitle(
-                getString(R.string.send_to, address.label),
-                address.displayAddress().formatPublicKey(),
-            )
-        } else {
-            chatViewModel.observeAddress(address.addressId).observe(
-                this,
-            ) {
-                this.address = it
-                binding.titleView.setSubTitle(
-                    getString(R.string.send_to, it.label),
-                    it.displayAddress().formatPublicKey(),
-                )
-            }
         }
     }
 
