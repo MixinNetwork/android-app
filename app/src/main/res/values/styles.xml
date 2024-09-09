@@ -77,6 +77,8 @@
 
         <item name="bg_chain_gradient_start">@color/chainGradientStart</item>
         <item name="bg_chain_gradient_end">@color/chainGradientEnd</item>
+        <item name="bg_market_gradient_start">@color/marketGradientStart</item>
+        <item name="bg_market_gradient_end">@color/marketGradientEnd</item>
         <item name="icon_chain">@color/iconChain</item>
         <item name="bg_market_card">@drawable/bg_market_card</item>
 
@@ -447,6 +449,8 @@
         <item name="android:textColor">?attr/text_primary</item>
         <item name="android:textSize">14sp</item>
         <item name="android:padding">4dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:autoSizeTextType" tools:ignore="NewApi">uniform</item>
     </style>
 
 </resources>

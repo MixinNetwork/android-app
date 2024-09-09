@@ -1,7 +1,6 @@
 package one.mixin.android.vo
 
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Parcelable
 import androidx.core.graphics.drawable.toBitmap

@@ -1,18 +1,31 @@
 package one.mixin.android.widget.imageeditor.model;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.Parcel;
 import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
-import one.mixin.android.widget.imageeditor.*;
+import one.mixin.android.widget.imageeditor.Bounds;
+import one.mixin.android.widget.imageeditor.ColorableRenderer;
+import one.mixin.android.widget.imageeditor.Renderer;
+import one.mixin.android.widget.imageeditor.RendererContext;
+import one.mixin.android.widget.imageeditor.UndoRedoStackListener;
 import one.mixin.android.widget.imageeditor.renderers.BezierDrawingRenderer;
 import one.mixin.android.widget.imageeditor.renderers.FaceBlurRenderer;
 import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Contains a reference to the root {@link EditorElement}, maintains undo and redo stacks and has a

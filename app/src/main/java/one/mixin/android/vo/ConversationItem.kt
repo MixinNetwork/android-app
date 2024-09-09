@@ -1,12 +1,7 @@
 package one.mixin.android.vo
 
-import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
-import one.mixin.android.R
 import one.mixin.android.websocket.SystemConversationAction
 import org.threeten.bp.Instant
 

@@ -94,6 +94,7 @@
     <string name="ANSWER">ANSWER</string>
     <string name="app_card_shareable_false">The card has been set to not allow sharing</string>
     <string name="app_name">Mixin</string>
+    <string name="mixin_messenger" translatable="false">Mixin Messenger</string>
     <string name="App_version">App version</string>
     <string name="Appearance">Appearance</string>
     <string name="Apply">Apply</string>
@@ -589,6 +590,7 @@
     <string name="Link_desktop_failed">Link desktop failed</string>
     <string name="Link_desktop_success">Link desktop success</string>
     <string name="Links">Links</string>
+    <string name="Link">Link</string>
     <string name="Live">Live</string>
     <string name="live_permission">Mixin needs access to draw above other apps to play videos in Picture-in-Picture mode.</string>
     <string name="live_shareable_false">The live has been set to not allow sharing</string>
@@ -1682,5 +1684,6 @@
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist!</string>
     <string name="Stats">Stats</string>
+    <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
     <string name="current_version">Version: %1$s</string>
 </resources>

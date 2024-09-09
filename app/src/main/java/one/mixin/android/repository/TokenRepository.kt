@@ -17,6 +17,8 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -40,6 +42,7 @@ import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.TokenService
+import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
@@ -50,9 +53,10 @@ import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MarketCoinDao
+import one.mixin.android.db.MarketDao
+import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
-import one.mixin.android.db.MarketDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.TokenDao
@@ -68,6 +72,7 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
@@ -75,6 +80,7 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
@@ -93,6 +99,7 @@ import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.market.MarketCoin
+import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.safe.DepositEntry
@@ -125,6 +132,7 @@ class TokenRepository
         private val tokenService: TokenService,
         private val assetService: AssetService,
         private val utxoService: UtxoService,
+        private val userService: UserService,
         private val routeService: RouteService,
         private val tokenDao: TokenDao,
         private val tokensExtraDao: TokensExtraDao,
@@ -143,6 +151,7 @@ class TokenRepository
         private val historyPriceDao: HistoryPriceDao,
         private val marketDao: MarketDao,
         private val marketCoinDao: MarketCoinDao,
+        private val marketFavoredDao: MarketFavoredDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -1081,6 +1090,46 @@ class TokenRepository
             return MarketItem.fromMarket(market)
         } else {
             return null
+        }
+    }
+
+    suspend fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) {
+        val now = nowInUtc()
+        if (isFavored == true) {
+            requestRouteAPI(
+                invokeNetwork = { routeService.unfavorite(coinId) },
+                successBlock = { _ ->
+                    marketFavoredDao.insert(
+                        MarketFavored(
+                            coinId = coinId,
+                            isFavored = false,
+                            now
+                        )
+                    )
+                },
+                requestSession = {
+                    userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                }
+            )
+        } else {
+            requestRouteAPI(
+                invokeNetwork = { routeService.favorite(coinId) },
+                successBlock = { _ ->
+                    marketFavoredDao.insert(
+                        MarketFavored(
+                            coinId = coinId,
+                            isFavored = true,
+                            now
+                        )
+                    )
+                    withContext(Dispatchers.Main) {
+                        toast(MixinApplication.appContext.getString(R.string.watchlist_add_desc, symbol))
+                    }
+                },
+                requestSession = {
+                    userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                }
+            )
         }
     }
 }

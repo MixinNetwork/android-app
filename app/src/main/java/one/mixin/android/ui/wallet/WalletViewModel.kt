@@ -391,4 +391,6 @@ class WalletViewModel
     suspend fun findTokenIdsByCoinId(coinId: String) = tokenRepository.findTokenIdsByCoinId(coinId)
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
+
+    fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) = viewModelScope.launch(Dispatchers.IO) { tokenRepository.updateMarketFavored(symbol, coinId, isFavored) }
 }

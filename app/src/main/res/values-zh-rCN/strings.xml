@@ -572,6 +572,7 @@
     <string name="Link_desktop">链接桌面端</string>
     <string name="Link_desktop_failed">登录桌面端失败</string>
     <string name="Link_desktop_success">登录桌面端成功</string>
+    <string name="Link">链接</string>
     <string name="Links">链接</string>
     <string name="Live">直播</string>
     <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
@@ -1643,5 +1644,6 @@
     <string name="choose_token_desc">%1$s 在多个网络上发布</string>
     <string name="watchlist_add_desc">%1$s 已经加入自选</string>
     <string name="Stats">统计</string>
+    <string name="share_desc">访问 mixin.one/mm 或扫描二维码进行安装。</string>
     <string name="current_version">当前版本：%1$s</string>
 </resources>

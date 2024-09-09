@@ -20,6 +20,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     val leftIb = binding.leftIb
     val rightIb = binding.rightIb
     val rightTv = binding.rightTv
+    val rightExtraIb = binding.rightExtraIb
     val rightAnimator = binding.rightAnimator
     val avatarIv = binding.avatarIv
     val titleContainer = binding.titleContainer

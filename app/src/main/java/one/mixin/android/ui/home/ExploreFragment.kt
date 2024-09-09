@@ -48,11 +48,11 @@ import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.web3.EthereumFragment
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.search.SearchBotsFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler

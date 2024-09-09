@@ -113,8 +113,8 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
-import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketCoin
+import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction

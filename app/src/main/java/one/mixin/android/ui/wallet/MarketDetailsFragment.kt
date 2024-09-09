@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -36,7 +37,6 @@ import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
-import java.util.ArrayList
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -78,6 +78,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+                rightExtraIb.isVisible = true
+                rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                rightExtraIb.setOnClickListener {
+                    walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
+                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                }
+                rightIb.setOnClickListener {
+                    if (!isLoading) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
+                    else toast(R.string.Please_wait_a_bit)
+                }
             }
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
@@ -227,7 +238,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             priceRise.text = String.format("%.2f%%", percentageChange)
                         }
                     }
-                })
+                }, { loading -> isLoading = loading })
             }
         }
 
@@ -306,6 +317,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
         }
     }
+
+    private var isLoading = false
 
     private val textAssist by lazy {
         requireContext().colorAttr(R.attr.text_assist)

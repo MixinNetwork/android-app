@@ -9,7 +9,12 @@ import androidx.annotation.Nullable;
 import one.mixin.android.R;
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.SelectableRenderer;
-import one.mixin.android.widget.imageeditor.renderers.*;
+import one.mixin.android.widget.imageeditor.renderers.CropAreaRenderer;
+import one.mixin.android.widget.imageeditor.renderers.FillRenderer;
+import one.mixin.android.widget.imageeditor.renderers.InverseFillRenderer;
+import one.mixin.android.widget.imageeditor.renderers.OvalGuideRenderer;
+import one.mixin.android.widget.imageeditor.renderers.SelectedElementGuideRenderer;
+import one.mixin.android.widget.imageeditor.renderers.TrashRenderer;
 
 
 /**
