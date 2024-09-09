@@ -34,7 +34,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenWidth
-import one.mixin.android.extension.translationX
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshGlobalWeb3MarketJob
 import one.mixin.android.job.RefreshMarketsJob
@@ -115,7 +114,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
             titleLayout.updatePadding(horizontalPadding)
             titleLayout.setOnSortChangedListener { sortOrder ->
-                bindData(sortOrder)
+                currentOrder = sortOrder
+                bindData()
                 lifecycleScope.launch {
                     delay(100)
                     binding.watchlist.layoutManager?.scrollToPosition(0)
@@ -144,12 +144,13 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             .subscribe { _ ->
                 loadGlobalMarket()
             }
-        bindData(binding.titleLayout.currentSort ?: MarketSort.RANK_ASCENDING)
+
+        bindData()
         view.viewTreeObserver.addOnGlobalLayoutListener {
             if (view.isShown) {
                 if (job?.isActive == true) return@addOnGlobalLayoutListener
                 job = lifecycleScope.launch {
-                    delay(60000)
+                    delay(30000)
                     updateUI()
                 }
             } else {
@@ -211,14 +212,20 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         set(value) {
             if (field != value) {
                 field = value
-                bindData(binding.titleLayout.currentSort ?: MarketSort.RANK_ASCENDING)
+                bindData()
             }
         }
 
     private var lastFiatCurrency: String? = null
 
+    private var currentOrder: MarketSort = MarketSort.RANK_ASCENDING
+
+    private var marketJob: Job? = null
+    private var watchlistJob: Job? = null
+    private var loadStateJob: Job? = null
+
     @SuppressLint("NotifyDataSetChanged")
-    private fun bindData(order: MarketSort) {
+    private fun bindData() {
         val limit = when (top) {
             1 -> 200
             2 -> 500
@@ -233,8 +240,14 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 else -> 100
             }
         )
-        viewLifecycleOwner.lifecycleScope.launch {
-            walletViewModel.getWeb3Markets(limit, order).collectLatest { pagingData ->
+
+        // Cancel previous job if it exists
+        marketJob?.cancel()
+        watchlistJob?.cancel()
+        loadStateJob?.cancel()
+
+        marketJob = viewLifecycleOwner.lifecycleScope.launch {
+            walletViewModel.getWeb3Markets(limit, currentOrder).collectLatest { pagingData ->
                 marketsAdapter.submitData(pagingData)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()
@@ -243,8 +256,8 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            walletViewModel.getFavoredWeb3Markets(order).collectLatest { pagingData ->
+        watchlistJob = viewLifecycleOwner.lifecycleScope.launch {
+            walletViewModel.getFavoredWeb3Markets(currentOrder).collectLatest { pagingData ->
                 watchlistAdapter.submitData(pagingData)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()
@@ -253,7 +266,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        loadStateJob = viewLifecycleOwner.lifecycleScope.launch {
             watchlistAdapter.loadStateFlow.collectLatest { _ ->
                 val isEmpty = watchlistAdapter.itemCount == 0
                 if (isEmpty && type == TYPE_FOV) {
