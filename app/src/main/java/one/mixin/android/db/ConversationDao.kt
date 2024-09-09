@@ -5,8 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
-import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal

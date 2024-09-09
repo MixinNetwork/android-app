@@ -32,7 +32,7 @@ private var screenshot: Bitmap? = null
 
 fun getScreenshot() = screenshot
 
-fun refreshScreenshot(context: Context) {
+fun refreshScreenshot(context: Context, cover: Int? = null) {
     MixinApplication.get().currentActivity?.let { activity ->
         val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
         if (!rootView.isLaidOut) return@let
@@ -54,12 +54,11 @@ fun refreshScreenshot(context: Context) {
             screenBitmap.width.toFloat(),
             screenBitmap.height.toFloat(),
             Paint().apply {
-                color =
-                    if (context.isNightMode()) {
-                        Color.parseColor("#CC1C1C1C")
-                    } else {
-                        Color.parseColor("#E6F6F7FA")
-                    }
+                color = cover ?: if (context.isNightMode()) {
+                    Color.parseColor("#CC1C1C1C")
+                } else {
+                    Color.parseColor("#E6F6F7FA")
+                }
             },
         )
         screenshot = resultBitmap

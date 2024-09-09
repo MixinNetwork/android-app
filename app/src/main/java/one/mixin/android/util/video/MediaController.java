@@ -1,7 +1,12 @@
 package one.mixin.android.util.video;
 
 import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.MediaBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.util.Path;
 import timber.log.Timber;
 

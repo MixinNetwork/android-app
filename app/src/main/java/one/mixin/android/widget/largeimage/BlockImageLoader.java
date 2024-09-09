@@ -24,7 +24,12 @@ import androidx.core.util.Pools;
 import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
 import timber.log.Timber;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * create by LuckyJayce at 2017/3/14

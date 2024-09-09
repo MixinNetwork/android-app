@@ -11,6 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:rightIcon="@drawable/ic_share_arrow"
         app:layout_constraintTop_toTopOf="parent"
         app:need_divider="false"
         app:titleText="@string/Transactions" />
@@ -24,242 +25,247 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <FrameLayout
-                android:id="@+id/market_rl"
+            <LinearLayout
+                android:id="@+id/market_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="?attr/bg_market_card">
+                android:orientation="vertical">
 
-                <RelativeLayout
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="?attr/bg_market_card">
 
                     <RelativeLayout
-                        android:id="@+id/title_rl"
-                        android:layout_marginTop="20dp"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <RelativeLayout
+                            android:id="@+id/title_rl"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:id="@+id/price"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/Price"
+                                android:textSize="14sp"
+                                android:textColor="?attr/text_minor" />
+
+                            <one.mixin.android.widget.BadgeCircleImageView
+                                android:id="@+id/icon"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_alignParentEnd="true" />
+
+                            <TextView
+                                android:id="@+id/price_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="22sp"
+                                android:layout_below="@id/price"
+                                android:textFontWeight="600"
+                                android:layout_marginTop="8dp"
+                                android:textColor="?attr/text_minor"
+                                android:text="@string/NA" />
+
+                            <TextView
+                                android:id="@+id/price_rise"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/price_value"
+                                android:layout_marginTop="8dp"
+                                android:textFontWeight="600"
+                                android:textSize="14sp"
+                                android:text="0.00%"
+                                android:textColor="?attr/text_assist" />
+                        </RelativeLayout>
+
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/market"
+                            android:layout_width="match_parent"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_height="204dp"
+                            android:layout_marginTop="24dp"
+                            android:layout_below="@+id/title_rl" />
+
+                        <RadioGroup
+                            android:id="@+id/radio_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/market"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginBottom="20dp"
+                            android:orientation="horizontal"
+                            android:gravity="center">
+
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_1d"
+                                style="@style/AppTheme.RadioButtonDateStyle"
+                                android:text="1D"
+                                android:checked="true" />
+
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_1w"
+                                style="@style/AppTheme.RadioButtonDateStyle"
+                                android:text="1W" />
+
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_1m"
+                                style="@style/AppTheme.RadioButtonDateStyle"
+                                android:text="1M" />
+
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_ytd"
+                                style="@style/AppTheme.RadioButtonDateStyle"
+                                android:text="YTD" />
+
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_all"
+                                style="@style/AppTheme.RadioButtonDateStyle"
+                                android:text="All" />
+
+                        </RadioGroup>
+                    </RelativeLayout>
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/state_fl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="?attr/bg_market_card">
+
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
                         <TextView
-                            android:id="@+id/price"
+                            android:id="@+id/stats"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/Price"
-                            android:textSize="14sp"
-                            android:textColor="?attr/text_minor" />
-
-                        <one.mixin.android.widget.BadgeCircleImageView
-                            android:id="@+id/icon"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_alignParentEnd="true" />
-
-                        <TextView
-                            android:id="@+id/price_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="22sp"
-                            android:layout_below="@id/price"
-                            android:textFontWeight="600"
-                            android:layout_marginTop="8dp"
                             android:textColor="?attr/text_minor"
-                            android:text="@string/NA" />
+                            android:text="@string/Stats"
+                            android:layout_marginBottom="14dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="20dp" />
 
                         <TextView
-                            android:id="@+id/price_rise"
+                            android:id="@+id/market_vol_u_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_below="@id/price_value"
-                            android:layout_marginTop="8dp"
+                            android:text="@string/Market_Cap"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="12sp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="16dp"
+                            android:layout_below="@id/stats" />
+
+                        <TextView
+                            android:id="@+id/market_vol_u"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_primary"
                             android:textFontWeight="600"
                             android:textSize="14sp"
-                            android:text="0.00%"
-                            android:textColor="?attr/text_assist" />
+                            android:layout_marginEnd="16dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginTop="10dp"
+                            android:layout_below="@id/market_vol_u_title"
+                            android:text="@string/N_A"
+                            tools:targetApi="p" />
+
+                        <TextView
+                            android:id="@+id/market_cap_stats_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/vol_24h"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="12sp"
+                            android:layout_marginStart="16dp"
+                            android:layout_below="@id/stats" />
+
+                        <TextView
+                            android:id="@+id/market_cap_stats"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_primary"
+                            android:textSize="14sp"
+                            android:textFontWeight="600"
+                            android:layout_below="@id/market_cap_stats_title"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/N_A"
+                            tools:targetApi="p" />
+
+                        <TextView
+                            android:id="@+id/market_low_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/low_24h"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="12sp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_below="@id/market_vol_u" />
+
+                        <TextView
+                            android:id="@+id/market_low"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_primary"
+                            android:textSize="14sp"
+                            android:textFontWeight="600"
+                            android:layout_marginEnd="16dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_below="@id/market_low_title"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/N_A"
+                            tools:targetApi="p" />
+
+                        <TextView
+                            android:id="@+id/market_high_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/high_24h"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="12sp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_below="@id/market_vol_u" />
+
+                        <TextView
+                            android:id="@+id/market_high"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_primary"
+                            android:textSize="14sp"
+                            android:textFontWeight="600"
+                            android:layout_below="@id/market_high_title"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/N_A"
+                            tools:targetApi="p" />
                     </RelativeLayout>
-
-                    <androidx.compose.ui.platform.ComposeView
-                        android:id="@+id/market"
-                        android:layout_width="match_parent"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_height="204dp"
-                        android:layout_marginTop="24dp"
-                        android:layout_below="@+id/title_rl" />
-
-                    <RadioGroup
-                        android:id="@+id/radio_group"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/market"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="20dp"
-                        android:orientation="horizontal"
-                        android:gravity="center">
-
-                        <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_1d"
-                            style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="1D"
-                            android:checked="true" />
-
-                        <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_1w"
-                            style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="1W" />
-
-                        <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_1m"
-                            style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="1M" />
-
-                        <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_ytd"
-                            style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="YTD" />
-
-                        <androidx.appcompat.widget.AppCompatRadioButton
-                            android:id="@+id/radio_all"
-                            style="@style/AppTheme.RadioButtonDateStyle"
-                            android:text="All" />
-
-                    </RadioGroup>
-                </RelativeLayout>
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/state_fl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:background="?attr/bg_market_card">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/stats"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_minor"
-                        android:text="@string/Stats"
-                        android:layout_marginBottom="14dp"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="20dp"/>
-
-                    <TextView
-                        android:id="@+id/market_vol_u_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Market_Cap"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="16dp"
-                        android:layout_below="@id/stats" />
-
-                    <TextView
-                        android:id="@+id/market_vol_u"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textFontWeight="600"
-                        android:textSize="14sp"
-                        android:layout_marginEnd="16dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginTop="10dp"
-                        android:layout_below="@id/market_vol_u_title"
-                        android:text="@string/N_A"
-                        tools:targetApi="p" />
-
-                    <TextView
-                        android:id="@+id/market_cap_stats_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/vol_24h"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_marginStart="16dp"
-                        android:layout_below="@id/stats" />
-
-                    <TextView
-                        android:id="@+id/market_cap_stats"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:textFontWeight="600"
-                        android:layout_below="@id/market_cap_stats_title"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginBottom="20dp"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/N_A"
-                        tools:targetApi="p" />
-
-                    <TextView
-                        android:id="@+id/market_low_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/low_24h"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="20dp"
-                        android:layout_below="@id/market_vol_u" />
-
-                    <TextView
-                        android:id="@+id/market_low"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:textFontWeight="600"
-                        android:layout_marginEnd="16dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_below="@id/market_low_title"
-                        android:layout_marginBottom="20dp"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/N_A"
-                        tools:targetApi="p" />
-
-                    <TextView
-                        android:id="@+id/market_high_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/high_24h"
-                        android:textColor="?attr/text_remarks"
-                        android:textSize="12sp"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="20dp"
-                        android:layout_below="@id/market_vol_u" />
-
-                    <TextView
-                        android:id="@+id/market_high"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp"
-                        android:textFontWeight="600"
-                        android:layout_below="@id/market_high_title"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/N_A"
-                        tools:targetApi="p" />
-
-                </RelativeLayout>
-            </FrameLayout>
+                </FrameLayout>
+            </LinearLayout>
 
             <FrameLayout
                 android:id="@+id/balance_rl"
@@ -354,7 +360,7 @@
                         android:textColor="?attr/text_assist" />
 
                     <TextView
-                        android:id="@+id/rise"
+                        android:id="@+id/balance_change"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignTop="@id/value"

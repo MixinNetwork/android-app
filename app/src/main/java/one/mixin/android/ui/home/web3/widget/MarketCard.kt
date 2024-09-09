@@ -6,31 +6,13 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
-import androidx.core.view.isVisible
-import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewMarketCardBinding
-import one.mixin.android.databinding.ViewTransferContentBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.textColorResource
-import one.mixin.android.session.Session
-import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
-import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
-import one.mixin.android.ui.common.biometric.BiometricItem
-import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
-import one.mixin.android.ui.common.biometric.TransferBiometricItem
-import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
-import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.toUser
 import java.math.BigDecimal
 
 class MarketCard : LinearLayout {

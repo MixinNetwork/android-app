@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -22,6 +23,7 @@ import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
@@ -35,7 +37,6 @@ import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
-import java.util.ArrayList
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -77,6 +78,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+                rightExtraIb.isVisible = true
+                rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                rightExtraIb.setOnClickListener {
+                    walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
+                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                }
+                rightIb.setOnClickListener {
+                    if (!isLoading) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
+                    else toast(R.string.Please_wait_a_bit)
+                }
             }
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
@@ -87,7 +99,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             marketCapStatsTitle.text = getString(R.string.Market_Cap).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
-            riseTitle.text = getString(R.string.vol_24h).uppercase()
+            riseTitle.text = getString(R.string.hours_count_short, 24)
             radio1d.text = getString(R.string.days_count_short, 1)
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
@@ -143,17 +155,19 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE
-                    if (marketItem.priceChangePercentage24H.isNotEmpty()) {
-                        val change = changeUsd.multiply(BigDecimal(Fiats.getRate()))
-                        currentRise = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.numberFormat2().replace("-", "")} (${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%)"
-                        rise.text = currentRise
+                    if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
+                        val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
+                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                         priceRise.text = currentRise
-                        rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        balanceChange.text = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)"
+                        balanceChange.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                         priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                         riseTitle.isVisible = true
                     } else {
-                        rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        rise.text = "0.00%"
+                        balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        balanceChange.text = "0.00%"
+                        priceRise.text = "0.00%"
                         riseTitle.isVisible = false
                     }
                     balanceRl.setOnClickListener {
@@ -224,7 +238,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             priceRise.text = String.format("%.2f%%", percentageChange)
                         }
                     }
-                })
+                }, { loading -> isLoading = loading })
             }
         }
 
@@ -303,6 +317,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
         }
     }
+
+    private var isLoading = false
 
     private val textAssist by lazy {
         requireContext().colorAttr(R.attr.text_assist)

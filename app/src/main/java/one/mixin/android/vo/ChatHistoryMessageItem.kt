@@ -5,12 +5,8 @@ import android.content.Context
 import android.media.MediaScannerConnection
 import android.os.Environment
 import android.os.Environment.DIRECTORY_MUSIC
-import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
 import androidx.core.net.toFile
 import androidx.core.net.toUri
-import androidx.core.view.isVisible
 import androidx.media3.common.MimeTypes
 import androidx.recyclerview.widget.DiffUtil
 import one.mixin.android.MixinApplication

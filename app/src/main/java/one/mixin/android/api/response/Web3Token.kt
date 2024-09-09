@@ -12,7 +12,6 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage

@@ -10,12 +10,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
-import one.mixin.android.vo.ConversationMinimal
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem

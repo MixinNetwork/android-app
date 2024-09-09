@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#33000000" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/test"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_round_window_6dp">
+
+                <ImageView
+                    android:id="@+id/image"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="centerCrop"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="@string/Market" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_share_market_gradient"
+                    android:paddingEnd="20dp"
+                    android:paddingStart="20dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/title"
+                        android:text="@string/mixin_messenger"
+                        android:textSize="18sp"
+                        android:textFontWeight="500"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@id/icon_fl"
+                        android:layout_marginTop="11dp" />
+
+                    <TextView
+                        android:text="@string/share_desc"
+                        android:textSize="12sp"
+                        android:textColor="@color/white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/title"
+                        android:layout_marginEnd="28dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_toStartOf="@id/icon_fl" />
+
+                    <FrameLayout
+                        android:id="@+id/icon_fl"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true">
+
+                        <ImageView
+                            android:id="@+id/qr"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center" />
+
+                        <ImageView
+                            android:src="@drawable/ic_mixin_logo"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/close"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_float_close"
+                android:layout_gravity="end|top" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_round_white_6dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/share"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_market_share" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Share"
+                    android:textSize="12sp"
+                    android:textColor="?attr/text_primary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/copy"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_market_copy" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Link"
+                    android:textSize="12sp"
+                    android:textColor="?attr/text_primary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/save"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_market_save" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Save"
+                    android:textSize="12sp"
+                    android:textColor="?attr/text_primary" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

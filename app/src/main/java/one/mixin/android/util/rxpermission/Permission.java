@@ -1,11 +1,11 @@
 package one.mixin.android.util.rxpermission;
 
-import java.util.List;
-
 import io.reactivex.Observable;
 import io.reactivex.functions.BiConsumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
+
+import java.util.List;
 
 public class Permission {
     public final String name;

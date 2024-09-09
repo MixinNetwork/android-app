@@ -1,23 +1,16 @@
 package one.mixin.android.util.rxcontact;
 
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapDisplayName;
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapEmail;
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapInVisibleGroup;
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapPhoneNumber;
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapPhoto;
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapStarred;
-import static one.mixin.android.util.rxcontact.ColumnMapper.mapThumbnail;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.util.LongSparseArray;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.annotations.NonNull;
+
+import static one.mixin.android.util.rxcontact.ColumnMapper.*;
 
 
 /**

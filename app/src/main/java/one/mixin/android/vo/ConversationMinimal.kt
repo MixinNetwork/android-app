@@ -1,8 +1,6 @@
 package one.mixin.android.vo
 
 import android.os.Parcelable
-import android.view.View
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import kotlinx.parcelize.Parcelize
 

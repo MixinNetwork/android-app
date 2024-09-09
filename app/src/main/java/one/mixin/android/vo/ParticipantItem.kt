@@ -1,8 +1,6 @@
 package one.mixin.android.vo
 
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.DiffUtil
-import one.mixin.android.R
 
 data class ParticipantItem(
     val conversationId: String,

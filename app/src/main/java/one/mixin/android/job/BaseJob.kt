@@ -46,6 +46,9 @@ import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MarketCoinDao
+import one.mixin.android.db.MarketDao
+import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
@@ -55,7 +58,6 @@ import one.mixin.android.db.OutputDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
-import one.mixin.android.db.MarketDao
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -69,8 +71,6 @@ import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.MarketFavoredDao
-import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase

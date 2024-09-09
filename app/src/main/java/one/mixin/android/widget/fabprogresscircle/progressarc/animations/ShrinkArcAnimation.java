@@ -15,9 +15,8 @@
  */
 package one.mixin.android.widget.fabprogresscircle.progressarc.animations;
 
-import android.animation.ValueAnimator;
-
 import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.view.animation.DecelerateInterpolator;
 
 /**
