@@ -77,6 +77,13 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+                rightExtraIb.isVisible = true
+                rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                rightExtraIb.setOnClickListener {
+                    walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
+                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                }
                 rightIb.setOnClickListener {
                     if (!isLoading) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
                     else toast(R.string.Please_wait_a_bit)
