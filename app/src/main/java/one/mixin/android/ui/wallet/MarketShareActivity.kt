@@ -13,6 +13,7 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
+import android.view.View
 import androidx.compose.ui.unit.IntSize
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
@@ -75,6 +76,11 @@ class MarketShareActivity : BaseActivity() {
                 binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
             })
         }
+        window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            )
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
         binding.test.round(8.dp)
         if (cover != null) {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 8.dp, (80 - 24 + 32).dp))
