@@ -1682,4 +1682,5 @@
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist!</string>
     <string name="Stats">Stats</string>
+    <string name="current_version">Version: %1$s</string>
 </resources>
