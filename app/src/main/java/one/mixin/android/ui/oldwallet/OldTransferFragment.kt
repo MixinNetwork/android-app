@@ -568,7 +568,6 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                         address!!.tag,
                         address!!.addressId,
                         address!!.label,
-                        // address!!.fee, todo check
                         currentAsset!!.assetId,
                         currentAsset!!,
                         amount,
