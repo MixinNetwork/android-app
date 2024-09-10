@@ -47,8 +47,8 @@
                     android:background="@drawable/bg_share_market_gradient"
                     android:paddingEnd="20dp"
                     android:paddingStart="20dp"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="12dp">
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <TextView
                         android:id="@+id/title"
@@ -74,8 +74,8 @@
 
                     <FrameLayout
                         android:id="@+id/icon_fl"
-                        android:layout_width="72dp"
-                        android:layout_height="72dp"
+                        android:layout_width="78dp"
+                        android:layout_height="78dp"
                         android:layout_centerVertical="true"
                         android:layout_alignParentEnd="true">
 
