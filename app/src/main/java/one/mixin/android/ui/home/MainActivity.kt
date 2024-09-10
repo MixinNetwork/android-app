@@ -916,7 +916,7 @@ class MainActivity : BlazeBaseActivity() {
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }
-                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_explore, R.id.nav_collectibles)
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_collectibles)
             }
         }
         lifecycleScope.launch {
@@ -945,7 +945,7 @@ class MainActivity : BlazeBaseActivity() {
                 conversationListFragment.hideCircles()
             }
 
-            R.id.nav_explore -> {
+            R.id.nav_more -> {
                 navigationController.navigate(NavigationController.Explore, exploreFragment)
                 conversationListFragment.hideCircles()
             }
