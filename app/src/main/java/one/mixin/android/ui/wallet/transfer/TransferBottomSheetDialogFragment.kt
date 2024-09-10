@@ -706,11 +706,28 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             is AddressManageBiometricItem -> {
-                null
+                val addressManageBiometricItem = t
+                BiometricInfo(
+                    getString(
+                        if (addressManageBiometricItem.type == ADD) {
+                            R.string.Adding_Address
+                        } else {
+                            R.string.Deleting_Address
+                        }
+                    ),
+                    "",
+                    getDescription(),
+                )
             }
 
             is SafeMultisigsBiometricItem -> {
-                null
+                BiometricInfo(
+                    getString(
+                        R.string.Multisig_Transaction,
+                    ),
+                    "",
+                    getDescription(),
+                )
             }
 
             else -> {
