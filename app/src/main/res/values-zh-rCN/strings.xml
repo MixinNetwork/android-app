@@ -1645,4 +1645,7 @@
     <string name="Stats">统计</string>
     <string name="share_desc">访问 mixin.one/mm 或扫描二维码进行安装。</string>
     <string name="current_version">当前版本：%1$s</string>
+    <string name="Quote_Color">Quote Color</string>
+    <string name="quote_color_red">红涨绿跌</string>
+    <string name="quote_color_green">绿涨红跌</string>
 </resources>

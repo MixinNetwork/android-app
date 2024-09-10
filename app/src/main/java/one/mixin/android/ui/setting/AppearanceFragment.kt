@@ -2,8 +2,11 @@ package one.mixin.android.ui.setting
 
 import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -11,7 +14,10 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
@@ -118,6 +124,49 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             textSizeRl.setOnClickListener {
                 navTo(SettingSizeFragment.newInstance(), SettingSizeFragment.TAG)
             }
+            val quoteColor = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+            quoteColorDescTv.setText( if (quoteColor) {
+                R.string.quote_color_green
+            }else{
+                R.string.quote_color_red
+            })
+            quoteColorRl.setOnClickListener {
+                menuAdapter.checkPosition = if (quoteColor) 0 else 1
+                menuAdapter.notifyDataSetChanged()
+                sortMenu.show()
+            }
+        }
+    }
+
+    private val menuAdapter: MenuAdapter by lazy {
+        val menuItems = listOf(
+            R.string.quote_color_green,
+            R.string.quote_color_red
+        )
+        MenuAdapter(requireContext(), menuItems)
+    }
+
+    private val sortMenu by lazy {
+        ListPopupWindow(requireContext()).apply {
+            anchorView = binding.quoteColorDescTv
+            setAdapter(menuAdapter)
+            setOnItemClickListener { _, _, position, _ ->
+                val quoteColor = position == 1
+                requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_QUOTE_COLOR, quoteColor)
+                binding.quoteColorDescTv.setText( if (quoteColor) {
+                    R.string.quote_color_green
+                }else{
+                    R.string.quote_color_red
+                })
+                dismiss()
+            }
+            width = requireContext().dpToPx(220f)
+            height = ListPopupWindow.WRAP_CONTENT
+            isModal = true
+            setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
+            setDropDownGravity(Gravity.END)
+            horizontalOffset = requireContext().dpToPx(2f)
+            verticalOffset = requireContext().dpToPx(10f)
         }
     }
 
