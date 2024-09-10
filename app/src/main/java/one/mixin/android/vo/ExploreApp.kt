@@ -36,4 +36,7 @@ class ExploreApp(
         return membership?.isMembership() == true
     }
 
+    fun isProsperity(): Boolean {
+        return membership?.isProsperity() == true
+    }
 }

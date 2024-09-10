@@ -88,7 +88,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         }
 
         protected fun getMembershipBadge(messageItem: MessageItem): Drawable? {
-            return messageItem.membership.membershipIcon().let { icon ->
+            return messageItem.membership.membershipIcon()?.let { icon ->
                 if (icon == View.NO_ID) {
                     null
                 } else {

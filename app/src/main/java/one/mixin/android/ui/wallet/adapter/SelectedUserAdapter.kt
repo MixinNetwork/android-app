@@ -38,11 +38,11 @@ class SelectedUserAdapter(val removeUser: (Recipient) -> Unit) : RecyclerView.Ad
             val item = list[position]
             if (item is UserItem) {
                 binding.avatarView.setInfo(item.fullName, item.avatarUrl, item.id)
-                binding.nameTv.text = item.fullName
+                binding.nameTv.setName(item)
             } else {
                 val address = item as AddressItem
                 binding.avatarView.loadUrl(address.iconUrl, R.drawable.ic_avatar_place_holder)
-                binding.nameTv.text = address.displayAddress()
+                binding.nameTv.setTextOnly(address.displayAddress())
             }
         }
         holder.itemView.setOnClickListener {

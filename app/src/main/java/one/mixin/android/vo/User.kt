@@ -119,6 +119,10 @@ data class User(
     fun isMembership(): Boolean {
         return membership?.isMembership() == true
     }
+
+    fun isProsperity(): Boolean {
+        return membership?.isProsperity() == true
+    }
 }
 
 const val SYSTEM_USER = "00000000-0000-0000-0000-000000000000"

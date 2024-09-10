@@ -117,7 +117,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             if (sub != null)
                 setSubTitle(asset.name, sub)
             else
-                titleTv.text = asset.name
+                titleTv.setTextOnly(asset.name)
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()

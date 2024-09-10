@@ -187,7 +187,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
 
     private fun getMembershipBadge(messageItem: MessageItem): Drawable? {
         if (messageItem.membership?.isMembership() != true) return null
-        return messageItem.membership.membershipIcon().let { icon ->
+        return messageItem.membership.membershipIcon()?.let { icon ->
             if (icon == View.NO_ID) {
                 null
             } else {

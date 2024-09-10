@@ -3,11 +3,16 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewNameTextBinding
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.highLight
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -23,9 +28,14 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.membershipIcon
+import one.mixin.android.widget.lottie.RLottieDrawable
 
-class NameTextView : AppCompatTextView {
+class NameTextView : LinearLayoutCompat {
     private val badgeSize: Int
+
+    private val binding = ViewNameTextBinding.inflate(LayoutInflater.from(context), this)
+    val textView get() = binding.text
+    private val iconView get() = binding.icon
 
     constructor(context: Context) : this(context, null)
 
@@ -33,98 +43,379 @@ class NameTextView : AppCompatTextView {
         val a = context.obtainStyledAttributes(attributeSet, R.styleable.NameTextView)
         val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp4)
         badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)
-        compoundDrawablePadding = badgePadding
+        textView.compoundDrawablePadding = badgePadding
+        iconView.updateLayoutParams<MarginLayoutParams> {
+            width = badgeSize
+            height = badgeSize
+            marginStart = badgePadding
+        }
         a.recycle()
-        includeFontPadding = false
+        textView.includeFontPadding = false
+    }
+
+    fun setTextColor(color: Int) {
+        this.textView.setTextColor(color)
     }
 
     fun setTextOnly(text: String?) {
-        this.text = text
-        setCompoundDrawables(null, null, null, null)
+        this.textView.text = text
+        iconView.isVisible = false
+        iconView.stopAnimation()
+        this.textView.setCompoundDrawables(null, null, null, null)
     }
 
     fun setTextOnly(@StringRes text: Int) {
-        this.setText(text)
-        setCompoundDrawables(null, null, null, null)
+        textView.setText(text)
+        iconView.isVisible = false
+        iconView.stopAnimation()
+        this.textView.setCompoundDrawables(null, null, null, null)
     }
 
     fun setName(user: User) {
-        text = user.fullName
-        setCompoundDrawables(null, null, getBadge(user), null)
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
     }
 
     fun setName(user: User, text: String) {
-        this.text = text
-        setCompoundDrawables(null, null, getBadge(user), null)
+        this.textView.text = text
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
     }
 
     fun setName(user: UserItem) {
-        text = user.fullName
-        setCompoundDrawables(null, null, getBadge(user), null)
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
     }
 
     fun setName(account: Account) {
-        text = account.fullName
-        setCompoundDrawables(null, null, getBadge(account), null)
+        this.textView.text = account.fullName
+        if (account.membership?.isProsperity() == true) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(account), null)
     }
 
     fun setName(user: ParticipantItem) {
-        text = user.fullName
-        setCompoundDrawables(null, null, getBadge(user), null)
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
     }
 
     fun setName(user: CallUser) {
-        text = user.fullName
-        setCompoundDrawables(null, null, getBadge(user), null)
+        this.textView.text = user.fullName
+        if (user.membership?.isProsperity() == true) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
     }
 
     fun setName(item: ChatMinimal) {
-        text = item.fullName
-        setCompoundDrawables(null, null, getBadge(item), null)
+        this.textView.text = item.fullName
+        if (item.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(item), null)
     }
 
     fun setName(item: ConversationMinimal) {
         if (item.isGroupConversation()) {
-            text = item.groupName
-            setCompoundDrawables(null, null, null, null)
+            this.textView.text = item.groupName
+            iconView.isVisible = false
+            iconView.stopAnimation()
+            this.textView.setCompoundDrawables(null, null, null, null)
         } else {
-            text = item.name
-            setCompoundDrawables(null, null, getBadge(item), null)
+            this.textView.text = item.name
+            if (item.isProsperity()) {
+                iconView.isVisible = true
+                iconView.setImageDrawable(
+                    RLottieDrawable(
+                        R.raw.prosperity,
+                        "prosperity",
+                        badgeSize,
+                        badgeSize,
+                    ).apply {
+                        setAllowDecodeSingleFrame(true)
+                        setAutoRepeat(1)
+                        setAutoRepeatCount(Int.MAX_VALUE)
+                        start()
+                    },
+                )
+            } else {
+                iconView.isVisible = false
+                iconView.stopAnimation()
+            }
+            this.textView.setCompoundDrawables(null, null, getBadge(item), null)
         }
     }
 
     fun setName(message: MessageItem) {
-        text = message.sharedUserFullName
-        setCompoundDrawables(null, null, getBadge(message), null)
+        this.textView.text = message.sharedUserFullName
+        if (message.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(message), null)
     }
 
     fun setName(message: SearchMessageDetailItem) {
-        text = message.userFullName
-        setCompoundDrawables(null, null, getBadge(message), null)
+        this.textView.text = message.userFullName
+        if (message.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(message), null)
     }
 
     fun setName(message: ChatHistoryMessageItem) {
-        text = message.sharedUserFullName
-        setCompoundDrawables(null, null, getBadge(message), null)
+        this.textView.text = message.sharedUserFullName
+        if (message.isSharedProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(message), null)
     }
 
     fun setName(conversationItem: ConversationItem) {
-        text = conversationItem.getConversationName()
-        setCompoundDrawables(null, null, getBadge(conversationItem), null)
+        this.textView.text = conversationItem.getConversationName()
+        if (conversationItem.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(conversationItem), null)
     }
 
     fun setName(message: SearchMessageItem) {
-        text = if (message.conversationName.isNullOrEmpty()) {
+        this.textView.text = if (message.conversationName.isNullOrEmpty()) {
             message.userFullName
         } else {
             message.conversationName
         }
-        setCompoundDrawables(null, null, getBadge(message), null)
+        if (message.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(message), null)
     }
 
     fun setName(app: ExploreApp) {
-        text = app.name
-        setCompoundDrawables(null, null, getBadge(app), null)
+        this.textView.text = app.name
+        if (app.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(app), null)
     }
 
     private val dp14 by lazy {
@@ -343,10 +634,14 @@ class NameTextView : AppCompatTextView {
         } else {
             R.drawable.ic_bot
         }
-        return resources.let { res ->
+        return resources?.let { res ->
             AppCompatResources.getDrawable(context, res).also { icon ->
                 icon?.setBounds(0, 0, badgeSize, badgeSize)
             }
         }
+    }
+
+    fun highLight(filter: String?) {
+        this.textView.highLight(filter)
     }
 }

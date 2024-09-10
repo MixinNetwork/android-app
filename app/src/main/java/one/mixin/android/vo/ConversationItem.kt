@@ -94,6 +94,10 @@ data class ConversationItem(
         return isContactConversation() && membership?.isMembership() == true
     }
 
+    fun isProsperity(): Boolean {
+        return isContactConversation() && membership?.isProsperity() == true
+    }
+
     fun isVerified(): Boolean {
         return isContactConversation() && ownerVerified == true
     }

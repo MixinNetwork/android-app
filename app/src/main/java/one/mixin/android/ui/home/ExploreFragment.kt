@@ -474,14 +474,14 @@ class ExploreFragment : BaseFragment() {
                     }
                 itemBinding.apply {
                     avatar.renderApp(a)
-                    name.setText(a.name)
+                    name.setTextOnly(a.name)
                     mixinIdTv.setText(a.description)
                     name.setTextOnly(a.name)
                 }
             } else if (app is ExploreApp) {
                 itemBinding.apply {
                     avatar.setInfo(app.name, app.iconUrl, app.appId)
-                    name.text = app.name
+                    name.setTextOnly(app.name)
                     mixinIdTv.text = app.appNumber
                     name.setName(app)
                 }

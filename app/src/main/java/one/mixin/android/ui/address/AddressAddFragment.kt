@@ -110,7 +110,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             if (binding.tagEt.isFocused) binding.tagEt.hideKeyboard()
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
-        binding.titleView.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
+        binding.titleView.titleTv.setTextOnly(getString(R.string.withdrawal_addr_new, asset.symbol))
         binding.avatar.loadToken(asset)
         binding.saveTv.setOnClickListener {
             if (memoEnabled) {

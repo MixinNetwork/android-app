@@ -99,7 +99,7 @@ class AppListAdapter(private val onClickListener: (String) -> Unit) :
 
 class AppHolder(val binding: ItemAppListBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(app: App) {
-        binding.nameTv.text = app.name
+        binding.nameTv.setTextOnly(app.name)
         binding.descTv.text = app.description
         binding.avatar.loadImage(app.iconUrl)
     }
