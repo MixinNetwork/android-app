@@ -247,8 +247,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             }
 
                             alertDialog.dismiss()
-                            val address = Address("", "address", assetId, toAddress, "Web3 Address", nowInUtc(), "0", fee.amount!!, null, null, fee.assetId)
-                            val networkFee = NetworkFee(feeItem, fee.amount)
+                            val address = Address("", "address", assetId, toAddress, "Web3 Address", nowInUtc(), null, null)
+                            val networkFee = NetworkFee(feeItem, fee.amount?:"0")
                             val withdrawBiometricItem = WithdrawBiometricItem(address, networkFee, null, UUID.randomUUID().toString(), asset, amount, null, PaymentStatus.pending.name, null)
                             TransferBottomSheetDialogFragment.newInstance(withdrawBiometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {

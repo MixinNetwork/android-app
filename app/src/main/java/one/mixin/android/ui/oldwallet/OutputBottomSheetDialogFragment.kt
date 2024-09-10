@@ -217,21 +217,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             }
         } else if (errorCode == ErrorHandler.WITHDRAWAL_FEE_TOO_SMALL) {
             if (t is WithdrawBiometricItem) {
-                val item = t as WithdrawBiometricItem
-                val oldFee = item.fee
-                val newFee =
-                    withContext(Dispatchers.IO) {
-                        refreshAddressAndGetFee(item, pin)
-                    }
-                return if (newFee != null) {
-                    (t as WithdrawBiometricItem).fee = newFee
-                    setBiometricItem()
-
-                    val symbol = item.asset.chainSymbol
-                    getString(R.string.wallet_withdrawal_changed, "${oldFee}$symbol", "${newFee}$symbol")
-                } else {
-                    getString(R.string.wallet_refresh_address_failed)
-                }
+                getString(R.string.wallet_refresh_address_failed)
             }
         }
         return null
@@ -251,26 +237,6 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             firsSet.add(item.addressId)
         }
         defaultSharedPreferences.putStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, firsSet)
-    }
-
-    private suspend fun refreshAddressAndGetFee(
-        item: WithdrawBiometricItem,
-        pin: String,
-    ): String? {
-        return try {
-            val response = bottomViewModel.syncAddr(item.asset.assetId, item.destination, item.label, item.tag, pin)
-            if (response.isSuccess) {
-                val address = response.data as Address
-                bottomViewModel.saveAddr(address)
-                return address.fee
-            } else {
-                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
-                null
-            }
-        } catch (e: Exception) {
-            ErrorHandler.handleError(e)
-            null
-        }
     }
 
     interface OnDestroyListener {

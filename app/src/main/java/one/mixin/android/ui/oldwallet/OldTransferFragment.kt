@@ -261,7 +261,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {
-            handleAddressTransfer()
+            // do nothing
         }
         binding.titleView.rightIb.isVisible = false
         binding.continueTv.setOnClickListener {
@@ -271,97 +271,6 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
             prepareTransferBottom()
         }
     }
-
-    private fun handleAddressTransfer() {
-        binding.avatar.setNet(requireContext().dpToPx(16f))
-        binding.expandIv.isVisible = false
-        binding.assetRl.setOnClickListener(null)
-        currentAsset = requireArguments().getParcelableCompat(ARGS_ASSET, AssetItem::class.java)
-        currentAsset?.let { updateAssetUI(it) }
-
-        val address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)
-        this.address = address
-        if (address == null || currentAsset == null) return
-
-        if (address.addressId.isBlank()) { // mock address
-            binding.titleView.setSubTitle(
-                getString(R.string.send_to, address.label),
-                address.displayAddress().formatPublicKey(),
-            )
-            updateFeeUI(address)
-        } else {
-            chatViewModel.observeAddress(address.addressId).observe(
-                this,
-            ) {
-                this.address = it
-                binding.titleView.setSubTitle(
-                    getString(R.string.send_to, it.label),
-                    it.displayAddress().formatPublicKey(),
-                )
-                updateFeeUI(it)
-            }
-        }
-    }
-
-    private fun updateFeeUI(address: Address) =
-        lifecycleScope.launch {
-            if (address.feeAssetId.isBlank()) {
-                binding.memoRl.isVisible = false
-                binding.feeTv.isVisible = false
-                updateContinue(POST_PB)
-            } else {
-                updateContinue(POST_TEXT)
-                val feeAsset = chatViewModel.refreshAsset(address.feeAssetId)
-                if (feeAsset == null) {
-                    jobManager.addJobInBackground(RefreshAssetsJob(address.feeAssetId))
-                    return@launch
-                }
-                binding.memoRl.isVisible = isInnerTransfer()
-                binding.feeTv.isVisible = true
-
-                val reserveDouble = address.reserve.toBigDecimalOrNull()
-                val dustDouble = address.dust?.toBigDecimalOrNull()
-                val color = requireContext().colorFromAttribute(R.attr.text_primary)
-
-                val networkSpan =
-                    SpannableStringBuilder(getString(R.string.withdrawal_network_fee)).apply {
-                        bold {
-                            append(' ')
-                            color(color) {
-                                append(address.fee + " " + feeAsset.symbol)
-                            }
-                        }
-                    }
-                val dustSpan =
-                    if (dustDouble != null && dustDouble > BigDecimal.ZERO) {
-                        SpannableStringBuilder().apply {
-                            append(getString(R.string.withdrawal_minimum_withdrawal))
-                            color(color) {
-                                bold {
-                                    append(" ${address.dust} ${currentAsset!!.symbol}")
-                                }
-                            }
-                        }
-                    } else {
-                        SpannableStringBuilder()
-                    }
-                val reserveSpan =
-                    if (reserveDouble != null && reserveDouble > BigDecimal.ZERO) {
-                        SpannableStringBuilder().apply {
-                            append(getString(R.string.withdrawal_minimum_reserve))
-                            color(color) {
-                                bold {
-                                    append(" ${address.reserve} ${currentAsset!!.symbol}")
-                                }
-                            }
-                        }
-                    } else {
-                        SpannableStringBuilder()
-                    }
-                binding.feeTv.text =
-                    buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
-            }
-        }
 
     private fun handleInnerTransfer() {
         if (supportSwitchAsset) {
@@ -629,7 +538,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
                         address!!.tag,
                         address!!.addressId,
                         address!!.label,
-                        address!!.fee,
+                        currentAsset!!.assetId,
                         currentAsset!!,
                         amount,
                         null,
