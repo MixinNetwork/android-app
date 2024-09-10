@@ -101,6 +101,16 @@ class MarketShareActivity : BaseActivity() {
                 onBackPressed()
             }
         }
+
+        applyFadeInAnimation(binding.root)
+    }
+
+    private fun applyFadeInAnimation(view: View) {
+        view.alpha = 0f
+        view.animate()
+            .alpha(1f)
+            .setDuration(500)
+            .setListener(null)
     }
 
     private fun cropAndScaleBitmap(original: Bitmap, cropHeight: Int, y: Int): Bitmap {
