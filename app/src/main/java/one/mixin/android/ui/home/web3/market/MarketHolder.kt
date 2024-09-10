@@ -24,7 +24,6 @@ import java.math.BigDecimal
 class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(binding.root) {
     private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
     private val verticalPadding by lazy { 12.dp }
-    private val isColorReversed by lazy { binding.root.context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false) }
 
     init {
         binding.container.setPadding(horizontalPadding - 4.dp, verticalPadding, horizontalPadding, verticalPadding)
@@ -36,6 +35,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
     @SuppressLint("CheckResult", "SetTextI18n")
     fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, String, Boolean?) -> Unit) {
         binding.apply {
+            val isColorReversed = binding.root.context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
             root.setOnClickListener { onClick.invoke(item) }
             val symbol = Fiats.getSymbol()
             val rate = BigDecimal(Fiats.getRate())
