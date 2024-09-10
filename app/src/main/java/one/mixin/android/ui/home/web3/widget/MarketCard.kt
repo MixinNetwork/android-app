@@ -11,6 +11,7 @@ import one.mixin.android.databinding.ViewMarketCardBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -30,12 +31,7 @@ class MarketCard : LinearLayout {
         _binding.apply {
             titleTv.setText(title)
             valueTv.text = capFormat(value, BigDecimal(Fiats.getRate()), Fiats.getSymbol())
-            extraTv.text = "${percentage.numberFormat2()}%"
-            if (percentage < BigDecimal.ZERO) {
-                extraTv.textColorResource = R.color.wallet_pink
-            } else {
-                extraTv.textColorResource = R.color.wallet_green
-            }
+            extraTv.setQuoteText("${percentage.numberFormat2()}%", percentage >= BigDecimal.ZERO)
         }
     }
 

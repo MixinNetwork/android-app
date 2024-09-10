@@ -11,6 +11,7 @@ import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -88,8 +89,7 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                 } else {
                     BigDecimal(token.changePercent)
                 }
-            changeTv.text = "${changePercent.numberFormat2()}%"
-            changeTv.textColorResource = if (changePercent >= BigDecimal.ZERO) R.color.wallet_green else R.color.wallet_pink
+            changeTv.setQuoteText("${changePercent.numberFormat2()}%", changePercent >= BigDecimal.ZERO)
             if (token.price == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE

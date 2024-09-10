@@ -14,7 +14,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
@@ -125,13 +124,15 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 navTo(SettingSizeFragment.newInstance(), SettingSizeFragment.TAG)
             }
             val quoteColor = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-            quoteColorDescTv.setText( if (quoteColor) {
-                R.string.quote_color_green
-            }else{
-                R.string.quote_color_red
-            })
+            quoteColorDescTv.setText(
+                if (quoteColor) {
+                    R.string.red_up_green_down
+                } else {
+                    R.string.green_up_red_down
+                }
+            )
             quoteColorRl.setOnClickListener {
-                menuAdapter.checkPosition = if (quoteColor) 0 else 1
+                menuAdapter.checkPosition = if (requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)) 1 else 0
                 menuAdapter.notifyDataSetChanged()
                 sortMenu.show()
             }
@@ -140,8 +141,8 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
     private val menuAdapter: MenuAdapter by lazy {
         val menuItems = listOf(
-            R.string.quote_color_green,
-            R.string.quote_color_red
+            R.string.green_up_red_down,
+            R.string.red_up_green_down
         )
         MenuAdapter(requireContext(), menuItems)
     }
@@ -153,11 +154,13 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             setOnItemClickListener { _, _, position, _ ->
                 val quoteColor = position == 1
                 requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_QUOTE_COLOR, quoteColor)
-                binding.quoteColorDescTv.setText( if (quoteColor) {
-                    R.string.quote_color_green
-                }else{
-                    R.string.quote_color_red
-                })
+                binding.quoteColorDescTv.setText(
+                    if (quoteColor) {
+                        R.string.red_up_green_down
+                    } else {
+                        R.string.green_up_red_down
+                    }
+                )
                 dismiss()
             }
             width = requireContext().dpToPx(220f)
@@ -232,24 +235,31 @@ fun getLanguagePos() =
                 AppearanceFragment.POS_SIMPLIFY_CHINESE
             }
         }
+
         Locale.ENGLISH.language -> {
             AppearanceFragment.POS_ENGLISH
         }
+
         Locale.JAPANESE.language -> {
             AppearanceFragment.POS_SIMPLIFY_JAPANESE
         }
+
         Constants.Locale.Russian.Language -> {
             AppearanceFragment.POS_RUSSIAN
         }
+
         Constants.Locale.Indonesian.Language -> {
             AppearanceFragment.POS_INDONESIA
         }
+
         Constants.Locale.Malay.Language -> {
             AppearanceFragment.POS_Malay
         }
+
         Constants.Locale.Spanish.Language -> {
             AppearanceFragment.POS_Spanish
         }
+
         else -> {
             AppearanceFragment.POS_FOLLOW_SYSTEM
         }
