@@ -139,12 +139,14 @@ class MarketShareActivity : BaseActivity() {
             share.action = Intent.ACTION_SEND
             share.type = "image/png"
             share.putExtra(Intent.EXTRA_STREAM, uri)
+            finish()
             startActivity(Intent.createChooser(share, getString(R.string.Share)))
         }
     }
 
     private val onCopy: () -> Unit = {
         getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, Session.getAccount()?.system?.messenger?.releaseUrl))
+        finish()
         toast(R.string.copied_to_clipboard)
     }
 
@@ -157,6 +159,7 @@ class MarketShareActivity : BaseActivity() {
             val file = File(dir, "${name}.png")
             saveBitmapToFile(file, bitmap)
             MediaScannerConnection.scanFile(this@MarketShareActivity, arrayOf(file.toString()), null, null)
+            finish()
             toast(getString(R.string.Save_to, dir.path))
         }
     }
