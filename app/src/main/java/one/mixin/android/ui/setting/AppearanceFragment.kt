@@ -11,7 +11,9 @@ import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentAppearanceBinding
+import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
@@ -154,6 +156,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             setOnItemClickListener { _, _, position, _ ->
                 val quoteColor = position == 1
                 requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_QUOTE_COLOR, quoteColor)
+                RxBus.publish(QuoteColorEvent())
                 binding.quoteColorDescTv.setText(
                     if (quoteColor) {
                         R.string.red_up_green_down
