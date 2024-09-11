@@ -19,13 +19,12 @@
             android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
             android:textColor="#19BEF1"
-            android:maxWidth="280dp"
-            android:minWidth="30dp"
-            android:includeFontPadding="false"
             android:visibility="gone"
+            app:lines="1"
+            app:ellipsize="end"
+            app:minWidth="30dp"
+            app:maxWidth="280dp"
             app:textSize="15sp"/>
 
         <LinearLayout

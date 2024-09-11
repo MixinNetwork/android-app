@@ -34,12 +34,11 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="1.5dp"
-            android:ellipsize="end"
             android:gravity="start|center_vertical"
-            android:includeFontPadding="false"
-            android:lines="1"
-            android:minWidth="30dp"
             android:textColor="#19BEF1"
+            app:ellipsize="end"
+            app:lines="1"
+            app:minWidth="30dp"
             app:textSize="14sp" />
 
         <FrameLayout

@@ -41,11 +41,10 @@
             android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
-            android:minWidth="30dp"
             android:textColor="#19BEF1"
-            android:includeFontPadding="false"
+            app:ellipsize="end"
+            app:lines="1"
+            app:minWidth="30dp"
             app:textSize="14sp" />
 
         <one.mixin.android.widget.linktext.AutoLinkTextView

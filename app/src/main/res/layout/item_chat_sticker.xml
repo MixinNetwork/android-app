@@ -43,19 +43,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:maxWidth="280dp"
-        android:minWidth="30dp"
-        android:ellipsize="end"
         android:gravity="start|top"
-        android:lines="1"
         android:paddingBottom="4dp"
         android:textColor="#19BEF1"
         android:visibility="gone"
-        android:includeFontPadding="false"
-        tools:text="Jake Wharton"
+        app:maxWidth="280dp"
+        app:minWidth="30dp"
+        app:ellipsize="end"
+        app:lines="1"
         app:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
-        app:layout_constraintStart_toStartOf="@id/chat_layout" />
+        app:layout_constraintStart_toStartOf="@id/chat_layout"
+        tools:text="Jake Wharton" />
 
     <LinearLayout
         android:id="@+id/chat_layout"

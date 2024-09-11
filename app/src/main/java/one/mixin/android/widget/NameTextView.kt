@@ -1,10 +1,10 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Build.*
+import android.text.InputFilter
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -69,7 +69,6 @@ class NameTextView : LinearLayoutCompat {
         textView.setTextColor(textColor)
 
         val textFontWeight = a.getInt(R.styleable.NameTextView_textFontWeight, Typeface.NORMAL)
-
         if (VERSION.SDK_INT >= VERSION_CODES.P) {
             val typeface = Typeface.create(textView.typeface, textFontWeight)
             textView.typeface = typeface
@@ -93,6 +92,14 @@ class NameTextView : LinearLayoutCompat {
         val maxWidth = a.getDimensionPixelSize(R.styleable.NameTextView_maxWidth, 0)
         if (maxWidth > 0) {
             textView.maxWidth = maxWidth
+        }
+        val minWidth = a.getDimensionPixelSize(R.styleable.NameTextView_minWidth, 0)
+        if (maxWidth > 0) {
+            textView.minWidth = minWidth
+        }
+        val maxLength  = a.getInt(R.styleable.NameTextView_maxLength, 0)
+        if (maxLength>0){
+            textView.filters = arrayOf(InputFilter.LengthFilter(maxLength))
         }
         val lines = a.getInt(R.styleable.NameTextView_lines, 1)
         textView.maxLines = lines

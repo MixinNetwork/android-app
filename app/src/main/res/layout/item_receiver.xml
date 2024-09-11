@@ -23,9 +23,9 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:textColor="?attr/text_primary"
-        android:lines="1"
-        android:ellipsize="middle"
-        android:textFontWeight="500"
+        app:lines="1"
+        app:ellipsize="middle"
+        app:textFontWeight="500"
         app:textSize="16sp" />
 
 </merge>

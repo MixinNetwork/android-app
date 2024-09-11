@@ -37,9 +37,9 @@
         android:layout_toEndOf="@id/avatar"
         android:layout_centerVertical="true"
         android:layout_marginBottom="2dp"
-        android:maxWidth="240dp"
-        android:lines="1"
         android:textColor="?attr/text_primary"
+        app:maxWidth="240dp"
+        app:lines="1"
         app:textSize="16sp"
         tools:text="name"/>
 

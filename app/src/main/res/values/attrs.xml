@@ -256,6 +256,8 @@
         <attr name="textFontWeight" format="integer" />
         <attr name="ellipsize" format="string" />
         <attr name="maxWidth" format="dimension" />
+        <attr name="minWidth" format="dimension" />
+        <attr name="maxLength" format="integer" />
         <attr name="lines" format="integer" />
     </declare-styleable>
     <declare-styleable name="InscriptionView">

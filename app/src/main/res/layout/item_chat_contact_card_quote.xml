@@ -47,12 +47,11 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="1.5dp"
-        android:ellipsize="end"
         android:gravity="start|center_vertical"
-        android:lines="1"
-        android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:includeFontPadding="false"
+        app:ellipsize="end"
+        app:lines="1"
+        app:minWidth="30dp"
         app:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
         app:layout_constraintStart_toStartOf="@id/chat_msg_layout" />
@@ -120,11 +119,11 @@
                         android:layout_marginBottom="2dp"
                         android:layout_marginEnd="8dp"
                         android:layout_toEndOf="@id/avatar_iv"
-                        android:ellipsize="end"
-                        android:maxWidth="140dp"
-                        android:minWidth="30dp"
-                        android:lines="1"
                         android:textColor="?attr/text_primary"
+                        app:ellipsize="end"
+                        app:maxWidth="140dp"
+                        app:minWidth="30dp"
+                        app:lines="1"
                         app:textSize="16sp" />
 
                     <TextView

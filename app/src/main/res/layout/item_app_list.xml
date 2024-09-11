@@ -36,9 +36,9 @@
             android:id="@+id/name_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLength="32"
             android:textColor="?attr/text_primary"
+            app:ellipsize="end"
+            app:maxLength="32"
             app:textSize="16sp" />
 
     </LinearLayout>

@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="60dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?attr/bg_white"
     android:foreground="?android:attr/selectableItemBackground">
 
@@ -27,9 +28,9 @@
         android:layout_toEndOf="@id/avatar"
         android:layout_above="@id/center"
         android:layout_marginBottom="2dp"
-        android:maxWidth="240dp"
-        android:lines="1"
         android:textColor="?attr/text_primary"
+        app:maxWidth="240dp"
+        app:lines="1"
         tools:text="name"/>
 
     <TextView

@@ -46,9 +46,8 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:layout_centerVertical="true"
-                    android:maxWidth="280dp"
                     android:textColor="?attr/text_primary"
-                    android:includeFontPadding="false"
+                    app:maxWidth="280dp"
                     app:textSize="@dimen/bottom_name_text_size" />
 
             </RelativeLayout>
