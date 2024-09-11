@@ -86,10 +86,16 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
+                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
+            if (marketItem.coinId.isBlank()){
+                rank.isVisible = false
+                assetRank.isVisible = false
+                titleView.rightExtraIb.isVisible = false
+            }
+            assetName.text = marketItem.name
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
             marketCapTitle.text = getString(R.string.Market_Cap).uppercase()
@@ -214,7 +220,9 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
 
             market.setContent {
-                Market(typeState.value, marketItem.coinId, { percentageChange ->
+                Market(typeState.value, marketItem.coinId.ifBlank {
+                    marketItem.assetIds!!.first()
+                }, { percentageChange ->
                     if (percentageChange == null) {
                         currentRise = percentageChange
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
@@ -242,12 +250,19 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
         }
 
-        walletViewModel.marketByCoinId(marketItem.coinId).observe(this.viewLifecycleOwner) { info ->
+        if (marketItem.coinId.isBlank()) {
+            walletViewModel.marketById(marketItem.assetIds!!.first())
+        } else {
+            walletViewModel.marketByCoinId(marketItem.coinId)
+        }.observe(this.viewLifecycleOwner) { info ->
             if (info != null) {
                 binding.apply {
-                    assetName.text = marketItem.name
-                    rank.text = "#${marketItem.marketCapRank}"
-                    assetRank.text = "#${marketItem.marketCapRank}"
+                    rank.isVisible = true
+                    assetRank.isVisible = true
+                    titleView.rightExtraIb.isVisible = true
+                    assetName.text = info.name
+                    rank.text = "#${info.marketCapRank}"
+                    assetRank.text = "#${info.marketCapRank}"
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)
