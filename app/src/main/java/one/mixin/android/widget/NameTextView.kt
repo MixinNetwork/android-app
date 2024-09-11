@@ -326,6 +326,30 @@ class NameTextView : LinearLayoutCompat {
         }
     }
 
+    fun setMessageName(message: MessageItem) {
+        this.textView.text = message.userFullName
+        if (message.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getMessageBadge(message), null)
+    }
+
     fun setName(message: MessageItem) {
         this.textView.text = message.sharedUserFullName
         if (message.sharedMembership?.isProsperity() == true) {
@@ -397,6 +421,31 @@ class NameTextView : LinearLayoutCompat {
         }
         this.textView.setCompoundDrawables(null, null, getBadge(message), null)
     }
+
+    fun setMessageName(message: ChatHistoryMessageItem) {
+        this.textView.text = message.userFullName
+        if (message.membership?.isProsperity() == true) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getMessageBadge(message), null)
+    }
+
 
     fun setName(conversationItem: ConversationItem) {
         this.textView.text = conversationItem.getConversationName()
@@ -584,6 +633,21 @@ class NameTextView : LinearLayoutCompat {
         }
     }
 
+    private fun getMessageBadge(item: MessageItem): Drawable? {
+        val resources = if (item.isMembership()) {
+            item.membership.membershipIcon()
+        } else if (item.appId != null) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
     private fun getBadge(user: CallUser): Drawable? {
         val resources = if (user.membership?.isMembership() == true) {
             user.membership.membershipIcon()
@@ -624,6 +688,21 @@ class NameTextView : LinearLayoutCompat {
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
         } else if (item.sharedUserAppId != null) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getMessageBadge(item: ChatHistoryMessageItem): Drawable? {
+        val resources = if (item.isMembership()) {
+            item.membership.membershipIcon()
+        } else if (item.appId != null) {
             R.drawable.ic_bot
         } else {
             null
@@ -703,5 +782,13 @@ class NameTextView : LinearLayoutCompat {
 
     fun highLight(filter: String?) {
         this.textView.highLight(filter)
+    }
+
+    fun setTextSize(complexUnitDip: Int, textSize: Float) {
+        this.textView.setTextSize(complexUnitDip, textSize)
+    }
+
+    fun setMaxWidth(maxWidth: Int) {
+        this.textView.maxWidth = maxWidth
     }
 }

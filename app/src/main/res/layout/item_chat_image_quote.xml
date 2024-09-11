@@ -38,7 +38,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
         tools:ignore="ContentDescription" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

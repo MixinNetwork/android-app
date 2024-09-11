@@ -63,7 +63,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="1" />
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/chat_name"
             android:minWidth="30dp"
             android:layout_width="wrap_content"

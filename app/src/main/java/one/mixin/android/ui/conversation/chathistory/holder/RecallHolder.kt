@@ -19,16 +19,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.membership != null) {
-                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener {
                 messageItem.userId?.let { userId ->
@@ -39,15 +30,6 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
             binding.chatName.visibility = View.GONE
         }
 
-        if (messageItem.membership != null) {
-            binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else if (messageItem.appId != null) {
-            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else {
-            binding.chatName.setCompoundDrawables(null, null, null, null)
-        }
         chatLayout(isMe, isLast)
         binding.chatTime.load(messageItem.createdAt)
         binding.recallTv.text =
