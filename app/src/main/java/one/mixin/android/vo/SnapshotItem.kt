@@ -140,16 +140,17 @@ data class SnapshotItem(
         }
 
     fun isDataIncomplete(): Boolean {
-        return when (type) {
-            SafeSnapshotType.withdrawal.name -> {
+        val simulateType = simulateType()
+        return when (simulateType) {
+            SafeSnapshotType.withdrawal -> {
                 withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
             }
 
-            SafeSnapshotType.deposit.name -> {
+            SafeSnapshotType.deposit -> {
                 deposit?.depositHash.isNullOrBlank()
             }
 
-            SafeSnapshotType.snapshot.name -> {
+            SafeSnapshotType.snapshot -> {
                 withdrawal?.withdrawalHash?.isBlank() == true || deposit?.depositHash?.isBlank() == true
             }
 
