@@ -51,8 +51,8 @@
         android:lines="1"
         android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp"
         android:includeFontPadding="false"
+        app:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

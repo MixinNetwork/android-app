@@ -52,7 +52,7 @@
         android:includeFontPadding="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
-        android:textSize="14sp" />
+        app:textSize="14sp" />
 
     <LinearLayout
         android:id="@+id/chat_msg_layout"

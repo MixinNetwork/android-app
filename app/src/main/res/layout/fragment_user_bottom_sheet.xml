@@ -50,7 +50,7 @@
                     android:textColor="?attr/text_primary"
                     android:layout_centerVertical="true"
                     android:includeFontPadding="false"
-                    android:textSize="@dimen/bottom_name_text_size" />
+                    app:textSize="@dimen/bottom_name_text_size" />
 
             </RelativeLayout>
 

@@ -46,7 +46,7 @@
             android:minWidth="30dp"
             android:textColor="#19BEF1"
             android:includeFontPadding="false"
-            android:textSize="14sp" />
+            app:textSize="14sp" />
 
         <one.mixin.android.widget.linktext.AutoLinkTextView
             android:id="@+id/chat_tv"

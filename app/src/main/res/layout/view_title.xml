@@ -101,7 +101,7 @@
             android:maxWidth="240dp"
             android:lines="1"
             android:textColor="?attr/text_primary"
-            android:textSize="18sp" />
+            app:textSize="18sp" />
 
         <TextView
             android:id="@+id/sub_title_tv"

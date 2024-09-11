@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="72dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?attr/bg_white"
     android:foreground="?android:attr/selectableItemBackground"
     tools:layout_editor_absoluteY="81dp">
@@ -35,7 +36,7 @@
             android:lines="1"
             android:textFontWeight="500"
             android:textColor="?attr/text_primary"
-            android:textSize="16sp" />
+            app:textSize="16sp" />
 
     </LinearLayout>
 

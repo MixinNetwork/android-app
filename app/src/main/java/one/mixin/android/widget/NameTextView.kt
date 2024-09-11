@@ -60,7 +60,7 @@ class NameTextView : LinearLayoutCompat {
             height = badgeSize
             marginStart = badgePadding
         }
-        val textSize = a.getDimension(R.styleable.NameTextView_badgeSize, sp14)
+        val textSize = a.getDimension(R.styleable.NameTextView_textSize, sp14)
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
 
         val textColorAttr = a.getResourceId(R.styleable.NameTextView_textColor, R.attr.text_primary)

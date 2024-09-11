@@ -38,6 +38,6 @@
         android:gravity="center"
         android:lines="1"
         android:textColor="?attr/text_primary"
-        android:textSize="12sp" />
+        app:textSize="12sp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

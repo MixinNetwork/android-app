@@ -49,9 +49,9 @@
         android:gravity="start|center_vertical"
         android:lines="1"
         android:textColor="#19BEF1"
-        android:textSize="14sp"
         android:layout_marginBottom="1.5dp"
         android:includeFontPadding="false"
+        app:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
         app:layout_constraintStart_toStartOf="@id/chat_layout" />
 
@@ -90,7 +90,6 @@
                 android:id="@+id/name_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
                 android:maxWidth="220dp"
                 android:layout_alignTop="@id/avatar_iv"
                 android:layout_marginStart="10dp"
@@ -98,7 +97,8 @@
                 android:layout_toEndOf="@id/avatar_iv"
                 android:textColor="?attr/text_primary"
                 android:ellipsize="end"
-                android:lines="1" />
+                android:lines="1"
+                app:textSize="16sp"/>
 
             <TextView
                 android:id="@+id/id_tv"

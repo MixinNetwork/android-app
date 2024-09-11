@@ -40,7 +40,7 @@
             android:lines="1"
             android:minWidth="30dp"
             android:textColor="#19BEF1"
-            android:textSize="14sp" />
+            app:textSize="14sp" />
 
         <FrameLayout
             android:id="@+id/chat_layout"

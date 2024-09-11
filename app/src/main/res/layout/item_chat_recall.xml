@@ -74,7 +74,7 @@
             android:includeFontPadding="false"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:textSize="14sp"/>
+            app:textSize="14sp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

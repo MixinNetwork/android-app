@@ -75,8 +75,8 @@
             android:ellipsize="end"
             android:lines="1"
             android:textColor="#19BEF1"
-            android:textSize="14sp"
-            android:includeFontPadding="false"/>
+            android:includeFontPadding="false"
+            app:textSize="14sp"/>
 
     </one.mixin.android.widget.GestureMessageLayout>
 

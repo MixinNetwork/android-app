@@ -31,7 +31,7 @@
         android:lines="1"
         android:textColor="?attr/text_primary"
         android:includeFontPadding="false"
-        android:textSize="16sp"
+        app:textSize="16sp"
         tools:text="name"/>
 
     <TextView

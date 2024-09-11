@@ -39,9 +39,9 @@
         android:layout_marginBottom="2dp"
         android:maxWidth="240dp"
         android:lines="1"
-        android:textSize="16sp"
         android:ellipsize="end"
         android:textColor="?attr/text_primary"
+        app:textSize="16sp"
         tools:text="name"/>
 
     <TextView

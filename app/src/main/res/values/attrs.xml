@@ -252,7 +252,7 @@
         <attr name="badgeSize" format="dimension" />
         <attr name="badgePadding" format="dimension" />
         <attr name="textColor" format="color|reference" />
-        <attr name="testSize" format="dimension" />
+        <attr name="textSize" format="dimension" />
         <attr name="textFontWeight" format="integer" />
         <attr name="ellipsize" format="string" />
         <attr name="maxWidth" format="dimension" />

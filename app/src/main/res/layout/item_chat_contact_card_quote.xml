@@ -52,8 +52,8 @@
         android:lines="1"
         android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp"
         android:includeFontPadding="false"
+        app:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/chat_msg_layout"
         app:layout_constraintStart_toStartOf="@id/chat_msg_layout" />
 
@@ -125,7 +125,7 @@
                         android:minWidth="30dp"
                         android:lines="1"
                         android:textColor="?attr/text_primary"
-                        android:textSize="16sp" />
+                        app:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/id_tv"

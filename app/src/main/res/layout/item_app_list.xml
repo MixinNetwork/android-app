@@ -39,7 +39,7 @@
             android:ellipsize="end"
             android:maxLength="32"
             android:textColor="?attr/text_primary"
-            android:textSize="16sp" />
+            app:textSize="16sp" />
 
     </LinearLayout>
 

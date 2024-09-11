@@ -22,7 +22,7 @@
         android:minWidth="30dp"
         android:textColor="#19BEF1"
         android:includeFontPadding="false"
-        android:textSize="14sp" />
+        app:textSize="14sp" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
