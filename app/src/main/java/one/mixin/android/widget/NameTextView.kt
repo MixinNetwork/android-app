@@ -42,8 +42,8 @@ class NameTextView : LinearLayoutCompat {
     private val badgeSize: Int
 
     private val binding = ViewNameTextBinding.inflate(LayoutInflater.from(context), this)
-    val textView get() = binding.text
-    private val iconView get() = binding.icon
+    val textView get() = binding.nameText
+    private val iconView get() = binding.nameIcon
 
     constructor(context: Context) : this(context, null)
 

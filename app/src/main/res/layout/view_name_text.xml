@@ -8,12 +8,12 @@
     tools:parentTag="androidx.appcompat.widget.LinearLayoutCompat">
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/text"
+        android:id="@+id/name_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <one.mixin.android.widget.lottie.RLottieImageView
-        android:id="@+id/icon"
+        android:id="@+id/name_icon"
         android:layout_width="14dp"
         android:layout_height="14dp"
         android:layout_gravity="center_vertical" />
