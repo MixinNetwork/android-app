@@ -35,6 +35,7 @@
     <color name="bgChooseNetworkNight">#3B3F44</color>
     <color name="bgFlagNight">#3E4148</color>
     <color name="bgTranslucenceNight">#EE2c3136</color>
+    <color name="bgRankNight">#33FFFFFF</color>
 
     <color name="bgChatNight">#34373B</color>
     <color name="bgTipInfoNight">#383B40</color>

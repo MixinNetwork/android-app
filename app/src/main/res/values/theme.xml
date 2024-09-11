@@ -44,6 +44,7 @@
     <attr name="bg_clip" format="color|reference" />
     <attr name="bg_bubble" format="color|reference" />
     <attr name="bg_translucence" format="color|reference" />
+    <attr name="bg_rank" format="color|reference" />
     <attr name="bg_bot" format="color|reference" />
     <attr name="bg_choose_network" format="color|reference" />
     <attr name="bg_choose_network_yellow" format="color|reference" />

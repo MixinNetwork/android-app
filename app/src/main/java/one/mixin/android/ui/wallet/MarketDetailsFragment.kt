@@ -245,6 +245,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         walletViewModel.marketByCoinId(marketItem.coinId).observe(this.viewLifecycleOwner) { info ->
             if (info != null) {
                 binding.apply {
+                    rank.text = "#${marketItem.marketCapRank}"
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)

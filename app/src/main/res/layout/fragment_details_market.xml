@@ -165,6 +165,23 @@
                             android:layout_marginTop="20dp" />
 
                         <TextView
+                            android:id="@+id/rank"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_assist"
+                            android:textSize="12sp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_alignParentEnd="true"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:paddingTop="1dp"
+                            android:paddingBottom="1dp"
+                            android:textFontWeight="500"
+                            android:layout_alignTop="@id/stats"
+                            android:layout_alignBottom="@id/stats"
+                            android:background="@drawable/bg_rank_round_6dp" />
+
+                        <TextView
                             android:id="@+id/market_vol_u_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

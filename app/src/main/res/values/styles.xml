@@ -60,6 +60,8 @@
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
+        <item name="bg_rank">@color/bgRank</item>
+
         <item name="bg_pin_content">@drawable/chat_bubble_pin_message</item>
         <item name="bg_flag">@color/bgFlag</item>
         <item name="bg_action_button">@drawable/bg_button_action</item>
