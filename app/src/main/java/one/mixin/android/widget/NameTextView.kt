@@ -4,11 +4,11 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Build.*
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
@@ -48,6 +48,8 @@ class NameTextView : LinearLayoutCompat {
     constructor(context: Context) : this(context, null)
 
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
+        orientation = HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
         val a = context.obtainStyledAttributes(attributeSet, R.styleable.NameTextView)
         val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp4)
         badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)

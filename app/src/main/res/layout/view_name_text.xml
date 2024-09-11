@@ -7,15 +7,14 @@
     android:gravity="center_vertical"
     tools:parentTag="androidx.appcompat.widget.LinearLayoutCompat">
 
-    <one.mixin.android.widget.BorderTextView
+    <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <one.mixin.android.widget.lottie.RLottieImageView
-        android:src="@drawable/ic_order_waiting"
         android:id="@+id/icon"
         android:layout_width="14dp"
         android:layout_height="14dp"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_vertical" />
 </merge>
