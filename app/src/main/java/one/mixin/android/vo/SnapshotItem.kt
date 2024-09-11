@@ -140,12 +140,22 @@ data class SnapshotItem(
         }
 
     fun isDataIncomplete(): Boolean {
-        if (type == SafeSnapshotType.withdrawal.name) {
-            return withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
-        } else if (type == SafeSnapshotType.deposit.name) {
-            return deposit?.depositHash.isNullOrBlank()
+        val simulateType = simulateType()
+        return when (simulateType) {
+            SafeSnapshotType.withdrawal -> {
+                withdrawal?.receiver.isNullOrBlank() || withdrawal?.withdrawalHash.isNullOrBlank()
+            }
+
+            SafeSnapshotType.deposit -> {
+                deposit?.depositHash.isNullOrBlank()
+            }
+
+            SafeSnapshotType.snapshot -> {
+                withdrawal?.withdrawalHash?.isBlank() == true || deposit?.depositHash?.isBlank() == true
+            }
+
+            else -> false
         }
-        return false
     }
 }
 

@@ -116,6 +116,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AttachmentMessagePayload
@@ -1180,9 +1181,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             )
         if (!snapshot.depositHash.isNullOrEmpty()) {
             safeSnapshotDao.deletePendingSnapshotByHash(snapshot.depositHash)
-            safeSnapshotDao.insert(snapshot.copy(deposit = SafeDeposit(snapshot.depositHash, "")))
+            safeSnapshotDao.insert(snapshot.copy(type = SafeSnapshotType.snapshot.name, deposit = SafeDeposit(snapshot.depositHash, "")))
         } else {
-            safeSnapshotDao.insert(snapshot)
+            safeSnapshotDao.insert(snapshot.copy(type = SafeSnapshotType.snapshot.name))
         }
 
         insertMessage(message, data)
