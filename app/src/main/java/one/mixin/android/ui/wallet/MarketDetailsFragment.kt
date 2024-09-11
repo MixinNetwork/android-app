@@ -70,9 +70,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-
-        val changeUsd = BigDecimal(marketItem.priceChange24h)
-        val isPositive = changeUsd > BigDecimal.ZERO
         jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
         binding.apply {
             titleView.apply {
@@ -86,11 +83,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
+                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol)
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
-            if (marketItem.coinId.isBlank()){
+            if (marketItem.coinId.isBlank()) {
                 rank.isVisible = false
                 assetRank.isVisible = false
                 titleView.rightExtraIb.isVisible = false
@@ -141,83 +138,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             name.text = marketItem.name
             symbol.text = marketItem.symbol
             icon.loadToken(marketItem)
-            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
-                Timber.e(error)
-                balanceRl.isVisible = false
-            }) {
-                val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
-                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
-                if (ids.isNotEmpty()) {
-                    val balances = tokens.sumOf { BigDecimal(it.balance) }
-                    val price = BigDecimal(marketItem.currentPrice).multiply(BigDecimal(Fiats.getRate())).multiply(balances)
-                    balance.text = "${balances.numberFormat8()} ${marketItem.symbol}"
-                    value.text = try {
-                        if (price == BigDecimal.ZERO) {
-                            "≈ ${Fiats.getSymbol()}0.00"
-                        } else {
-                            "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
-                        }
-                    } catch (ignored: NumberFormatException) {
-                        "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
-                    }
-                    priceRise.visibility = VISIBLE
-                    if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
-                        val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
-                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
-                        priceRise.text = currentRise
-                        balanceChange.text = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)"
-                        balanceChange.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                        riseTitle.isVisible = true
-                    } else {
-                        balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        balanceChange.text = "0.00%"
-                        priceRise.text = "0.00%"
-                        riseTitle.isVisible = false
-                    }
-                    balanceRl.setOnClickListener {
-                        lifecycleScope.launch {
-                            if (ids.size > tokens.size) {
-                                val dialog =
-                                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                        setCancelable(false)
-                                    }
-                                dialog.show()
-                                walletViewModel.syncNoExistAsset(ids.subtract(tokens.map { it.assetId }.toSet()).toList())
-                                dialog.dismiss()
-                            }
-                            val nowTokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
-                            if (nowTokens.isEmpty()) {
-                                toast(R.string.Data_error)
-                                return@launch
-                            }
-                            if (nowTokens.size == 1) {
-                                if (assetId == nowTokens.first().assetId) {
-                                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                                } else {
-                                    WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions, true)
-                                }
-                            } else {
-                                ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
-                                    .apply {
-                                        callback = { token ->
-                                            if (assetId == token.assetId) {
-                                                activity?.onBackPressedDispatcher?.onBackPressed()
-                                            } else {
-                                                activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions, true) }
-                                            }
-                                        }
-                                    }
-                                    .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
-                            }
-                        }
-                    }
-                    balanceRl.isVisible = true
-                } else {
-                    balanceRl.isVisible = false
-                }
-            }
 
             market.setContent {
                 Market(typeState.value, marketItem.coinId.ifBlank {
@@ -249,13 +169,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }, { loading -> isLoading = loading })
             }
         }
-
+        loadBalance(marketItem)
         if (marketItem.coinId.isBlank()) {
             walletViewModel.marketById(marketItem.assetIds!!.first())
         } else {
             walletViewModel.marketByCoinId(marketItem.coinId)
         }.observe(this.viewLifecycleOwner) { info ->
             if (info != null) {
+                loadBalance(info)
                 binding.apply {
                     rank.isVisible = true
                     assetRank.isVisible = true
@@ -346,19 +267,89 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         requireContext().colorAttr(R.attr.text_primary)
     }
 
-    private fun volFormat(vol: String, rate: BigDecimal, symbol: String? = null): String {
-        val formatVol = try {
-            BigDecimal(vol).multiply(rate).numberFormat2()
-        } catch (e: NumberFormatException) {
-            null
-        }
-        if (formatVol != null) {
-            if (symbol != null) {
-                return "$symbol$formatVol"
+    @SuppressLint("SetTextI18n")
+    private fun loadBalance(marketItem: MarketItem) {
+        val changeUsd = BigDecimal(marketItem.priceChange24h)
+        val isPositive = changeUsd > BigDecimal.ZERO
+        binding.apply {
+            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                Timber.e(error)
+                balanceRl.isVisible = false
+            }) {
+                val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
+                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                if (ids.isNotEmpty()) {
+                    val balances = tokens.sumOf { BigDecimal(it.balance) }
+                    val price = BigDecimal(marketItem.currentPrice).multiply(BigDecimal(Fiats.getRate())).multiply(balances)
+                    balance.text = "${balances.numberFormat8()} ${marketItem.symbol}"
+                    value.text = try {
+                        if (price == BigDecimal.ZERO) {
+                            "≈ ${Fiats.getSymbol()}0.00"
+                        } else {
+                            "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                        }
+                    } catch (ignored: NumberFormatException) {
+                        "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
+                    }
+                    priceRise.visibility = VISIBLE
+                    if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
+                        val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
+                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
+                        priceRise.text = currentRise
+                        balanceChange.text = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)"
+                        balanceChange.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        riseTitle.isVisible = true
+                    } else {
+                        balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        balanceChange.text = "0.00%"
+                        priceRise.text = "0.00%"
+                        riseTitle.isVisible = false
+                    }
+                    balanceRl.setOnClickListener {
+                        lifecycleScope.launch {
+                            if (ids.size > tokens.size) {
+                                val dialog =
+                                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                        setCancelable(false)
+                                    }
+                                dialog.show()
+                                walletViewModel.syncNoExistAsset(ids.subtract(tokens.map { it.assetId }.toSet()).toList())
+                                dialog.dismiss()
+                            }
+                            val nowTokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                            if (nowTokens.isEmpty()) {
+                                toast(R.string.Data_error)
+                                return@launch
+                            }
+                            if (nowTokens.size == 1) {
+                                if (assetId == nowTokens.first().assetId) {
+                                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                                } else {
+                                    WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions, true)
+                                }
+                            } else {
+                                ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
+                                    .apply {
+                                        callback = { token ->
+                                            if (assetId == token.assetId) {
+                                                activity?.onBackPressedDispatcher?.onBackPressed()
+                                            } else {
+                                                activity?.let { WalletActivity.showWithToken(it, token, WalletActivity.Destination.Transactions, true) }
+                                            }
+                                        }
+                                    }
+                                    .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                            }
+                        }
+                    }
+                    balanceRl.isVisible = true
+                } else {
+                    balanceRl.isVisible = false
+                }
             }
-            return formatVol
         }
-        return getString(R.string.N_A)
     }
 
     private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
