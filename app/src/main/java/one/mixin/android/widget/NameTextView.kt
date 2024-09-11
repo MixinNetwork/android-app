@@ -272,7 +272,7 @@ class NameTextView : LinearLayoutCompat {
 
     fun setName(message: MessageItem) {
         this.textView.text = message.sharedUserFullName
-        if (message.isProsperity()) {
+        if (message.sharedMembership?.isProsperity() == true) {
             iconView.isVisible = true
             iconView.setImageDrawable(
                 RLottieDrawable(
