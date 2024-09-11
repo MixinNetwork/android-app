@@ -36,7 +36,7 @@
         android:layout_marginTop="3dp"
         android:maxWidth="64dp"
         android:gravity="center"
-        android:singleLine="true"
+        android:lines="1"
         android:textColor="?attr/text_primary"
         android:textSize="12sp" />
 

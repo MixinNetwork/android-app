@@ -5,7 +5,6 @@
     <attr name="color_primary_dark" format="color|reference" />
     <attr name="color_accent" format="color|reference" />
 
-
     <attr name="text_primary" format="color|reference" />
     <attr name="text_minor" format="color|reference" />
     <attr name="text_assist" format="color|reference" />

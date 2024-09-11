@@ -123,7 +123,7 @@
                         android:ellipsize="end"
                         android:maxWidth="140dp"
                         android:minWidth="30dp"
-                        android:singleLine="true"
+                        android:lines="1"
                         android:textColor="?attr/text_primary"
                         android:textSize="16sp" />
 

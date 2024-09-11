@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:maxWidth="240dp"
-            android:singleLine="true"
+            android:lines="1"
             android:textColor="?attr/text_primary"
             android:textSize="18sp" />
 

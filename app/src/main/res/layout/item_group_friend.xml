@@ -37,7 +37,7 @@
         android:layout_above="@id/center"
         android:layout_marginBottom="2dp"
         android:maxWidth="240dp"
-        android:singleLine="true"
+        android:lines="1"
         android:textColor="?attr/text_primary"
         tools:text="name"/>
 

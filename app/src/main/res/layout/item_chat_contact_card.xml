@@ -98,7 +98,7 @@
                 android:layout_toEndOf="@id/avatar_iv"
                 android:textColor="?attr/text_primary"
                 android:ellipsize="end"
-                android:singleLine="true" />
+                android:lines="1" />
 
             <TextView
                 android:id="@+id/id_tv"

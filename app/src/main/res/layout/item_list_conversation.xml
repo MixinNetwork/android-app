@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:maxWidth="220dp"
-            android:singleLine="true"
+            android:lines="1"
             android:textFontWeight="500"
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />

@@ -1,8 +1,14 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
+import android.os.Build
+import android.os.Build.*
+import android.text.TextUtils
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
@@ -12,7 +18,9 @@ import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewNameTextBinding
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.spToPx
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -43,14 +51,62 @@ class NameTextView : LinearLayoutCompat {
         val a = context.obtainStyledAttributes(attributeSet, R.styleable.NameTextView)
         val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp4)
         badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)
+
         textView.compoundDrawablePadding = badgePadding
         iconView.updateLayoutParams<MarginLayoutParams> {
             width = badgeSize
             height = badgeSize
             marginStart = badgePadding
         }
+        val textSize = a.getDimension(R.styleable.NameTextView_badgeSize, sp14)
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
+
+        val textColorAttr = a.getResourceId(R.styleable.NameTextView_textColor, R.attr.text_primary)
+        val textColor = getColorFromAttr(context, textColorAttr)
+
+        textView.setTextColor(textColor)
+
+        val textFontWeight = a.getInt(R.styleable.NameTextView_textFontWeight, Typeface.NORMAL)
+
+        if (VERSION.SDK_INT >= VERSION_CODES.P) {
+            val typeface = Typeface.create(textView.typeface, textFontWeight)
+            textView.typeface = typeface
+        } else {
+            if (textFontWeight >= 500) {
+                textView.setTypeface(textView.typeface, Typeface.BOLD)
+            } else {
+                textView.setTypeface(textView.typeface, Typeface.NORMAL)
+            }
+        }
+
+        val ellipsize = a.getString(R.styleable.NameTextView_ellipsize)
+        if (ellipsize != null) {
+            textView.ellipsize = when {
+                ellipsize.equalsIgnoreCase("end") -> TextUtils.TruncateAt.END
+                ellipsize.equalsIgnoreCase("start") -> TextUtils.TruncateAt.START
+                ellipsize.equalsIgnoreCase("middle") -> TextUtils.TruncateAt.MIDDLE
+                else -> null
+            }
+        }
+        val maxWidth = a.getDimensionPixelSize(R.styleable.NameTextView_maxWidth, 0)
+        if (maxWidth > 0) {
+            textView.maxWidth = maxWidth
+        }
+        val lines = a.getInt(R.styleable.NameTextView_lines, 1)
+        textView.maxLines = lines
         a.recycle()
         textView.includeFontPadding = false
+    }
+
+    private fun getColorFromAttr(context: Context, attr: Int): Int {
+        val theme = context.theme
+        val typedValue = TypedValue()
+        theme.resolveAttribute(attr, typedValue, true)
+        return if (typedValue.resourceId != 0) {
+            resources.getColor(typedValue.resourceId, theme)
+        } else {
+            typedValue.data
+        }
     }
 
     fun setTextColor(color: Int) {
@@ -424,6 +480,10 @@ class NameTextView : LinearLayoutCompat {
 
     private val dp4 by lazy {
         context.dpToPx(4f)
+    }
+
+    private val sp14 by lazy {
+        context.spToPx(14f).toFloat()
     }
 
     private fun getBadge(user: User): Drawable? {
