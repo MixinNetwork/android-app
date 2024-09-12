@@ -45,6 +45,7 @@
         <item name="bg_bot">@color/bgBotNight</item>
         <item name="bg_divider">@color/dividerNight</item>
         <item name="bg_translucence">@color/bgTranslucenceNight</item>
+        <item name="bg_rank">@color/bgRankNight</item>
         <item name="bg_pin_content">@drawable/chat_bubble_pin_message_night</item>
         <item name="bg_flag">@color/bgFlagNight</item>
 
