@@ -115,7 +115,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.swap -> {
-                        navTo(SwapFragment.newInstance(web3tokens), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
                     }
 
                     R.id.more -> {

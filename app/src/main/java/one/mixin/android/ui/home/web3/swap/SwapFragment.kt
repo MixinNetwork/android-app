@@ -97,14 +97,13 @@ class SwapFragment : BaseFragment() {
             amount: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
-                if (!tokens.isNullOrEmpty()) {
-                    when (T::class) {
-                        Web3Token::class -> {
-                            putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { addAll(tokens) })
-                        }
-                        TokenItem::class -> {
-                            putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { addAll(tokens) })
-                        }
+                when (T::class) {
+                    Web3Token::class -> {
+                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { if (tokens != null) { addAll(tokens) } })
+                    }
+
+                    TokenItem::class -> {
+                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { tokens?.let { addAll(it) } })
                     }
                 }
                 input?.let { putString(ARGS_INPUT, it) }
@@ -319,7 +318,7 @@ class SwapFragment : BaseFragment() {
     private suspend fun initFromTo() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
-        if (swappable.isNullOrEmpty()) {
+        if (swappable == null) {
             swappable = swapViewModel.allAssetItems()
             tokenItems = swappable
         }
@@ -637,8 +636,8 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun inMixin(): Boolean = web3tokens.isNullOrEmpty()
-    private fun getSource(): String = if (web3tokens.isNullOrEmpty()) "mixin" else ""
+    private fun inMixin(): Boolean = web3tokens == null
+    private fun getSource(): String = if (web3tokens == null) "mixin" else ""
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {
