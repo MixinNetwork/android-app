@@ -78,7 +78,7 @@ open class FlowLayout
                 measureChild(child, newWidthMeasureSpec, heightMeasureSpec)
                 val lp = child.layoutParams as MarginLayoutParams
 
-                val childWidth = (child.measuredWidth + lp.leftMargin + lp.rightMargin)
+                val childWidth = (child.measuredWidth + lp.leftMargin + lp.rightMargin + if (lineWidth == 0) 0 else itemOffset)
 
                 val childHeight = (child.measuredHeight + lp.topMargin + lp.bottomMargin)
 
