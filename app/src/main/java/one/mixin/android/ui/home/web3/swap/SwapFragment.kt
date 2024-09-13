@@ -316,7 +316,9 @@ class SwapFragment : BaseFragment() {
     private suspend fun initFromTo() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
-        if (swappable.isNullOrEmpty()) {
+        if (web3tokens?.isEmpty() == true) { // Only supplement local data for local assets
+            swappable = emptyList()
+        } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.allAssetItems()
             tokenItems = swappable
         }
