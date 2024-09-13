@@ -10,10 +10,10 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.loadImage
 
-class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = tokens.isEmpty()
 
-    var tokens: ArrayList<SwapToken> = ArrayList(0)
+    var tokens: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
