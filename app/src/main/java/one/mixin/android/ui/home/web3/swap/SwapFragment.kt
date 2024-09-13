@@ -207,9 +207,7 @@ class SwapFragment : BaseFragment() {
                                 toToken = token
                                 onTextChanged(currentText)
                             }, { index ->
-                                if (swapTokens.isNotEmpty()) {
-                                    selectCallback(swapTokens, index)
-                                }
+                                selectCallback(swapTokens, index)
                             }, { input ->
                                 if (input.isBlank()) {
                                     return@SwapPage
@@ -364,8 +362,9 @@ class SwapFragment : BaseFragment() {
                     }
                     .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             } else {
+                val data = ArrayList(web3tokens ?: emptyList())
                 Web3TokenListBottomSheetDialogFragment.newInstance(
-                    ArrayList(web3tokens ?: emptyList()),
+                    data
                 ).apply {
                     setOnClickListener { t ->
                         val token = t.toSwapToken()
@@ -389,6 +388,9 @@ class SwapFragment : BaseFragment() {
                     },
                 ),
             ).apply {
+                if (list.isEmpty()) {
+                    setLoading(true)
+                }
                 setOnClickListener { token, alert ->
                     if (alert) {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
@@ -404,7 +406,7 @@ class SwapFragment : BaseFragment() {
                     }
                     dismissNow()
                 }
-            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+            }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment .TAG)
         }
     }
 
@@ -479,6 +481,9 @@ class SwapFragment : BaseFragment() {
                         toToken = swapTokens.getOrNull(1)
                     }
                 }
+            }
+            if (swapTokens.isNotEmpty()) {
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens)
             }
             if (fromToken != null  && toToken != null) {
                 refreshTokensPrice(listOf(fromToken!!, toToken!!))
