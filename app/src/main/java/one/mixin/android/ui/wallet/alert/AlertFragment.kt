@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.MutableState
+import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -85,7 +85,8 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                             AlertPage(
                                 assets = tokens,
                                 openFilter = { openFilter() },
-                                pop = { navigateUp(navController) })
+                                pop = { navigateUp(navController) },
+                                to = { navController.navigate(AlertDestination.Edit.name) })
                         }
 
                         composable(AlertDestination.Edit.name) {
@@ -94,7 +95,7 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                                 verticalScrollable = true,
                                 pop = { navigateUp(navController) },
                             ) {
-                                // Todo
+                                Text("Todo", color = MixinAppTheme.colors.textPrimary)
                             }
                         }
                     }

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.alert
 
 import PageScaffold
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -16,12 +17,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,7 +40,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit) {
+fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit) {
     PageScaffold(
         title = stringResource(id = R.string.Alert),
         verticalScrollable = true,
@@ -44,10 +48,24 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit)
     ) {
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
             ) {
                 AssetFilter(assets, openFilter)
-
+                TextButton(
+                    onClick = to,
+                    modifier = Modifier.wrapContentSize(),
+                ) {
+                    Image(
+                        modifier = Modifier.size(18.dp),
+                        painter = painterResource(R.drawable.ic_alert_add),
+                        contentDescription = null,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Add Alert", color = Color(0xFF3D75E3)
+                    )
+                }
             }
         }
     }
@@ -56,7 +74,6 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit)
 @Preview
 @Composable
 fun AlertPagePreview() {
-    // AlertPage(pop = {})
 }
 
 @Composable
