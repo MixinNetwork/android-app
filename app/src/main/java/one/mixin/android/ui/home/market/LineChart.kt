@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mapbox.maps.extension.style.expressions.dsl.generated.mod
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.marketPriceFormat
@@ -227,7 +229,8 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     // Measure min text
                     val minTextPlaceable = subcompose("min-text") {
                         Text(
-                            text = minText,
+                            modifier = Modifier.padding(top = 2.dp),
+                            text = "${Fiats.getSymbol()}$minText",
                             style = TextStyle(
                                 fontSize = 12.sp,
                                 lineHeight = 12.sp,
@@ -239,7 +242,8 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     // Measure max text
                     val maxTextPlaceable = subcompose("max-text") {
                         Text(
-                            text = maxText,
+                            modifier = Modifier.padding(bottom = 2.dp),
+                            text = "${Fiats.getSymbol()}$maxText",
                             style = TextStyle(
                                 fontSize = 12.sp,
                                 lineHeight = 12.sp,

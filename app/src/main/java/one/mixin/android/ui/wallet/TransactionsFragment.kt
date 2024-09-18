@@ -134,7 +134,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ID
                     }
-                    navTo(SwapFragment.newInstance(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
             value.text = try {

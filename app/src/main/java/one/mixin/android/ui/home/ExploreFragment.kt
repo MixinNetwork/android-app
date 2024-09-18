@@ -144,7 +144,7 @@ class ExploreFragment : BaseFragment() {
                     radioMarket.isChecked = false
                     radioEth.isChecked = true
                     radioSolana.isChecked = false
-                    navigate(solanaFragment, SolanaFragment.TAG)
+                    navigate(ethereumFragment, EthereumFragment.TAG)
                 }
 
                 3 -> {
@@ -153,7 +153,7 @@ class ExploreFragment : BaseFragment() {
                     radioMarket.isChecked = false
                     radioEth.isChecked = false
                     radioSolana.isChecked = true
-                    navigate(ethereumFragment, EthereumFragment.TAG)
+                    navigate(solanaFragment, SolanaFragment.TAG)
                 }
             }
 

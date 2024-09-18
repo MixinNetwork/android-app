@@ -20,6 +20,7 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -51,32 +52,28 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
     private val swapViewModel by viewModels<SwapViewModel>()
 
-    private val tokens by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)
-    }
+    private var tokens: List<SwapToken> = emptyList()
 
     private val adapter by lazy {
         SwapTokenAdapter()
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(
-        dialog: Dialog,
-        style: Int,
-    ) {
-        super.setupDialog(dialog, style)
-        contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
-        }
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-        }
+    private var isLoading = false
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun setLoading(loading: Boolean, list: List<SwapToken>? = null) {
+        if (isLoading == loading) return
+        isLoading = loading
+        if (list != null) {
+            tokens = list
+            binding.radio.isVisible = !isLoading
+            initRadio()
+            filter(binding.searchEt.et.text?.toString() ?: "")
+        }
+    }
+
+    private fun initRadio(){
         binding.apply {
-            assetRv.adapter = adapter
-            adapter.tokens = tokens!!
-            radio.isVisible = true
             if (!inMixin()) { // only solana network
                 radioSolana.isChecked = true
                 radioAll.isVisible = false
@@ -86,6 +83,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioPolygon.isVisible = false
             } else {
                 radioAll.isChecked = true
+                radioAll.isVisible = true
+                radioEth.isVisible = true
+                radioTron.isVisible = true
+                radioBsc.isVisible = true
+                radioPolygon.isVisible = true
                 radioGroup.setOnCheckedChangeListener { _, id ->
                     currentChain = when (id) {
                         R.id.radio_eth -> {
@@ -115,12 +117,37 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     filter(searchEt.et.text?.toString() ?: "")
                 }
             }
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
+        super.setupDialog(dialog, style)
+        tokens = requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)!!
+        contentView = binding.root
+        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
+        }
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+        }
+
+        binding.apply {
+            assetRv.adapter = adapter
+            adapter.tokens = tokens
+            radio.isVisible = !isLoading
+            initRadio()
             searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
             }
-            if (tokens.isNullOrEmpty()) {
+            if (isLoading) {
+                rvVa.displayedChild = 3
+            } else if (tokens.isEmpty()) {
                 rvVa.displayedChild = 2
             } else {
                 rvVa.displayedChild = 0
@@ -147,8 +174,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null) {
-                adapter.tokens = tokens!!
-                if (tokens.isNullOrEmpty()) {
+                adapter.tokens = tokens
+                if (isLoading) {
+                    binding.rvVa.displayedChild = 3
+                } else if (tokens.isEmpty()) {
                     binding.rvVa.displayedChild = 2
                 } else {
                     binding.rvVa.displayedChild = 0
@@ -156,9 +185,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 return@launch
             }
             val assetList =
-                tokens?.filter {
+                tokens.filter {
                     ((currentChain != null && it.chain.chainId == currentChain) || currentChain == null) && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
-                }?.toMutableList() ?: mutableListOf()
+                }.toMutableList() ?: mutableListOf()
 
             val total = if (inMixin()) {
                 assetList
@@ -169,7 +198,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             if (!isAdded) {
                 return@launch
             }
-            if (adapter.itemCount == 0) {
+            if (isLoading) {
+                binding.rvVa.displayedChild = 3
+            } else if (adapter.itemCount == 0) {
                 binding.rvVa.displayedChild = 1
             } else {
                 binding.rvVa.displayedChild = 0
@@ -201,5 +232,5 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         this.adapter.setOnClickListener(onClickListener)
     }
 
-    private fun inMixin(): Boolean = tokens?.firstOrNull()?.inMixin() == true
+    private fun inMixin(): Boolean = tokens.firstOrNull()?.inMixin() == true
 }
