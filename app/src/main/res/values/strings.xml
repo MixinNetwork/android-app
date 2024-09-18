@@ -1685,4 +1685,5 @@
     <string name="Stats">Stats</string>
     <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
     <string name="current_version">Version: %1$s</string>
+    <string name="Alert">Alert</string>
 </resources>

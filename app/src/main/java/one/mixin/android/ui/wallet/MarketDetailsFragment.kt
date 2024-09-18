@@ -13,6 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
@@ -20,6 +22,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.marketPriceFormat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
@@ -31,6 +34,7 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -89,6 +93,50 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     if (!isLoading) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(),  marketItem.symbol )
                     else toast(R.string.Please_wait_a_bit)
                 }
+            }
+            swapAlert.isVisible = !marketItem.assetIds.isNullOrEmpty()
+            swapAlert.swap.setOnClickListener {
+                lifecycleScope.launch {
+                    val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
+                    val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                    if (ids.size > tokens.size) {
+                        val dialog =
+                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                setCancelable(false)
+                            }
+                        dialog.show()
+                        walletViewModel.syncNoExistAsset(ids.subtract(tokens.map { it.assetId }.toSet()).toList())
+                        dialog.dismiss()
+                    }
+                    val nowTokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                    if (nowTokens.isEmpty()) {
+                        toast(R.string.Data_error)
+                        return@launch
+                    }
+                    val assets = walletViewModel.allAssetItems()
+                    if (nowTokens.size == 1) {
+                        val output = if (nowTokens.first().assetId == USDT_ASSET_ID) {
+                            XIN_ASSET_ID
+                        } else {
+                            USDT_ASSET_ID
+                        }
+                        navTo(SwapFragment.newInstance<TokenItem>(assets, input = nowTokens.first().assetId, output = output), SwapFragment.TAG)
+                    } else {
+                        ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
+                                callback = { token ->
+                                    val output = if (token.assetId == USDT_ASSET_ID) {
+                                        XIN_ASSET_ID
+                                    } else {
+                                        USDT_ASSET_ID
+                                    }
+                                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = token.assetId, output = output), SwapFragment.TAG)
+                                }
+                            }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                    }
+                }
+            }
+            swapAlert.alert.setOnClickListener {
+
             }
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()

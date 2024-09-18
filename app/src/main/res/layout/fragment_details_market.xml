@@ -122,7 +122,7 @@
                             android:layout_marginStart="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginTop="16dp"
-                            android:layout_marginBottom="20dp"
+                            android:layout_marginBottom="16dp"
                             android:orientation="horizontal"
                             android:gravity="center">
 
@@ -153,6 +153,16 @@
                                 android:text="All" />
 
                         </RadioGroup>
+
+                        <one.mixin.android.widget.SwapAlertView
+                            android:id="@+id/swap_alert"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_below="@+id/radio_group"
+                            android:layout_marginBottom="16dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp" />
+
                     </RelativeLayout>
                 </FrameLayout>
 
