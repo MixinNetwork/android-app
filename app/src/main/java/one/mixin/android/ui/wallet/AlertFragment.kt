@@ -1,0 +1,107 @@
+package one.mixin.android.ui.wallet
+
+import PageScaffold
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.ui.common.BaseFragment
+
+@AndroidEntryPoint
+class AlertFragment : BaseFragment() {
+    companion object {
+        const val TAG = "AlertFragment"
+        fun newInstance(): AlertFragment {
+            return AlertFragment()
+        }
+    }
+
+    enum class AlertDestination {
+        Content,
+        Edit,
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        return ComposeView(inflater.context).apply {
+            setContent {
+                MixinAppTheme(
+                    darkTheme = context.isNightMode(),
+                ) {
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = AlertDestination.Content.name,
+                        enterTransition = {
+                            slideIntoContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(300),
+                            )
+                        },
+                        popEnterTransition = {
+                            slideIntoContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(300),
+                            )
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(300),
+                            )
+                        },
+                        popExitTransition = {
+                            slideOutOfContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(300),
+                            )
+                        },
+                    ) {
+                        composable(AlertDestination.Content.name) {
+                            PageScaffold(
+                                title = stringResource(id = R.string.Alert),
+                                verticalScrollable = true,
+                                pop = { navigateUp(navController) },
+                            ) {
+                                // Todo
+                            }
+                        }
+
+                        composable(AlertDestination.Edit.name) {
+                            PageScaffold(
+                                title = stringResource(id = R.string.Edit_Alert),
+                                verticalScrollable = true,
+                                pop = { navigateUp(navController) },
+                            ) {
+                                // Todo
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun navigateUp(navController: NavHostController) {
+        if (!navController.safeNavigateUp()) {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+    }
+}

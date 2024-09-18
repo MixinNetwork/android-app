@@ -136,7 +136,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
             }
             swapAlert.alert.setOnClickListener {
-
+                navTo(AlertFragment.newInstance(), AlertFragment.TAG)
             }
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
