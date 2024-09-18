@@ -35,6 +35,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.wallet.alert.AlertFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem

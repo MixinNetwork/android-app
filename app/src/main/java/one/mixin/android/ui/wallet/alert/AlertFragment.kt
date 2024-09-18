@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.wallet.alert
 
 import PageScaffold
 import android.os.Bundle
@@ -7,8 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -20,9 +23,11 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
+import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
-class AlertFragment : BaseFragment() {
+class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AlertFragment"
         fun newInstance(): AlertFragment {
@@ -34,6 +39,8 @@ class AlertFragment : BaseFragment() {
         Content,
         Edit,
     }
+
+    private var tokens by mutableStateOf<List<TokenItem>?>(emptyList())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -75,13 +82,10 @@ class AlertFragment : BaseFragment() {
                         },
                     ) {
                         composable(AlertDestination.Content.name) {
-                            PageScaffold(
-                                title = stringResource(id = R.string.Alert),
-                                verticalScrollable = true,
-                                pop = { navigateUp(navController) },
-                            ) {
-                                // Todo
-                            }
+                            AlertPage(
+                                assets = tokens,
+                                openFilter = { openFilter() },
+                                pop = { navigateUp(navController) })
                         }
 
                         composable(AlertDestination.Edit.name) {
@@ -97,6 +101,28 @@ class AlertFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    private val multiSelectTokenListBottomSheetDialogFragment by lazy {
+        MultiSelectTokenListBottomSheetDialogFragment.newInstance()
+            .setDateProvider(this@AlertFragment)
+            .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+                override fun onTokenSelect(tokenItems: List<TokenItem>?) {
+                    tokens = tokenItems
+                }
+
+                override fun onDismiss() {
+                }
+            })
+    }
+
+    override fun getCurrentTokens(): List<TokenItem> {
+        return tokens ?: emptyList()
+    }
+
+    private fun openFilter() {
+        multiSelectTokenListBottomSheetDialogFragment
+            .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
     }
 
     private fun navigateUp(navController: NavHostController) {
