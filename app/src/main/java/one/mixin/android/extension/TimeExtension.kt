@@ -7,6 +7,7 @@ import one.mixin.android.util.TimeCache
 import one.mixin.android.util.isCurrChinese
 import one.mixin.android.util.reportException
 import org.threeten.bp.DayOfWeek
+import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneId
@@ -287,4 +288,11 @@ fun getTimeMonthsAgo(x: Int): Instant {
         ZonedDateTime.now(ZoneId.systemDefault())
             .withHour(0).withMinute(0).withSecond(0).withNano(0)
     return startOfDay.minusMonths(x.toLong()).toInstant()
+}
+
+fun isCreatedAtWithinLast30Days(createdAt: String): Boolean {
+    val createdAtInstant = Instant.parse(createdAt)
+    val nowInstant = Instant.now()
+    val daysDifference = Duration.between(createdAtInstant, nowInstant).toDays()
+    return daysDifference <= 30
 }

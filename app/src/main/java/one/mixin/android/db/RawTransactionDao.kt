@@ -29,10 +29,4 @@ interface RawTransactionDao : BaseDao<RawTransaction> {
         state: String,
     )
 
-    @Query("SELECT request_id FROM raw_transactions WHERE type = :type AND receiver_id = :formatDestination AND created_at >= :time")
-    fun find30daysWithdrawByAddress(
-        formatDestination: String,
-        type: Int = RawTransactionType.WITHDRAWAL.ordinal,
-        time: String = thirtyDaysAgo(),
-    ): String?
 }
