@@ -33,7 +33,7 @@ fun getChainNetwork(
     if (assetId == chainId && !bepChains.contains(chainId)) return null
 
     if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
-        return if (assetKey?.isDigitsOnly() == true) {
+        return if (!assetKey.isNullOrBlank() && assetKey.isDigitsOnly()) {
             "TRC-10"
         } else {
             "TRC-20"
@@ -58,7 +58,7 @@ fun getChainName(
     assetKey: String?,
 ): String? {
     if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
-        return if (assetKey?.isDigitsOnly() == true) {
+        return if (!assetKey.isNullOrBlank() && assetKey.isDigitsOnly()) {
             "TRON (TRC-10)"
         } else {
             "TRON (TRC-20)"
