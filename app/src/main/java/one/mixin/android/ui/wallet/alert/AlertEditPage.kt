@@ -104,8 +104,8 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                 val minPrice = token.priceFiat().divide(BigDecimal(100))
                 val focusManager = LocalFocusManager.current
                 val keyboardController = LocalSoftwareKeyboardController.current
-                var selectedAlertType by remember { mutableStateOf(AlertType.PRICE_REACHED) }
-                var selectedAlertFrequency by remember { mutableStateOf(AlertFrequency.ONCE) }
+                var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
+                var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
                 var isLoading by remember { mutableStateOf(false) }
                 var checkPrice by remember { mutableStateOf(false) }
                 val viewModel = hiltViewModel<AlertViewModel>()
@@ -155,8 +155,13 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             Column(
                                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
                             ) {
-
-                                Text(text = "${stringResource(R.string.Price)} (${Fiats.getAccountCurrencyAppearance()})", fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                                Text(
+                                    text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                        "${stringResource(R.string.Price)} (${Fiats.getAccountCurrencyAppearance()})"
+                                    } else {
+                                        stringResource(R.string.Value)
+                                    }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
+                                )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 val focusRequester = remember { FocusRequester() }
                                 val interactionSource = remember { MutableInteractionSource() }
@@ -166,13 +171,24 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                 BasicTextField(
                                     value = alertPrice,
                                     onValueChange = { newValue ->
-                                        val newPrice = newValue.toBigDecimalOrNull()
-                                        if (newPrice != null) {
-                                            checkPrice = !(newPrice < minPrice || newPrice > maxPrice || newPrice == currentPrice)
-                                            alertPrice = newPrice.toPlainString()
+                                        if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                            val newPrice = newValue.toBigDecimalOrNull()
+                                            if (newPrice != null) {
+                                                checkPrice = !(newPrice < minPrice || newPrice > maxPrice || newPrice == currentPrice)
+                                                alertPrice = newPrice.toPlainString()
+                                            } else {
+                                                alertPrice = ""
+                                                checkPrice = false
+                                            }
                                         } else {
-                                            alertPrice = ""
-                                            checkPrice = false
+                                            val value = newValue.toFloatOrNull()
+                                            if (value != null) {
+                                                checkPrice = !(value < 0.01f || value > 1000)
+                                                alertPrice = value.toString()
+                                            } else {
+                                                alertPrice = ""
+                                                checkPrice = false
+                                            }
                                         }
                                     },
                                     modifier = Modifier
@@ -207,9 +223,21 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         PercentagesRow(modifier = Modifier.fillMaxWidth()) { percentage ->
-                            val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
-                            alertPrice = newPrice.toPlainString()
-                            checkPrice = true
+                            if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
+                                alertPrice = newPrice.toPlainString()
+                                checkPrice = true
+                            } else {
+                                alertPrice = when (percentage) {
+                                    0.2f -> "20"
+                                    0.1f -> "10"
+                                    0.05f -> "5"
+                                    -0.05f -> "5"
+                                    -0.1f -> "10"
+                                    else -> "-20"
+                                }
+                                checkPrice = true
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))

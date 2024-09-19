@@ -1701,4 +1701,5 @@
     <string name="alert_frequency_daily">Daily</string>
     <string name="alert_frequency_once">Once</string>
     <string name="Enter_price">Enter price</string>
+    <string name="Value">Value</string>
 </resources>
