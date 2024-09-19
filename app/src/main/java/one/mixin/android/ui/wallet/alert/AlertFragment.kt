@@ -1,29 +1,28 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -36,11 +35,12 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
     }
 
     enum class AlertDestination {
-        Content,
-        Edit,
+        Content, Edit,
     }
 
     private var tokens by mutableStateOf<List<TokenItem>?>(emptyList())
+    private var selectToken by mutableStateOf<TokenItem?>(null)
+    private val currentAlert by mutableStateOf<Alert?>(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,21 +82,11 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                         },
                     ) {
                         composable(AlertDestination.Content.name) {
-                            AlertPage(
-                                assets = tokens,
-                                openFilter = { openFilter() },
-                                pop = { navigateUp(navController) },
-                                to = { navController.navigate(AlertDestination.Edit.name) })
+                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { navigateUp(navController) }, to = { onAddAlert(navController) })
                         }
 
                         composable(AlertDestination.Edit.name) {
-                            PageScaffold(
-                                title = stringResource(id = R.string.Edit_Alert),
-                                verticalScrollable = true,
-                                pop = { navigateUp(navController) },
-                            ) {
-                                Text("Todo", color = MixinAppTheme.colors.textPrimary)
-                            }
+                            AlertEditPage(selectToken, currentAlert, pop = { navigateUp(navController) })
                         }
                     }
                 }
@@ -104,10 +94,15 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
         }
     }
 
+    private fun onAddAlert(navController: NavHostController) {
+        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND).setOnAssetClick { asset ->
+            selectToken = asset
+            navController.navigate(AlertDestination.Edit.name)
+        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+    }
+
     private val multiSelectTokenListBottomSheetDialogFragment by lazy {
-        MultiSelectTokenListBottomSheetDialogFragment.newInstance()
-            .setDateProvider(this@AlertFragment)
-            .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+        MultiSelectTokenListBottomSheetDialogFragment.newInstance().setDateProvider(this@AlertFragment).setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
                 override fun onTokenSelect(tokenItems: List<TokenItem>?) {
                     tokens = tokenItems
                 }
@@ -122,8 +117,7 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
     }
 
     private fun openFilter() {
-        multiSelectTokenListBottomSheetDialogFragment
-            .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+        multiSelectTokenListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
     }
 
     private fun navigateUp(navController: NavHostController) {

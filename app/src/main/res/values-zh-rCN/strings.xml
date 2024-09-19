@@ -1647,4 +1647,17 @@
     <string name="current_version">当前版本：%1$s</string>
     <string name="Alert">价格预警</string>
     <string name="Edit_Alert">编辑价格预警</string>
+    <string name="NO_ALERTS">没有价格预警</string>
+    <string name="Add_Alert">添加价格预警</string>
+    <string name="Current_price">当前价格：%1$s</string>
+    <string name="Alert_Type">预警类型</string>
+    <string name="Alert_Frequency">预警频率</string>
+    <string name="alert_type_price_reached">价格达到</string>
+    <string name="alert_type_price_increased">价格涨到</string>
+    <string name="alert_type_price_decreased">价格跌倒</string>
+    <string name="alert_type_percentage_increased">24小时涨幅</string>
+    <string name="alert_type_percentage_decreased">24小时跌幅</string>
+    <string name="alert_frequency_every">每次</string>
+    <string name="alert_frequency_daily">每日</string>
+    <string name="alert_frequency_once">一次</string>
 </resources>

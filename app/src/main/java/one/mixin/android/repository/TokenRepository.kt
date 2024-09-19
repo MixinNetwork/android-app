@@ -80,6 +80,8 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -119,6 +121,7 @@ import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
 import retrofit2.Response
+import retrofit2.http.Body
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -1131,5 +1134,29 @@ class TokenRepository
                 }
             )
         }
+    }
+
+    suspend fun addAlert(alert: AlertRequest): MixinResponse<Alert>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.addAlert(alert) },
+            successBlock = { response ->
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
+
+    suspend fun alerts(): MixinResponse<List<Alert>>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.alerts() },
+            successBlock = { response ->
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
     }
 }

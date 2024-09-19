@@ -38,6 +38,8 @@ class AppColors(
     val unchecked: Color,
     val tipWarning: Color,
     val tipWarningBorder: Color,
+    val borderPrimary:Color,
+    val rippleColor:Color = Color(0x33000000),
 )
 
 class AppDrawables(
@@ -45,6 +47,9 @@ class AppDrawables(
     val emergencyAvatar: Int,
     @DrawableRes
     val emergencyContact: Int,
+    @DrawableRes
+    val bgCard: Int,
+
 )
 
 object MixinAppTheme {
@@ -75,6 +80,7 @@ private val LightColorPalette =
         unchecked = Color(0xFFECECEC),
         tipWarning = Color(0xFFFBF1F0),
         tipWarningBorder = Color(0xFFE86B67),
+        borderPrimary = Color(0xFFE5E8EE),
     )
 
 private val DarkColorPalette =
@@ -95,17 +101,20 @@ private val DarkColorPalette =
         unchecked = Color(0xFFECECEC),
         tipWarning = Color(0xFF3E373B),
         tipWarningBorder = Color(0xFFE86B67),
+        borderPrimary = Color(0x33FFFFFF),
     )
 
 private val LightDrawablePalette =
     AppDrawables(
         emergencyAvatar = R.drawable.ic_emergency_avatar,
         emergencyContact = R.drawable.ic_emergency_contact,
+        bgCard = R.drawable.bg_market_card
     )
 private val DarkDrawablePalette =
     AppDrawables(
         emergencyAvatar = R.drawable.ic_emergency_avatar_night,
         emergencyContact = R.drawable.ic_emergency_contact_night,
+        bgCard = R.drawable.bg_market_card_night
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }

@@ -23,6 +23,9 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertDelete
+import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
@@ -195,4 +198,13 @@ interface RouteService {
 
     @POST("markets/{id}/unfavorite")
     suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Unit>
+
+    @POST("prices/alerts/add")
+    suspend fun addAlert(@Body alert: AlertRequest):MixinResponse<Alert>
+
+    @GET("prices/alerts")
+    suspend fun alerts():MixinResponse<List<Alert>>
+
+    @POST("prices/alerts/delete")
+    suspend fun deleteAlert(@Body alert: AlertDelete):MixinResponse<Alert>
 }

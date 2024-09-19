@@ -1687,4 +1687,18 @@
     <string name="current_version">Version: %1$s</string>
     <string name="Alert">Alert</string>
     <string name="Edit_Alert">Edit Alert</string>
+    <string name="NO_ALERTS">NO ALERTS</string>
+    <string name="Add_Alert">Add Alert</string>
+    <string name="Current_price">Current price: %1$s</string>
+    <string name="Alert_Type">Alert Type</string>
+    <string name="Alert_Frequency">Frequency</string>
+    <string name="alert_type_price_reached">Price Reached</string>
+    <string name="alert_type_price_increased">Price Increased</string>
+    <string name="alert_type_price_decreased">Price Decreased</string>
+    <string name="alert_type_percentage_increased">Percentage Increased</string>
+    <string name="alert_type_percentage_decreased">Percentage Decreased</string>
+    <string name="alert_frequency_every">Every</string>
+    <string name="alert_frequency_daily">Daily</string>
+    <string name="alert_frequency_once">Once</string>
+    <string name="Enter_price">Enter price</string>
 </resources>
