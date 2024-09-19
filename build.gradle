@@ -3,13 +3,13 @@ buildscript {
     ext {
         ext.fragmentVersion = '1.8.3'
         ext.activity_version = '1.9.2'
-        ext.lifecycleVersion = '2.8.5'
+        ext.lifecycleVersion = '2.8.6'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.2'
         ext.coilVersion = '2.7.0'
-        ext.collectionx = '1.4.3'
+        ext.collectionx = '1.4.4'
         ext.roomVersion = '2.6.1'
-        ext.navigationVersion = '2.8.0'
+        ext.navigationVersion = '2.8.1'
         ext.workManagerVersion = '2.9.1'
         ext.constraintLayoutVersion = '2.1.4'
         ext.constraintLayoutComposeVersion = '1.0.1'
@@ -96,7 +96,7 @@ buildscript {
         ext.webrtcVersion = '1.0.30039'
         ext.bitcoinPaymentURI = '1.0.3'
         ext.svgVersion = '1.4'
-        ext.startupVersion ='1.1.1'
+        ext.startupVersion ='1.2.0'
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
@@ -105,7 +105,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20240303'
-        ext.composeVersion = '1.7.1'
+        ext.composeVersion = '1.7.2'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
 
@@ -127,7 +127,7 @@ buildscript {
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.6.0'
+        classpath 'com.android.tools.build:gradle:8.6.1'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.2'
@@ -137,8 +137,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.6.0' apply false
-    id 'com.android.library' version '8.6.0' apply false
+    id 'com.android.application' version '8.6.1' apply false
+    id 'com.android.library' version '8.6.1' apply false
     id 'org.jetbrains.kotlin.android' version '2.0.20' apply false
     id "org.jetbrains.kotlin.kapt" version "2.0.20" apply false
     id 'com.google.dagger.hilt.android' version '2.52' apply false
