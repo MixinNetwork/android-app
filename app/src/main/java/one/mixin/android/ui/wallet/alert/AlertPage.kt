@@ -58,12 +58,12 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
         verticalScrollable = false,
         pop = pop,
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .fillMaxSize()
-        ) {
-            item {
+        if (alertGroups.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .fillMaxSize()
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -86,21 +86,47 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            if (alertGroups.isEmpty()) {
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Image(painter = painterResource(R.drawable.ic_empty_file), contentDescription = null)
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(text = stringResource(R.string.NO_ALERTS), color = MixinAppTheme.colors.textRemarks)
-                    }
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(painter = painterResource(R.drawable.ic_empty_file), contentDescription = null)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(text = stringResource(R.string.NO_ALERTS), color = MixinAppTheme.colors.textRemarks)
                 }
-            } else {
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .fillMaxSize()
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AssetFilter(assets, openFilter)
+                        TextButton(
+                            onClick = to,
+                            modifier = Modifier.wrapContentSize(),
+                        ) {
+                            Image(
+                                modifier = Modifier.size(18.dp),
+                                painter = painterResource(R.drawable.ic_alert_add),
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 items(alertGroups.size) { index ->
                     if (index != 0) {
                         Spacer(modifier = Modifier.height(10.dp))

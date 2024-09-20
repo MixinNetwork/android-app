@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -50,7 +51,8 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        backgroundColor = MixinAppTheme.colors.background
+        backgroundColor = MixinAppTheme.colors.background,
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier
