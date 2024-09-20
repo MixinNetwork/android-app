@@ -1169,5 +1169,7 @@ class TokenRepository
 
     fun alertGroups() = alertDao.alertGroups()
 
+    fun alertGroups(assetId: List<String>) = alertDao.alertGroups(assetId)
+
     fun alertsByAssetId(assetId:String) = alertDao.alertsByAssetId(assetId)
 }

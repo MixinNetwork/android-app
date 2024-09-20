@@ -17,8 +17,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,12 +33,25 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.AlertGroupItem
 import one.mixin.android.ui.wallet.alert.components.AssetFilter
+import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
 fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit) {
     val viewModel = hiltViewModel<AlertViewModel>()
-    val alertGroups by viewModel.alertGroups().collectAsState(initial = emptyList())
+    var alertGroups by remember { mutableStateOf(emptyList<AlertGroup>()) }
+
+    LaunchedEffect(assets) {
+        if (assets.isNullOrEmpty()) {
+            viewModel.alertGroups().collect { groups ->
+                alertGroups = groups
+            }
+        } else {
+            viewModel.alertGroups(assets.map { it.assetId }).collect { groups ->
+                alertGroups = groups
+            }
+        }
+    }
 
     PageScaffold(
         title = stringResource(id = R.string.Alert),
