@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.alert
+package one.mixin.android.ui.wallet.alert.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
+import one.mixin.android.ui.wallet.alert.vo.AlertType
 
 @Composable
-fun AlertFrequencySelector(selectedType: AlertFrequency, onTypeSelected: (AlertFrequency) -> Unit) {
+fun AlertTypeSelector(selectedType: AlertType, onTypeSelected: (AlertType) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -64,7 +64,7 @@ fun AlertFrequencySelector(selectedType: AlertFrequency, onTypeSelected: (AlertF
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            AlertFrequency.entries.forEach { alertType ->
+            AlertType.entries.forEach { alertType ->
                 DropdownMenuItem(onClick = {
                     onTypeSelected(alertType)
                     expanded = false

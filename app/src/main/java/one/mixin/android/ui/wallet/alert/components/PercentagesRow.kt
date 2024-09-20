@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.alert
+package one.mixin.android.ui.wallet.alert.components
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
