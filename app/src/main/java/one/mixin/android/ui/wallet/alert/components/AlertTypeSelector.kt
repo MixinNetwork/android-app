@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -62,14 +63,17 @@ fun AlertTypeSelector(selectedType: AlertType, onTypeSelected: (AlertType) -> Un
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.align(Alignment.TopEnd)
         ) {
             AlertType.entries.forEach { alertType ->
                 DropdownMenuItem(onClick = {
                     onTypeSelected(alertType)
                     expanded = false
                 }) {
-                    Text(text = stringResource(id = alertType.getStringResId()))
+                    Row(modifier = Modifier.width(200.dp)) {
+                        Text(text = stringResource(id = alertType.getStringResId()))
+                    }
                 }
             }
         }

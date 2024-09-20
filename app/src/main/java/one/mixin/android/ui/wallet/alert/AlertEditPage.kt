@@ -66,7 +66,6 @@ import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertType
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
@@ -97,10 +96,10 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
         ) {
             if (token != null) {
                 val context = LocalContext.current
-                val currentPrice = token.priceFiat()
-                var alertPrice by remember { mutableStateOf(token.priceFiat().toPlainString()) }
-                val maxPrice = token.priceFiat().multiply(BigDecimal(100))
-                val minPrice = token.priceFiat().divide(BigDecimal(100))
+                val currentPrice = BigDecimal(token.priceUsd)
+                var alertPrice by remember { mutableStateOf(currentPrice.priceFormat()) }
+                val maxPrice = currentPrice.multiply(BigDecimal(100))
+                val minPrice = currentPrice.divide(BigDecimal(100))
                 val focusManager = LocalFocusManager.current
                 val keyboardController = LocalSoftwareKeyboardController.current
                 var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
@@ -133,7 +132,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(text = token.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
-                                Text(text = stringResource(R.string.Current_price, "${token.priceFiat().priceFormat()} ${Fiats.getAccountCurrencyAppearance()}"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
+                                Text(text = stringResource(R.string.Current_price, "${BigDecimal(token.priceUsd).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
                             }
                         }
 
@@ -153,7 +152,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             ) {
                                 Text(
                                     text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                        "${stringResource(R.string.Price)} (${Fiats.getAccountCurrencyAppearance()})"
+                                        "${stringResource(R.string.Price)} (USD)"
                                     } else {
                                         stringResource(R.string.Value)
                                     }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
@@ -221,7 +220,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         PercentagesRow(modifier = Modifier.fillMaxWidth()) { percentage ->
                             if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                 val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
-                                alertPrice = newPrice.toPlainString()
+                                alertPrice = newPrice.priceFormat()
                                 checkPrice = true
                             } else {
                                 alertPrice = when (percentage) {
@@ -254,7 +253,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             val alertRequest = AlertRequest(
                                 assetId = token.assetId,
                                 type = selectedAlertType.value,
-                                value = alertPrice,
+                                value = alertPrice.replace(",",""),
                                 frequency = selectedAlertFrequency.value,
                                 lang = Locale.getDefault().language,
                             )

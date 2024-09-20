@@ -20,7 +20,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.vo.safe.TokenItem
@@ -95,7 +95,7 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
     }
 
     private fun onAddAlert(navController: NavHostController) {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND).setOnAssetClick { asset ->
+        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
             selectToken = asset
             navController.navigate(AlertDestination.Edit.name)
         }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
