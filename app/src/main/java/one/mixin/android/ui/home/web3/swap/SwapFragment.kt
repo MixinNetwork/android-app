@@ -255,8 +255,9 @@ class SwapFragment : BaseFragment() {
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
-                                            exceptionBlock = { _ ->
+                                            exceptionBlock = { t ->
                                                 isLoading = false
+                                                errorInfo = t.message
                                                 return@handleMixinResponse false
                                             },
                                             failureBlock = { r ->
@@ -576,6 +577,10 @@ class SwapFragment : BaseFragment() {
             successBlock = {
                 return@handleMixinResponse it.data
             },
+            exceptionBlock = { t ->
+                errorInfo = t.message
+                return@handleMixinResponse true
+            },
             failureBlock = { r ->
                 errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 return@handleMixinResponse true
@@ -583,9 +588,10 @@ class SwapFragment : BaseFragment() {
             endBlock = {
                 isLoading = false
             },
-        ) ?: return
+        )
 
-        quoteResp = resp
+        quoteResp = resp // Save null quote, not allowed to continue order
+        resp ?: return
         updateExchangeRate(resp.inAmount, resp.outAmount)
         slippage = resp.slippage
         outputText = toToken?.toStringAmount(resp.outAmount) ?: "0"
