@@ -1,12 +1,22 @@
 package one.mixin.android.ui.wallet.alert.vo
 
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.R
 
 enum class AlertType(val value: String) {
+    @SerializedName("price_reached")
     PRICE_REACHED("price_reached"),
+
+    @SerializedName("price_increased")
     PRICE_INCREASED("price_increased"),
+
+    @SerializedName("price_decreased")
     PRICE_DECREASED("price_decreased"),
+
+    @SerializedName("percentage_increased")
     PERCENTAGE_INCREASED("percentage_increased"),
+
+    @SerializedName("percentage_decreased")
     PERCENTAGE_DECREASED("percentage_decreased");
 
     fun getStringResId(): Int {

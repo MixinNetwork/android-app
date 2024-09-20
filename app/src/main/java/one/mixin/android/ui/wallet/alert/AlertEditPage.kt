@@ -110,9 +110,6 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                 var checkPrice by remember { mutableStateOf(false) }
                 val viewModel = hiltViewModel<AlertViewModel>()
                 val coroutineScope = rememberCoroutineScope()
-                coroutineScope.launch {
-                    viewModel.alerts()
-                }
 
                 Column(
                     modifier = Modifier

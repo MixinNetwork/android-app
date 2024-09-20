@@ -32,6 +32,7 @@ import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
+import one.mixin.android.db.AlertDao
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ChainDao
@@ -315,6 +316,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var marketFavoredDao: MarketFavoredDao
+
+    @Inject
+    @Transient
+    lateinit var alertDao: AlertDao
 
     @Inject
     @Transient

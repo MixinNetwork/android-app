@@ -47,6 +47,7 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
+import one.mixin.android.db.AlertDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.HistoryPriceDao
@@ -155,6 +156,7 @@ class TokenRepository
         private val marketDao: MarketDao,
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
+        private val alertDao: AlertDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -1152,6 +1154,11 @@ class TokenRepository
         return requestRouteAPI(
             invokeNetwork = { routeService.alerts() },
             successBlock = { response ->
+                if (response.isSuccess){
+                    withContext(Dispatchers.IO) {
+                        alertDao.insertList(response.data!!)
+                    }
+                }
                 response
             },
             requestSession = {
