@@ -228,6 +228,7 @@ class SwapFragment : BaseFragment() {
                             }, {
                                 val a = calcInput()
                                 inputText.value = a
+                                currentText = a
                                 refreshQuote(a)
                             }, {
                                 lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
