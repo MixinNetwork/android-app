@@ -1,6 +1,9 @@
 package one.mixin.android.ui.wallet.alert
 
 import PageScaffold
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,16 +22,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,98 +47,76 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.wallet.alert.vo.AlertItem
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertGroup
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
-
-fun getAlerts(): Flow<List<AlertItem>> {
-    val mockAlerts = listOf<AlertItem>(
-        // AlertItem(
-        //     assetId = "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
-        //     symbol = "BTC",
-        //     iconUrl = "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-        //     type = AlertType.PRICE_REACHED,
-        //     frequency = AlertFrequency.ONCE,
-        //     value = "100.00",
-        //     lang = "en",
-        //     createdAt = "2023-09-18T12:00:00Z"
-        // ),
-        // AlertItem(
-        //     assetId = "43d61dcd-e413-450d-80b8-101d5e903357",
-        //     symbol = "ETH",
-        //     iconUrl = "https://mixin-images.zeromesh.net/zVDjOxNTQvVsA8h2B4ZVxuHoCF3DJszufYKWpd9duXUSbSapoZadC7_13cnWBqg0EmwmRcKGbJaUpA8wFfpgZA=s128",
-        //     type = AlertType.PRICE_DECREASED,
-        //     frequency = AlertFrequency.DAILY,
-        //     value = "95.00",
-        //     lang = "en",
-        //     createdAt = "2023-09-19T08:30:00Z"
-        // ),
-        // AlertItem(
-        //     assetId = "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
-        //     symbol = "BTC",
-        //     iconUrl = "https://mixin-images.zeromesh.net/HvYGJsV5TGeZ-X9Ek3FEQohQZ3fE9LBEBGcOcn4c4BNHovP4fW4YB97Dg5LcXoQ1hUjMEgjbl1DPlKg1TW7kK6XP=s128",
-        //     type = AlertType.PERCENTAGE_INCREASED,
-        //     frequency = AlertFrequency.EVERY,
-        //     value = "5%",
-        //     lang = "es",
-        //     createdAt = "2023-09-19T14:20:00Z"
-        // )
-    )
-    return flowOf(mockAlerts) // Emits the list of alerts only once
-}
+import java.math.BigDecimal
 
 @Composable
 fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit) {
-    val alerts by getAlerts().collectAsState(initial = emptyList())
-
     val viewModel = hiltViewModel<AlertViewModel>()
-    val coroutineScope = rememberCoroutineScope()
-    coroutineScope.launch {
-        viewModel.alerts()
-    }
+    val alertGroups by viewModel.alertGroups().collectAsState(initial = emptyList())
+
     PageScaffold(
         title = stringResource(id = R.string.Alert),
-        verticalScrollable = true,
+        verticalScrollable = false, // Disable vertical scrolling here
         pop = pop,
     ) {
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-            ) {
-                AssetFilter(assets, openFilter)
-                TextButton(
-                    onClick = to,
-                    modifier = Modifier.wrapContentSize(),
+        LazyColumn(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxSize()
+        ) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        modifier = Modifier.size(18.dp),
-                        painter = painterResource(R.drawable.ic_alert_add),
-                        contentDescription = null,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
-                    )
+                    AssetFilter(assets, openFilter)
+                    TextButton(
+                        onClick = to,
+                        modifier = Modifier.wrapContentSize(),
+                    ) {
+                        Image(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(R.drawable.ic_alert_add),
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
             }
-            if (alerts.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(painter = painterResource(R.drawable.ic_empty_file), contentDescription = null)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = stringResource(R.string.NO_ALERTS), color = MixinAppTheme.colors.textRemarks)
+
+            if (alertGroups.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(painter = painterResource(R.drawable.ic_empty_file), contentDescription = null)
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(text = stringResource(R.string.NO_ALERTS), color = MixinAppTheme.colors.textRemarks)
+                    }
                 }
             } else {
-
+                items(alertGroups.size) { index ->
+                    if (index != 0) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                    AlertGroupItem(alertGroups[index], index == 0)
+                }
             }
         }
     }
@@ -251,5 +237,91 @@ fun OverlappingLayout(
                 xPosition += overlapWidth
             }
         }
+    }
+}
+
+@Composable
+fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean) {
+    var expand by remember { mutableStateOf(initiallyExpanded) }
+    val viewModel = hiltViewModel<AlertViewModel>()
+    val alerts by viewModel.alertsByAssetId(alertGroup.assetId).collectAsState(initial = emptyList())
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        backgroundColor = MixinAppTheme.colors.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expand = !expand },
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row {
+                    CoilImage(
+                        alertGroup.iconUrl,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape),
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(alertGroup.name, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd).priceFormat()}${Fiats.getAccountCurrencyAppearance()}"),
+                            fontSize = 13.sp,
+                            color = MixinAppTheme.colors.textAssist
+                        )
+                    }
+                }
+                Icon(
+                    modifier = Modifier.wrapContentSize(),
+                    painter = painterResource(id = R.drawable.ic_sort_arrow_down),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                )
+            }
+
+            AnimatedVisibility(
+                modifier = Modifier
+                    .fillMaxWidth(), visible = expand, enter = fadeIn(), exit = fadeOut()
+            ) {
+                alerts.forEachIndexed { index, alert ->
+                    if (index != 0) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                    AlertItem(alert)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AlertItem(alert: Alert) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Icon(
+            modifier = Modifier.wrapContentSize(),
+            painter = painterResource(id = alert.type.getIconResId()),
+            contentDescription = null,
+            tint = Color.Unspecified,
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+            Text(BigDecimal(alert.value).priceFormat(), fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+            Text(stringResource(alert.frequency.getStringResId()), fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+        }
+        Icon(
+            modifier = Modifier.wrapContentSize(),
+            painter = painterResource(id = R.drawable.ic_more_horiz_black_24dp),
+            contentDescription = null,
+            tint = Color.Unspecified,
+        )
     }
 }

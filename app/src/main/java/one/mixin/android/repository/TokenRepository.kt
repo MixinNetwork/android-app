@@ -1150,7 +1150,7 @@ class TokenRepository
         )
     }
 
-    suspend fun alerts(): MixinResponse<List<Alert>>? {
+    suspend fun requestAlerts(): MixinResponse<List<Alert>>? {
         return requestRouteAPI(
             invokeNetwork = { routeService.alerts() },
             successBlock = { response ->
@@ -1166,4 +1166,8 @@ class TokenRepository
             }
         )
     }
+
+    fun alertGroups() = alertDao.alertGroups()
+
+    fun alertsByAssetId(assetId:String) = alertDao.alertsByAssetId(assetId)
 }

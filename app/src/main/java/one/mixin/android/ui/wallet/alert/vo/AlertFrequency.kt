@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.alert.vo
 
+import androidx.annotation.StringRes
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.R
 
@@ -13,6 +14,7 @@ enum class AlertFrequency(val value: String) {
     @SerializedName("once")
     ONCE("once");
 
+    @StringRes
     fun getStringResId(): Int {
         return when (this) {
             EVERY -> R.string.alert_frequency_every
