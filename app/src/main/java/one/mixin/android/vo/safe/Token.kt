@@ -32,11 +32,11 @@ data class Token(
     @SerialName("kernel_asset_id")
     val asset: String,
     @ColumnInfo(name = "symbol")
-    @SerializedName("symbol")
+    @SerializedName("display_symbol")
     @SerialName("symbol")
     val symbol: String,
     @ColumnInfo(name = "name")
-    @SerializedName("name")
+    @SerializedName("display_name")
     @SerialName("name")
     val name: String,
     @ColumnInfo(name = "icon_url")
