@@ -1371,7 +1371,6 @@
     <string name="Transfer_confirmation">转账确认</string>
     <string name="Withdrawal_confirmation">提现确认</string>
     <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
-    <string name="transfer_address_warning">您已经超过 30 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。。</string>
     <string name="Not_Now">下次再说</string>
     <string name="Enable">启用</string>
     <string name="enable_biometric_description">想要启用生物识别支付吗？启用后，转账时可通过生物识别快速完成付款。</string>
@@ -1405,7 +1404,7 @@
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
-    <string name="address_validity_reminder">请确认地址 %1$s（%2$s）仍然有效，您已经超过 30 天没有使用该地址。</string>
+    <string name="address_validity_reminder">请确认地址 %1$s（%2$s）仍然有效，您已经超过 %3$d 天没有使用该地址。</string>
     <string name="withdrawal_sending_description">正在创建提现，请稍候。</string>
     <string name="Confirm_Transfer">转账确认</string>
     <string name="Sending_Transfer_Request">正在发送转账</string>

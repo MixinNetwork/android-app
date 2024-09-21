@@ -22,5 +22,5 @@ class TransferViewModel
             _status.value = status
         }
 
-        fun find30daysWithdrawByAddress(formatDestination: String) = tokenRepository.find30daysWithdrawByAddress(formatDestination)
+        suspend fun findLastWithdrawalSnapshotByReceiver(formatDestination: String) = tokenRepository.findLastWithdrawalSnapshotByReceiver(formatDestination)
     }
