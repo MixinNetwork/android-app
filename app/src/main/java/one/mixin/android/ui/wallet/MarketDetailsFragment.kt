@@ -269,7 +269,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     @SuppressLint("SetTextI18n")
     private fun loadBalance(marketItem: MarketItem) {
         val changeUsd = BigDecimal(marketItem.priceChange24h)
-        val isPositive = changeUsd > BigDecimal.ZERO
+        val isPositive = changeUsd >= BigDecimal.ZERO
         binding.apply {
             lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                 Timber.e(error)
@@ -295,9 +295,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
                         currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                         priceRise.text = currentRise
-                        balanceChange.text = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)"
-                        balanceChange.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.setQuoteText(currentRise, isPositive)
+                        balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)", isPositive)
                         riseTitle.isVisible = true
                     } else {
                         balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))

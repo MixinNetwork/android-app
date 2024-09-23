@@ -31,7 +31,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mapbox.maps.extension.style.expressions.dsl.generated.mod
+import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.vo.Fiats
@@ -71,12 +73,26 @@ private fun maxRange(): Float {
 fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
     val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (onHighlightChange != null) null else 1f)
     MixinAppTheme {
-        val color = if (dataPointsData.last() >= dataPointsData.first()) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
         val textPrimary = MixinAppTheme.colors.textPrimary
         val background = MixinAppTheme.colors.background
         var highlightPointIndex by remember { mutableIntStateOf(-1) }
         var canvasSize by remember { mutableStateOf(Size.Zero) }
         val context = LocalContext.current
+        val quoteColorPref = context.defaultSharedPreferences
+            .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+        val color = if (dataPointsData.last() >= dataPointsData.first()) {
+            if (quoteColorPref) {
+                MixinAppTheme.colors.walletRed
+            } else {
+                MixinAppTheme.colors.walletGreen
+            }
+        } else {
+            if (quoteColorPref) {
+                MixinAppTheme.colors.walletGreen
+            } else {
+                MixinAppTheme.colors.walletRed
+            }
+        }
         Box(modifier = Modifier.fillMaxSize()) {
             Canvas(modifier = Modifier
                 .fillMaxSize()
