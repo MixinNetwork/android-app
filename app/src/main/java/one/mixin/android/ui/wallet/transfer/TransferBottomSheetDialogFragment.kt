@@ -35,6 +35,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isCreatedAtWithinLast30Days
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
@@ -75,6 +76,7 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
+import timber.log.Timber
 import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException
@@ -365,13 +367,18 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                 val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
 
-                val exist = withdrawBiometricItem.address.destination in listOf(ethAddress, solAddress) ||
+                val addressWarning = withdrawBiometricItem.address.destination !in listOf(ethAddress, solAddress) &&
                     withContext(Dispatchers.IO) {
-                        transferViewModel.find30daysWithdrawByAddress(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag)) != null
+                        val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))
+                        if (snapshot != null) {
+                            !isCreatedAtWithinLast30Days(snapshot.createdAt)
+                        } else {
+                            false
+                        }
                     }
 
-                if (!exist) {
-                    tips.add(getString(R.string.transfer_address_warning, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag), withdrawBiometricItem.address.label))
+                if (addressWarning) {
+                    tips.add(getString(R.string.address_validity_reminder, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag), withdrawBiometricItem.address.label, 30))
                 }
 
                 if (tips.isEmpty()) {

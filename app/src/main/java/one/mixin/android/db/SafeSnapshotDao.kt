@@ -137,4 +137,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("SELECT created_at FROM safe_snapshots WHERE asset_id =:assetId ORDER BY created_at DESC LIMIT 1")
     fun getLastItemCreate(assetId: String): String?
+
+    @Query("SELECT * FROM safe_snapshots WHERE withdrawal LIKE '%'||:receiver||'%' ORDER BY created_at DESC LIMIT 1")
+    suspend fun findLastWithdrawalSnapshotByReceiver(receiver: String): SafeSnapshot?
 }

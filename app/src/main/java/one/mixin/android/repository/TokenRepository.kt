@@ -920,7 +920,7 @@ class TokenRepository
 
         fun firstUnspentTransaction() = rawTransactionDao.findUnspentTransaction()
 
-        fun find30daysWithdrawByAddress(formatDestination: String) = rawTransactionDao.find30daysWithdrawByAddress(formatDestination)
+        suspend fun findLastWithdrawalSnapshotByReceiver(formatDestination: String) = safeSnapshotDao.findLastWithdrawalSnapshotByReceiver(formatDestination)
 
         suspend fun findLatestOutputSequenceByAsset(asset: String) = outputDao.findLatestOutputSequenceByAsset(asset)
 
