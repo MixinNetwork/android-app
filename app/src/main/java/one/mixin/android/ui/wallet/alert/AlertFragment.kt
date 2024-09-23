@@ -10,19 +10,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -38,9 +43,11 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
         Content, Edit,
     }
 
+    private val alertViewModel by viewModels<AlertViewModel>()
+
     private var tokens by mutableStateOf<List<TokenItem>?>(emptyList())
     private var selectToken by mutableStateOf<TokenItem?>(null)
-    private val currentAlert by mutableStateOf<Alert?>(null)
+    private var currentAlert by mutableStateOf<Alert?>(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,7 +89,32 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                         },
                     ) {
                         composable(AlertDestination.Content.name) {
-                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { navigateUp(navController) }, to = { onAddAlert(navController) })
+                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { navigateUp(navController) }, to = { onAddAlert(navController) }, onAction = { action, alert ->
+                                when (action) {
+                                    AlertAction.EDIT -> {
+                                        lifecycleScope.launch {
+                                            val token = alertViewModel.simpleAssetItem(alert.assetId)
+                                            if (token != null) {
+                                                selectToken = token
+                                                currentAlert = alert
+                                                navController.navigate(AlertDestination.Edit.name)
+                                            }
+                                        }
+                                    }
+
+                                    AlertAction.RESUME -> {
+                                        // Todo
+                                    }
+
+                                    AlertAction.PAUSE -> {
+                                        // Todo
+                                    }
+
+                                    AlertAction.DELETE -> {
+                                        // Todo
+                                    }
+                                }
+                            })
                         }
 
                         composable(AlertDestination.Edit.name) {
@@ -97,19 +129,20 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
     private fun onAddAlert(navController: NavHostController) {
         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
             selectToken = asset
+            currentAlert = null
             navController.navigate(AlertDestination.Edit.name)
         }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }
 
     private val multiSelectTokenListBottomSheetDialogFragment by lazy {
         MultiSelectTokenListBottomSheetDialogFragment.newInstance().setDateProvider(this@AlertFragment).setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-                override fun onTokenSelect(tokenItems: List<TokenItem>?) {
-                    tokens = tokenItems
-                }
+            override fun onTokenSelect(tokenItems: List<TokenItem>?) {
+                tokens = tokenItems
+            }
 
-                override fun onDismiss() {
-                }
-            })
+            override fun onDismiss() {
+            }
+        })
     }
 
     override fun getCurrentTokens(): List<TokenItem> {

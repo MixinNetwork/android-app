@@ -33,11 +33,13 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.AlertGroupItem
 import one.mixin.android.ui.wallet.alert.components.AssetFilter
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit) {
+fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onAction: (AlertAction, Alert) -> Unit) {
     val viewModel = hiltViewModel<AlertViewModel>()
     var alertGroups by remember { mutableStateOf(emptyList<AlertGroup>()) }
 
@@ -131,7 +133,8 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                     if (index != 0) {
                         Spacer(modifier = Modifier.height(10.dp))
                     }
-                    AlertGroupItem(alertGroups[index], index == 0)
+                    val group = alertGroups[index]
+                    AlertGroupItem(group, index == 0, onAction = onAction)
                 }
             }
         }

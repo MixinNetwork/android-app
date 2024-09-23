@@ -37,7 +37,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import java.math.BigDecimal
 
 @Composable
-fun AlertItem(alert: Alert) {
+fun AlertItem(alert: Alert, onAction: (AlertAction, Alert) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
@@ -85,6 +85,7 @@ fun AlertItem(alert: Alert) {
                 ) {
                     AlertAction.entries.forEach { action ->
                         DropdownMenuItem(onClick = {
+                            onAction(action, alert)
                             expanded = false
                         }) {
                             Row(

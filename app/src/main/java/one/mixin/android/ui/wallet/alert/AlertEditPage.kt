@@ -95,14 +95,14 @@ fun Modifier.draw9Patch(
 fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
     MixinAppTheme {
         PageScaffold(
-            title = stringResource(id = R.string.Edit_Alert),
+            title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
             verticalScrollable = false,
             pop = pop,
         ) {
             if (token != null) {
                 val context = LocalContext.current
                 val currentPrice = BigDecimal(token.priceUsd)
-                var alertPrice by remember { mutableStateOf(currentPrice.priceFormat()) }
+                var alertPrice by remember { mutableStateOf(alert?.value ?: currentPrice.toPlainString()) }
                 val maxPrice = currentPrice.multiply(BigDecimal(100))
                 val minPrice = currentPrice.divide(BigDecimal(100))
                 val focusManager = LocalFocusManager.current

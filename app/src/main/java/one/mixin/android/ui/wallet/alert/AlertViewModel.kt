@@ -19,4 +19,6 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
     fun alertGroups(assetIds:List<String>) = tokenRepository.alertGroups(assetIds)
 
     fun alertsByAssetId(assetId: String) = tokenRepository.alertsByAssetId(assetId)
+
+    suspend fun simpleAssetItem(assetId: String) = tokenRepository.simpleAssetItem(assetId)
 }

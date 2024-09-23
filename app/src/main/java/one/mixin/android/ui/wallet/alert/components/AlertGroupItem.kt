@@ -39,11 +39,13 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.AlertViewModel
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import java.math.BigDecimal
 
 @Composable
-fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean) {
+fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onAction:(AlertAction, Alert)->Unit) {
     var expand by remember { mutableStateOf(initiallyExpanded) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByAssetId(alertGroup.assetId).collectAsState(initial = emptyList())
@@ -107,7 +109,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean) {
                         if (index != 0) {
                             Spacer(modifier = Modifier.height(10.dp))
                         }
-                        AlertItem(alert)
+                        AlertItem(alert, onAction)
                     }
                 }
             }
