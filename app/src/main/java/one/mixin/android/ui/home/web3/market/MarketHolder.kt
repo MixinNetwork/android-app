@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemMarketBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadSvgWithTint
@@ -13,6 +15,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -32,6 +35,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
     @SuppressLint("CheckResult", "SetTextI18n")
     fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, String, Boolean?) -> Unit) {
         binding.apply {
+            val isColorReversed = binding.root.context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
             root.setOnClickListener { onClick.invoke(item) }
             val symbol = Fiats.getSymbol()
             val rate = BigDecimal(Fiats.getRate())
@@ -45,11 +49,8 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             val percentage = BigDecimal(item.priceChangePercentage7D)
             marketPercentage.text = "${percentage.numberFormat2()}%"
             val isRising = percentage >= BigDecimal.ZERO
-            if (isRising) {
-                marketPercentage.textColorResource = R.color.wallet_green
-            } else {
-                marketPercentage.textColorResource = R.color.wallet_pink
-            }
+            marketPercentage.setQuoteText("${percentage.numberFormat2()}%", isRising)
+
             price.text = "$symbol${BigDecimal(item.currentPrice).multiply(rate).priceFormat()}"
             assetNumber.text = item.marketCapRank
             val formatVol = try {
@@ -62,7 +63,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             } else {
                 ""
             }
-            sparkline.loadSvgWithTint(item.sparklineIn7d, isRising, false)
+            sparkline.loadSvgWithTint(item.sparklineIn7d, isRising, isColorReversed)
         }
     }
 }

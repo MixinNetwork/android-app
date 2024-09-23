@@ -14,7 +14,7 @@
         android:layout_height="20dp"
         android:src="@drawable/ic_check_black_24dp"
         android:textSize="16sp"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/title"
@@ -22,6 +22,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:textColor="?attr/text_primary"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:maxLines="1" />
 
+    <ImageView
+        android:id="@+id/tail"
+        android:layout_marginStart="5dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:textSize="16sp"
+        android:visibility="gone" />
 </LinearLayout>

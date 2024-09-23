@@ -8,6 +8,7 @@ import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
@@ -42,10 +43,9 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
             binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             if (asset.changeUsd.isNotEmpty()) {
                 val changeUsd = BigDecimal(asset.changeUsd)
-                val isPositive = changeUsd > BigDecimal.ZERO
+                val isPositive = changeUsd >= BigDecimal.ZERO
                 val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                binding.changeTv.text = if (isPositive) "+$t" else t
-                binding.changeTv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
+                binding.changeTv.setQuoteText(if (isPositive) "+$t" else t, isPositive)
             }
         }
     }

@@ -10,6 +10,7 @@ import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
@@ -89,9 +90,8 @@ class TokenHolder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(b
                 priceTv.text = "${Fiats.getSymbol()}${token.priceFiat().priceFormat()}"
                 if (token.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(token.changeUsd)
-                    val isPositive = changeUsd > BigDecimal.ZERO
-                    changeTv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                    val isRising = changeUsd >= BigDecimal.ZERO
+                    changeTv.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
                 }
             }
         }

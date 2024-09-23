@@ -1684,4 +1684,7 @@
     <string name="Stats">Stats</string>
     <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
     <string name="current_version">Version: %1$s</string>
+    <string name="quote_color">Quote Color</string>
+    <string name="red_up_green_down">Red Up/Green Down</string>
+    <string name="green_up_red_down">Green UP/Red Down</string>
 </resources>
