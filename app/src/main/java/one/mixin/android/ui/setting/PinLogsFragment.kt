@@ -16,7 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPinLogsBinding
 import one.mixin.android.databinding.ItemPinLogsBinding
-import one.mixin.android.extension.localTime
+import one.mixin.android.extension.formatToLocalTime
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -166,7 +166,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
             itemBinding.apply {
                 logTitle.text = result.first
                 logDesc.text = result.second
-                logCreated.text = pin.createdAt.localTime()
+                logCreated.text = pin.createdAt.formatToLocalTime()
                 logAddress.text = pin.ipAddress
             }
         }

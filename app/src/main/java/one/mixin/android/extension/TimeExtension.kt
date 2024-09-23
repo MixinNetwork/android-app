@@ -243,6 +243,11 @@ fun String.localTime(): String {
     return date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd, hh:mm a").withZone(localeZone())) as String
 }
 
+fun String.formatToLocalTime(): String {
+    val date = ZonedDateTime.parse(this).toOffsetDateTime()
+    return date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd, HH:mm:ss").withZone(localeZone())) as String
+}
+
 fun String.dayTime(): String {
     val date = ZonedDateTime.parse(this).toOffsetDateTime()
     return date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd").withZone(localeZone())) as String
