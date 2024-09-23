@@ -24,14 +24,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.forEachWithIndex
+import one.mixin.android.ui.wallet.alert.vo.AlertType
 
 @Composable
-fun PercentagesRow(modifier: Modifier, onPercentageClick: (Float) -> Unit) {
+fun PercentagesRow(modifier: Modifier, type: AlertType, onPercentageClick: (Float) -> Unit) {
     Row(
         horizontalArrangement = Arrangement.SpaceAround,
         modifier = modifier
     ) {
-        val percentages = listOf("-20%", "-10%", "-5%", "+5%", "+10%", "+20%")
+        val percentages = when (type) {
+            AlertType.PRICE_REACHED -> {
+                listOf("-20%", "-10%", "-5%", "+5%", "+10%", "+20%")
+            }
+
+            AlertType.PRICE_INCREASED, AlertType.PERCENTAGE_INCREASED -> {
+                listOf("+5%", "+10%", "+20%", "", "", "")
+            }
+
+            else -> {
+                listOf("-20%", "-10%", "-5%", "", "", "")
+            }
+        }
 
         val availableWidth = LocalConfiguration.current.screenWidthDp.dp / percentages.size
         val fontSize = if (availableWidth < 50.dp) 8.sp else 12.sp
@@ -40,38 +53,46 @@ fun PercentagesRow(modifier: Modifier, onPercentageClick: (Float) -> Unit) {
             if (index != 0) {
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(color = MixinAppTheme.colors.backgroundWindow, shape = RoundedCornerShape(16.dp))
-                    .border(1.dp, color = MixinAppTheme.colors.borderPrimary, shape = RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(
-                        onClick = {
-                            onPercentageClick(
-                                when (index) {
-                                    0 -> -0.2f
-                                    1 -> -0.1f
-                                    2 -> -0.05f
-                                    3 -> 0.05f
-                                    4 -> 0.1f
-                                    else -> 0.2f
-                                }
-                            )
-                        },
-                        indication = LocalIndication.current,
-                        interactionSource = remember { MutableInteractionSource() }
-                    )
-                    .padding(vertical = 2.dp)
-            ) {
-                Text(
-                    text = percent,
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = fontSize,
-                    maxLines = 1,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+            if (percent == "") {
+                // empty holder
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(color = MixinAppTheme.colors.backgroundWindow, shape = RoundedCornerShape(16.dp))
+                        .border(1.dp, color = MixinAppTheme.colors.borderPrimary, shape = RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(
+                            onClick = {
+                                onPercentageClick(
+                                    when (percent) {
+                                        "-20%" -> -0.2f
+                                        "-10%" -> -0.1f
+                                        "-5%" -> -0.05f
+                                        "+5%" -> 0.05f
+                                        "+10%" -> 0.1f
+                                        else -> 0.2f
+                                    }
+                                )
+                            },
+                            indication = LocalIndication.current,
+                            interactionSource = remember { MutableInteractionSource() }
+                        )
+                        .padding(vertical = 2.dp)
+                ) {
+                    Text(
+                        text = percent,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = fontSize,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

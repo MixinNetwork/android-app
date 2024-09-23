@@ -4,6 +4,7 @@ import PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -66,9 +68,12 @@ import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertType
+import one.mixin.android.ui.wallet.alert.vo.InputError
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.BigInteger
+import java.math.RoundingMode
 import java.util.Locale
 
 fun Modifier.draw9Patch(
@@ -91,7 +96,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = R.string.Edit_Alert),
-            verticalScrollable = true,
+            verticalScrollable = false,
             pop = pop,
         ) {
             if (token != null) {
@@ -105,7 +110,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                 var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
                 var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
                 var isLoading by remember { mutableStateOf(false) }
-                var checkPrice by remember { mutableStateOf(false) }
+                var inputError by remember { mutableStateOf<InputError?>(null) }
                 val viewModel = hiltViewModel<AlertViewModel>()
                 val coroutineScope = rememberCoroutineScope()
 
@@ -119,7 +124,8 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                     verticalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start
+                        modifier = Modifier
+                            .fillMaxWidth(), horizontalAlignment = Alignment.Start
                     ) {
                         Row {
                             CoilImage(
@@ -139,7 +145,14 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
-                            selectedAlertType = newType
+                            if (selectedAlertType != newType) {
+                                alertPrice = if (newType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                    currentPrice.toPlainString()
+                                } else {
+                                    ""
+                                }
+                                selectedAlertType = newType
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -169,20 +182,51 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                         if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                             val newPrice = newValue.toBigDecimalOrNull()
                                             if (newPrice != null) {
-                                                checkPrice = !(newPrice < minPrice || newPrice > maxPrice || newPrice == currentPrice)
-                                                alertPrice = newPrice.toPlainString()
+                                                alertPrice = newPrice.toPlainString().let {
+                                                    if (newValue.endsWith(".")){
+                                                        "$it."
+                                                    }else{
+                                                        it
+                                                    }
+                                                }
+                                                inputError = if (newPrice == currentPrice) {
+                                                    InputError.EQUALS_CURRENT_PRICE
+                                                } else if (newPrice > maxPrice) {
+                                                    InputError.EXCEEDS_MAX_PRICE
+                                                } else if (newPrice < minPrice) {
+                                                    InputError.BELOW_MIN_PRICE
+                                                } else if (selectedAlertType == AlertType.PRICE_DECREASED && newPrice > currentPrice) {
+                                                    InputError.MUST_BE_LESS_THAN_CURRENT_PRICE
+                                                } else if (selectedAlertType == AlertType.PRICE_INCREASED && newPrice < currentPrice) {
+                                                    InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE
+                                                } else {
+                                                    null
+                                                }
                                             } else {
                                                 alertPrice = ""
-                                                checkPrice = false
+                                                inputError = null
                                             }
                                         } else {
-                                            val value = newValue.toFloatOrNull()
-                                            if (value != null) {
-                                                checkPrice = !(value < 0.01f || value > 1000)
-                                                alertPrice = value.toString()
-                                            } else {
-                                                alertPrice = ""
-                                                checkPrice = false
+                                            if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
+                                                val newPercentage = newValue.toBigDecimalOrNull()
+                                                if (newPercentage != null) {
+                                                    val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("1000"))
+                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).toPlainString()
+                                                    inputError = null
+                                                } else {
+                                                    alertPrice = ""
+                                                    inputError = null
+                                                }
+                                            } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
+                                                val newPercentage = newValue.toBigDecimalOrNull()
+                                                if (newPercentage != null) {
+                                                    val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("99"))
+                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).toPlainString()
+                                                    inputError = null
+                                                } else {
+                                                    alertPrice = ""
+                                                    inputError = null
+                                                }
                                             }
                                         }
                                     },
@@ -206,10 +250,17 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        if (alertPrice.toBigDecimalOrNull() == currentPrice) {
+                        if (inputError != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "The set price cannot be the current price.",
+                                text = when (inputError) {
+                                    InputError.EQUALS_CURRENT_PRICE -> "The set price cannot be the current price."
+                                    InputError.EXCEEDS_MAX_PRICE -> "The price exceeds the maximum allowed value."
+                                    InputError.BELOW_MIN_PRICE -> "The price is below the minimum allowed value."
+                                    InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> "The price must be less than the current price."
+                                    InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> "The price must be greater than the current price."
+                                    else -> ""
+                                },
                                 color = Color(0xffDB454F),
                                 fontSize = 12.sp,
                             )
@@ -217,11 +268,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        PercentagesRow(modifier = Modifier.fillMaxWidth()) { percentage ->
+                        PercentagesRow(modifier = Modifier.fillMaxWidth(), selectedAlertType) { percentage ->
                             if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                 val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
                                 alertPrice = newPrice.priceFormat()
-                                checkPrice = true
+                                inputError = null
                             } else {
                                 alertPrice = when (percentage) {
                                     0.2f -> "20"
@@ -229,9 +280,9 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     0.05f -> "5"
                                     -0.05f -> "5"
                                     -0.1f -> "10"
-                                    else -> "-20"
+                                    else -> "20"
                                 }
-                                checkPrice = true
+                                inputError = null
                             }
                         }
 
@@ -242,18 +293,20 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         }
                     }
 
+                    Spacer(modifier = Modifier.weight(1f))
+
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        enabled = !isLoading && checkPrice,
+                        enabled = !isLoading && !(inputError != null || alertPrice.isBlank()),
                         onClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
                             val alertRequest = AlertRequest(
                                 assetId = token.assetId,
                                 type = selectedAlertType.value,
-                                value = alertPrice.replace(",",""),
+                                value = alertPrice.replace(",", ""),
                                 frequency = selectedAlertFrequency.value,
                                 lang = Locale.getDefault().language,
                             )
@@ -266,7 +319,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = if (!checkPrice) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
+                            backgroundColor = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                         ),
                         shape = RoundedCornerShape(32.dp),
                         elevation = ButtonDefaults.elevation(
@@ -284,7 +337,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         } else {
                             Text(
                                 text = stringResource(R.string.Add_Alert),
-                                color = if (!checkPrice) MixinAppTheme.colors.textAssist else Color.White,
+                                color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
                     }
