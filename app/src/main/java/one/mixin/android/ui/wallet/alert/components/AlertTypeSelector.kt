@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.alert.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
@@ -36,22 +38,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.AlertType
 
 @Composable
 fun AlertTypeSelector(selectedType: AlertType, onTypeSelected: (AlertType) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = true },
-        backgroundColor = MixinAppTheme.colors.background,
-        shape = RoundedCornerShape(12.dp)
+            .padding(horizontal = 3.33.dp)
+            .draw9Patch(context, MixinAppTheme.drawables.bgCard)
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {  expanded = true }
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 14.dp)
+                .padding(horizontal = 23.33.dp, vertical = 17.33.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,

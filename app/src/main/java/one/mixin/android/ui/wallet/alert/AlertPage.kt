@@ -101,12 +101,12 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .fillMaxSize()
             ) {
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -126,13 +126,10 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(5.34.dp))
                 }
 
                 items(alertGroups.size) { index ->
-                    if (index != 0) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                    }
                     val group = alertGroups[index]
                     AlertGroupItem(group, index == 0, onAction = onAction)
                 }

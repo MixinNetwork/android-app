@@ -7,6 +7,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -110,14 +111,14 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                 var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
                 var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
                 var isLoading by remember { mutableStateOf(false) }
-                var inputError by remember { mutableStateOf<InputError?>(null) }
+                var inputError by remember { mutableStateOf(if (alertPrice.toBigDecimalOrNull() == currentPrice) InputError.EQUALS_CURRENT_PRICE else null) }
                 val viewModel = hiltViewModel<AlertViewModel>()
                 val coroutineScope = rememberCoroutineScope()
 
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 20.dp)
+                        .padding(horizontal = 10.dp)
                         .verticalScroll(rememberScrollState())
                         .imePadding(),
                     horizontalAlignment = Alignment.Start,
@@ -127,7 +128,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         modifier = Modifier
                             .fillMaxWidth(), horizontalAlignment = Alignment.Start
                     ) {
-                        Row {
+                        Row(modifier = Modifier.padding(horizontal = 10.dp)) {
                             CoilImage(
                                 model = token.iconUrl,
                                 placeholder = R.drawable.ic_avatar_place_holder,
@@ -142,7 +143,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
                             if (selectedAlertType != newType) {
@@ -155,13 +156,17 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(), backgroundColor = MixinAppTheme.colors.background
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 3.33.dp)
+                                .draw9Patch(context, MixinAppTheme.drawables.bgCard),
                         ) {
                             Column(
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
+                                modifier = Modifier
+                                    .padding(horizontal = 23.33.dp, vertical = 17.33.dp)
                             ) {
                                 Text(
                                     text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
@@ -183,9 +188,9 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                             val newPrice = newValue.toBigDecimalOrNull()
                                             if (newPrice != null) {
                                                 alertPrice = newPrice.toPlainString().let {
-                                                    if (newValue.endsWith(".")){
+                                                    if (newValue.endsWith(".")) {
                                                         "$it."
-                                                    }else{
+                                                    } else {
                                                         it
                                                     }
                                                 }
@@ -243,7 +248,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                     textStyle = TextStyle(
                                         fontSize = 16.sp,
-                                        color = MixinAppTheme.colors.textPrimary,
+                                        color = if (inputError != null) Color(0xFFDB454F) else MixinAppTheme.colors.textPrimary,
                                         textAlign = TextAlign.Start,
                                     ),
                                 )
@@ -251,24 +256,26 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         }
 
                         if (inputError != null) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = when (inputError) {
-                                    InputError.EQUALS_CURRENT_PRICE -> "The set price cannot be the current price."
-                                    InputError.EXCEEDS_MAX_PRICE -> "The price exceeds the maximum allowed value."
-                                    InputError.BELOW_MIN_PRICE -> "The price is below the minimum allowed value."
-                                    InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> "The price must be less than the current price."
-                                    InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> "The price must be greater than the current price."
-                                    else -> ""
-                                },
-                                color = Color(0xffDB454F),
-                                fontSize = 12.sp,
-                            )
+                            Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+                                Text(
+                                    text = when (inputError) {
+                                        InputError.EQUALS_CURRENT_PRICE -> "The set price cannot be the current price."
+                                        InputError.EXCEEDS_MAX_PRICE -> "The price exceeds the maximum allowed value."
+                                        InputError.BELOW_MIN_PRICE -> "The price is below the minimum allowed value."
+                                        InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> "The price must be less than the current price."
+                                        InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> "The price must be greater than the current price."
+                                        else -> ""
+                                    },
+                                    color = Color(0xFFDB454F),
+                                    fontSize = 12.sp,
+                                )
+                                Spacer(modifier = Modifier.height(9.34.dp))
+                            }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        PercentagesRow(modifier = Modifier.fillMaxWidth(), selectedAlertType) { percentage ->
+                        PercentagesRow(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp), selectedAlertType) { percentage ->
                             if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                 val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
                                 alertPrice = newPrice.priceFormat()
@@ -286,7 +293,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(9.34.dp))
 
                         AlertFrequencySelector(selectedAlertFrequency) { newFrequency ->
                             selectedAlertFrequency = newFrequency

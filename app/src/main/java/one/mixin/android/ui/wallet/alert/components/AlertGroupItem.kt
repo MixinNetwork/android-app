@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.AlertViewModel
+import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
@@ -50,16 +53,18 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onAction:
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByAssetId(alertGroup.assetId).collectAsState(initial = emptyList())
     val rotationState by animateFloatAsState(targetValue = if (expand) -180f else 0f, label = "")
+    val context = LocalContext.current
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = MixinAppTheme.colors.background,
-        shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 3.33.dp)
+            .draw9Patch(context, MixinAppTheme.drawables.bgCard)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 26.66.dp, vertical = 22.66.dp)
         ) {
             Row(
                 modifier = Modifier
