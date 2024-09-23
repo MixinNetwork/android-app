@@ -48,7 +48,7 @@ class AppDrawables(
     @DrawableRes
     val emergencyContact: Int,
     @DrawableRes
-    val bgCard: Int,
+    val bgAlertCard: Int,
 
 )
 
@@ -108,13 +108,13 @@ private val LightDrawablePalette =
     AppDrawables(
         emergencyAvatar = R.drawable.ic_emergency_avatar,
         emergencyContact = R.drawable.ic_emergency_contact,
-        bgCard = R.drawable.bg_market_card
+        bgAlertCard = R.drawable.bg_alert_card
     )
 private val DarkDrawablePalette =
     AppDrawables(
         emergencyAvatar = R.drawable.ic_emergency_avatar_night,
         emergencyContact = R.drawable.ic_emergency_contact_night,
-        bgCard = R.drawable.bg_market_card_night
+        bgAlertCard = R.drawable.bg_alert_card_night
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }

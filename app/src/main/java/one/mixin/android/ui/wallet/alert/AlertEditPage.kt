@@ -143,7 +143,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
                             if (selectedAlertType != newType) {
@@ -156,17 +156,18 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
 
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 3.33.dp)
-                                .draw9Patch(context, MixinAppTheme.drawables.bgCard),
+                                .padding(horizontal = 8.dp)
+                                .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard),
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(horizontal = 23.33.dp, vertical = 17.33.dp)
+                                    .padding(horizontal = 23.dp)
+                                    .padding(top = 19.dp, bottom = 22.dp)
                             ) {
                                 Text(
                                     text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
@@ -256,6 +257,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         }
 
                         if (inputError != null) {
+                            Spacer(modifier = Modifier.height(2.dp))
                             Column(modifier = Modifier.padding(horizontal = 10.dp)) {
                                 Text(
                                     text = when (inputError) {
@@ -269,10 +271,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     color = Color(0xFFDB454F),
                                     fontSize = 12.sp,
                                 )
-                                Spacer(modifier = Modifier.height(9.34.dp))
                             }
+                            Spacer(modifier = Modifier.height(6.dp))
                         }
 
+                        Spacer(modifier = Modifier.height(4.dp))
                         PercentagesRow(modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp), selectedAlertType) { percentage ->
@@ -293,7 +296,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(9.34.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         AlertFrequencySelector(selectedAlertFrequency) { newFrequency ->
                             selectedAlertFrequency = newFrequency

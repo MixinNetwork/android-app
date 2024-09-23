@@ -45,13 +45,14 @@ fun AlertFrequencySelector(selectedFrequency: AlertFrequency, onTypeSelected: (A
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 3.33.dp)
-            .draw9Patch(context, MixinAppTheme.drawables.bgCard)
+            .padding(horizontal = 8.dp)
+            .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard)
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expanded = true }
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 23.33.dp, vertical = 17.33.dp)
+                .padding(horizontal = 23.dp)
+                .padding(top = 19.dp, bottom = 22.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,

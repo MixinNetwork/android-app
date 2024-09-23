@@ -126,11 +126,14 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(5.34.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 items(alertGroups.size) { index ->
                     val group = alertGroups[index]
+                    if (index!=0) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
                     AlertGroupItem(group, index == 0, onAction = onAction)
                 }
             }

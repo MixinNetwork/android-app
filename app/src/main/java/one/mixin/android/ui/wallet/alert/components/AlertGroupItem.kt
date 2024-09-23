@@ -58,13 +58,14 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onAction:
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 3.33.dp)
-            .draw9Patch(context, MixinAppTheme.drawables.bgCard)
+            .padding(horizontal = 8.dp)
+            .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 26.66.dp, vertical = 22.66.dp)
+                .padding(horizontal = 23.dp)
+                .padding(top = 19.dp, bottom = 22.dp)
         ) {
             Row(
                 modifier = Modifier
