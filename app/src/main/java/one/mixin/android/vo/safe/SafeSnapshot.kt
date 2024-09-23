@@ -3,13 +3,14 @@ package one.mixin.android.vo.safe
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Entity(tableName = "safe_snapshots")
+@Entity(tableName = "safe_snapshots", indices = [Index(value = arrayOf("created_at")), Index(value = arrayOf("type", "asset_id"))])
 @Serializable
 data class SafeSnapshot(
     @PrimaryKey

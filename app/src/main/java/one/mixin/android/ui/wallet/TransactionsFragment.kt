@@ -55,6 +55,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
@@ -133,7 +134,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ID
                     }
-                    navTo(SwapFragment.newInstance(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
             value.text = try {
@@ -185,11 +186,14 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         activity?.onBackPressedDispatcher?.onBackPressed()
                         return@launch
                     }
-                    val market = walletViewModel.findMarketItemByAssetId(asset.assetId)
+                    var market = walletViewModel.findMarketItemByAssetId(asset.assetId)
                     if (market == null) {
                         jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
-                        toast(R.string.Please_wait_a_bit)
-                        return@launch
+                        market = MarketItem(
+                            "", asset.name, asset.symbol, asset.iconUrl, asset.priceUsd,
+                            "", "", "", "", "", asset.changeUsd, "", "", "", "", "", "", "", "", "", "", "",
+                            "", "", "", "", listOf(asset.assetId), "", null
+                        )
                     }
                     view.navigate(
                         R.id.action_transactions_to_market_details,
