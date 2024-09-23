@@ -29,6 +29,7 @@ import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 
 @AndroidEntryPoint
 class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragment.DataProvider {
@@ -54,6 +55,10 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        lifecycleScope.launch {
+            val r =alertViewModel.requestAlerts()
+            Timber.e("size: ${r?.data?.size}")
+        }
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(

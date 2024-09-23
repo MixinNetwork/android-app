@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 
-@Entity("alerts")
-@TypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class)
+@Entity("market_alerts")
+@TypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class, AlertStatusConverter::class)
 class Alert(
     @PrimaryKey
     @ColumnInfo(name = "alert_id")
@@ -22,6 +22,9 @@ class Alert(
     @ColumnInfo(name = "frequency")
     @SerializedName("frequency")
     val frequency: AlertFrequency,
+    @ColumnInfo(name = "status")
+    @SerializedName("status")
+    val status: AlertStatus,
     @SerializedName("value")
     @ColumnInfo(name = "value")
     val value: String,

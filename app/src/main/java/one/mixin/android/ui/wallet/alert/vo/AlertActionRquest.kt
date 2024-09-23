@@ -2,7 +2,9 @@ package one.mixin.android.ui.wallet.alert.vo
 
 import com.google.gson.annotations.SerializedName
 
-class AlertDelete(
+class AlertActionRquest(
     @SerializedName("alert_id")
-    val alertId: String
+    val alertId: String,
+    @SerializedName("action")
+    val action: String
 )

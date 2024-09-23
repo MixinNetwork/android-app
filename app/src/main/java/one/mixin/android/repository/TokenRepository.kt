@@ -82,6 +82,7 @@ import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertActionRquest
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
@@ -1172,4 +1173,16 @@ class TokenRepository
     fun alertGroups(assetId: List<String>) = alertDao.alertGroups(assetId)
 
     fun alertsByAssetId(assetId:String) = alertDao.alertsByAssetId(assetId)
+
+    suspend fun updateAlert(alert: AlertActionRquest): MixinResponse<Alert>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.updateAlert(alert) },
+            successBlock = { response ->
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
 }
