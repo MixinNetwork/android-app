@@ -18,10 +18,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -35,7 +39,6 @@ import java.math.BigDecimal
 @Composable
 fun AlertItem(alert: Alert) {
     var expanded by remember { mutableStateOf(false) }
-
     Box {
         ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
             val (starIcon, endIcon, title, subtitle) = createRefs()
@@ -61,21 +64,46 @@ fun AlertItem(alert: Alert) {
                     lineHeight = 14.sp
                 ), color = MixinAppTheme.colors.textPrimary
             )
-            Icon(
-                modifier = Modifier
-                    .constrainAs(endIcon) {
-                        top.linkTo(parent.top)
-                        end.linkTo(parent.end)
+            Box(modifier = Modifier
+                .constrainAs(endIcon) {
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                }) {
+                Icon(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .clickable {
+                            expanded = true
+                        },
+                    painter = painterResource(id = R.drawable.ic_alert_more),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    AlertAction.entries.forEach { action ->
+                        DropdownMenuItem(onClick = {
+                            expanded = false
+                        }) {
+                            Row(
+                                modifier = Modifier.width(200.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = action.name)
+                                Icon(
+                                    painter = painterResource(id = action.getIconResId()),
+                                    contentDescription = null,
+                                    modifier = Modifier.wrapContentSize(),
+                                    tint = Color.Unspecified,
+                                )
+                            }
+                        }
                     }
-                    .wrapContentSize()
-                    .clickable {
-                        expanded = true
-                    },
-                painter = painterResource(id = R.drawable.ic_more_horiz_black_24dp),
-                contentDescription = null,
-                tint = Color.Unspecified,
-            )
-
+                }
+            }
             Text(
                 stringResource(alert.frequency.getStringResId()), modifier = Modifier.constrainAs(subtitle) {
                     top.linkTo(title.bottom, margin = 4.dp)
@@ -83,30 +111,6 @@ fun AlertItem(alert: Alert) {
                 }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
             )
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.align(Alignment.TopEnd)
-        ) {
-            AlertAction.entries.forEach { action ->
-                DropdownMenuItem(onClick = {
-                    expanded = false
-                }) {
-                    Row(
-                        modifier = Modifier.width(250.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = action.name)
-                        Icon(
-                            painter = painterResource(id = action.getIconResId()),
-                            contentDescription = null,
-                            modifier = Modifier.wrapContentSize(),
-                            tint = Color.Unspecified,
-                        )
-                    }
-                }
-            }
-        }
+
     }
 }
