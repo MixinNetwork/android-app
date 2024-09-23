@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -134,7 +135,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
             }
             swapAlert.alert.setOnClickListener {
-                navTo(AlertFragment.newInstance(), AlertFragment.TAG)
+                if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
+                    navTo(AlertFragment.newInstance(), AlertFragment.TAG)
+                } else {
+                    toast(getString(R.string.price_alert_notification_permission))
+                }
             }
             if (marketItem.coinId.isBlank()) {
                 rank.isVisible = false

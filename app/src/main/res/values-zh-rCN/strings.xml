@@ -1660,4 +1660,7 @@
     <string name="alert_frequency_daily">每日</string>
     <string name="alert_frequency_once">一次</string>
     <string name="Value">数值</string>
+    <string name="Resume">恢复</string>
+    <string name="Edit">编辑</string>
+    <string name="price_alert_notification_permission">价格预警需要开启通知权限</string>
 </resources>

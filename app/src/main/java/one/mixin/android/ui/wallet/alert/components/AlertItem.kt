@@ -92,7 +92,7 @@ fun AlertItem(alert: Alert) {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = action.name)
+                                Text(text = stringResource(action.getStringResId()))
                                 Icon(
                                     painter = painterResource(id = action.getIconResId()),
                                     contentDescription = null,

@@ -1701,4 +1701,7 @@
     <string name="alert_frequency_once">Once</string>
     <string name="Enter_price">Enter price</string>
     <string name="Value">Value</string>
+    <string name="Resume">Resume</string>
+    <string name="Edit">Edit</string>
+    <string name="price_alert_notification_permission">Price alerts require notification permission to be enabled.</string>
 </resources>
