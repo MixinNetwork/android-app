@@ -9,13 +9,13 @@ import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 @Dao
 interface AlertDao : BaseDao<Alert> {
 
-    @Query("SELECT a.asset_id, t.icon_url, t.name, t.price_usd FROM market_alerts a LEFT JOIN tokens t on t.asset_id = a.asset_id GROUP BY a.asset_id")
+    @Query("SELECT a.asset_id, t.icon_url, t.name, t.price_usd FROM market_alerts a LEFT JOIN tokens t on t.asset_id = a.asset_id GROUP BY a.asset_id ORDER BY created_at ASC")
     fun alertGroups(): Flow<List<AlertGroup>>
 
     @Query("SELECT a.asset_id, t.icon_url, t.name, t.price_usd FROM market_alerts a LEFT JOIN tokens t on t.asset_id = a.asset_id WHERE a.asset_id IN (:assetIds) GROUP BY a.asset_id")
     fun alertGroups(assetIds: List<String>): Flow<List<AlertGroup>>
 
-    @Query("SELECT * FROM market_alerts WHERE asset_id = :assetId")
+    @Query("SELECT * FROM market_alerts WHERE asset_id = :assetId ORDER BY created_at ASC")
     fun alertsByAssetId(assetId:String):Flow<List<Alert>>
 
     @Query("UPDATE market_alerts SET status = :status WHERE alert_id = :alertId")

@@ -1667,4 +1667,9 @@
     <string name="Paused">已暂停</string>
     <string name="alert_limit_exceeded">所有币种的价格提醒总数不得超过%1$d。</string>
     <string name="alert_per_asset_limit_exceeded">每个交易对最多可创建%1$d个价格提醒。</string>
+    <string name="error_equals_current_price">设置的价格不能是当前价格。</string>
+    <string name="error_exceeds_max_price">价格超过允许的最大值。</string>
+    <string name="error_below_min_price">价格低于允许的最小值。</string>
+    <string name="error_must_be_less_than_current_price">价格必须低于当前价格。</string>
+    <string name="error_must_be_greater_than_current_price">价格必须高于当前价格。</string>
 </resources>

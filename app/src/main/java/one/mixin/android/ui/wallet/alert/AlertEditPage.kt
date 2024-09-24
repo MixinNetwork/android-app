@@ -220,10 +220,13 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                 inputError = null
                                             }
                                         } else {
+                                            var dot:Boolean
                                             val newPercentage = newValue.replace("%", "").let {
                                                 if (it.endsWith(".")) {
+                                                    dot = true
                                                     it.removeEnd(".")
                                                 } else {
+                                                    dot = false
                                                     it
                                                 }
                                             }.toBigDecimalOrNull()
@@ -231,7 +234,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                 if (newPercentage != null) {
                                                     val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("1000"))
                                                     alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString().let {
-                                                        if (newValue.endsWith(".")) {
+                                                        if (dot) {
                                                             "$it.%"
                                                         } else {
                                                             "$it%"
@@ -246,7 +249,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                 if (newPercentage != null) {
                                                     val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("99.99"))
                                                     alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString().let {
-                                                        if (newValue.endsWith(".")) {
+                                                        if (dot) {
                                                             "$it.%"
                                                         } else {
                                                             "$it%"
@@ -273,9 +276,25 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                     textStyle = TextStyle(
                                         fontSize = 16.sp,
+                                        lineHeight = 16.sp,
                                         color = if (inputError != null) Color(0xFFDB454F) else MixinAppTheme.colors.textPrimary,
                                         textAlign = TextAlign.Start,
                                     ),
+                                    decorationBox = { innerTextField ->
+                                        if (alertPrice.isEmpty()) {
+                                            Text(
+                                                if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                                    "0.00"
+                                                } else {
+                                                    "0.00%"
+                                                },
+                                                fontSize = 16.sp,
+                                                lineHeight = 16.sp,
+                                                color = MixinAppTheme.colors.textAssist,
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
                                 )
                             }
                         }
@@ -285,11 +304,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             Column(modifier = Modifier.padding(horizontal = 10.dp)) {
                                 Text(
                                     text = when (inputError) {
-                                        InputError.EQUALS_CURRENT_PRICE -> "The set price cannot be the current price."
-                                        InputError.EXCEEDS_MAX_PRICE -> "The price exceeds the maximum allowed value."
-                                        InputError.BELOW_MIN_PRICE -> "The price is below the minimum allowed value."
-                                        InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> "The price must be less than the current price."
-                                        InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> "The price must be greater than the current price."
+                                        InputError.EQUALS_CURRENT_PRICE -> stringResource(R.string.error_equals_current_price)
+                                        InputError.EXCEEDS_MAX_PRICE -> stringResource(R.string.error_exceeds_max_price)
+                                        InputError.BELOW_MIN_PRICE -> stringResource(R.string.error_below_min_price)
+                                        InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_less_than_current_price)
+                                        InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_greater_than_current_price)
                                         else -> ""
                                     },
                                     color = Color(0xFFDB454F),
@@ -399,7 +418,9 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             )
                         }
                         Text(
-                            modifier = Modifier.padding(horizontal = 32.dp).alpha(if (isLoading) 0f else 1f),
+                            modifier = Modifier
+                                .padding(horizontal = 32.dp)
+                                .alpha(if (isLoading) 0f else 1f),
                             text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
                             color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                         )

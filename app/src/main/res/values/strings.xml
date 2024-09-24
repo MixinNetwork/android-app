@@ -1707,4 +1707,9 @@
     <string name="Paused">Paused</string>
     <string name="alert_limit_exceeded">The total number of price alerts for all currencies cannot exceed %1$d.</string>
     <string name="alert_per_asset_limit_exceeded">You can create a maximum of %1$d price alerts for each trading pair.</string>
+    <string name="error_equals_current_price">The set price cannot be the current price.</string>
+    <string name="error_exceeds_max_price">The price exceeds the maximum allowed value.</string>
+    <string name="error_below_min_price">The price is below the minimum allowed value.</string>
+    <string name="error_must_be_less_than_current_price">The price must be less than the current price.</string>
+    <string name="error_must_be_greater_than_current_price">The price must be greater than the current price.</string>
 </resources>
