@@ -100,7 +100,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
                             val currentStatus = alert.status
                             if (currentStatus == AlertStatus.RUNNING && action == AlertAction.RESUME) {
                                 return@forEach
-                            } else if (currentStatus in listOf(AlertStatus.PAUSED, AlertStatus.UNKNOWN) && action == AlertAction.PAUSE) {
+                            } else if (currentStatus == AlertStatus.PAUSED && action == AlertAction.PAUSE) {
                                 return@forEach
                             }
                             DropdownMenuItem(onClick = {

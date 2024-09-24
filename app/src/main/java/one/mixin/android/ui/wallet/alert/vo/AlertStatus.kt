@@ -7,8 +7,5 @@ enum class AlertStatus(val value: String) {
     PAUSED("paused"),
 
     @SerializedName("running")
-    RUNNING("running"),
-
-    @SerializedName("")
-    UNKNOWN("unknown");
+    RUNNING("running");
 }

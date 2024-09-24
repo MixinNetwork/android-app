@@ -199,7 +199,7 @@ interface RouteService {
     @POST("markets/{id}/unfavorite")
     suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Unit>
 
-    @POST("prices/alerts/add")
+    @POST("prices/alerts")
     suspend fun addAlert(@Body alert: AlertRequest):MixinResponse<Alert>
 
     @GET("prices/alerts")

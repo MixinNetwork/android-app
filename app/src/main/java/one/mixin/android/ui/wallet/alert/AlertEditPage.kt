@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,6 +63,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
@@ -150,8 +152,10 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
                             if (selectedAlertType != newType) {
                                 alertPrice = if (newType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                    inputError = InputError.EQUALS_CURRENT_PRICE
                                     currentPrice.toPlainString()
                                 } else {
+                                    inputError = null
                                     ""
                                 }
                                 selectedAlertType = newType
@@ -215,11 +219,23 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                 inputError = null
                                             }
                                         } else {
-                                            val newPercentage = newValue.replace("%", "").toBigDecimalOrNull()
+                                            val newPercentage = newValue.replace("%", "").let {
+                                                if (it.endsWith(".")) {
+                                                    it.removeEnd(".")
+                                                } else {
+                                                    it
+                                                }
+                                            }.toBigDecimalOrNull()
                                             if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
                                                 if (newPercentage != null) {
                                                     val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("1000"))
-                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString() + "%"
+                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString().let {
+                                                        if (newValue.endsWith(".")) {
+                                                            "$it.%"
+                                                        } else {
+                                                            "$it%"
+                                                        }
+                                                    }
                                                     inputError = null
                                                 } else {
                                                     alertPrice = ""
@@ -227,8 +243,14 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                 }
                                             } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
                                                 if (newPercentage != null) {
-                                                    val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("99"))
-                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString() + "%"
+                                                    val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("99.99"))
+                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString().let {
+                                                        if (newValue.endsWith(".")) {
+                                                            "$it.%"
+                                                        } else {
+                                                            "$it%"
+                                                        }
+                                                    }
                                                     inputError = null
                                                 } else {
                                                     alertPrice = ""
