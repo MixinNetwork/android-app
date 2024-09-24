@@ -21,8 +21,6 @@ class AlertViewModel
 internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
     suspend fun add(alert: AlertRequest) = tokenRepository.addAlert(alert)
 
-    suspend fun requestAlerts() = tokenRepository.requestAlerts()
-
     fun alertGroups() = tokenRepository.alertGroups()
 
     fun alertGroups(assetIds: List<String>) = tokenRepository.alertGroups(assetIds)

@@ -1158,23 +1158,6 @@ class TokenRepository
         )
     }
 
-    suspend fun requestAlerts(): MixinResponse<List<Alert>>? {
-        return requestRouteAPI(
-            invokeNetwork = { routeService.alerts() },
-            successBlock = { response ->
-                if (response.isSuccess){
-                    withContext(Dispatchers.IO) {
-                        alertDao.insertList(response.data!!)
-                    }
-                }
-                response
-            },
-            requestSession = {
-                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
-            }
-        )
-    }
-
     fun alertGroups() = alertDao.alertGroups()
 
     fun alertGroups(assetId: List<String>) = alertDao.alertGroups(assetId)

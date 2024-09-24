@@ -25,6 +25,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAlertsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
@@ -34,6 +36,7 @@ import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragment.DataProvider {
@@ -58,15 +61,19 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
     private var selectToken by mutableStateOf<TokenItem?>(null)
     private var currentAlert by mutableStateOf<Alert?>(null)
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(RefreshAlertsJob())
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        lifecycleScope.launch {
-            val r =alertViewModel.requestAlerts()
-            Timber.e("size: ${r?.data?.size}")
-        }
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
