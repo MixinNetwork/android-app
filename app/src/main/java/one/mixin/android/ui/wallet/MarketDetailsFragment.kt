@@ -23,7 +23,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.marketPriceFormat
-import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
@@ -35,8 +35,9 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapFragment
-import one.mixin.android.ui.wallet.alert.AlertFragment
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -119,24 +120,36 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } else {
                             USDT_ASSET_ID
                         }
-                        navTo(SwapFragment.newInstance<TokenItem>(assets, input = nowTokens.first().assetId, output = output), SwapFragment.TAG)
+
+                        view.navigate(R.id.action_market_details_to_swap,
+                            Bundle().apply {
+                                putString(ARGS_INPUT, nowTokens.first().assetId)
+                                putString(ARGS_OUTPUT, output)
+                                putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
+                            })
                     } else {
                         ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
-                                callback = { token ->
-                                    val output = if (token.assetId == USDT_ASSET_ID) {
-                                        XIN_ASSET_ID
-                                    } else {
-                                        USDT_ASSET_ID
-                                    }
-                                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = token.assetId, output = output), SwapFragment.TAG)
+                            callback = { token ->
+                                val output = if (token.assetId == USDT_ASSET_ID) {
+                                    XIN_ASSET_ID
+                                } else {
+                                    USDT_ASSET_ID
                                 }
-                            }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+
+                                view.navigate(R.id.action_market_details_to_swap,
+                                    Bundle().apply {
+                                        putString(ARGS_INPUT, token.assetId)
+                                        putString(ARGS_OUTPUT, output)
+                                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
+                                    })
+                            }
+                        }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
                     }
                 }
             }
             swapAlert.alert.setOnClickListener {
                 if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                    navTo(AlertFragment.newInstance(), AlertFragment.TAG)
+                    view.navigate(R.id.action_market_details_to_alert)
                 } else {
                     toast(getString(R.string.price_alert_notification_permission))
                 }

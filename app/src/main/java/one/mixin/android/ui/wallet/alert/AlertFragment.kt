@@ -109,7 +109,7 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                         },
                     ) {
                         composable(AlertDestination.Content.name) {
-                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { navigateUp(navController) }, to = { onAddAlert(navController) }, onEdit = { alert ->
+                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController) }, onEdit = { alert ->
                                 lifecycleScope.launch {
                                     val token = alertViewModel.simpleAssetItem(alert.assetId)
                                     if (token != null) {
@@ -132,7 +132,9 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
 
     private fun onAddAlert(navController: NavHostController) {
         lifecycleScope.launch {
-            val isTotalAlertCountExceeded = alertViewModel.isTotalAlertCountExceeded()
+            val isTotalAlertCountExceeded = withContext(Dispatchers.IO) {
+                alertViewModel.isTotalAlertCountExceeded()
+            }
             if (isTotalAlertCountExceeded) {
                 toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
             } else {

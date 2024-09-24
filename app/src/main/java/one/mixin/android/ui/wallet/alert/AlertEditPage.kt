@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
@@ -328,12 +329,12 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         }
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     Button(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
+                            .height(48.dp)
+                            .align(alignment = Alignment.CenterHorizontally),
                         enabled = !isLoading && !(inputError != null || alertPrice.isBlank()),
                         onClick = {
                             keyboardController?.hide()
@@ -396,12 +397,12 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                 modifier = Modifier.size(18.dp),
                                 color = Color.White,
                             )
-                        } else {
-                            Text(
-                                text = stringResource(R.string.Add_Alert),
-                                color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
-                            )
                         }
+                        Text(
+                            modifier = Modifier.padding(horizontal = 32.dp).alpha(if (isLoading) 0f else 1f),
+                            text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
+                            color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                        )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                 }

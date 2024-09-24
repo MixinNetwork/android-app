@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -65,35 +66,47 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                 .padding(horizontal = 23.dp)
                 .padding(top = 19.dp, bottom = 22.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row {
-                    CoilImage(
-                        alertGroup.iconUrl,
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape),
-                        placeholder = R.drawable.ic_avatar_place_holder,
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column {
-                        Text(alertGroup.name, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd).priceFormat()} USD"),
-                            fontSize = 13.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                    }
-                }
+            ConstraintLayout(modifier = Modifier
+                .fillMaxWidth()
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand }) {
+                val (starIcon, endIcon, title, subtitle) = createRefs()
+                CoilImage(
+                    alertGroup.iconUrl,
+                    modifier = Modifier
+                        .constrainAs(starIcon) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                        }
+                        .size(42.dp)
+                        .clip(CircleShape),
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                )
+
+
+                Text(modifier = Modifier.constrainAs(title) {
+                    top.linkTo(starIcon.top)
+                    start.linkTo(starIcon.end, 10.dp)
+                }, text = alertGroup.name, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
+
+                Text(
+                    modifier = Modifier.constrainAs(subtitle) {
+                        start.linkTo(starIcon.end, 10.dp)
+                        bottom.linkTo(starIcon.bottom)
+                    }, text = stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd).priceFormat()} USD"),
+                    fontSize = 13.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+
                 Icon(
                     modifier = Modifier
                         .wrapContentSize()
-                        .graphicsLayer(rotationZ = rotationState),
+                        .graphicsLayer(rotationZ = rotationState)
+                        .constrainAs(endIcon) {
+                            top.linkTo(starIcon.top)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(starIcon.bottom)
+                        }
+                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
                     painter = painterResource(id = R.drawable.ic_sort_arrow_down),
                     contentDescription = null,
                     tint = Color.Unspecified,
@@ -102,7 +115,8 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
 
             AnimatedVisibility(
                 modifier = Modifier
-                    .fillMaxWidth(), visible = expand,
+                    .fillMaxWidth(),
+                visible = expand,
             ) {
                 Column(
                     modifier = Modifier
