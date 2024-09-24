@@ -4,7 +4,6 @@ import PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +25,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -52,20 +50,17 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.findViewTreeLifecycleOwner
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.removeEnd
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
@@ -76,9 +71,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.alert.vo.InputError
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.math.RoundingMode
 import java.util.Locale
 
@@ -193,7 +186,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     value = alertPrice,
                                     onValueChange = { newValue ->
                                         if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                            val newPrice = newValue.toBigDecimalOrNull()
+                                            val newPrice = newValue.replace(",", "").toBigDecimalOrNull()
                                             if (newPrice != null) {
                                                 alertPrice = newPrice.toPlainString().let {
                                                     if (newValue.endsWith(".")) {
@@ -326,7 +319,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         ) { percentage ->
                             if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                 val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
-                                alertPrice = newPrice.priceFormat()
+                                alertPrice = newPrice.toPlainString()
                                 inputError = null
                             } else {
                                 alertPrice = when (percentage) {
@@ -411,19 +404,19 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             focusedElevation = 0.dp,
                         ),
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = Color.White,
+                        Box(modifier = Modifier.padding(horizontal = 32.dp), contentAlignment = Alignment.Center) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = Color.White,
+                                )
+                            }
+                            Text(
+                                modifier = Modifier.alpha(if (isLoading) 0f else 1f),
+                                text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
+                                color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
-                        Text(
-                            modifier = Modifier
-                                .padding(horizontal = 32.dp)
-                                .alpha(if (isLoading) 0f else 1f),
-                            text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
-                            color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
-                        )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                 }
