@@ -100,7 +100,9 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
             }
         } else {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -128,7 +130,7 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
             ) {
                 items(alertGroups.size) { index ->
                     val group = alertGroups[index]
-                    if (index!=0) {
+                    if (index != 0) {
                         Spacer(modifier = Modifier.height(2.dp))
                     }
                     AlertGroupItem(group, index == 0, onEdit = onEdit)

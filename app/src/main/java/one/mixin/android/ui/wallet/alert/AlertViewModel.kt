@@ -43,11 +43,9 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     private fun getAlertCountByAssetId(assetId: String): Int = tokenRepository.getAlertCountByAssetId(assetId)
 
-    fun checkCount(assetId: String): Int {
-        return if (getTotalAlertCount() >= maxTotalAlerts) maxTotalAlerts
-        else if (getAlertCountByAssetId(assetId) >= maxAlertsPerAsset) maxAlertsPerAsset
-        else 0
-    }
+    fun isTotalAlertCountExceeded() = getTotalAlertCount() >= maxTotalAlerts
+
+    fun isAssetAlertCountExceeded(assetId: String) = getAlertCountByAssetId(assetId) >= maxTotalAlerts
 
     suspend fun updateAlert(alertId: String, action: AlertAction) {
         val r = tokenRepository.updateAlert(

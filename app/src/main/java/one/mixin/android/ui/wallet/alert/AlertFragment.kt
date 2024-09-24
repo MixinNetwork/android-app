@@ -131,29 +131,28 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
     }
 
     private fun onAddAlert(navController: NavHostController) {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
-            lifecycleScope.launch {
-                val count = withContext(Dispatchers.IO){
-                    alertViewModel.checkCount(asset.assetId)
-                }
-                when {
-                    count < maxAlertsPerAsset -> {
-                        selectToken = asset
-                        currentAlert = null
-                        navController.navigate(AlertDestination.Edit.name)
+        lifecycleScope.launch {
+            val isTotalAlertCountExceeded = alertViewModel.isTotalAlertCountExceeded()
+            if (isTotalAlertCountExceeded) {
+                toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
+            } else {
+                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
+                    lifecycleScope.launch {
+                        val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
+                            alertViewModel.isAssetAlertCountExceeded(asset.assetId)
+                        }
+                        if (isAssetAlertCountExceeded) {
+                            toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
+                        } else {
+                            selectToken = asset
+                            currentAlert = null
+                            navController.navigate(AlertDestination.Edit.name)
+                        }
                     }
 
-                    count >= maxTotalAlerts -> {
-                        toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
-                    }
-
-                    else -> {
-                        toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
-                    }
-                }
+                }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             }
-
-        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+        }
     }
 
     private val multiSelectTokenListBottomSheetDialogFragment by lazy {
