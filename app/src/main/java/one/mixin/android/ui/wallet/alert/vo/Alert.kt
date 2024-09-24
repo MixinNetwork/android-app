@@ -1,11 +1,20 @@
 package one.mixin.android.ui.wallet.alert.vo
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PERCENTAGE_DECREASED
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PERCENTAGE_INCREASED
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_DECREASED
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_INCREASED
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -64,4 +73,30 @@ class Alert(
                 }
             }
         }
+
+    @Composable
+    fun getTintColor(quoteColorPref: Boolean): Color {
+        return if (status == AlertStatus.RUNNING) {
+            return when (type) {
+                PRICE_REACHED -> Color.Unspecified
+                PRICE_INCREASED, PERCENTAGE_INCREASED -> {
+                    if (quoteColorPref) {
+                        MixinAppTheme.colors.walletRed
+                    } else {
+                        MixinAppTheme.colors.walletGreen
+                    }
+                }
+
+                PRICE_DECREASED, PERCENTAGE_DECREASED -> {
+                    if (quoteColorPref) {
+                        MixinAppTheme.colors.walletGreen
+                    } else {
+                        MixinAppTheme.colors.walletRed
+                    }
+                }
+            }
+        } else {
+            MixinAppTheme.colors.textAssist
+        }
+    }
 }

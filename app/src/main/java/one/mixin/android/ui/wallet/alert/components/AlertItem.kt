@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -30,8 +31,10 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
@@ -43,6 +46,9 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
     var loading by remember { mutableStateOf(false) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     Box {
         ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
             val (starIcon, endIcon, title, subtitle) = createRefs()
@@ -57,7 +63,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
                     .wrapContentSize(),
                 painter = painterResource(id = alert.type.getIconResId()),
                 contentDescription = null,
-                tint = if (alert.status == AlertStatus.RUNNING) Color.Unspecified else MixinAppTheme.colors.textAssist,
+                tint = alert.getTintColor(quoteColorPref),
             )
 
             Text(
