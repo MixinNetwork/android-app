@@ -1211,4 +1211,11 @@ class TokenRepository
 
     fun updateAlert(alertId: String, type: String, value: String, frequency: String) = alertDao.updateAlert(alertId, type, value, frequency)
 
+    fun getTotalAlertCount(): Int {
+        return alertDao.getTotalAlertCount()
+    }
+
+    fun getAlertCountByAssetId(assetId: String): Int {
+        return alertDao.getAlertCountByAssetId(assetId)
+    }
 }

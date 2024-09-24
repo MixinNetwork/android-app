@@ -17,10 +17,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
@@ -35,6 +39,10 @@ import timber.log.Timber
 class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AlertFragment"
+
+        const val maxTotalAlerts = 100
+        const val maxAlertsPerAsset = 10
+
         fun newInstance(): AlertFragment {
             return AlertFragment()
         }
@@ -94,29 +102,13 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                         },
                     ) {
                         composable(AlertDestination.Content.name) {
-                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { navigateUp(navController) }, to = { onAddAlert(navController) }, onAction = { action, alert ->
-                                when (action) {
-                                    AlertAction.EDIT -> {
-                                        lifecycleScope.launch {
-                                            val token = alertViewModel.simpleAssetItem(alert.assetId)
-                                            if (token != null) {
-                                                selectToken = token
-                                                currentAlert = alert
-                                                navController.navigate(AlertDestination.Edit.name)
-                                            }
-                                        }
-                                    }
-
-                                    AlertAction.RESUME -> {
-                                        // Todo
-                                    }
-
-                                    AlertAction.PAUSE -> {
-                                        // Todo
-                                    }
-
-                                    AlertAction.DELETE -> {
-                                        // Todo
+                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { navigateUp(navController) }, to = { onAddAlert(navController) }, onEdit = { alert ->
+                                lifecycleScope.launch {
+                                    val token = alertViewModel.simpleAssetItem(alert.assetId)
+                                    if (token != null) {
+                                        selectToken = token
+                                        currentAlert = alert
+                                        navController.navigate(AlertDestination.Edit.name)
                                     }
                                 }
                             })
@@ -133,9 +125,27 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
 
     private fun onAddAlert(navController: NavHostController) {
         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
-            selectToken = asset
-            currentAlert = null
-            navController.navigate(AlertDestination.Edit.name)
+            lifecycleScope.launch {
+                val count = withContext(Dispatchers.IO){
+                    alertViewModel.checkCount(asset.assetId)
+                }
+                when {
+                    count < maxAlertsPerAsset -> {
+                        selectToken = asset
+                        currentAlert = null
+                        navController.navigate(AlertDestination.Edit.name)
+                    }
+
+                    count >= maxTotalAlerts -> {
+                        toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
+                    }
+
+                    else -> {
+                        toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
+                    }
+                }
+            }
+
         }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
     }
 

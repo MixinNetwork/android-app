@@ -26,4 +26,10 @@ interface AlertDao : BaseDao<Alert> {
 
     @Query("DELETE FROM market_alerts WHERE alert_id = :alertId")
     fun deleteAlertById(alertId: String)
+
+    @Query("SELECT COUNT(*) FROM market_alerts")
+    fun getTotalAlertCount(): Int
+      
+    @Query("SELECT COUNT(*) FROM market_alerts WHERE asset_id = :assetId")
+    fun getAlertCountByAssetId(assetId: String): Int
 }

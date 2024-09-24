@@ -8,6 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxAlertsPerAsset
+import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxTotalAlerts
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
@@ -37,6 +39,16 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
             }
         }
         return r
+    }
+
+    private fun getTotalAlertCount(): Int = tokenRepository.getTotalAlertCount()
+
+    private fun getAlertCountByAssetId(assetId: String): Int = tokenRepository.getAlertCountByAssetId(assetId)
+
+    fun checkCount(assetId: String): Int {
+        return if (getTotalAlertCount() >= maxTotalAlerts) maxTotalAlerts
+        else if (getAlertCountByAssetId(assetId) >= maxAlertsPerAsset) maxAlertsPerAsset
+        else 0
     }
 
     suspend fun updateAlert(alertId: String, action: AlertAction) {

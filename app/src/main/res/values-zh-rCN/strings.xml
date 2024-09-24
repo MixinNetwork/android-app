@@ -1663,4 +1663,8 @@
     <string name="Resume">恢复</string>
     <string name="Edit">编辑</string>
     <string name="price_alert_notification_permission">价格预警需要开启通知权限</string>
+    <string name="price_in_currency">价格（%1$s）</string>
+    <string name="Paused">已暂停</string>
+    <string name="alert_limit_exceeded">所有币种的价格提醒总数不得超过%1$d。</string>
+    <string name="alert_per_asset_limit_exceeded">每个交易对最多可创建%1$d个价格提醒。</string>
 </resources>

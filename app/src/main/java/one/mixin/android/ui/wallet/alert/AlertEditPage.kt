@@ -173,7 +173,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             ) {
                                 Text(
                                     text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                        "${stringResource(R.string.Price)} (USD)"
+                                        stringResource(R.string.price_in_currency, "USD")
                                     } else {
                                         stringResource(R.string.Value)
                                     }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist

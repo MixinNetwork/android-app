@@ -32,16 +32,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
-import one.mixin.android.ui.wallet.alert.vo.AlertType
-import java.math.BigDecimal
 
 @Composable
-fun AlertItem(alert: Alert, onEdit: (AlertAction, Alert) -> Unit) {
+fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     val viewModel = hiltViewModel<AlertViewModel>()
@@ -49,6 +46,7 @@ fun AlertItem(alert: Alert, onEdit: (AlertAction, Alert) -> Unit) {
     Box {
         ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
             val (starIcon, endIcon, title, subtitle) = createRefs()
+
             Icon(
                 modifier = Modifier
                     .constrainAs(starIcon) {
@@ -59,8 +57,9 @@ fun AlertItem(alert: Alert, onEdit: (AlertAction, Alert) -> Unit) {
                     .wrapContentSize(),
                 painter = painterResource(id = alert.type.getIconResId()),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = if (alert.status == AlertStatus.RUNNING) Color.Unspecified else MixinAppTheme.colors.textAssist,
             )
+
             Text(
                 alert.displayValue, modifier = Modifier.constrainAs(title) {
                     top.linkTo(endIcon.top)
@@ -69,87 +68,83 @@ fun AlertItem(alert: Alert, onEdit: (AlertAction, Alert) -> Unit) {
                 }, style = TextStyle(
                     fontSize = 14.sp,
                     lineHeight = 14.sp
-                ), color = MixinAppTheme.colors.textPrimary
+                ), color = if (alert.status == AlertStatus.RUNNING) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textAssist
             )
-            if (loading) {
-                Box(modifier = Modifier
-                    .constrainAs(endIcon) {
-                        top.linkTo(parent.top)
-                        end.linkTo(parent.end)
-                    }) {
 
-                }
-            } else {
-                Box(modifier = Modifier
-                    .constrainAs(endIcon) {
-                        top.linkTo(parent.top)
-                        end.linkTo(parent.end)
-                    }) {
-                    if (loading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MixinAppTheme.colors.accent,
-                        )
-                    } else {
-                        Icon(
-                            modifier = Modifier
-                                .wrapContentSize()
-                                .clickable {
-                                    expanded = true
-                                },
-                            painter = painterResource(id = R.drawable.ic_alert_more),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                        )
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                        ) {
-                            AlertAction.entries.forEach { action ->
-                                val currentStatus = alert.status
-                                if (currentStatus == AlertStatus.RUNNING && action == AlertAction.RESUME) {
-                                    return@forEach
-                                } else if (currentStatus == AlertStatus.PAUSED && action == AlertAction.PAUSE) {
-                                    return@forEach
-                                }
-                                DropdownMenuItem(onClick = {
-                                    expanded = false
-                                    coroutineScope.launch {
-                                        when (action) {
-                                            AlertAction.EDIT -> onEdit(action, alert)
-                                            else -> {
-                                                loading = true
-                                                viewModel.updateAlert(alert.alertId, action)
-                                                loading = false
-                                            }
+            Box(modifier = Modifier
+                .constrainAs(endIcon) {
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                }) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MixinAppTheme.colors.accent,
+                    )
+                } else {
+                    Icon(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .clickable {
+                                expanded = true
+                            },
+                        painter = painterResource(id = R.drawable.ic_alert_more),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                    ) {
+                        AlertAction.entries.forEach { action ->
+                            val currentStatus = alert.status
+                            if (currentStatus == AlertStatus.RUNNING && action == AlertAction.RESUME) {
+                                return@forEach
+                            } else if (currentStatus in listOf(AlertStatus.PAUSED, AlertStatus.UNKNOWN) && action == AlertAction.PAUSE) {
+                                return@forEach
+                            }
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+                                coroutineScope.launch {
+                                    when (action) {
+                                        AlertAction.EDIT -> onEdit(alert)
+                                        else -> {
+                                            loading = true
+                                            viewModel.updateAlert(alert.alertId, action)
+                                            loading = false
                                         }
                                     }
-                                }) {
-                                    Row(
-                                        modifier = Modifier.width(200.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(text = stringResource(action.getStringResId()))
-                                        Icon(
-                                            painter = painterResource(id = action.getIconResId()),
-                                            contentDescription = null,
-                                            modifier = Modifier.wrapContentSize(),
-                                            tint = Color.Unspecified,
-                                        )
-                                    }
+                                }
+                            }) {
+                                Row(
+                                    modifier = Modifier.width(200.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = stringResource(action.getStringResId()))
+                                    Icon(
+                                        painter = painterResource(id = action.getIconResId()),
+                                        contentDescription = null,
+                                        modifier = Modifier.wrapContentSize(),
+                                        tint = Color.Unspecified,
+                                    )
                                 }
                             }
                         }
                     }
                 }
-                Text(
-                    stringResource(alert.frequency.getStringResId()), modifier = Modifier.constrainAs(subtitle) {
-                        top.linkTo(title.bottom, margin = 4.dp)
-                        start.linkTo(title.start)
-                    }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
-                )
             }
+
+            Text(
+                if (alert.status == AlertStatus.RUNNING) {
+                    stringResource(alert.frequency.getStringResId())
+                } else {
+                    stringResource(R.string.Paused)
+                }, modifier = Modifier.constrainAs(subtitle) {
+                    top.linkTo(title.bottom, margin = 4.dp)
+                    start.linkTo(title.start)
+                }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
+            )
         }
     }
 }

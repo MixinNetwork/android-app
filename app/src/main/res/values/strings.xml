@@ -1703,4 +1703,8 @@
     <string name="Resume">Resume</string>
     <string name="Edit">Edit</string>
     <string name="price_alert_notification_permission">Price alerts require notification permission to be enabled.</string>
+    <string name="price_in_currency">Price (%1$s)</string>
+    <string name="Paused">Paused</string>
+    <string name="alert_limit_exceeded">The total number of price alerts for all currencies cannot exceed %1$d.</string>
+    <string name="alert_per_asset_limit_exceeded">You can create a maximum of %1$d price alerts for each trading pair.</string>
 </resources>

@@ -39,7 +39,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onAction: (AlertAction, Alert) -> Unit) {
+fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onEdit: (Alert) -> Unit) {
     val viewModel = hiltViewModel<AlertViewModel>()
     var alertGroups by remember { mutableStateOf(emptyList<AlertGroup>()) }
 
@@ -99,42 +99,39 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                 }
             }
         } else {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AssetFilter(assets, openFilter)
+                TextButton(
+                    onClick = to,
+                    modifier = Modifier.wrapContentSize(),
+                ) {
+                    Image(
+                        modifier = Modifier.size(18.dp),
+                        painter = painterResource(R.drawable.ic_alert_add),
+                        contentDescription = null,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
                     .fillMaxSize()
             ) {
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        AssetFilter(assets, openFilter)
-                        TextButton(
-                            onClick = to,
-                            modifier = Modifier.wrapContentSize(),
-                        ) {
-                            Image(
-                                modifier = Modifier.size(18.dp),
-                                painter = painterResource(R.drawable.ic_alert_add),
-                                contentDescription = null,
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.Add_Alert), color = Color(0xFF3D75E3)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
                 items(alertGroups.size) { index ->
                     val group = alertGroups[index]
                     if (index!=0) {
                         Spacer(modifier = Modifier.height(2.dp))
                     }
-                    AlertGroupItem(group, index == 0, onEdit = onAction)
+                    AlertGroupItem(group, index == 0, onEdit = onEdit)
                 }
             }
         }
