@@ -37,6 +37,7 @@ import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
+import one.mixin.android.ui.wallet.alert.vo.AlertType
 import java.math.BigDecimal
 
 @Composable
@@ -61,7 +62,7 @@ fun AlertItem(alert: Alert, onEdit: (AlertAction, Alert) -> Unit) {
                 tint = Color.Unspecified,
             )
             Text(
-                "${BigDecimal(alert.value).priceFormat()} USD", modifier = Modifier.constrainAs(title) {
+                alert.displayValue, modifier = Modifier.constrainAs(title) {
                     top.linkTo(endIcon.top)
                     bottom.linkTo(endIcon.bottom)
                     linkTo(starIcon.end, endIcon.start, startMargin = 10.dp, endMargin = 10.dp, bias = 0f)

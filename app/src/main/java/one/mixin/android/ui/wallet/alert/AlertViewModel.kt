@@ -32,7 +32,9 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
     suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
         val r = tokenRepository.updateAlert(alertId, "update", request)
         if (r?.isSuccess == true) {
-            tokenRepository.updateAlert(alertId, request.type, request.value, request.frequency)
+            viewModelScope.launch(Dispatchers.IO) {
+                tokenRepository.updateAlert(alertId, request.type, request.value, request.frequency)
+            }
         }
         return r
     }

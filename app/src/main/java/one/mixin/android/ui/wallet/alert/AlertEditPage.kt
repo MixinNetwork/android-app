@@ -105,7 +105,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
             if (token != null) {
                 val context = LocalContext.current
                 val currentPrice = BigDecimal(token.priceUsd)
-                var alertPrice by remember { mutableStateOf(alert?.value ?: currentPrice.toPlainString()) }
+                var alertPrice by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
                 val maxPrice = currentPrice.multiply(BigDecimal(100))
                 val minPrice = currentPrice.divide(BigDecimal(100))
                 val focusManager = LocalFocusManager.current
@@ -215,21 +215,20 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                 inputError = null
                                             }
                                         } else {
+                                            val newPercentage = newValue.replace("%", "").toBigDecimalOrNull()
                                             if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
-                                                val newPercentage = newValue.toBigDecimalOrNull()
                                                 if (newPercentage != null) {
                                                     val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("1000"))
-                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).toPlainString()
+                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString() + "%"
                                                     inputError = null
                                                 } else {
                                                     alertPrice = ""
                                                     inputError = null
                                                 }
                                             } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
-                                                val newPercentage = newValue.toBigDecimalOrNull()
                                                 if (newPercentage != null) {
                                                     val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("99"))
-                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).toPlainString()
+                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString() + "%"
                                                     inputError = null
                                                 } else {
                                                     alertPrice = ""
@@ -278,9 +277,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
-                        PercentagesRow(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp), selectedAlertType) { percentage ->
+                        PercentagesRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp), selectedAlertType
+                        ) { percentage ->
                             if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                 val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
                                 alertPrice = newPrice.priceFormat()
@@ -321,28 +322,36 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                 if (alert != null) {
                                     val alertRequest = AlertUpdateRequest(
                                         type = selectedAlertType.value,
-                                        value = alertPrice.replace(",", ""),
+                                        value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
+                                            alertPrice.let {
+                                                (it.replace("%", "").toFloat() / 100f).toString()
+                                            }
+                                        } else {
+                                            alertPrice.replace(",", "")
+                                        },
                                         frequency = selectedAlertFrequency.value,
                                     )
                                     val re = viewModel.updateAlert(alert.alertId, alertRequest)
                                     if (re?.isSuccess == true) {
                                         pop.invoke()
-                                    } else {
-                                        toast(re?.errorDescription?: context.getString(R.string.Unknown))
                                     }
                                 } else {
                                     val alertRequest = AlertRequest(
                                         assetId = token.assetId,
                                         type = selectedAlertType.value,
-                                        value = alertPrice.replace(",", ""),
+                                        value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
+                                            alertPrice.let {
+                                                (it.replace("%", "").toFloat() / 100f).toString()
+                                            }
+                                        } else {
+                                            alertPrice.replace(",", "")
+                                        },
                                         frequency = selectedAlertFrequency.value,
                                         lang = Locale.getDefault().language,
                                     )
                                     val re = viewModel.add(alertRequest)
                                     if (re?.isSuccess == true) {
                                         pop.invoke()
-                                    } else {
-                                        toast(re?.errorDescription?: context.getString(R.string.Unknown))
                                     }
                                 }
                                 isLoading = false

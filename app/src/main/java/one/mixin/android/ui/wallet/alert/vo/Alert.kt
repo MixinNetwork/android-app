@@ -5,6 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.extension.priceFormat
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Entity("market_alerts")
 @TypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class, AlertStatusConverter::class)
@@ -31,4 +34,34 @@ class Alert(
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
     val createdAt: String
-)
+) {
+    val displayValue: String
+        get() {
+            return when (type) {
+                in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_INCREASED, AlertType.PRICE_DECREASED) -> {
+                    "${BigDecimal(value).priceFormat()} USD"
+                }
+
+                AlertType.PERCENTAGE_INCREASED -> {
+                    "+${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
+                }
+
+                else -> {
+                    "-${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
+                }
+            }
+        }
+
+    val rawValue: String
+        get() {
+            return when (type) {
+                in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_INCREASED, AlertType.PRICE_DECREASED) -> {
+                    value
+                }
+
+                else -> {
+                    (value.toFloat() * 100f).toString()
+                }
+            }
+        }
+}
