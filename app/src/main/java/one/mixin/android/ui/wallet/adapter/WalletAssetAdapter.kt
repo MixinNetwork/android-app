@@ -15,6 +15,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
@@ -113,9 +114,8 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
                 binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
-                    val isPositive = changeUsd > BigDecimal.ZERO
-                    binding.changeTv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                    val isRising = changeUsd >= BigDecimal.ZERO
+                    binding.changeTv.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
                 }
             }
             binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)

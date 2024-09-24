@@ -32,8 +32,8 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
@@ -112,7 +112,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
         val changeUsd = BigDecimal(asset.changeUsd)
-        val isPositive = changeUsd > BigDecimal.ZERO
+        val isRising = changeUsd >= BigDecimal.ZERO
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -151,8 +151,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 rise.text = "0.00%"
             } else {
                 if (asset.changeUsd.isNotEmpty()) {
-                    rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                    rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
                 }
             }
             transactionsTitleLl.setOnClickListener {
@@ -240,7 +239,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         ) { assetItem ->
             assetItem?.let {
                 asset = it
-                bindHeader(isPositive)
+                bindHeader(isRising)
             }
         }
 
@@ -351,7 +350,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         )
     }
 
-    private fun bindHeader(isPositive: Boolean) {
+    private fun bindHeader(isRising: Boolean) {
         binding.apply {
             if (asset.collectionHash.isNullOrEmpty()) {
                 topRl.setOnClickListener {

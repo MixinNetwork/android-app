@@ -12,6 +12,7 @@ import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
@@ -134,9 +135,8 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
             binding.priceTv.text = "${Fiats.getSymbol()}${priceFiat.priceFormat()}"
             if (changeUsd.isNotEmpty()) {
                 val bigChangeUsd = BigDecimal(changeUsd)
-                val isPositive = bigChangeUsd > BigDecimal.ZERO
-                binding.changeTv.text = "${(bigChangeUsd * BigDecimal(100)).numberFormat2()}%"
-                binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                val isRising = bigChangeUsd >= BigDecimal.ZERO
+                binding.changeTv.setQuoteText("${(bigChangeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
             }
         }
     }

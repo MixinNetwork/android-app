@@ -28,6 +28,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
@@ -215,22 +216,20 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         priceRise.text = getString(R.string.N_A)
                     } else {
-                        priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
-                        currentRise = String.format("%.2f%%", percentageChange)
+                        priceRise.setQuoteText(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
                         priceRise.text = currentRise
                     }
                 }, { price, percentageChange ->
                     if (price == null) {
                         priceRise.text = currentRise
                         priceValue.text = currentPrice
-                        priceRise.textColorResource = if (currentRise?.startsWith("-") == true) R.color.wallet_pink else R.color.wallet_green
+                        priceRise.setQuoteText(currentRise, currentRise?.startsWith("-") == true)
                     } else {
                         priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
                             priceRise.text = ""
                         } else {
-                            priceRise.textColorResource = if (percentageChange >= 0f) R.color.wallet_green else R.color.wallet_pink
-                            priceRise.text = String.format("%.2f%%", percentageChange)
+                            priceRise.setQuoteText(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
                         }
                     }
                 }, { loading -> isLoading = loading })
@@ -337,7 +336,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     @SuppressLint("SetTextI18n")
     private fun loadBalance(marketItem: MarketItem) {
         val changeUsd = BigDecimal(marketItem.priceChange24h)
-        val isPositive = changeUsd > BigDecimal.ZERO
+        val isPositive = changeUsd >= BigDecimal.ZERO
         binding.apply {
             lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                 Timber.e(error)
@@ -363,9 +362,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
                         currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                         priceRise.text = currentRise
-                        balanceChange.text = "${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)"
-                        balanceChange.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-                        priceRise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                        priceRise.setQuoteText(currentRise, isPositive)
+                        balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)", isPositive)
                         riseTitle.isVisible = true
                     } else {
                         balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))

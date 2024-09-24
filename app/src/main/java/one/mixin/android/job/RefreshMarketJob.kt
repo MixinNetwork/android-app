@@ -25,7 +25,7 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
                     it
                 }
                 marketDao.insert(market)
-                marketCoinDao.insertIgnoreList(it.assetIds?.map { assetId ->
+                marketCoinDao.insertList(it.assetIds?.map { assetId ->
                     MarketCoin(
                         coinId = it.coinId,
                         assetId = assetId,
