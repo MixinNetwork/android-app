@@ -47,7 +47,7 @@ class Alert(
     val displayValue: String
         get() {
             return when (type) {
-                in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_INCREASED, AlertType.PRICE_DECREASED) -> {
+                in listOf(PRICE_REACHED, PRICE_INCREASED, PRICE_DECREASED) -> {
                     "${BigDecimal(value).priceFormat()} USD"
                 }
 
@@ -64,12 +64,12 @@ class Alert(
     val rawValue: String
         get() {
             return when (type) {
-                in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_INCREASED, AlertType.PRICE_DECREASED) -> {
+                in listOf(PRICE_REACHED, PRICE_INCREASED, PRICE_DECREASED) -> {
                     value
                 }
 
                 else -> {
-                    (value.toFloat() * 100f).toString()
+                    "${(value.toFloat() * 100f)}%"
                 }
             }
         }

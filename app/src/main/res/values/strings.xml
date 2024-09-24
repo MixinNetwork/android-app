@@ -1715,4 +1715,8 @@
     <string name="error_below_min_price">The price is below the minimum allowed value.</string>
     <string name="error_must_be_less_than_current_price">The price must be less than the current price.</string>
     <string name="error_must_be_greater_than_current_price">The price must be greater than the current price.</string>
+    <string name="error_increase_too_high">The increase percentage cannot exceed 1000%.</string>
+    <string name="error_increase_too_low">The increase percentage must be at least 0.01%.</string>
+    <string name="error_decrease_too_high">The decrease percentage cannot exceed -99.99%.</string>
+    <string name="error_decrease_too_low">The decrease percentage must be at least -0.01%.</string>
 </resources>

@@ -101,7 +101,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
             if (token != null) {
                 val context = LocalContext.current
                 val currentPrice = BigDecimal(token.priceUsd)
-                var alertPrice by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
+                var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
                 val maxPrice = currentPrice.multiply(BigDecimal(100))
                 val minPrice = currentPrice.divide(BigDecimal(100))
                 val focusManager = LocalFocusManager.current
@@ -109,7 +109,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                 var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
                 var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
                 var isLoading by remember { mutableStateOf(false) }
-                var inputError by remember { mutableStateOf(if (alertPrice.toBigDecimalOrNull() == currentPrice) InputError.EQUALS_CURRENT_PRICE else null) }
+                var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice) InputError.EQUALS_CURRENT_PRICE else null) }
                 val viewModel = hiltViewModel<AlertViewModel>()
                 val coroutineScope = rememberCoroutineScope()
 
@@ -145,7 +145,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
 
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
                             if (selectedAlertType != newType) {
-                                alertPrice = if (newType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                alertValue = if (newType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                     inputError = InputError.EQUALS_CURRENT_PRICE
                                     currentPrice.toPlainString()
                                 } else {
@@ -183,12 +183,12 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
 
                                 Spacer(modifier = Modifier.height(10.dp))
                                 BasicTextField(
-                                    value = alertPrice,
+                                    value = alertValue,
                                     onValueChange = { newValue ->
                                         if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                             val newPrice = newValue.replace(",", "").toBigDecimalOrNull()
                                             if (newPrice != null) {
-                                                alertPrice = newPrice.toPlainString().let {
+                                                alertValue = newPrice.toPlainString().let {
                                                     if (newValue.endsWith(".")) {
                                                         "$it."
                                                     } else {
@@ -209,11 +209,16 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                     null
                                                 }
                                             } else {
-                                                alertPrice = ""
+                                                alertValue = ""
                                                 inputError = null
                                             }
                                         } else {
-                                            var dot:Boolean
+                                            if (newValue.replace("%", "") == "0.0") {
+                                                alertValue = "0.0"
+                                                inputError = null
+                                                return@BasicTextField
+                                            }
+                                            var dot: Boolean
                                             val newPercentage = newValue.replace("%", "").let {
                                                 if (it.endsWith(".")) {
                                                     dot = true
@@ -225,32 +230,44 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                             }.toBigDecimalOrNull()
                                             if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
                                                 if (newPercentage != null) {
-                                                    val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("1000"))
-                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString().let {
+                                                    val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
+                                                    alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
                                                         if (dot) {
                                                             "$it.%"
                                                         } else {
                                                             "$it%"
                                                         }
                                                     }
-                                                    inputError = null
+                                                    inputError = if (adjustedPercentage.toFloat() > 1000f) {
+                                                        InputError.INCREASE_TOO_HIGH
+                                                    } else if (adjustedPercentage.toFloat() < 0.01f) {
+                                                        InputError.INCREASE_TOO_LOW
+                                                    } else {
+                                                        null
+                                                    }
                                                 } else {
-                                                    alertPrice = ""
+                                                    alertValue = ""
                                                     inputError = null
                                                 }
                                             } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
                                                 if (newPercentage != null) {
-                                                    val adjustedPercentage = newPercentage.coerceIn(BigDecimal("0.01"), BigDecimal("99.99"))
-                                                    alertPrice = adjustedPercentage.setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString().let {
+                                                    val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
+                                                    alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
                                                         if (dot) {
                                                             "$it.%"
                                                         } else {
                                                             "$it%"
                                                         }
                                                     }
-                                                    inputError = null
+                                                    inputError = if (adjustedPercentage.toFloat() > 99.99f) {
+                                                        InputError.DECREASE_TOO_HIGH
+                                                    } else if (adjustedPercentage.toFloat() < 0.01f) {
+                                                        InputError.DECREASE_TOO_LOW
+                                                    } else {
+                                                        null
+                                                    }
                                                 } else {
-                                                    alertPrice = ""
+                                                    alertValue = ""
                                                     inputError = null
                                                 }
                                             }
@@ -274,7 +291,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                         textAlign = TextAlign.Start,
                                     ),
                                     decorationBox = { innerTextField ->
-                                        if (alertPrice.isEmpty()) {
+                                        if (alertValue.isEmpty()) {
                                             Text(
                                                 if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                                     "0.00"
@@ -302,6 +319,10 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                         InputError.BELOW_MIN_PRICE -> stringResource(R.string.error_below_min_price)
                                         InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_less_than_current_price)
                                         InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_greater_than_current_price)
+                                        InputError.INCREASE_TOO_HIGH -> stringResource(R.string.error_increase_too_high)
+                                        InputError.INCREASE_TOO_LOW -> stringResource(R.string.error_increase_too_low)
+                                        InputError.DECREASE_TOO_HIGH -> stringResource(R.string.error_decrease_too_high)
+                                        InputError.DECREASE_TOO_LOW -> stringResource(R.string.error_decrease_too_low)
                                         else -> ""
                                     },
                                     color = Color(0xFFDB454F),
@@ -319,16 +340,16 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         ) { percentage ->
                             if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                 val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
-                                alertPrice = newPrice.toPlainString()
+                                alertValue = newPrice.toPlainString()
                                 inputError = null
                             } else {
-                                alertPrice = when (percentage) {
-                                    0.2f -> "20"
-                                    0.1f -> "10"
-                                    0.05f -> "5"
-                                    -0.05f -> "5"
-                                    -0.1f -> "10"
-                                    else -> "20"
+                                alertValue = when (percentage) {
+                                    0.2f -> "20%"
+                                    0.1f -> "10%"
+                                    0.05f -> "5%"
+                                    -0.05f -> "5%"
+                                    -0.1f -> "10%"
+                                    else -> "20%"
                                 }
                                 inputError = null
                             }
@@ -343,11 +364,14 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
 
                     Spacer(modifier = Modifier.height(28.dp))
 
+                    val enable = inputError == null &&
+                        alertValue.isNotBlank() &&
+                        (alertValue.replace("%", "").toBigDecimalOrNull() ?: BigDecimal.ZERO).compareTo(BigDecimal.ZERO) != 0
                     Button(
                         modifier = Modifier
                             .height(48.dp)
                             .align(alignment = Alignment.CenterHorizontally),
-                        enabled = !isLoading && !(inputError != null || alertPrice.isBlank()),
+                        enabled = !isLoading && enable,
                         onClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
@@ -358,11 +382,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     val alertRequest = AlertUpdateRequest(
                                         type = selectedAlertType.value,
                                         value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
-                                            alertPrice.let {
+                                            alertValue.let {
                                                 (it.replace("%", "").toFloat() / 100f).toString()
                                             }
                                         } else {
-                                            alertPrice.replace(",", "")
+                                            alertValue.replace(",", "")
                                         },
                                         frequency = selectedAlertFrequency.value,
                                     )
@@ -375,11 +399,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                         assetId = token.assetId,
                                         type = selectedAlertType.value,
                                         value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
-                                            alertPrice.let {
+                                            alertValue.let {
                                                 (it.replace("%", "").toFloat() / 100f).toString()
                                             }
                                         } else {
-                                            alertPrice.replace(",", "")
+                                            alertValue.replace(",", "")
                                         },
                                         frequency = selectedAlertFrequency.value,
                                         lang = Locale.getDefault().language,
@@ -394,7 +418,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
+                            backgroundColor = if (enable) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                         ),
                         shape = RoundedCornerShape(32.dp),
                         elevation = ButtonDefaults.elevation(
@@ -414,7 +438,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             Text(
                                 modifier = Modifier.alpha(if (isLoading) 0f else 1f),
                                 text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
-                                color = if (inputError != null || alertPrice.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                                color = if (enable) Color.White else MixinAppTheme.colors.textAssist,
                             )
                         }
                     }

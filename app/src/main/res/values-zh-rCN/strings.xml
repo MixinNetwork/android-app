@@ -1675,4 +1675,8 @@
     <string name="error_below_min_price">价格低于允许的最小值。</string>
     <string name="error_must_be_less_than_current_price">价格必须低于当前价格。</string>
     <string name="error_must_be_greater_than_current_price">价格必须高于当前价格。</string>
+    <string name="error_increase_too_high">涨幅不能超过1000%。</string>
+    <string name="error_increase_too_low">涨幅必须至少为0.01%。</string>
+    <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
+    <string name="error_decrease_too_low">跌幅必须至少为-0.01%。</string>
 </resources>
