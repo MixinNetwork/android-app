@@ -1,11 +1,17 @@
 package one.mixin.android.ui.wallet.alert
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.repository.TokenRepository
-import one.mixin.android.ui.wallet.alert.vo.AlertActionRquest
-import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.repository.TokenRepository
+import one.mixin.android.ui.wallet.alert.vo.AlertAction
+import one.mixin.android.ui.wallet.alert.vo.AlertRequest
+import one.mixin.android.ui.wallet.alert.vo.AlertStatus
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 
 @HiltViewModel
 class AlertViewModel
@@ -15,13 +21,53 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     suspend fun requestAlerts() = tokenRepository.requestAlerts()
 
-    suspend fun updateAlert(alert: AlertActionRquest) = tokenRepository.updateAlert(alert)
-
     fun alertGroups() = tokenRepository.alertGroups()
 
-    fun alertGroups(assetIds:List<String>) = tokenRepository.alertGroups(assetIds)
+    fun alertGroups(assetIds: List<String>) = tokenRepository.alertGroups(assetIds)
 
     fun alertsByAssetId(assetId: String) = tokenRepository.alertsByAssetId(assetId)
 
     suspend fun simpleAssetItem(assetId: String) = tokenRepository.simpleAssetItem(assetId)
+
+    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
+        val r = tokenRepository.updateAlert(alertId, "update", request)
+        if (r?.isSuccess == true) {
+            tokenRepository.updateAlert(alertId, request.type, request.value, request.frequency)
+        }
+        return r
+    }
+
+    suspend fun updateAlert(alertId: String, action: AlertAction) {
+        val r = tokenRepository.updateAlert(
+            alertId, action = when (action) {
+                AlertAction.DELETE -> "delete"
+                AlertAction.RESUME -> "resume"
+                AlertAction.PAUSE -> "pause"
+                AlertAction.EDIT -> ""
+            }
+        )
+        if (r?.isSuccess == true) {
+            when (action) {
+                AlertAction.DELETE -> {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        tokenRepository.deleteAlertById(alertId)
+                    }
+                }
+
+                AlertAction.RESUME -> {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        tokenRepository.updateAlertStatus(alertId, AlertStatus.RUNNING)
+                    }
+                }
+
+                AlertAction.PAUSE -> {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        tokenRepository.updateAlertStatus(alertId, AlertStatus.PAUSED)
+                    }
+                }
+
+                AlertAction.EDIT -> {}
+            }
+        }
+    }
 }

@@ -82,8 +82,10 @@ import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
-import one.mixin.android.ui.wallet.alert.vo.AlertActionRquest
+import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
+import one.mixin.android.ui.wallet.alert.vo.AlertStatus
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -1143,6 +1145,11 @@ class TokenRepository
         return requestRouteAPI(
             invokeNetwork = { routeService.addAlert(alert) },
             successBlock = { response ->
+                if (response.isSuccess) {
+                    withContext(Dispatchers.IO) {
+                        alertDao.insert(response.data!!)
+                    }
+                }
                 response
             },
             requestSession = {
@@ -1174,9 +1181,9 @@ class TokenRepository
 
     fun alertsByAssetId(assetId:String) = alertDao.alertsByAssetId(assetId)
 
-    suspend fun updateAlert(alert: AlertActionRquest): MixinResponse<Alert>? {
+    suspend fun updateAlert(alertId: String, action: String): MixinResponse<Unit>? {
         return requestRouteAPI(
-            invokeNetwork = { routeService.updateAlert(alert) },
+            invokeNetwork = { routeService.updateAlert(alertId, action) },
             successBlock = { response ->
                 response
             },
@@ -1185,4 +1192,23 @@ class TokenRepository
             }
         )
     }
+
+    suspend fun updateAlert(alertId: String, action: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.updateAlert(alertId, action, request) },
+            successBlock = { response ->
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
+
+    fun deleteAlertById(alertId: String) = alertDao.deleteAlertById(alertId)
+
+    fun updateAlertStatus(alertId: String, status: AlertStatus) = alertDao.updateStatus(alertId, status.value)
+
+    fun updateAlert(alertId: String, type: String, value: String, frequency: String) = alertDao.updateAlert(alertId, type, value, frequency)
+
 }

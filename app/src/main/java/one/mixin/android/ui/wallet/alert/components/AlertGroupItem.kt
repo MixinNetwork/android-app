@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +46,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import java.math.BigDecimal
 
 @Composable
-fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onAction:(AlertAction, Alert)->Unit) {
+fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (AlertAction, Alert) -> Unit) {
     var expand by remember { mutableStateOf(initiallyExpanded) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByAssetId(alertGroup.assetId).collectAsState(initial = emptyList())
@@ -115,7 +113,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onAction:
                         if (index != 0) {
                             Spacer(modifier = Modifier.height(10.dp))
                         }
-                        AlertItem(alert, onAction)
+                        AlertItem(alert, onEdit)
                     }
                 }
             }

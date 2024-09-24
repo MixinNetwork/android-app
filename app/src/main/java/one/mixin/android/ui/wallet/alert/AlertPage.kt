@@ -134,7 +134,7 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                     if (index!=0) {
                         Spacer(modifier = Modifier.height(2.dp))
                     }
-                    AlertGroupItem(group, index == 0, onAction = onAction)
+                    AlertGroupItem(group, index == 0, onEdit = onAction)
                 }
             }
         }

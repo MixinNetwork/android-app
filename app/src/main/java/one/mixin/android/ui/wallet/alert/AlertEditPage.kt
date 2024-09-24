@@ -62,6 +62,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
@@ -69,6 +70,7 @@ import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertType
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.alert.vo.InputError
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -313,19 +315,38 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         onClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
-                            val alertRequest = AlertRequest(
-                                assetId = token.assetId,
-                                type = selectedAlertType.value,
-                                value = alertPrice.replace(",", ""),
-                                frequency = selectedAlertFrequency.value,
-                                lang = Locale.getDefault().language,
-                            )
 
                             coroutineScope.launch {
                                 isLoading = true
-                                val re = viewModel.add(alertRequest)
+                                if (alert != null) {
+                                    val alertRequest = AlertUpdateRequest(
+                                        type = selectedAlertType.value,
+                                        value = alertPrice.replace(",", ""),
+                                        frequency = selectedAlertFrequency.value,
+                                    )
+                                    val re = viewModel.updateAlert(alert.alertId, alertRequest)
+                                    if (re?.isSuccess == true) {
+                                        pop.invoke()
+                                    } else {
+                                        toast(re?.errorDescription?: context.getString(R.string.Unknown))
+                                    }
+                                } else {
+                                    val alertRequest = AlertRequest(
+                                        assetId = token.assetId,
+                                        type = selectedAlertType.value,
+                                        value = alertPrice.replace(",", ""),
+                                        frequency = selectedAlertFrequency.value,
+                                        lang = Locale.getDefault().language,
+                                    )
+                                    val re = viewModel.add(alertRequest)
+                                    if (re?.isSuccess == true) {
+                                        pop.invoke()
+                                    } else {
+                                        toast(re?.errorDescription?: context.getString(R.string.Unknown))
+                                    }
+                                }
                                 isLoading = false
-                                Timber.e("${re?.data}")
+
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors(

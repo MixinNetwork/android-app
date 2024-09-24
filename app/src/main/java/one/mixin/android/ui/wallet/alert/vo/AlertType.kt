@@ -22,7 +22,7 @@ enum class AlertType(val value: String) {
     PERCENTAGE_DECREASED("percentage_decreased");
 
     @DrawableRes
-    fun getIconResId():Int {
+    fun getIconResId(): Int {
         return when (this) {
             PRICE_REACHED -> R.drawable.ic_reached
             PRICE_INCREASED -> R.drawable.ic_increased

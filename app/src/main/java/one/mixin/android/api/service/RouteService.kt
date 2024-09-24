@@ -24,8 +24,8 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.ui.wallet.alert.vo.Alert
-import one.mixin.android.ui.wallet.alert.vo.AlertActionRquest
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
@@ -205,6 +205,9 @@ interface RouteService {
     @GET("prices/alerts")
     suspend fun alerts():MixinResponse<List<Alert>>
 
-    @POST("prices/alerts/delete")
-    suspend fun updateAlert(@Body alert: AlertActionRquest):MixinResponse<Alert>
+    @POST("prices/alerts/{id}")
+    suspend fun updateAlert(@Path("id") alertId: String, @Query("action") action: String): MixinResponse<Unit>
+
+    @POST("prices/alerts/{id}")
+    suspend fun updateAlert(@Path("id") alertId: String, @Query("action") action: String, @Body request: AlertUpdateRequest): MixinResponse<Unit>
 }

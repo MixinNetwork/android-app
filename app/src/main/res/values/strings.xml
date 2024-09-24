@@ -1696,10 +1696,9 @@
     <string name="alert_type_price_decreased">Price Decreased</string>
     <string name="alert_type_percentage_increased">Percentage Increased</string>
     <string name="alert_type_percentage_decreased">Percentage Decreased</string>
-    <string name="alert_frequency_every">Every</string>
-    <string name="alert_frequency_daily">Daily</string>
-    <string name="alert_frequency_once">Once</string>
-    <string name="Enter_price">Enter price</string>
+    <string name="alert_frequency_every">Continuously</string>
+    <string name="alert_frequency_daily">Once a day</string>
+    <string name="alert_frequency_once">Only once</string>
     <string name="Value">Value</string>
     <string name="Resume">Resume</string>
     <string name="Edit">Edit</string>

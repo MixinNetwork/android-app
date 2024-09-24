@@ -10,5 +10,5 @@ class AlertGroup(
     @ColumnInfo("name")
     val name: String,
     @ColumnInfo("price_usd")
-    val priceUsd:String
+    val priceUsd: String
 )

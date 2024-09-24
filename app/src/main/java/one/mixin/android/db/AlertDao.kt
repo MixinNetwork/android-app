@@ -17,4 +17,13 @@ interface AlertDao : BaseDao<Alert> {
 
     @Query("SELECT * FROM market_alerts WHERE asset_id = :assetId")
     fun alertsByAssetId(assetId:String):Flow<List<Alert>>
+
+    @Query("UPDATE market_alerts SET status = :status WHERE alert_id = :alertId")
+    fun updateStatus(alertId: String, status: String)
+
+    @Query("UPDATE market_alerts SET type=:type, value = :value, frequency =:frequency WHERE alert_id = :alertId")
+    fun updateAlert(alertId: String, type: String, value: String, frequency: String)
+
+    @Query("DELETE FROM market_alerts WHERE alert_id = :alertId")
+    fun deleteAlertById(alertId: String)
 }
