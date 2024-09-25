@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.repository.TokenRepository
-import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxAlertsPerAsset
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxTotalAlerts
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest

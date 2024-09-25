@@ -90,7 +90,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
                 } else {
                     Icon(
                         modifier = Modifier
-                            .wrapContentSize()
+                            .size(24.dp)
                             .clickable {
                                 expanded = true
                             },

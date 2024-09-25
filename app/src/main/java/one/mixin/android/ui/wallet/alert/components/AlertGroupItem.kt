@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.alert.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -82,11 +83,10 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
 
-
                 Text(modifier = Modifier.constrainAs(title) {
                     top.linkTo(starIcon.top)
                     start.linkTo(starIcon.end, 10.dp)
-                }, text = alertGroup.name, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
+                }, text = alertGroup.name, fontSize = 16.sp, lineHeight = 16.sp, color = MixinAppTheme.colors.textPrimary)
 
                 Text(
                     modifier = Modifier.constrainAs(subtitle) {
@@ -94,20 +94,20 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                         bottom.linkTo(starIcon.bottom)
                     }, text = stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd).priceFormat()} USD"),
                     fontSize = 13.sp,
+                    lineHeight = 13.sp,
                     color = MixinAppTheme.colors.textAssist
                 )
-
                 Icon(
                     modifier = Modifier
-                        .wrapContentSize()
                         .graphicsLayer(rotationZ = rotationState)
                         .constrainAs(endIcon) {
                             top.linkTo(starIcon.top)
                             end.linkTo(parent.end)
                             bottom.linkTo(starIcon.bottom)
                         }
+                        .wrapContentSize()
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
-                    painter = painterResource(id = R.drawable.ic_sort_arrow_down),
+                    painter = painterResource(id = R.drawable.ic_alert_arrow_down),
                     contentDescription = null,
                     tint = Color.Unspecified,
                 )

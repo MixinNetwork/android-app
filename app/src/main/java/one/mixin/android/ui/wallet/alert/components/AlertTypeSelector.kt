@@ -62,15 +62,14 @@ fun AlertTypeSelector(selectedType: AlertType, onTypeSelected: (AlertType) -> Un
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
-                Text(text = stringResource(R.string.Alert_Frequency), fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                Text(text = stringResource(R.string.Alert_Type), fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = stringResource(id = selectedType.getStringResId()), color = MixinAppTheme.colors.textPrimary)
             }
             Box {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_sort_arrow_down),
+                    painter = painterResource(id = R.drawable.ic_alert_arrow_down),
                     contentDescription = null,
-                    modifier = Modifier.padding(start = 8.dp)
                 )
                 DropdownMenu(
                     expanded = expanded,

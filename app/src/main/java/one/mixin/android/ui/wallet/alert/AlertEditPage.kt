@@ -109,7 +109,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                 var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
                 var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
                 var isLoading by remember { mutableStateOf(false) }
-                var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice) InputError.EQUALS_CURRENT_PRICE else null) }
+                var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
                 val viewModel = hiltViewModel<AlertViewModel>()
                 val coroutineScope = rememberCoroutineScope()
 
@@ -146,7 +146,11 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
                             if (selectedAlertType != newType) {
                                 alertValue = if (newType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                    inputError = InputError.EQUALS_CURRENT_PRICE
+                                    inputError = if (newType != AlertType.PRICE_REACHED) {
+                                        InputError.EQUALS_CURRENT_PRICE
+                                    } else {
+                                        null
+                                    }
                                     currentPrice.toPlainString()
                                 } else {
                                     inputError = null
@@ -195,7 +199,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                                         it
                                                     }
                                                 }
-                                                inputError = if (newPrice == currentPrice) {
+                                                inputError = if (selectedAlertType != AlertType.PRICE_REACHED && newPrice == currentPrice) {
                                                     InputError.EQUALS_CURRENT_PRICE
                                                 } else if (newPrice > maxPrice) {
                                                     InputError.EXCEEDS_MAX_PRICE
