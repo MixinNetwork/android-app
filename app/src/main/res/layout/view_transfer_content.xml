@@ -93,5 +93,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+            android:id="@+id/hash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:selectable="true"/>
+
     </LinearLayout>
 </merge>
