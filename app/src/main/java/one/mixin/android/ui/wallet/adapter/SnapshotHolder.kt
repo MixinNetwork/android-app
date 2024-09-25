@@ -55,6 +55,10 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                     binding.name.text = "N/A"
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
+                } else if(snapshot.opponentId.startsWith("XIN", true)){
+                    binding.name.text = snapshot.opponentId
+                    binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
+                    binding.avatar.setAnonymous()
                 } else {
                     binding.name.text = snapshot.opponentFullName
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
