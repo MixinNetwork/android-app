@@ -3,8 +3,8 @@ package one.mixin.android.ui.wallet.alert.vo
 import com.google.gson.annotations.SerializedName
 
 class AlertRequest(
-    @SerializedName("asset_id")
-    val assetId: String,
+    @SerializedName("coin_id")
+    val coinId: String,
     @SerializedName("type")
     val type: String,
     @SerializedName("frequency")

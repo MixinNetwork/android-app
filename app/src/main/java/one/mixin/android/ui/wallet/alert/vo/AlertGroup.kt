@@ -3,8 +3,8 @@ package one.mixin.android.ui.wallet.alert.vo
 import androidx.room.ColumnInfo
 
 class AlertGroup(
-    @ColumnInfo("asset_id")
-    val assetId: String,
+    @ColumnInfo("coin_id")
+    val coinId: String,
     @ColumnInfo("icon_url")
     val iconUrl: String,
     @ColumnInfo("name")

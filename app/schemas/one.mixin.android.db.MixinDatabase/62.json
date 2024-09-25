@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 62,
-    "identityHash": "ce059edf3a54fd82508cdf8560a14da2",
+    "identityHash": "dcb6d1aa7b9ed99cab5ca53178263f6f",
     "entities": [
       {
         "tableName": "users",
@@ -3342,7 +3342,7 @@
       },
       {
         "tableName": "market_alerts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`alert_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `type` TEXT NOT NULL, `frequency` TEXT NOT NULL, `status` TEXT NOT NULL, `value` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`alert_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`alert_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `type` TEXT NOT NULL, `frequency` TEXT NOT NULL, `status` TEXT NOT NULL, `value` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`alert_id`))",
         "fields": [
           {
             "fieldPath": "alertId",
@@ -3351,8 +3351,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3400,7 +3400,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ce059edf3a54fd82508cdf8560a14da2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dcb6d1aa7b9ed99cab5ca53178263f6f')"
     ]
   }
 }

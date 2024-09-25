@@ -24,9 +24,9 @@ class Alert(
     @ColumnInfo(name = "alert_id")
     @SerializedName("alert_id")
     val alertId: String,
-    @ColumnInfo(name = "asset_id")
-    @SerializedName("asset_id")
-    val assetId: String,
+    @ColumnInfo(name = "coin_id")
+    @SerializedName("coin_id")
+    val coinId: String,
     @ColumnInfo(name = "type")
     @SerializedName("type")
     val type: AlertType,
@@ -50,7 +50,7 @@ class Alert(
                     "${BigDecimal(value).priceFormat()} USD"
                 }
 
-                AlertType.PERCENTAGE_INCREASED -> {
+                PERCENTAGE_INCREASED -> {
                     "+${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
                 }
 

@@ -34,22 +34,21 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.AlertGroupItem
 import one.mixin.android.ui.wallet.alert.components.AssetFilter
 import one.mixin.android.ui.wallet.alert.vo.Alert
-import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
-import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.ui.wallet.alert.vo.CoinItem
 
 @Composable
-fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onEdit: (Alert) -> Unit) {
+fun AlertPage(coins: List<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onEdit: (Alert) -> Unit) {
     val viewModel = hiltViewModel<AlertViewModel>()
     var alertGroups by remember { mutableStateOf(emptyList<AlertGroup>()) }
 
-    LaunchedEffect(assets) {
-        if (assets.isNullOrEmpty()) {
+    LaunchedEffect(coins) {
+        if (coins.isNullOrEmpty()) {
             viewModel.alertGroups().collect { groups ->
                 alertGroups = groups
             }
         } else {
-            viewModel.alertGroups(assets.map { it.assetId }).collect { groups ->
+            viewModel.alertGroups(coins.map { it.coinId }).collect { groups ->
                 alertGroups = groups
             }
         }
@@ -71,7 +70,7 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AssetFilter(assets, openFilter)
+                    AssetFilter(coins, openFilter)
                     TextButton(
                         onClick = to,
                         modifier = Modifier.wrapContentSize(),
@@ -106,7 +105,7 @@ fun AlertPage(assets: List<TokenItem>?, openFilter: () -> Unit, pop: () -> Unit,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AssetFilter(assets, openFilter)
+                AssetFilter(coins, openFilter)
                 TextButton(
                     onClick = to,
                     modifier = Modifier.wrapContentSize(),

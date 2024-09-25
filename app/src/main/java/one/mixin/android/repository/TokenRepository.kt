@@ -1160,9 +1160,9 @@ class TokenRepository
 
     fun alertGroups() = alertDao.alertGroups()
 
-    fun alertGroups(assetId: List<String>) = alertDao.alertGroups(assetId)
+    fun alertGroups(coinIds: List<String>) = alertDao.alertGroups(coinIds)
 
-    fun alertsByAssetId(assetId:String) = alertDao.alertsByAssetId(assetId)
+    fun alertsByCoinId(coinId:String) = alertDao.alertsByCoinId(coinId)
 
     suspend fun updateAlert(alertId: String, action: String): MixinResponse<Unit>? {
         return requestRouteAPI(
@@ -1198,7 +1198,7 @@ class TokenRepository
         return alertDao.getTotalAlertCount()
     }
 
-    fun getAlertCountByAssetId(assetId: String): Int {
-        return alertDao.getAlertCountByAssetId(assetId)
+    fun getAlertCountByCoinId(coinId: String): Int {
+        return alertDao.getAlertCountByCoinId(coinId)
     }
 }

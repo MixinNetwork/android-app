@@ -28,18 +28,16 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAlertsJob
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.vo.Alert
-import one.mixin.android.ui.wallet.alert.vo.AlertAction
+import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragment.DataProvider {
+class AlertFragment : BaseFragment() {
     companion object {
         const val TAG = "AlertFragment"
 
@@ -57,8 +55,8 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
 
     private val alertViewModel by viewModels<AlertViewModel>()
 
-    private var tokens by mutableStateOf<List<TokenItem>?>(emptyList())
-    private var selectToken by mutableStateOf<TokenItem?>(null)
+    private var coins by mutableStateOf<List<CoinItem>?>(emptyList())
+    private var selectCoin by mutableStateOf<CoinItem?>(null)
     private var currentAlert by mutableStateOf<Alert?>(null)
 
     @Inject
@@ -109,20 +107,20 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
                         },
                     ) {
                         composable(AlertDestination.Content.name) {
-                            AlertPage(assets = tokens, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController) }, onEdit = { alert ->
+                            AlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController) }, onEdit = { alert ->
                                 lifecycleScope.launch {
-                                    val token = alertViewModel.simpleAssetItem(alert.assetId)
-                                    if (token != null) {
-                                        selectToken = token
-                                        currentAlert = alert
-                                        navController.navigate(AlertDestination.Edit.name)
-                                    }
+                                    // val token = alertViewModel.simpleAssetItem(alert.assetId)
+                                    // if (token != null) {
+                                    //     selectToken = token
+                                    //     currentAlert = alert
+                                    //     navController.navigate(AlertDestination.Edit.name)
+                                    // }
                                 }
                             })
                         }
 
                         composable(AlertDestination.Edit.name) {
-                            AlertEditPage(selectToken, currentAlert, pop = { navigateUp(navController) })
+                            AlertEditPage(selectCoin, currentAlert, pop = { navigateUp(navController) })
                         }
                     }
                 }
@@ -138,42 +136,43 @@ class AlertFragment : BaseFragment(), MultiSelectTokenListBottomSheetDialogFragm
             if (isTotalAlertCountExceeded) {
                 toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
             } else {
-                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
-                    lifecycleScope.launch {
-                        val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
-                            alertViewModel.isAssetAlertCountExceeded(asset.assetId)
-                        }
-                        if (isAssetAlertCountExceeded) {
-                            toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
-                        } else {
-                            selectToken = asset
-                            currentAlert = null
-                            navController.navigate(AlertDestination.Edit.name)
-                        }
-                    }
-
-                }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                // Todo select coin
+                // AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
+                //     lifecycleScope.launch {
+                //         val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
+                //             alertViewModel.isAssetAlertCountExceeded(asset.assetId)
+                //         }
+                //         if (isAssetAlertCountExceeded) {
+                //             toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
+                //         } else {
+                //             selectToken = asset
+                //             currentAlert = null
+                //             navController.navigate(AlertDestination.Edit.name)
+                //         }
+                //     }
+                //
+                // }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             }
         }
     }
 
-    private val multiSelectTokenListBottomSheetDialogFragment by lazy {
-        MultiSelectTokenListBottomSheetDialogFragment.newInstance().setDateProvider(this@AlertFragment).setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-            override fun onTokenSelect(tokenItems: List<TokenItem>?) {
-                tokens = tokenItems
-            }
+    // private val multiSelectTokenListBottomSheetDialogFragment by lazy {
+    //     MultiSelectTokenListBottomSheetDialogFragment.newInstance().setDateProvider(this@AlertFragment).setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+    //         override fun onTokenSelect(tokenItems: List<TokenItem>?) {
+    //             // tokens = tokenItems
+    //         }
+    //
+    //         override fun onDismiss() {
+    //         }
+    //     })
+    // }
 
-            override fun onDismiss() {
-            }
-        })
-    }
-
-    override fun getCurrentTokens(): List<TokenItem> {
-        return tokens ?: emptyList()
-    }
+    // override fun getCurrentTokens(): List<TokenItem> {
+    //     return coins ?: emptyList()
+    // }
 
     private fun openFilter() {
-        multiSelectTokenListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+        // multiSelectTokenListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
     }
 
     private fun navigateUp(navController: NavHostController) {

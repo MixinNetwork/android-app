@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.ui.wallet.alert.vo.CoinItem
 
 @Composable
-fun AssetFilter(assets: List<TokenItem>?, open: () -> Unit) {
+fun AssetFilter(coins: List<CoinItem>?, open: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = Modifier
@@ -43,7 +43,7 @@ fun AssetFilter(assets: List<TokenItem>?, open: () -> Unit) {
             }
             .border(1.dp, shape = RoundedCornerShape(24.dp), color = MixinAppTheme.colors.backgroundWindow)
     ) {
-        if (assets.isNullOrEmpty()) {
+        if (coins.isNullOrEmpty()) {
             Row(
                 modifier = Modifier.padding(vertical = 9.dp, horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -58,13 +58,13 @@ fun AssetFilter(assets: List<TokenItem>?, open: () -> Unit) {
                     tint = Color.Unspecified,
                 )
             }
-        } else if (assets.size == 1) {
+        } else if (coins.size == 1) {
             Row(
                 modifier = Modifier.padding(vertical = 9.dp, horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CoilImage(
-                    assets.first().iconUrl,
+                    coins.first().iconUrl,
                     modifier =
                     Modifier
                         .size(20.dp)
@@ -72,7 +72,7 @@ fun AssetFilter(assets: List<TokenItem>?, open: () -> Unit) {
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(assets.first().symbol, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+                Text(coins.first().symbol, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     modifier = Modifier.wrapContentSize(),
@@ -87,7 +87,7 @@ fun AssetFilter(assets: List<TokenItem>?, open: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OverlappingLayout {
-                    assets.forEachIndexed { _, item ->
+                    coins.forEachIndexed { _, item ->
                         CoilImage(
                             item.iconUrl,
                             modifier =
@@ -99,7 +99,7 @@ fun AssetFilter(assets: List<TokenItem>?, open: () -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(stringResource(R.string.number_of_assets, assets.size), fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
+                Text(stringResource(R.string.number_of_assets, coins.size), fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     modifier = Modifier.wrapContentSize(),

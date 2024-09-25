@@ -69,8 +69,8 @@ import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertType
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
+import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.ui.wallet.alert.vo.InputError
-import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
@@ -91,16 +91,16 @@ fun Modifier.draw9Patch(
 }
 
 @Composable
-fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
+fun AlertEditPage(coin: CoinItem?, alert: Alert?, pop: () -> Unit) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
             verticalScrollable = false,
             pop = pop,
         ) {
-            if (token != null) {
+            if (coin != null) {
                 val context = LocalContext.current
-                val currentPrice = BigDecimal(token.priceUsd)
+                val currentPrice = BigDecimal(coin.priceUsd)
                 var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
                 val maxPrice = currentPrice.multiply(BigDecimal(100))
                 val minPrice = currentPrice.divide(BigDecimal(100))
@@ -128,7 +128,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                     ) {
                         Row(modifier = Modifier.padding(horizontal = 10.dp)) {
                             CoilImage(
-                                model = token.iconUrl,
+                                model = coin.iconUrl,
                                 placeholder = R.drawable.ic_avatar_place_holder,
                                 modifier = Modifier
                                     .size(42.dp)
@@ -136,8 +136,8 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(text = token.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
-                                Text(text = stringResource(R.string.Current_price, "${BigDecimal(token.priceUsd).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
+                                Text(text = coin.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
+                                Text(text = stringResource(R.string.Current_price, "${BigDecimal(coin.priceUsd).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
                             }
                         }
 
@@ -400,7 +400,7 @@ fun AlertEditPage(token: TokenItem?, alert: Alert?, pop: () -> Unit) {
                                     }
                                 } else {
                                     val alertRequest = AlertRequest(
-                                        assetId = token.assetId,
+                                        coinId = coin.coinId,
                                         type = selectedAlertType.value,
                                         value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
                                             alertValue.let {

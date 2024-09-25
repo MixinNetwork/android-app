@@ -22,9 +22,9 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     fun alertGroups() = tokenRepository.alertGroups()
 
-    fun alertGroups(assetIds: List<String>) = tokenRepository.alertGroups(assetIds)
+    fun alertGroups(coinIds: List<String>) = tokenRepository.alertGroups(coinIds)
 
-    fun alertsByAssetId(assetId: String) = tokenRepository.alertsByAssetId(assetId)
+    fun alertsByCoinId(coinId: String) = tokenRepository.alertsByCoinId(coinId)
 
     suspend fun simpleAssetItem(assetId: String) = tokenRepository.simpleAssetItem(assetId)
 
@@ -40,11 +40,11 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     private fun getTotalAlertCount(): Int = tokenRepository.getTotalAlertCount()
 
-    private fun getAlertCountByAssetId(assetId: String): Int = tokenRepository.getAlertCountByAssetId(assetId)
+    private fun getAlertCountByCoinId(coinId: String): Int = tokenRepository.getAlertCountByCoinId(coinId)
 
     fun isTotalAlertCountExceeded() = getTotalAlertCount() >= maxTotalAlerts
 
-    fun isAssetAlertCountExceeded(assetId: String) = getAlertCountByAssetId(assetId) >= maxTotalAlerts
+    fun isAssetAlertCountExceeded(coinId: String) = getAlertCountByCoinId(coinId) >= maxTotalAlerts
 
     suspend fun updateAlert(alertId: String, action: AlertAction) {
         val r = tokenRepository.updateAlert(
