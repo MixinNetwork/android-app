@@ -25,6 +25,7 @@ import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
@@ -651,6 +652,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                     context?.updatePinCheck()
                     isSuccess = true
+
+                    val transactionHash = runCatching {
+                        val data = response.data as? List<TransactionResponse>
+                        if (data?.size == 1) {
+                            data.first().transactionHash
+                        } else {
+                            null
+                        }
+                    }.getOrNull()
+                    binding.content.displayHash(transactionHash)
                     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
                 } else {
                     handleError(response.error) {

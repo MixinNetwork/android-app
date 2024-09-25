@@ -111,8 +111,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
-        val changeUsd = BigDecimal(asset.changeUsd)
-        val isRising = changeUsd >= BigDecimal.ZERO
+
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -146,12 +145,21 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             } catch (ignored: NumberFormatException) {
                 "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             }
-            if (asset.priceUsd == "0") {
-                rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                rise.text = "0.00%"
-            } else {
-                if (asset.changeUsd.isNotEmpty()) {
-                    rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
+
+            walletViewModel.marketById(asset.assetId).observe(viewLifecycleOwner) { market ->
+                if (market != null) {
+                    val priceChange24h = BigDecimal(market.priceChange24h)
+                    val isRising = priceChange24h >= BigDecimal.ZERO
+                    rise.setQuoteText("${(priceChange24h).numberFormat2()}%", isRising)
+                } else if (asset.priceUsd == "0") {
+                    rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                    rise.text = "0.00%"
+                } else {
+                    if (asset.changeUsd.isNotEmpty()) {
+                        val changeUsd = BigDecimal(asset.changeUsd)
+                        val isRising = changeUsd >= BigDecimal.ZERO
+                        rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
+                    }
                 }
             }
             transactionsTitleLl.setOnClickListener {
@@ -239,7 +247,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         ) { assetItem ->
             assetItem?.let {
                 asset = it
-                bindHeader(isRising)
+                bindHeader()
             }
         }
 
@@ -350,7 +358,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         )
     }
 
-    private fun bindHeader(isRising: Boolean) {
+    private fun bindHeader() {
         binding.apply {
             if (asset.collectionHash.isNullOrEmpty()) {
                 topRl.setOnClickListener {
