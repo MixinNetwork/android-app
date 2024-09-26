@@ -532,6 +532,7 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(61, 62) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `market_alerts` (`alert_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `type` TEXT NOT NULL, `frequency` TEXT NOT NULL, `status` TEXT NOT NULL, `value` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `market_cap_ranks` (`coin_id` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))")
                 }
             }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil

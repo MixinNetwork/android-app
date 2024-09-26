@@ -47,6 +47,7 @@ import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MarketCapRankDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
@@ -320,6 +321,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var alertDao: AlertDao
+
+    @Inject
+    @Transient
+    lateinit var marketCapRankDao: MarketCapRankDao
 
     @Inject
     @Transient

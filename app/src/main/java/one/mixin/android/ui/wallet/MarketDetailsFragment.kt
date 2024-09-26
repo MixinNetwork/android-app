@@ -96,7 +96,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
-            swapAlert.isVisible = !marketItem.assetIds.isNullOrEmpty()
             swapAlert.swap.setOnClickListener {
                 lifecycleScope.launch {
                     val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
