@@ -71,9 +71,8 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             binding.replyContentTv.setTypeface(null, Typeface.NORMAL)
             binding.replyNameTv.visibility = View.VISIBLE
-            binding.replyNameTv.text = quoteMessageItem.userFullName
             binding.replyNameTv.setTextColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
-            binding.replyNameTv.setCompoundDrawables(null, null, getMembershipBadge(quoteMessageItem), null)
+            binding.replyNameTv.setName(quoteMessageItem)
             setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
             background.alpha = 0x0D
             binding.startView.setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
@@ -271,22 +270,6 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
         }
 
-        private val dp12 by lazy {
-            context.dpToPx(12f)
-        }
-
-        private fun getMembershipBadge(messageItem: QuoteMessageItem?): Drawable? {
-            if (messageItem?.membership?.isMembership() != true) return null
-            return messageItem.membership.membershipIcon()?.let { icon ->
-                if (icon == View.NO_ID) {
-                    null
-                } else {
-                    AppCompatResources.getDrawable(context, icon)?.also {
-                        it.setBounds(0, 0, dp12, dp12)
-                    }
-                }
-            }
-        }
 
         private fun setIcon(
             @DrawableRes icon: Int? = null,

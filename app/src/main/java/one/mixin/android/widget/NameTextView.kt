@@ -30,6 +30,7 @@ import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ExploreApp
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantItem
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -359,6 +360,30 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, getMessageBadge(message), null)
     }
 
+    fun setName(message: QuoteMessageItem) {
+        this.textView.text = message.userFullName
+        if (message.membership?.isProsperity() == true) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(message), null)
+    }
+
     fun setName(message: MessageItem) {
         this.textView.text = message.sharedUserFullName
         if (message.sharedMembership?.isProsperity() == true) {
@@ -381,6 +406,30 @@ class NameTextView : LinearLayoutCompat {
             iconView.stopAnimation()
         }
         this.textView.setCompoundDrawables(null, null, getBadge(message), null)
+    }
+
+    fun setReplyName(message: MessageItem) {
+        this.textView.text = message.userFullName
+        if (message.membership?.isProsperity() == true) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getReplyBadge(message), null)
     }
 
     fun setName(message: SearchMessageDetailItem) {
@@ -629,6 +678,19 @@ class NameTextView : LinearLayoutCompat {
         }
     }
 
+    private fun getReplyBadge(item: MessageItem): Drawable? {
+        val resources = if (item.isMembership()) {
+            item.membership.membershipIcon()
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
     private fun getBadge(item: MessageItem): Drawable? {
         val resources = if (item.isSharedMembership()) {
             item.sharedMembership.membershipIcon()
@@ -636,6 +698,19 @@ class NameTextView : LinearLayoutCompat {
             R.drawable.ic_user_verified
         } else if (item.sharedUserAppId != null) {
             R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(item: QuoteMessageItem): Drawable? {
+        val resources = if (item.membership?.isMembership() == true) {
+            item.membership.membershipIcon()
         } else {
             null
         }
