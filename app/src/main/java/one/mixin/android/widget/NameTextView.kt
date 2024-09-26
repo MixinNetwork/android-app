@@ -52,7 +52,7 @@ class NameTextView : LinearLayoutCompat {
         gravity = Gravity.CENTER_VERTICAL
         val a = context.obtainStyledAttributes(attributeSet, R.styleable.NameTextView)
         val badgePadding = a.getDimensionPixelSize(R.styleable.NameTextView_badgePadding, dp4)
-        badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp14)
+        badgeSize = a.getDimensionPixelSize(R.styleable.NameTextView_badgeSize, dp16)
 
         textView.compoundDrawablePadding = badgePadding
         iconView.updateLayoutParams<MarginLayoutParams> {
@@ -534,6 +534,10 @@ class NameTextView : LinearLayoutCompat {
 
     private val dp14 by lazy {
         context.dpToPx(14f)
+    }
+
+    private val dp16 by lazy {
+        context.dpToPx(16f)
     }
 
     private val dp4 by lazy {
