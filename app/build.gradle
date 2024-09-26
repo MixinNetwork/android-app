@@ -14,7 +14,7 @@ plugins {
 
 def versionMajor = 1
 def versionMinor = 13
-def versionPatch = 1
+def versionPatch = 3
 def versionBuild = 0
 
 android {
@@ -202,7 +202,7 @@ ksp {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
-    implementation platform("com.google.firebase:firebase-bom:33.0.0")
+    implementation platform("com.google.firebase:firebase-bom:33.3.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation("androidx.activity:activity-ktx:$activity_version")

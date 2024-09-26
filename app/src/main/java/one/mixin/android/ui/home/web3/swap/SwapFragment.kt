@@ -97,14 +97,13 @@ class SwapFragment : BaseFragment() {
             amount: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
-                if (!tokens.isNullOrEmpty()) {
-                    when (T::class) {
-                        Web3Token::class -> {
-                            putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { addAll(tokens) })
-                        }
-                        TokenItem::class -> {
-                            putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { addAll(tokens) })
-                        }
+                when (T::class) {
+                    Web3Token::class -> {
+                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { if (tokens != null) { addAll(tokens) } })
+                    }
+
+                    TokenItem::class -> {
+                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { tokens?.let { addAll(it) } })
                     }
                 }
                 input?.let { putString(ARGS_INPUT, it) }
@@ -208,9 +207,7 @@ class SwapFragment : BaseFragment() {
                                 toToken = token
                                 onTextChanged(currentText)
                             }, { index ->
-                                if (swapTokens.isNotEmpty()) {
-                                    selectCallback(swapTokens, index)
-                                }
+                                selectCallback(swapTokens, index)
                             }, { input ->
                                 if (input.isBlank()) {
                                     return@SwapPage
@@ -231,6 +228,7 @@ class SwapFragment : BaseFragment() {
                             }, {
                                 val a = calcInput()
                                 inputText.value = a
+                                currentText = a
                                 refreshQuote(a)
                             }, {
                                 lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
@@ -319,7 +317,9 @@ class SwapFragment : BaseFragment() {
     private suspend fun initFromTo() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
-        if (swappable.isNullOrEmpty()) {
+        if (web3tokens?.isEmpty() == true) { // Only supplement local data for local assets
+            swappable = emptyList()
+        } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.allAssetItems()
             tokenItems = swappable
         }
@@ -365,8 +365,9 @@ class SwapFragment : BaseFragment() {
                     }
                     .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             } else {
+                val data = ArrayList(web3tokens ?: emptyList())
                 Web3TokenListBottomSheetDialogFragment.newInstance(
-                    ArrayList(web3tokens ?: emptyList()),
+                    data
                 ).apply {
                     setOnClickListener { t ->
                         val token = t.toSwapToken()
@@ -390,6 +391,9 @@ class SwapFragment : BaseFragment() {
                     },
                 ),
             ).apply {
+                if (list.isEmpty()) {
+                    setLoading(true)
+                }
                 setOnClickListener { token, alert ->
                     if (alert) {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
@@ -405,7 +409,7 @@ class SwapFragment : BaseFragment() {
                     }
                     dismissNow()
                 }
-            }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+            }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment .TAG)
         }
     }
 
@@ -480,6 +484,9 @@ class SwapFragment : BaseFragment() {
                         toToken = swapTokens.getOrNull(1)
                     }
                 }
+            }
+            if (swapTokens.isNotEmpty()) {
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens)
             }
             if (fromToken != null  && toToken != null) {
                 refreshTokensPrice(listOf(fromToken!!, toToken!!))
@@ -637,8 +644,8 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun inMixin(): Boolean = web3tokens.isNullOrEmpty()
-    private fun getSource(): String = if (web3tokens.isNullOrEmpty()) "mixin" else ""
+    private fun inMixin(): Boolean = web3tokens == null
+    private fun getSource(): String = if (web3tokens == null) "mixin" else ""
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

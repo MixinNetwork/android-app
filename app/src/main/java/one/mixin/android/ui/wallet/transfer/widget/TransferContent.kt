@@ -162,6 +162,13 @@ class TransferContent : LinearLayout {
         }
     }
 
+    fun displayHash(transactionHash: String?) {
+        _binding.apply {
+            hash.isVisible = !transactionHash.isNullOrBlank()
+            hash.setContent(R.string.transaction_Hash, transactionHash?:"", selectable = true)
+        }
+    }
+
     private fun renderTransferNft(
         nftBiometricItem: NftBiometricItem,
         userClick: (User) -> Unit,

@@ -18,6 +18,10 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
+import com.google.protobuf.Mixin
+import one.mixin.android.Constants
+import one.mixin.android.MixinApp
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.util.mention.MentionRenderContext
@@ -250,3 +254,22 @@ var TextView.hintTextColor: Int
     @Deprecated("Property does not have a getter")
     get() = error("Property does not have a getter")
     set(v) = setHintTextColor(v)
+
+private val walletGreen = MixinApplication.appContext.getColor(R.color.wallet_green)
+private val walletRed = MixinApplication.appContext.getColor(R.color.wallet_pink)
+private val walletGray = MixinApplication.appContext.getColor(R.color.wallet_text_gray)
+
+fun TextView.setQuoteText(text: String?, isRising: Boolean?) {
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+
+    val color = when {
+        text == null -> walletGray
+        isRising == true -> if (quoteColorPref) walletRed else walletGreen
+        isRising == false -> if (quoteColorPref) walletGreen else walletRed
+        else -> walletGray
+    }
+
+    this.text = text
+    setTextColor(color)
+}

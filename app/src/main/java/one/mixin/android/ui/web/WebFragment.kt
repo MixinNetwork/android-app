@@ -146,6 +146,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
+import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -2074,6 +2075,17 @@ class WebFragment : BaseFragment() {
         @SerializedName("currency")
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
-        val locale: String = "${getLanguage()}-${getCountry()}",
-    )
+        val locale: String = getLocale(),
+    ) {
+        companion object {
+            private fun getLocale(): String {
+                if (isFollowSystem()) {
+                    val locale = MixinApplication.get().resources.configuration.locales.get(0) ?: Locale.getDefault()
+                    return "${locale.language}-${locale.country}"
+                } else {
+                    return "${getLanguage()}-${getCountry()}"
+                }
+            }
+        }
+    }
 }

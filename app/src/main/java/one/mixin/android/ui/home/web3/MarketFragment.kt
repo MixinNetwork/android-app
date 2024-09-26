@@ -28,6 +28,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.event.GlobalMarketEvent
+import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -145,6 +146,13 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 loadGlobalMarket()
             }
 
+        RxBus.listen(QuoteColorEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { _ ->
+                marketsAdapter.notifyDataSetChanged()
+                watchlistAdapter.notifyDataSetChanged()
+            }
         bindData()
         view.viewTreeObserver.addOnGlobalLayoutListener {
             if (view.isShown) {

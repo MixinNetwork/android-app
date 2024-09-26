@@ -426,7 +426,7 @@ class BottomSheetViewModel
                     }
                     val transactionHash = sign.hash
                     Timber.e("Kernel Address Transaction($trace): sign db insert snapshot")
-                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, "", transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot, reference = reference)
+                    tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, kernelAddress, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot, reference = reference)
                     Timber.e("Kernel Address Transaction($trace): sign db insert raw transaction")
                     tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), utxoWrapper.inscriptionHash))
                     Timber.e("Kernel Address Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")

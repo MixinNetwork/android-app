@@ -86,6 +86,7 @@ object Constants {
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
         const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
         const val PREF_GLOBAL_MARKET = "pref_global_market"
+        const val PREF_QUOTE_COLOR = "pref_quote_color"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -151,7 +152,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 60
+        const val CURRENT_VERSION = 61
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

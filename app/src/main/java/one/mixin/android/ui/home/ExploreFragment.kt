@@ -144,7 +144,7 @@ class ExploreFragment : BaseFragment() {
                     radioMarket.isChecked = false
                     radioEth.isChecked = true
                     radioSolana.isChecked = false
-                    navigate(solanaFragment, SolanaFragment.TAG)
+                    navigate(ethereumFragment, EthereumFragment.TAG)
                 }
 
                 3 -> {
@@ -153,7 +153,7 @@ class ExploreFragment : BaseFragment() {
                     radioMarket.isChecked = false
                     radioEth.isChecked = false
                     radioSolana.isChecked = true
-                    navigate(ethereumFragment, EthereumFragment.TAG)
+                    navigate(solanaFragment, SolanaFragment.TAG)
                 }
             }
 
@@ -334,7 +334,7 @@ class ExploreFragment : BaseFragment() {
         // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
         if (activity is UrlInterpreterActivity) {
             var realFragmentCount = 0
-            parentFragmentManager.fragments.forEach { f ->
+            parentFragmentManager.fragments.forEach { _ ->
                 realFragmentCount++
             }
             if (realFragmentCount <= 0) {
@@ -345,7 +345,7 @@ class ExploreFragment : BaseFragment() {
 
     class BotAdapter(private val editAction: () -> Unit, private val botAction: (BotInterface) -> Unit, private val appAction: (BotInterface) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val TYPE_INTERNAL = 0
-        private val TYPE_TITEL = 1
+        private val TYPE_TITLE = 1
         private val TYPE_FAVORITE = 2
         private val TYPE_EDIT = 3
         private val TYPE_BOT = 4
@@ -382,7 +382,7 @@ class ExploreFragment : BaseFragment() {
                     FavoriteEditHolder(ItemFavoriteEditBinding.inflate(LayoutInflater.from(parent.context), parent, false))
                 }
 
-                TYPE_TITEL -> {
+                TYPE_TITLE -> {
                     FavoriteTitleHolder(ItemFavoriteTitleBinding.inflate(LayoutInflater.from(parent.context), parent, false))
                 }
 
@@ -416,7 +416,7 @@ class ExploreFragment : BaseFragment() {
                         appAction.invoke(bot)
                     }
                 }
-            } else if (type == TYPE_TITEL) {
+            } else if (type == TYPE_TITLE) {
                 if (position == InternalBots.size) {
                     (holder as FavoriteTitleHolder).setText(R.string.Favorite)
                 } else {
@@ -433,13 +433,13 @@ class ExploreFragment : BaseFragment() {
             return if (position < InternalBots.size) {
                 TYPE_INTERNAL
             } else if (position == InternalBots.size) {
-                TYPE_TITEL
+                TYPE_TITLE
             } else if (position < InternalBots.size + (favoriteApps?.size ?: 0) + 1) {
                 TYPE_FAVORITE
             } else if (position == InternalBots.size + (favoriteApps?.size ?: 0) + 1) {
                 TYPE_EDIT
             } else if (position == InternalBots.size + (favoriteApps?.size ?: 0) + 2) {
-                TYPE_TITEL
+                TYPE_TITLE
             } else {
                 TYPE_BOT
             }
@@ -454,7 +454,7 @@ class ExploreFragment : BaseFragment() {
             } else if (type == TYPE_FAVORITE) {
                 favoriteApps?.get(position - InternalBots.size - 1)
             } else {
-                list.get(position - InternalBots.size - (favoriteApps?.size ?: 0) - 3)
+                list[position - InternalBots.size - (favoriteApps?.size ?: 0) - 3]
             }
         }
     }

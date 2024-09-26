@@ -9,11 +9,12 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.loadImage
+import one.mixin.android.util.getChainNetwork
 
-class SwapTokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = tokens.isEmpty()
 
-    var tokens: ArrayList<SwapToken> = ArrayList(0)
+    var tokens: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
@@ -69,6 +70,11 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             avatar.badge.loadImage(token.chain.icon, R.drawable.ic_avatar_place_holder)
             nameTv.text = token.name
             balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"
+            val chainNetwork = getChainNetwork(token.getUnique(), token.chain.chainId, token.address)
+            networkTv.isVisible = chainNetwork != null
+            if (chainNetwork != null) {
+                binding.networkTv.text = chainNetwork
+            }
             if (!token.inMixin()) {
                 alert.isVisible = true
                 alert.setOnClickListener {

@@ -257,6 +257,10 @@ class AppAuthActivity : BaseActivity() {
                 helpMsgId: Int,
                 helpString: CharSequence,
             ) {
+                // workaround for xiaomi
+                if (helpMsgId == 1021 || helpMsgId == 1022 || helpMsgId == 1023 || helpMsgId == 1001) {
+                    return
+                }
                 refreshSwirl(helpString.toString(), true)
             }
         }

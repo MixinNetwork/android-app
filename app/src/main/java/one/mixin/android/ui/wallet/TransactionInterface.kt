@@ -366,9 +366,12 @@ interface TransactionInterface {
                         if (snapshot.opponentId.isBlank()) {
                             fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_assist)
                             "N/A"
-                        } else {
+                        } else if (!snapshot.opponentFullName.isNullOrBlank()){
                             fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)
                             snapshot.opponentFullName
+                        } else {
+                            fromTv.textColor = fromTv.context.colorFromAttribute(R.attr.text_primary)
+                            snapshot.opponentId
                         }
                     if (isPositive) {
                         fromTitle.text = fragment.getString(R.string.From)

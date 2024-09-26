@@ -428,8 +428,8 @@
     <string name="error_card_holder_name_not_same">错误 10608: 卡片异常，请稍后尝试正确的卡片</string>
     <string name="error_expired_session">错误 10609: 交易会话过期</string>
     <string name="error_inconsistent_country">错误 10610: 国家不一致</string>
-    <string name="error_invalid_swap"> 错误 10611: 无效的闪兑</string>
-    <string name="error_invalid_quote_amount">错误 10614: 无效的闪兑数量</string>
+    <string name="error_invalid_swap"> 错误 10611: 交易无效</string>
+    <string name="error_invalid_quote_amount">错误 10614: 数量无效</string>
     <string name="error_no_available_quote">错误 10615: 不支持该交易对</string>
     <string name="error_phone_verification_code_expired">错误 20114：验证码已过期</string>
     <string name="error_phone_verification_code_invalid">错误 20113：验证码错误</string>
@@ -1371,7 +1371,6 @@
     <string name="Transfer_confirmation">转账确认</string>
     <string name="Withdrawal_confirmation">提现确认</string>
     <string name="Transfer_confirmation_desc">请仔细检查收款人、网络和金额，如果您转错了，资产将无法追回！</string>
-    <string name="transfer_address_warning">您已经超过 30 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。。</string>
     <string name="Not_Now">下次再说</string>
     <string name="Enable">启用</string>
     <string name="enable_biometric_description">想要启用生物识别支付吗？启用后，转账时可通过生物识别快速完成付款。</string>
@@ -1405,7 +1404,7 @@
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
-    <string name="address_validity_reminder">请确认地址 %1$s（%2$s）仍然有效，您已经超过 30 天没有使用该地址。</string>
+    <string name="address_validity_reminder">请确认地址 %1$s（%2$s）仍然有效，您已经超过 %3$d 天没有使用该地址。</string>
     <string name="withdrawal_sending_description">正在创建提现，请稍候。</string>
     <string name="Confirm_Transfer">转账确认</string>
     <string name="Sending_Transfer_Request">正在发送转账</string>
@@ -1486,7 +1485,7 @@
     <string name="Collection">合集</string>
     <string name="HASH">哈希</string>
     <string name="Collectible_Hash">藏品哈希</string>
-    <string name="Swap">闪兑</string>
+    <string name="Swap">交易</string>
     <string name="Swapping">兑换中</string>
     <string name="Pay">支付</string>
     <string name="Received">收到</string>
@@ -1645,4 +1644,7 @@
     <string name="Stats">统计</string>
     <string name="share_desc">访问 mixin.one/mm 或扫描二维码进行安装。</string>
     <string name="current_version">当前版本：%1$s</string>
+    <string name="quote_color">涨跌颜色</string>
+    <string name="red_up_green_down">红涨绿跌</string>
+    <string name="green_up_red_down">绿涨红跌</string>
 </resources>

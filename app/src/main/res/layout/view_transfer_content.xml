@@ -70,12 +70,6 @@
             android:layout_height="wrap_content"
             android:visibility="gone" />
 
-        <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
-            android:id="@+id/memo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
         <one.mixin.android.ui.wallet.transfer.widget.TransferContentSafeReceiveItem
             android:id="@+id/safe_receives"
             android:layout_width="match_parent"
@@ -89,9 +83,22 @@
             android:visibility="gone" />
 
         <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+            android:id="@+id/memo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
             android:id="@+id/network"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
+        <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+            android:id="@+id/hash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:selectable="true"/>
 
     </LinearLayout>
 </merge>

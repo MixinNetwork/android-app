@@ -32,8 +32,8 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
@@ -55,6 +55,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
@@ -110,8 +111,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
-        val changeUsd = BigDecimal(asset.changeUsd)
-        val isPositive = changeUsd > BigDecimal.ZERO
+
         binding.titleView.apply {
             val sub = getChainName(asset.chainId, asset.chainName, asset.assetKey)
             if (sub != null)
@@ -133,7 +133,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ID
                     }
-                    navTo(SwapFragment.newInstance(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
             value.text = try {
@@ -145,13 +145,21 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             } catch (ignored: NumberFormatException) {
                 "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             }
-            if (asset.priceUsd == "0") {
-                rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                rise.text = "0.00%"
-            } else {
-                if (asset.changeUsd.isNotEmpty()) {
-                    rise.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    rise.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+
+            walletViewModel.marketById(asset.assetId).observe(viewLifecycleOwner) { market ->
+                if (market != null) {
+                    val priceChange24h = BigDecimal(market.priceChange24h)
+                    val isRising = priceChange24h >= BigDecimal.ZERO
+                    rise.setQuoteText("${(priceChange24h).numberFormat2()}%", isRising)
+                } else if (asset.priceUsd == "0") {
+                    rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                    rise.text = "0.00%"
+                } else {
+                    if (asset.changeUsd.isNotEmpty()) {
+                        val changeUsd = BigDecimal(asset.changeUsd)
+                        val isRising = changeUsd >= BigDecimal.ZERO
+                        rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
+                    }
                 }
             }
             transactionsTitleLl.setOnClickListener {
@@ -186,11 +194,14 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         activity?.onBackPressedDispatcher?.onBackPressed()
                         return@launch
                     }
-                    val market = walletViewModel.findMarketItemByAssetId(asset.assetId)
+                    var market = walletViewModel.findMarketItemByAssetId(asset.assetId)
                     if (market == null) {
                         jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
-                        toast(R.string.Please_wait_a_bit)
-                        return@launch
+                        market = MarketItem(
+                            "", asset.name, asset.symbol, asset.iconUrl, asset.priceUsd,
+                            "", "", "", "", "", asset.changeUsd, "", "", "", "", "", "", "", "", "", "", "",
+                            "", "", "", "", listOf(asset.assetId), "", null
+                        )
                     }
                     view.navigate(
                         R.id.action_transactions_to_market_details,
@@ -236,7 +247,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         ) { assetItem ->
             assetItem?.let {
                 asset = it
-                bindHeader(isPositive)
+                bindHeader()
             }
         }
 
@@ -347,7 +358,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         )
     }
 
-    private fun bindHeader(isPositive: Boolean) {
+    private fun bindHeader() {
         binding.apply {
             if (asset.collectionHash.isNullOrEmpty()) {
                 topRl.setOnClickListener {

@@ -621,7 +621,7 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.registerListener(updatedListener)
         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                (appUpdateInfo.clientVersionStalenessDays() ?: -1) >= 3 &&
+                (appUpdateInfo.clientVersionStalenessDays() ?: -1) >= 1 &&
                 appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
                 try {
