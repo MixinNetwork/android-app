@@ -22,6 +22,9 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.extension.dp
+import kotlin.math.max
+
 
 class ContentQRView : ViewAnimator {
     constructor(context: Context) : this(context, null)
@@ -81,7 +84,7 @@ class ContentQRView : ViewAnimator {
                             requireNotNull(depositEntry.tag)
                         } else {
                             destination
-                        }.generateQRCode(qr.width)
+                        }.generateQRCode(max(qr.width, 240.dp))
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
