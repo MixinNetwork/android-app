@@ -5,8 +5,10 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.safe.TokenItem
 
 @Dao
 interface MarketDao : BaseDao<Market> {
@@ -68,4 +70,10 @@ interface MarketDao : BaseDao<Market> {
 
     @Query("DELETE FROM markets WHERE CAST(market_cap_rank AS INTEGER) <= :top")
     fun deleteTop(top: Int): Int
+
+    @Query("SELECT m.* FROM markets m ORDER BY CAST(m.market_cap_rank AS INTEGER) ASC, CAST(m.market_cap AS INTEGER) ASC")
+    fun coinItems(): LiveData<List<CoinItem>>
+
+    @Query("SELECT m.* FROM markets m WHERE coin_id = :coinId")
+    suspend fun simpleCoinItem(coinId:String): CoinItem?
 }

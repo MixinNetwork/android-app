@@ -30,6 +30,7 @@ import one.mixin.android.job.RefreshAlertsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
+import one.mixin.android.ui.wallet.MultiSelectCoinListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
@@ -37,7 +38,7 @@ import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AlertFragment : BaseFragment() {
+class AlertFragment : BaseFragment(),MultiSelectCoinListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AlertFragment"
 
@@ -109,12 +110,12 @@ class AlertFragment : BaseFragment() {
                         composable(AlertDestination.Content.name) {
                             AlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController) }, onEdit = { alert ->
                                 lifecycleScope.launch {
-                                    // val token = alertViewModel.simpleAssetItem(alert.assetId)
-                                    // if (token != null) {
-                                    //     selectToken = token
-                                    //     currentAlert = alert
-                                    //     navController.navigate(AlertDestination.Edit.name)
-                                    // }
+                                    val coin = alertViewModel.simpleCoinItem(alert.coinId)
+                                    if (coin != null) {
+                                        selectCoin = coin
+                                        currentAlert = alert
+                                        navController.navigate(AlertDestination.Edit.name)
+                                    }
                                 }
                             })
                         }
@@ -136,43 +137,60 @@ class AlertFragment : BaseFragment() {
             if (isTotalAlertCountExceeded) {
                 toast(getString(R.string.alert_limit_exceeded, maxTotalAlerts))
             } else {
-                // Todo select coin
-                // AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).setOnAssetClick { asset ->
-                //     lifecycleScope.launch {
-                //         val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
-                //             alertViewModel.isAssetAlertCountExceeded(asset.assetId)
-                //         }
-                //         if (isAssetAlertCountExceeded) {
-                //             toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
-                //         } else {
-                //             selectToken = asset
-                //             currentAlert = null
-                //             navController.navigate(AlertDestination.Edit.name)
-                //         }
-                //     }
-                //
-                // }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                selectTokenListBottomSheetDialogFragment.setOnMultiSelectCoinListener(object : MultiSelectCoinListBottomSheetDialogFragment.OnMultiSelectCoinListener {
+                    override fun onCoinClick(coinItem: CoinItem) {
+                        lifecycleScope.launch {
+                            val isAssetAlertCountExceeded = withContext(Dispatchers.IO) {
+                                alertViewModel.isAssetAlertCountExceeded(coinItem.coinId)
+                            }
+                            if (isAssetAlertCountExceeded) {
+                                toast(getString(R.string.alert_per_asset_limit_exceeded, maxAlertsPerAsset))
+                            } else {
+                                selectCoin = coinItem
+                                currentAlert = null
+                                navController.navigate(AlertDestination.Edit.name)
+                            }
+                        }
+                    }
+
+                    override fun onCoinSelect(coinItems: List<CoinItem>?) {
+                    }
+
+                    override fun onDismiss() {
+                    }
+                }).showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
             }
         }
     }
 
-    // private val multiSelectTokenListBottomSheetDialogFragment by lazy {
-    //     MultiSelectTokenListBottomSheetDialogFragment.newInstance().setDateProvider(this@AlertFragment).setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-    //         override fun onTokenSelect(tokenItems: List<TokenItem>?) {
-    //             // tokens = tokenItems
-    //         }
-    //
-    //         override fun onDismiss() {
-    //         }
-    //     })
-    // }
+    private val selectTokenListBottomSheetDialogFragment by lazy {
+        MultiSelectCoinListBottomSheetDialogFragment.newInstance(true).setDateProvider(object :MultiSelectCoinListBottomSheetDialogFragment.DataProvider{
+            override fun getCurrentCoins(): List<CoinItem> {
+                return emptyList()
+            }
+        })
+    }
 
-    // override fun getCurrentTokens(): List<TokenItem> {
-    //     return coins ?: emptyList()
-    // }
+    private val multiSelectTokenListBottomSheetDialogFragment by lazy {
+        MultiSelectCoinListBottomSheetDialogFragment.newInstance().setDateProvider(this@AlertFragment).setOnMultiSelectCoinListener(object : MultiSelectCoinListBottomSheetDialogFragment.OnMultiSelectCoinListener {
+            override fun onCoinClick(coinItem: CoinItem) {
+            }
+
+            override fun onCoinSelect(coinItems: List<CoinItem>?) {
+                coins = coinItems
+            }
+
+            override fun onDismiss() {
+            }
+        })
+    }
+
+    override fun getCurrentCoins(): List<CoinItem> {
+        return coins ?: emptyList()
+    }
 
     private fun openFilter() {
-        // multiSelectTokenListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+        multiSelectTokenListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
     }
 
     private fun navigateUp(navController: NavHostController) {

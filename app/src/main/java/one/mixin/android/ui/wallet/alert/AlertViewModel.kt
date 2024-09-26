@@ -26,7 +26,7 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     fun alertsByCoinId(coinId: String) = tokenRepository.alertsByCoinId(coinId)
 
-    suspend fun simpleAssetItem(assetId: String) = tokenRepository.simpleAssetItem(assetId)
+    suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
 
     suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
         val r = tokenRepository.updateAlert(alertId, "update", request)

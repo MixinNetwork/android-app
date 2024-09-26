@@ -65,6 +65,7 @@ import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.ui.common.message.SendMessageHelper
+import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
@@ -145,6 +146,8 @@ class BottomSheetViewModel
             }
 
         fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
+
+        fun coinItems(): LiveData<List<CoinItem>> = tokenRepository.coinItems()
 
         fun allRecipients(): LiveData<List<UserItem>> = userRepository.allRecipients()
 

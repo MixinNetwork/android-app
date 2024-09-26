@@ -100,7 +100,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, pop: () -> Unit) {
         ) {
             if (coin != null) {
                 val context = LocalContext.current
-                val currentPrice = BigDecimal(coin.priceUsd)
+                val currentPrice = BigDecimal(coin.currentPrice)
                 var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
                 val maxPrice = currentPrice.multiply(BigDecimal(100))
                 val minPrice = currentPrice.divide(BigDecimal(100))
@@ -137,7 +137,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, pop: () -> Unit) {
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(text = coin.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
-                                Text(text = stringResource(R.string.Current_price, "${BigDecimal(coin.priceUsd).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
+                                Text(text = stringResource(R.string.Current_price, "${BigDecimal(coin.currentPrice).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
                             }
                         }
 

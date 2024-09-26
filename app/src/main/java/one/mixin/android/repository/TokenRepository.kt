@@ -452,6 +452,8 @@ class TokenRepository
 
         fun assetItems() = tokenDao.assetItems()
 
+        fun coinItems() = marketDao.coinItems()
+
         suspend fun allAssetItems() = tokenDao.allAssetItems()
 
         fun assetItems(assetIds: List<String>) = tokenDao.assetItems(assetIds)
@@ -1163,6 +1165,8 @@ class TokenRepository
     fun alertGroups(coinIds: List<String>) = alertDao.alertGroups(coinIds)
 
     fun alertsByCoinId(coinId:String) = alertDao.alertsByCoinId(coinId)
+
+    suspend fun simpleCoinItem(coinId:String) = marketDao.simpleCoinItem(coinId)
 
     suspend fun updateAlert(alertId: String, action: String): MixinResponse<Unit>? {
         return requestRouteAPI(
