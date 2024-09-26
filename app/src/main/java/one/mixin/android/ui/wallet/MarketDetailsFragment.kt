@@ -39,6 +39,7 @@ import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragme
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
+import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -150,7 +151,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
             swapAlert.alert.setOnClickListener {
                 if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                    view.navigate(R.id.action_market_details_to_alert)
+                    lifecycleScope.launch {
+                        val coinItem = walletViewModel.simpleCoinItem(marketItem.coinId)
+                        view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
+                            putParcelable(ARGS_COIN, coinItem)
+                        })
+                    }
                 } else {
                     toast(getString(R.string.price_alert_notification_permission))
                 }

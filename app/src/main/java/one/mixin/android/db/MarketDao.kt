@@ -75,5 +75,5 @@ interface MarketDao : BaseDao<Market> {
     fun coinItems(): LiveData<List<CoinItem>>
 
     @Query("SELECT m.* FROM markets m WHERE coin_id = :coinId")
-    suspend fun simpleCoinItem(coinId:String): CoinItem?
+    suspend fun simpleCoinItem(coinId: String): CoinItem?
 }

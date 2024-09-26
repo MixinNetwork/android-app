@@ -6,10 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -22,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
@@ -38,12 +41,14 @@ import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AlertFragment : BaseFragment(),MultiSelectCoinListBottomSheetDialogFragment.DataProvider {
+class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AlertFragment"
 
         const val maxTotalAlerts = 100
         const val maxAlertsPerAsset = 10
+
+        const val ARGS_COIN = "args_coin"
 
         fun newInstance(): AlertFragment {
             return AlertFragment()
@@ -73,6 +78,9 @@ class AlertFragment : BaseFragment(),MultiSelectCoinListBottomSheetDialogFragmen
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        requireArguments().getParcelableCompat(ARGS_COIN, CoinItem::class.java)?.let {
+            coins = listOf(it)
+        }
         return ComposeView(inflater.context).apply {
             setContent {
                 MixinAppTheme(
@@ -164,7 +172,7 @@ class AlertFragment : BaseFragment(),MultiSelectCoinListBottomSheetDialogFragmen
     }
 
     private val selectTokenListBottomSheetDialogFragment by lazy {
-        MultiSelectCoinListBottomSheetDialogFragment.newInstance(true).setDateProvider(object :MultiSelectCoinListBottomSheetDialogFragment.DataProvider{
+        MultiSelectCoinListBottomSheetDialogFragment.newInstance(true).setDateProvider(object : MultiSelectCoinListBottomSheetDialogFragment.DataProvider {
             override fun getCurrentCoins(): List<CoinItem> {
                 return emptyList()
             }
