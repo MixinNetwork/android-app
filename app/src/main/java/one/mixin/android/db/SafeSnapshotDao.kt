@@ -84,6 +84,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE snapshot_id = :snapshotId")
     suspend fun findSnapshotById(snapshotId: String): SnapshotItem?
 
+    @Query("SELECT * FROM safe_snapshots WHERE snapshot_id = :snapshotId")
+    suspend fun getSnapshotById(snapshotId: String): SafeSnapshot?
+
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE trace_id = :traceId")
     suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
 
@@ -140,4 +143,5 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("SELECT * FROM safe_snapshots WHERE withdrawal LIKE '%'||:receiver||'%' ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastWithdrawalSnapshotByReceiver(receiver: String): SafeSnapshot?
+
 }

@@ -178,7 +178,7 @@ fun SwapPage(
                     if (inputText.value.isNotEmpty()) {
                         Button(
                             modifier = Modifier.fillMaxWidth().height(48.dp),
-                            enabled = !isLoading && checkBalance == true,
+                            enabled = !isLoading && checkBalance == true && errorInfo == null,
                             onClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
