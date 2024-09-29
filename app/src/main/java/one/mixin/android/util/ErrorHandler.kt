@@ -16,6 +16,7 @@ import one.mixin.android.tip.getTipExceptionMsg
 import org.chromium.net.CronetException
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.ExecutionException
@@ -39,6 +40,9 @@ open class ErrorHandler {
                             }
                             is NetworkException -> toast(R.string.No_network_connection)
                             is DataErrorException -> toast(R.string.Data_error)
+                            is ConnectException -> {
+                                toast(R.string.Network_error)
+                            }
                             is CronetException -> {
                                 handleCronetException(throwable)
                             }
