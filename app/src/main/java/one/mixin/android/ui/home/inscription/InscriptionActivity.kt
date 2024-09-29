@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.Constants.HelpLink.MARKETPLACE
-import one.mixin.android.Constants.HelpLink.ViewBlock
+import one.mixin.android.Constants.HelpLink.SPACE
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -274,7 +274,7 @@ class InscriptionActivity : BaseActivity() {
         }
 
         bottomBinding.viewOnExplorer.setOnClickListener {
-            WebActivity.show(this@InscriptionActivity, url = "$ViewBlock$inscriptionHash", conversationId = null)
+            WebActivity.show(this@InscriptionActivity, url = "$SPACE$inscriptionHash", conversationId = null)
             bottomSheet.dismiss()
         }
 
