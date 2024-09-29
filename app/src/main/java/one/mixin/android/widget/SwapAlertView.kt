@@ -18,6 +18,6 @@ class SwapAlertView : LinearLayoutCompat {
 
     private val binding: ViewSwapAlertBinding
     val swap get() = binding.swapTv
-    val alert get() = binding.alertTv
+    val alertVa get() = binding.alertVa
 
 }

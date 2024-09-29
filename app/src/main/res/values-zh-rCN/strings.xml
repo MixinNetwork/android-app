@@ -1679,4 +1679,5 @@
     <string name="error_increase_too_low">涨幅必须至少为0.01%。</string>
     <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
     <string name="error_decrease_too_low">跌幅必须至少为-0.01%。</string>
+    <string name="Alert_Not_Support">暂不支持</string>
 </resources>

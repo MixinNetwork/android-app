@@ -82,7 +82,6 @@ import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
-import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
@@ -104,6 +103,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
@@ -125,7 +125,6 @@ import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.http.Body
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -1167,6 +1166,37 @@ class TokenRepository
     fun alertsByCoinId(coinId:String) = alertDao.alertsByCoinId(coinId)
 
     suspend fun simpleCoinItem(coinId:String) = marketDao.simpleCoinItem(coinId)
+
+    suspend fun simpleCoinItemByAssetId(assetId:String) = marketDao.simpleCoinItemByAssetId(assetId)
+
+    suspend fun refreshMarket(
+        coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
+        exceptionBlock: (suspend (t: Throwable) -> Boolean)
+    ): MixinResponse<Market>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.market(coinId) },
+            exceptionBlock = exceptionBlock,
+            failureBlock = failureBlock,
+            endBlock = endBlock,
+            successBlock = { response ->
+                withContext(Dispatchers.IO){
+                    val market = response.data!!
+                    marketDao.insert(market)
+                    marketCoinDao.insertList(market.assetIds?.map { assetId ->
+                        MarketCoin(
+                            coinId = market.coinId,
+                            assetId = assetId,
+                            createdAt = nowInUtc()
+                        )
+                    } ?: emptyList())
+                }
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
 
     suspend fun updateAlert(alertId: String, action: String): MixinResponse<Unit>? {
         return requestRouteAPI(

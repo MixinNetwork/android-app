@@ -74,4 +74,7 @@ interface MarketDao : BaseDao<Market> {
 
     @Query("SELECT m.* FROM markets m WHERE coin_id = :coinId")
     suspend fun simpleCoinItem(coinId: String): CoinItem?
+
+    @Query("SELECT m.* FROM markets m LEFT JOIN market_coins mc on mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
+    suspend fun simpleCoinItemByAssetId(assetId: String): CoinItem?
 }

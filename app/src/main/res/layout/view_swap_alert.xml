@@ -22,16 +22,28 @@
         android:layout_gravity="center_vertical"
         android:background="#0D000000" />
 
-    <TextView
-        android:id="@+id/alert_tv"
+    <ViewAnimator
+        android:id="@+id/alert_va"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:gravity="center"
         android:foreground="@drawable/mixin_ripple_round_right_12dp"
-        android:text="@string/Alert"
-        android:textSize="14sp"
-        android:textFontWeight="600"
-        android:textColor="?attr/text_primary" />
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/Alert"
+            android:textSize="14sp"
+            android:textFontWeight="600"
+            android:textColor="?attr/text_primary" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:theme="@style/AppTheme.BlueProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </ViewAnimator>
 
 </merge>

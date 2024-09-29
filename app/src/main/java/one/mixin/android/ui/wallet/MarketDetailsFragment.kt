@@ -29,7 +29,6 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.setQuoteText
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -153,13 +152,48 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                 }
             }
-            swapAlert.alert.setOnClickListener {
+            swapAlert.alertVa.setOnClickListener {
                 if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
                     lifecycleScope.launch {
-                        val coinItem = walletViewModel.simpleCoinItem(marketItem.coinId)
-                        view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
-                            putParcelable(ARGS_COIN, coinItem)
-                        })
+                        var coinItem = if (marketItem.coinId.isBlank()) {
+                            walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
+                        } else {
+                            walletViewModel.simpleCoinItem(marketItem.coinId)
+                        }
+                        if (coinItem == null) {
+                            binding.swapAlert.alertVa.displayedChild = 1
+                            val m = walletViewModel.refreshMarket(
+                                marketItem.coinId.ifBlank {
+                                    marketItem.assetIds!!.first()
+                                }, {
+                                    binding.swapAlert.alertVa.displayedChild = 0
+                                }, { error ->
+                                    if (error.errorCode == 404) {
+                                        toast(R.string.Alert_Not_Support)
+                                    } else {
+                                        toast(R.string.Try_Again)
+                                    }
+                                    true
+                                }, {
+                                    toast(R.string.Try_Again)
+                                    true
+                                }
+                            )
+                            if (m != null) {
+                                coinItem = if (marketItem.coinId.isBlank()) {
+                                    walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
+                                } else {
+                                    walletViewModel.simpleCoinItem(marketItem.coinId)
+                                }
+                                view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
+                                    putParcelable(ARGS_COIN, coinItem)
+                                })
+                            }
+                        } else {
+                            view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
+                                putParcelable(ARGS_COIN, coinItem)
+                            })
+                        }
                     }
                 } else {
                     toast(getString(R.string.price_alert_notification_permission))
