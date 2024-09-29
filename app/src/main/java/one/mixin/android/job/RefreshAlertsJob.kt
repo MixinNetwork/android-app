@@ -9,7 +9,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 
-class RefreshAlertsJob() : BaseJob(
+class RefreshAlertsJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .groupBy(GROUP).requireNetwork(),
 ) {
@@ -25,10 +25,45 @@ class RefreshAlertsJob() : BaseJob(
             },
             successBlock = { response ->
                 val list = response.data!!
+                list.map{it.coinId}.distinct().mapNotNull { coinId ->
+                    val m = marketDao.findMarketById(coinId)
+                    if (m != null) null
+                    else coinId
+                }.let { ids ->
+                    if (ids.isNotEmpty()) {
+                        refreshMark(ids)
+                    }
+                }
                 runInTransaction {
                     alertDao.deleteAll()
                     alertDao.insertList(list)
                 }
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            }
+        )
+    }
+
+    private suspend fun refreshMark(ids: List<String>) {
+        requestRouteAPI(
+            invokeNetwork = {
+                routeService.fetchMarket(ids)
+            },
+            successBlock = { response ->
+                val list = response.data!!
+                val now = nowInUtc()
+                val coins = list.flatMap { market ->
+                    market.assetIds?.map { assetId ->
+                        MarketCoin(
+                            coinId = market.coinId,
+                            assetId = assetId,
+                            createdAt = now
+                        )
+                    } ?: emptyList()
+                }
+                marketCoinDao.insertList(coins)
+                marketDao.insertList(list)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
