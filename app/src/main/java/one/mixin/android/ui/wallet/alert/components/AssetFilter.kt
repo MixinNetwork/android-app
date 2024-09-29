@@ -30,7 +30,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 
 @Composable
-fun AssetFilter(coins: List<CoinItem>?, open: () -> Unit) {
+fun AssetFilter(coins: Set<CoinItem>?, open: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = Modifier

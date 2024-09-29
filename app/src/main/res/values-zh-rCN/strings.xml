@@ -1657,8 +1657,8 @@
     <string name="alert_type_price_reached">价格达到</string>
     <string name="alert_type_price_increased">价格涨到</string>
     <string name="alert_type_price_decreased">价格跌倒</string>
-    <string name="alert_type_percentage_increased">24小时涨幅</string>
-    <string name="alert_type_percentage_decreased">24小时跌幅</string>
+    <string name="alert_type_percentage_increased">24 小时涨幅</string>
+    <string name="alert_type_percentage_decreased">24 小时跌幅</string>
     <string name="alert_frequency_every">每次</string>
     <string name="alert_frequency_daily">每日</string>
     <string name="alert_frequency_once">一次</string>
@@ -1668,8 +1668,8 @@
     <string name="price_alert_notification_permission">价格预警需要开启通知权限</string>
     <string name="price_in_currency">价格（%1$s）</string>
     <string name="Paused">已暂停</string>
-    <string name="alert_limit_exceeded">所有币种的价格提醒总数不得超过%1$d。</string>
-    <string name="alert_per_asset_limit_exceeded">每个交易对最多可创建%1$d个价格提醒。</string>
+    <string name="alert_limit_exceeded">所有币种的价格提醒总数不得超过 %1$d 个。</string>
+    <string name="alert_per_asset_limit_exceeded">每个交易对最多可创建 %1$d 个价格提醒。</string>
     <string name="error_equals_current_price">设置的价格不能是当前价格。</string>
     <string name="error_exceeds_max_price">价格超过允许的最大值。</string>
     <string name="error_below_min_price">价格低于允许的最小值。</string>

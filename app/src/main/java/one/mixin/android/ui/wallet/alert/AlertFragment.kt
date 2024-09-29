@@ -61,7 +61,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
 
     private val alertViewModel by viewModels<AlertViewModel>()
 
-    private var coins by mutableStateOf<List<CoinItem>?>(emptyList())
+    private var coins by mutableStateOf<Set<CoinItem>>(emptySet())
     private var selectCoin by mutableStateOf<CoinItem?>(null)
     private var currentAlert by mutableStateOf<Alert?>(null)
 
@@ -79,7 +79,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
         savedInstanceState: Bundle?,
     ): View {
         requireArguments().getParcelableCompat(ARGS_COIN, CoinItem::class.java)?.let {
-            coins = listOf(it)
+            coins = setOf(it)
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -129,7 +129,9 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         }
 
                         composable(AlertDestination.Edit.name) {
-                            AlertEditPage(selectCoin, currentAlert, pop = { navigateUp(navController) })
+                            AlertEditPage(selectCoin, currentAlert, onAdd = { coin->
+                                coins = coins + coin
+                            }, pop = { navigateUp(navController) })
                         }
                     }
                 }
@@ -185,7 +187,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
             }
 
             override fun onCoinSelect(coinItems: List<CoinItem>?) {
-                coins = coinItems
+                coins = coinItems?.toSet() ?: emptySet()
             }
 
             override fun onDismiss() {
@@ -194,7 +196,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
     }
 
     override fun getCurrentCoins(): List<CoinItem> {
-        return coins ?: emptyList()
+        return coins.toList()
     }
 
     private fun openFilter() {

@@ -91,7 +91,7 @@ fun Modifier.draw9Patch(
 }
 
 @Composable
-fun AlertEditPage(coin: CoinItem?, alert: Alert?, pop: () -> Unit) {
+fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop: () -> Unit) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
@@ -414,6 +414,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, pop: () -> Unit) {
                                     )
                                     val re = viewModel.add(alertRequest)
                                     if (re?.isSuccess == true) {
+                                        onAdd.invoke(coin)
                                         pop.invoke()
                                     }
                                 }

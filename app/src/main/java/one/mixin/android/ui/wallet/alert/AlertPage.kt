@@ -38,7 +38,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 
 @Composable
-fun AlertPage(coins: List<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onEdit: (Alert) -> Unit) {
+fun AlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit, to: () -> Unit, onEdit: (Alert) -> Unit) {
     val viewModel = hiltViewModel<AlertViewModel>()
     var alertGroups by remember { mutableStateOf(emptyList<AlertGroup>()) }
 
