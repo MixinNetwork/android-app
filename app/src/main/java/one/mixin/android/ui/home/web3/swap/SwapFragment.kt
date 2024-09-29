@@ -250,6 +250,7 @@ class SwapFragment : BaseFragment() {
                                                 outputMint,
                                                 qr.slippage,
                                                 qr.source,
+                                                qr.payload,
                                                 qr.jupiterQuoteResponse,
                                             )) },
                                             successBlock = {

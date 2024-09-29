@@ -7,5 +7,6 @@ data class QuoteResponse(
     val outAmount: String,
     val slippage: Int,
     val source: String,
+    val payload: String,
     val jupiterQuoteResponse: JupiterQuoteResponse? = null,
 )
