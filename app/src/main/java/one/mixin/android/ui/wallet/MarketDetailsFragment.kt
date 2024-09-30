@@ -39,6 +39,7 @@ import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
+import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -152,53 +153,63 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                 }
             }
-            swapAlert.alertVa.setOnClickListener {
-                if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                    lifecycleScope.launch {
-                        var coinItem = if (marketItem.coinId.isBlank()) {
-                            walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
-                        } else {
-                            walletViewModel.simpleCoinItem(marketItem.coinId)
-                        }
-                        if (coinItem == null) {
-                            binding.swapAlert.alertVa.displayedChild = 1
-                            val m = walletViewModel.refreshMarket(
-                                marketItem.coinId.ifBlank {
-                                    marketItem.assetIds!!.first()
-                                }, {
-                                    binding.swapAlert.alertVa.displayedChild = 0
-                                }, { error ->
-                                    if (error.errorCode == 404) {
-                                        toast(R.string.Alert_Not_Support)
-                                    } else {
+            if (marketItem.coinId.isBlank()) {
+                walletViewModel.anyAlertByAssetId(marketItem.assetIds!!.first())
+            } else {
+                walletViewModel.anyAlertByCoinId(marketItem.coinId)
+            }.observe(this@MarketDetailsFragment.viewLifecycleOwner) { exist ->
+                swapAlert.setAlertTitle(if (exist) R.string.Alert else R.string.Add_Alert)
+                swapAlert.alertVa.setOnClickListener {
+                    if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
+                        lifecycleScope.launch {
+                            var coinItem = if (marketItem.coinId.isBlank()) {
+                                walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
+                            } else {
+                                walletViewModel.simpleCoinItem(marketItem.coinId)
+                            }
+                            if (coinItem == null) {
+                                binding.swapAlert.alertVa.displayedChild = 1
+                                val m = walletViewModel.refreshMarket(
+                                    marketItem.coinId.ifBlank {
+                                        marketItem.assetIds!!.first()
+                                    }, {
+                                        binding.swapAlert.alertVa.displayedChild = 0
+                                    }, { error ->
+                                        if (error.errorCode == 404) {
+                                            toast(R.string.Alert_Not_Support)
+                                        } else {
+                                            toast(R.string.Try_Again)
+                                        }
+                                        true
+                                    }, {
                                         toast(R.string.Try_Again)
+                                        true
                                     }
-                                    true
-                                }, {
-                                    toast(R.string.Try_Again)
-                                    true
+                                )
+                                if (m != null) {
+                                    coinItem = if (marketItem.coinId.isBlank()) {
+                                        walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
+                                    } else {
+                                        walletViewModel.simpleCoinItem(marketItem.coinId)
+                                    }
+                                    view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
+                                        putParcelable(ARGS_COIN, coinItem)
+                                        putBoolean(ARGS_GO_ALERT, !exist)
+                                    })
                                 }
-                            )
-                            if (m != null) {
-                                coinItem = if (marketItem.coinId.isBlank()) {
-                                    walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
-                                } else {
-                                    walletViewModel.simpleCoinItem(marketItem.coinId)
-                                }
+                            } else {
                                 view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                     putParcelable(ARGS_COIN, coinItem)
+                                    putBoolean(ARGS_GO_ALERT, !exist)
                                 })
                             }
-                        } else {
-                            view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
-                                putParcelable(ARGS_COIN, coinItem)
-                            })
                         }
+                    } else {
+                        toast(getString(R.string.price_alert_notification_permission))
                     }
-                } else {
-                    toast(getString(R.string.price_alert_notification_permission))
                 }
             }
+
             if (marketItem.coinId.isBlank()) {
                 rank.isVisible = false
                 assetRank.isVisible = false

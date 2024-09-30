@@ -399,6 +399,10 @@ class WalletViewModel
 
     suspend fun simpleCoinItemByAssetId(assetId: String) = tokenRepository.simpleCoinItemByAssetId(assetId)
 
+    fun anyAlertByCoinId(coinId: String) = tokenRepository.anyAlertByCoinId(coinId)
+
+    fun anyAlertByAssetId(assetId: String) = tokenRepository.anyAlertByAssetId(assetId)
+
     suspend fun refreshMarket(
         coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
         exceptionBlock: (suspend (t: Throwable) -> Boolean)

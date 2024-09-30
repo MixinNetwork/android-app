@@ -1670,8 +1670,8 @@
     <string name="price_alert_notification_permission">价格预警需要开启通知权限</string>
     <string name="price_in_currency">价格（%1$s）</string>
     <string name="Paused">已暂停</string>
-    <string name="alert_limit_exceeded">所有币种的价格提醒总数不得超过 %1$d 个。</string>
-    <string name="alert_per_asset_limit_exceeded">每个交易对最多可创建 %1$d 个价格提醒。</string>
+    <string name="alert_limit_exceeded">所有币种的价格预警总数不得超过 %1$d 个。</string>
+    <string name="alert_per_asset_limit_exceeded">每个交易对最多可创建 %1$d 个价格预警。</string>
     <string name="error_equals_current_price">设置的价格不能是当前价格。</string>
     <string name="error_exceeds_max_price">价格超过允许的最大值。</string>
     <string name="error_below_min_price">价格低于允许的最小值。</string>
@@ -1682,4 +1682,5 @@
     <string name="error_decrease_too_high">跌幅不能超过-99.99%。</string>
     <string name="error_decrease_too_low">跌幅必须至少为-0.01%。</string>
     <string name="Alert_Not_Support">暂不支持</string>
+    <string name="All_Alert">所有价格预警</string>
 </resources>

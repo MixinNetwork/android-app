@@ -1722,4 +1722,5 @@
     <string name="error_decrease_too_high">The decrease percentage cannot exceed -99.99%.</string>
     <string name="error_decrease_too_low">The decrease percentage must be at least -0.01%.</string>
     <string name="Alert_Not_Support">Not Support</string>
+    <string name="All_Alert">All Alert</string>
 </resources>

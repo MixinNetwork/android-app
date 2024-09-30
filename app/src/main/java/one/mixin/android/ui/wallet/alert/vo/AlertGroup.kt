@@ -9,6 +9,6 @@ class AlertGroup(
     val iconUrl: String,
     @ColumnInfo("name")
     val name: String,
-    @ColumnInfo("price_usd")
+    @ColumnInfo("current_price")
     val priceUsd: String
 )

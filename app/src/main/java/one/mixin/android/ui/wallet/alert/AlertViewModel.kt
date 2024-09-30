@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxAlertsPerAsset
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxTotalAlerts
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
@@ -23,6 +24,8 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
     fun alertGroups() = tokenRepository.alertGroups()
 
     fun alertGroups(coinIds: List<String>) = tokenRepository.alertGroups(coinIds)
+
+    fun alertGroup(coinId: String) = tokenRepository.alertGroup(coinId)
 
     fun alertsByCoinId(coinId: String) = tokenRepository.alertsByCoinId(coinId)
 
@@ -44,7 +47,7 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     fun isTotalAlertCountExceeded() = getTotalAlertCount() >= maxTotalAlerts
 
-    fun isAssetAlertCountExceeded(coinId: String) = getAlertCountByCoinId(coinId) >= maxTotalAlerts
+    fun isAssetAlertCountExceeded(coinId: String) = getAlertCountByCoinId(coinId) >= maxAlertsPerAsset
 
     suspend fun updateAlert(alertId: String, action: AlertAction) {
         val r = tokenRepository.updateAlert(

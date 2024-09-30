@@ -1163,11 +1163,17 @@ class TokenRepository
 
     fun alertGroups(coinIds: List<String>) = alertDao.alertGroups(coinIds)
 
+    fun alertGroup(coinId: String) = alertDao.alertGroup(coinId)
+
     fun alertsByCoinId(coinId:String) = alertDao.alertsByCoinId(coinId)
 
     suspend fun simpleCoinItem(coinId:String) = marketDao.simpleCoinItem(coinId)
 
     suspend fun simpleCoinItemByAssetId(assetId:String) = marketDao.simpleCoinItemByAssetId(assetId)
+
+    fun anyAlertByCoinId(coinId: String) = alertDao.anyAlertByCoinId(coinId)
+
+    fun anyAlertByAssetId(coinId: String) = alertDao.anyAlertByAssetId(coinId)
 
     suspend fun refreshMarket(
         coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
