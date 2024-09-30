@@ -39,6 +39,9 @@ import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_DECREASED
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_INCREASED
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
 
 @Composable
 fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
@@ -67,7 +70,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
             )
 
             Text(
-                alert.displayValue, modifier = Modifier.constrainAs(title) {
+                "${stringResource(R.string.Price)} ${alert.displayValue}", modifier = Modifier.constrainAs(title) {
                     top.linkTo(endIcon.top)
                     bottom.linkTo(endIcon.bottom)
                     linkTo(starIcon.end, endIcon.start, startMargin = 10.dp, endMargin = 10.dp, bias = 0f)

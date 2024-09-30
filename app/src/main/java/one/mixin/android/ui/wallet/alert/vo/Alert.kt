@@ -7,6 +7,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import java.math.BigDecimal
 import java.math.RoundingMode
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -47,15 +49,22 @@ class Alert(
         get() {
             return when (type) {
                 in listOf(PRICE_REACHED, PRICE_INCREASED, PRICE_DECREASED) -> {
-                    "${BigDecimal(value).priceFormat()} USD"
+                    val price = "${BigDecimal(value).priceFormat()} USD"
+                    "${
+                        if (type == PRICE_DECREASED) {
+                            "<="
+                        } else {
+                            ">="
+                        }
+                    } $price"
                 }
 
                 PERCENTAGE_INCREASED -> {
-                    "+${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
+                    ">= ${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
                 }
 
                 else -> {
-                    "-${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
+                    "<= ${(value.toFloat() * 100f).toBigDecimal().setScale(2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()}%"
                 }
             }
         }
