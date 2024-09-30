@@ -122,7 +122,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                                     if (coin != null) {
                                         selectCoin = coin
                                         currentAlert = alert
-                                        navController.navigate(AlertDestination.Alert.name)
+                                        navController.navigate(AlertDestination.Edit.name)
                                     }
                                 }
                             })

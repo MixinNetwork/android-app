@@ -68,7 +68,7 @@ fun AlertTypeSelector(selectedType: AlertType, onTypeSelected: (AlertType) -> Un
             }
             Box {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_alert_arrow_down),
+                    painter = painterResource(id = R.drawable.ic_sort_arrow_down),
                     contentDescription = null,
                 )
                 DropdownMenu(

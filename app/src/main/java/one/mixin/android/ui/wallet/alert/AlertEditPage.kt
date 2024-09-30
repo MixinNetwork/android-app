@@ -147,17 +147,8 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
 
                         AlertTypeSelector(selectedType = selectedAlertType) { newType ->
                             if (selectedAlertType != newType) {
-                                alertValue = if (newType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                    inputError = if (newType != AlertType.PRICE_REACHED) {
-                                        InputError.EQUALS_CURRENT_PRICE
-                                    } else {
-                                        null
-                                    }
-                                    currentPrice.toPlainString()
-                                } else {
-                                    inputError = null
-                                    ""
-                                }
+                                inputError = null
+                                alertValue = ""
                                 selectedAlertType = newType
                             }
                         }

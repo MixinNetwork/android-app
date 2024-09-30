@@ -52,7 +52,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
     var expand by remember { mutableStateOf(initiallyExpanded) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByCoinId(alertGroup.coinId).collectAsState(initial = emptyList())
-    val rotationState by animateFloatAsState(targetValue = if (expand) -180f else 0f, label = "")
+    val rotationState by animateFloatAsState(targetValue = if (expand) 0f else -180f, label = "")
     val context = LocalContext.current
 
     Box(
