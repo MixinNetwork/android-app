@@ -159,7 +159,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         binding.apply {
             filterType.setTitle(filterParams.typeTitle)
             filterAsset.updateTokens(R.string.Assets, filterParams.tokenItems)
-            filterUser.updateUsers(R.string.Recipients, filterParams.recipients)
+            filterUser.updateUsers(R.string.Opponents, filterParams.recipients)
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             titleView.setSubTitle(
                 getString(R.string.All_Transactions), getString(

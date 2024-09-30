@@ -1594,9 +1594,11 @@
     <string name="malicious_instruction_token_set_authority">This transaction change the owner of your SPL tokens. This allow the new owner to transfer the tokens without your permission.</string>
     <string name="Assets">Assets</string>
     <string name="Recipients">Recipients</string>
+    <string name="Opponents">Opponents</string>
     <string name="No_users">No users</string>
     <string name="number_of_assets">%1$d Assets</string>
     <string name="number_of_recipients">%1$d Recipients</string>
+    <string name="number_of_opponents">%1$d Opponents</string>
     <string name="Oldest">Oldest</string>
     <string name="Value_Descending">Value Descending</string>
     <string name="Amount_Descending">Amount Descending</string>

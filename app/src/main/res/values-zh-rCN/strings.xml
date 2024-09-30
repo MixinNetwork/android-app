@@ -1555,6 +1555,7 @@
     <string name="malicious_instruction_token_set_authority">此交易将更改 SPL 代币的所有者。这将允许新的所有者在未经您允许的情况下转让代币。</string>
     <string name="Assets">资产</string>
     <string name="Recipients">收款人</string>
+    <string name="Opponents">收发人</string>
     <string name="Oldest">最早</string>
     <string name="Value_Descending">价值降序</string>
     <string name="Amount_Descending">金额降序</string>
@@ -1566,6 +1567,7 @@
     <string name="No_users">没有用户</string>
     <string name="number_of_assets">%1$d 资产</string>
     <string name="number_of_recipients">%1$d 收款人</string>
+    <string name="number_of_opponents">%1$d 收发人</string>
     <string name="Select_Date">选择日期</string>
     <string name="Users">用户</string>
     <string name="swap_confirmation">确认闪兑</string>

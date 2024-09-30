@@ -107,7 +107,7 @@ class FilterPopup @JvmOverloads constructor(
                 setTitle(item.formatAddress())
             }
         } else {
-            setTitle(context.getString(R.string.number_of_recipients, recipients.size))
+            setTitle(context.getString(R.string.number_of_opponents, recipients.size))
         }
     }
 
