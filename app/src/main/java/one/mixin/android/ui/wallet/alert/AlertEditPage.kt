@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -71,6 +72,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.ui.wallet.alert.vo.InputError
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
@@ -307,7 +309,31 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                                 color = MixinAppTheme.colors.textAssist,
                                             )
                                         }
-                                        innerTextField()
+                                        if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED) || Fiats.getRate() == 1.0) {
+                                            innerTextField()
+                                        } else {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(modifier = Modifier.weight(1f)) {
+                                                    innerTextField()
+                                                }
+
+                                                Text(
+                                                    text = runCatching { "${BigDecimal(alertValue.replace(",", "")).multiply(BigDecimal(Fiats.getRate())).priceFormat()} ${Fiats.getAccountCurrencyAppearance()}" }.getOrNull() ?: "",
+                                                    fontSize = 12.sp,
+                                                    color = MixinAppTheme.colors.textAssist,
+                                                    modifier = Modifier
+                                                        .weight(1f)
+                                                        .padding(start = 8.dp),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    textAlign = TextAlign.End
+                                                )
+                                            }
+                                        }
                                     }
                                 )
                             }
