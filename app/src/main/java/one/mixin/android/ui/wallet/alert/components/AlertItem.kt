@@ -39,6 +39,7 @@ import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
+import one.mixin.android.ui.wallet.alert.vo.AlertType.PERCENTAGE_DECREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_DECREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_INCREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
@@ -70,7 +71,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
             )
 
             Text(
-                "${stringResource(R.string.Price)} ${alert.displayValue}", modifier = Modifier.constrainAs(title) {
+                "${if (alert.type in listOf(PRICE_REACHED, PRICE_INCREASED, PRICE_DECREASED)) stringResource(R.string.Price) else if(alert.type == PERCENTAGE_DECREASED) stringResource(R.string.alert_type_percentage_decreased) else stringResource(R.string.alert_type_percentage_increased)} ${alert.displayValue}", modifier = Modifier.constrainAs(title) {
                     top.linkTo(endIcon.top)
                     bottom.linkTo(endIcon.bottom)
                     linkTo(starIcon.end, endIcon.start, startMargin = 10.dp, endMargin = 10.dp, bias = 0f)
