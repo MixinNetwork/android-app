@@ -6,9 +6,9 @@ class AlertGroup(
     @ColumnInfo("coin_id")
     val coinId: String,
     @ColumnInfo("icon_url")
-    val iconUrl: String,
+    val iconUrl: String?,
     @ColumnInfo("name")
-    val name: String,
+    val name: String?,
     @ColumnInfo("current_price")
-    val priceUsd: String
+    val priceUsd: String?
 )

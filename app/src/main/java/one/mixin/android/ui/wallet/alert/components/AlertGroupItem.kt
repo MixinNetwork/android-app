@@ -2,19 +2,15 @@ package one.mixin.android.ui.wallet.alert.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
@@ -43,7 +39,6 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.Alert
-import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import java.math.BigDecimal
 
@@ -86,13 +81,13 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                 Text(modifier = Modifier.constrainAs(title) {
                     top.linkTo(starIcon.top)
                     start.linkTo(starIcon.end, 10.dp)
-                }, text = alertGroup.name, fontSize = 16.sp, lineHeight = 16.sp, color = MixinAppTheme.colors.textPrimary)
+                }, text = alertGroup.name?:"", fontSize = 16.sp, lineHeight = 16.sp, color = MixinAppTheme.colors.textPrimary)
 
                 Text(
                     modifier = Modifier.constrainAs(subtitle) {
                         start.linkTo(starIcon.end, 10.dp)
                         bottom.linkTo(starIcon.bottom)
-                    }, text = stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd).priceFormat()} USD"),
+                    }, text = stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd ?: "0").priceFormat()} USD"),
                     fontSize = 13.sp,
                     lineHeight = 13.sp,
                     color = MixinAppTheme.colors.textAssist
