@@ -52,20 +52,19 @@
         app:layout_constraintVertical_bias="0"
         app:layout_goneMarginBottom="0dp">
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:ellipsize="end"
             android:gravity="start|top"
-            android:lines="1"
-            android:maxWidth="280dp"
-            android:minWidth="30dp"
             android:paddingBottom="4dp"
             android:textColor="#19BEF1"
-            android:textSize="14sp"
-            android:includeFontPadding="false"
+            app:lines="1"
+            app:ellipsize="end"
+            app:maxWidth="280dp"
+            app:minWidth="30dp"
+            app:textSize="14sp"
             app:layout_constraintBottom_toTopOf="@+id/chat_image_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

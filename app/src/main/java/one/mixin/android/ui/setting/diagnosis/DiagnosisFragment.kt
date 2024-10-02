@@ -42,7 +42,7 @@ class DiagnosisFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.titleTv.setText(R.string.Net_Diagnosis)
+        binding.titleView.titleTv.setTextOnly(R.string.Net_Diagnosis)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.titleView.rightIb.setOnClickListener {
             context?.getClipboardManager()

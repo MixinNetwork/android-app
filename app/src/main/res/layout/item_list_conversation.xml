@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="72dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?attr/bg_white"
     android:foreground="?android:attr/selectableItemBackground"
     tools:layout_editor_absoluteY="81dp">
@@ -31,11 +32,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:maxWidth="220dp"
-            android:singleLine="true"
-            android:textFontWeight="500"
             android:textColor="?attr/text_primary"
-            android:textSize="16sp" />
+            app:maxWidth="220dp"
+            app:lines="1"
+            app:textFontWeight="500"
+            app:textSize="16sp" />
 
     </LinearLayout>
 

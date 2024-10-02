@@ -10,7 +10,7 @@
     android:clickable="true"
     android:focusable="true">
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -18,11 +18,10 @@
         android:ellipsize="end"
         android:gravity="start|center_vertical"
         android:lines="1"
-        android:maxWidth="280dp"
-        android:minWidth="30dp"
-        android:textColor="#19BEF1"
-        android:includeFontPadding="false"
-        android:textSize="14sp" />
+        app:maxWidth="280dp"
+        app:minWidth="30dp"
+        app:textColor="#19BEF1"
+        app:textSize="14sp" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

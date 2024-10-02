@@ -23,6 +23,10 @@ data class SearchMessageItem(
         return conversationCategory == ConversationCategory.CONTACT.name && membership?.isMembership() == true
     }
 
+    fun isProsperity(): Boolean {
+        return conversationCategory == ConversationCategory.CONTACT.name && membership?.isProsperity() == true
+    }
+
     fun isBot(): Boolean {
         return conversationCategory == ConversationCategory.CONTACT.name && !appId.isNullOrEmpty()
     }

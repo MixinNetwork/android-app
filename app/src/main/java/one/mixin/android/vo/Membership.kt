@@ -23,6 +23,10 @@ data class Membership(
     fun isMembership(): Boolean {
         return plan in listOf(Plan.ADVANCE, Plan.ELITE, Plan.PROSPERITY) && Instant.now().isBefore(Instant.parse(expiredAt))
     }
+
+    fun isProsperity(): Boolean {
+        return plan == Plan.PROSPERITY && Instant.now().isBefore(Instant.parse(expiredAt))
+    }
 }
 
 @DrawableRes
@@ -30,8 +34,8 @@ fun Membership?.membershipIcon() = when {
     this == null -> View.NO_ID
     plan == Plan.ADVANCE -> R.drawable.ic_membership_advance
     plan == Plan.ELITE -> R.drawable.ic_membership_elite
-    plan == Plan.PROSPERITY -> R.drawable.ic_membership_prosperity
-    else -> View.NO_ID
+    // PROSPERITY is animation icon
+    else -> null
 }
 
 enum class Plan(val value: String) {

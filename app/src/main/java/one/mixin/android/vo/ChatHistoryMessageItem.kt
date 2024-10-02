@@ -93,6 +93,8 @@ class ChatHistoryMessageItem(
     fun isMembership() = membership?.isMembership() == true
 
     fun isSharedMembership() = sharedMembership?.isMembership() == true
+
+    fun isSharedProsperity() = sharedMembership?.isProsperity() == true
 }
 
 fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true

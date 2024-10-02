@@ -52,7 +52,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         private val useMapbox = useMapbox()
 
         init {
-            binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
+            binding.chatName.setMaxWidth(itemView.context.maxItemWidth() - dp16)
             binding.locationLayout.round(6.dp)
             var mapBoxView: MapView? = null
             if (useMapbox) {
@@ -267,31 +267,13 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
 
             if (isFirst && !isMe) {
                 binding.chatName.visibility = View.VISIBLE
-                binding.chatName.text = messageItem.userFullName
-                if (messageItem.membership != null) {
-                    binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                    binding.chatName.compoundDrawablePadding = 3.dp
-                } else if (messageItem.appId != null) {
-                    binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                    binding.chatName.compoundDrawablePadding = 3.dp
-                } else {
-                    binding.chatName.setCompoundDrawables(null, null, null, null)
-                }
+                binding.chatName.setMessageName(messageItem)
                 binding.chatName.setTextColor(getColorById(messageItem.userId))
                 binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             } else {
                 binding.chatName.visibility = View.GONE
             }
 
-            if (messageItem.membership != null) {
-                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
             chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, messageItem.expireAt, R.id.chat_layout)
             chatLayout(isMe, isLast)
         }

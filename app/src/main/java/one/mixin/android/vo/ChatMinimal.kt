@@ -55,4 +55,9 @@ data class ChatMinimal(
     fun isMembership(): Boolean {
         return isContactConversation() && membership?.isMembership() == true
     }
+
+
+    fun isProsperity(): Boolean {
+        return isContactConversation() && membership?.isProsperity() == true
+    }
 }

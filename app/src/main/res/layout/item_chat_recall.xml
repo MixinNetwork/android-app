@@ -63,18 +63,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="1" />
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/chat_name"
             android:minWidth="30dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
             android:textColor="#19BEF1"
-            android:includeFontPadding="false"
+            app:ellipsize="end"
+            app:lines="1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:textSize="14sp"/>
+            app:textSize="14sp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

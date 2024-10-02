@@ -46,7 +46,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
             }
             binding.chatTv.initChatMode(LINK_COLOR)
             binding.chatTv.setSelectedStateColor(SELECT_COLOR)
-            binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
+            binding.chatName.setMaxWidth(itemView.context.maxItemWidth() - dp16)
             binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)
         }
 
@@ -201,30 +201,11 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
             val isMe = meId == messageItem.userId
             if (isFirst && !isMe) {
                 binding.chatName.visibility = View.VISIBLE
-                binding.chatName.text = messageItem.userFullName
-                if (messageItem.membership != null) {
-                    binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                    binding.chatName.compoundDrawablePadding = 3.dp
-                } else if (messageItem.appId != null) {
-                    binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                    binding.chatName.compoundDrawablePadding = 3.dp
-                } else {
-                    binding.chatName.setCompoundDrawables(null, null, null, null)
-                }
+                binding.chatName.setMessageName(messageItem)
                 binding.chatName.setTextColor(getColorById(messageItem.userId))
                 binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             } else {
                 binding.chatName.visibility = View.GONE
-            }
-
-            if (messageItem.membership != null) {
-                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
 
             binding.chatTime.load(

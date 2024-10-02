@@ -21,7 +21,7 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
         listener: MentionAdapter.OnUserClickListener,
     ) {
         binding.name.setName(user)
-        queryHighlighter.apply(binding.name, user.fullName, keyword)
+        queryHighlighter.apply(binding.name.textView, user.fullName, keyword)
         queryHighlighter.apply(binding.idTv, "@${user.identityNumber}", "@$keyword")
         binding.iconIv.setInfo(user.fullName, user.avatarUrl, user.userId)
         itemView.setOnClickListener {

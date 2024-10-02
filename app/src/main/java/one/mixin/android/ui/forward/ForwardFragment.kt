@@ -234,7 +234,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
 
         if (!action.name.isNullOrBlank()) {
-            binding.titleView.titleTv.text = action.name
+            binding.titleView.titleTv.setTextOnly(action.name)
         }
         binding.titleView.setOnClickListener {
             binding.searchEt.hideKeyboard()

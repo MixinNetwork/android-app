@@ -2,7 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
         android:id="@+id/chat_layout"
@@ -14,18 +15,17 @@
         android:layout_marginTop="1.5dp"
         tools:ignore="UselessParent">
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
             android:textColor="#19BEF1"
-            android:textSize="15sp"
-            android:maxWidth="280dp"
-            android:minWidth="30dp"
-            android:includeFontPadding="false"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:lines="1"
+            app:ellipsize="end"
+            app:minWidth="30dp"
+            app:maxWidth="280dp"
+            app:textSize="15sp"/>
 
         <LinearLayout
             android:layout_width="wrap_content"

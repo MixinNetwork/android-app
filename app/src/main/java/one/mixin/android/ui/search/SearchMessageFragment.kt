@@ -82,14 +82,14 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         binding.titleView.avatarIv.visibility = VISIBLE
         binding.titleView.avatarIv.setTextSize(16f)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
-            binding.titleView.titleTv.text = searchMessageItem.userFullName
+            binding.titleView.titleTv.setTextOnly(searchMessageItem.userFullName)
             binding.titleView.avatarIv.setInfo(
                 searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl,
                 searchMessageItem.userId,
             )
         } else {
-            binding.titleView.titleTv.text = searchMessageItem.conversationName
+            binding.titleView.titleTv.setTextOnly(searchMessageItem.conversationName)
             binding.titleView.avatarIv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 
