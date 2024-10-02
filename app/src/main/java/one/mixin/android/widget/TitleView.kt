@@ -28,7 +28,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.TitleView)
         if (ta.hasValue(R.styleable.TitleView_titleText)) {
-            binding.titleTv.text = ta.getString(R.styleable.TitleView_titleText)
+            binding.titleTv.setTextOnly(ta.getString(R.styleable.TitleView_titleText))
         }
         if (ta.hasValue(R.styleable.TitleView_rightIcon)) {
             binding.rightIb.setImageResource(ta.getResourceId(R.styleable.TitleView_rightIcon, 0))

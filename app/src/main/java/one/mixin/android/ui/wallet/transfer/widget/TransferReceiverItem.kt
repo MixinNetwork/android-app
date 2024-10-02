@@ -30,7 +30,6 @@ class TransferReceiverItem : LinearLayout {
     @SuppressLint("SetTextI18n")
     fun setContent(user: User) {
         _binding.apply {
-            name.text = "${user.fullName} (${user.identityNumber})"
             name.setName(user,"${user.fullName} (${user.identityNumber})")
             userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         }

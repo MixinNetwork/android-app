@@ -18,6 +18,11 @@ data class SearchMessageDetailItem(
     fun isMembership(): Boolean {
         return membership?.isMembership() == true
     }
+
+    fun isProsperity(): Boolean {
+        return membership?.isProsperity() == true
+    }
+
     companion object {
         val DIFF_CALLBACK =
             object : DiffUtil.ItemCallback<SearchMessageDetailItem>() {

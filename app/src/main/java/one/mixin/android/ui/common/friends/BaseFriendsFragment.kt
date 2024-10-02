@@ -49,7 +49,7 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.titleTv.text = getString(getTitleResId())
+            titleView.titleTv.setTextOnly(getTitleResId())
             titleView.leftIb.setOnClickListener {
                 binding.searchEt.hideKeyboard()
                 activity?.onBackPressedDispatcher?.onBackPressed()

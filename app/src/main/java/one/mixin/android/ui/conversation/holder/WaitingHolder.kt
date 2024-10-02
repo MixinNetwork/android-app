@@ -86,16 +86,7 @@ class WaitingHolder constructor(
         }
         if (isFirst) {
             binding.chatName.isVisible = !isMe
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.membership != null) {
-                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {

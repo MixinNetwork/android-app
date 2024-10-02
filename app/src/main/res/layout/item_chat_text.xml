@@ -67,16 +67,15 @@
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"/>
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/chat_name"
-            android:minWidth="30dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
             android:textColor="#19BEF1"
-            android:textSize="14sp"
-            android:includeFontPadding="false"/>
+            app:ellipsize="end"
+            app:lines="1"
+            app:minWidth="30dp"
+            app:textSize="14sp"/>
 
     </one.mixin.android.widget.GestureMessageLayout>
 

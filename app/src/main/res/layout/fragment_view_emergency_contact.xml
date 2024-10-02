@@ -34,11 +34,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin12"
             android:layout_gravity="center_horizontal"
-            android:maxWidth="280dp"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="@dimen/bottom_name_text_size"
-            android:textColor="?attr/text_primary"/>
+            android:textColor="?attr/text_primary"
+            app:maxWidth="280dp"
+            app:ellipsize="end"
+            app:lines="1"
+            app:textSize="@dimen/bottom_name_text_size"/>
 
         <TextView
             android:id="@+id/id_tv"

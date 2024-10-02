@@ -29,15 +29,15 @@
         android:id="@+id/name_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:gravity="center"
+        android:textColor="?attr/text_primary"
         app:badgePadding="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/avatar_view"
-        android:layout_marginTop="3dp"
-        android:maxWidth="64dp"
-        android:gravity="center"
-        android:singleLine="true"
-        android:textColor="?attr/text_primary"
-        android:textSize="12sp" />
+        app:maxWidth="64dp"
+        app:lines="1"
+        app:textSize="12sp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
