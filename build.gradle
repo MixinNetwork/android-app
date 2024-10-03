@@ -14,7 +14,7 @@ buildscript {
         ext.constraintLayoutVersion = '2.1.4'
         ext.constraintLayoutComposeVersion = '1.0.1'
         ext.supportLibVersion = '1.0.0'
-        ext.recyclerViewVersion = '1.3.2'
+        ext.recyclerViewVersion = '1.4.0-rc01'
         ext.browserVersion = '1.8.0'
         ext.biometricVersion = '1.4.0-alpha02'
         ext.mdcVersion = '1.12.0'
