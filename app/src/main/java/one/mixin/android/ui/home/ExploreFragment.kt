@@ -201,27 +201,27 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
+    private val containerFragmentTags = listOf(MarketFragment.TAG, EthereumFragment.TAG, SolanaFragment.TAG)
     private fun navigate(
         destinationFragment: Fragment,
         tag: String,
     ) {
+        if (tag !in containerFragmentTags) return
         val tx = parentFragmentManager.beginTransaction()
         val f = parentFragmentManager.findFragmentByTag(tag)
         if (f == null) {
             tx.add(R.id.fragment_container, destinationFragment, tag)
-            destinations.add(destinationFragment)
         } else {
             tx.show(f)
         }
-        destinations.forEach {
-            if (it.tag != tag) {
-                tx.hide(it)
-            }
+        parentFragmentManager.fragments.filter { fragment ->
+            fragment.tag != tag && fragment.tag in containerFragmentTags
+        }.forEach { fragment ->
+            tx.hide(fragment)
         }
         tx.commitAllowingStateLoss()
     }
 
-    private val destinations = mutableListOf<Fragment>()
     private val ethereumFragment by lazy {
         EthereumFragment()
     }
