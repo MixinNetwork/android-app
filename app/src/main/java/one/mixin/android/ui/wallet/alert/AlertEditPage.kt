@@ -26,7 +26,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue.Hidden
 import androidx.compose.material.Text
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,7 +66,9 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.removeEnd
+import one.mixin.android.ui.wallet.alert.components.AlertFrequencyBottom
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
+import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
 import one.mixin.android.ui.wallet.alert.vo.Alert
@@ -95,376 +101,418 @@ fun Modifier.draw9Patch(
 @Composable
 fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop: () -> Unit) {
     MixinAppTheme {
-        PageScaffold(
-            title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
-            verticalScrollable = false,
-            pop = pop,
-        ) {
-            if (coin != null) {
-                val context = LocalContext.current
-                val currentPrice = BigDecimal(coin.currentPrice)
-                var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
-                val maxPrice = currentPrice.multiply(BigDecimal(100))
-                val minPrice = currentPrice.divide(BigDecimal(100))
-                val focusManager = LocalFocusManager.current
-                val keyboardController = LocalSoftwareKeyboardController.current
-                var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
-                var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
-                var isLoading by remember { mutableStateOf(false) }
-                var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
-                val viewModel = hiltViewModel<AlertViewModel>()
-                val coroutineScope = rememberCoroutineScope()
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 10.dp)
-                        .verticalScroll(rememberScrollState())
-                        .imePadding(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(), horizontalAlignment = Alignment.Start
-                    ) {
-                        Row(modifier = Modifier.padding(horizontal = 10.dp)) {
-                            CoilImage(
-                                model = coin.iconUrl,
-                                placeholder = R.drawable.ic_avatar_place_holder,
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape),
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(text = coin.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
-                                Text(text = stringResource(R.string.Current_price, "${BigDecimal(coin.currentPrice).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        AlertTypeSelector(selectedType = selectedAlertType) { newType ->
+        val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
+            Hidden,
+            skipHalfExpanded = true
+        )
+        val coroutineScope = rememberCoroutineScope()
+        if (coin != null) {
+            val context = LocalContext.current
+            val currentPrice = BigDecimal(coin.currentPrice)
+            var expandType by remember { mutableStateOf(true) }
+            var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
+            val maxPrice = currentPrice.multiply(BigDecimal(100))
+            val minPrice = currentPrice.divide(BigDecimal(100))
+            val focusManager = LocalFocusManager.current
+            val keyboardController = LocalSoftwareKeyboardController.current
+            var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
+            var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
+            var isLoading by remember { mutableStateOf(false) }
+            var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
+            val viewModel = hiltViewModel<AlertViewModel>()
+            ModalBottomSheetLayout(
+                sheetState = bottomSheetState,
+                scrimColor = Color.Black.copy(alpha = 0.3f),
+                sheetBackgroundColor = Color.Transparent,
+                sheetContent = {
+                    if (expandType) {
+                        AlertTypeBottom({ newType: AlertType ->
                             if (selectedAlertType != newType) {
                                 inputError = null
                                 alertValue = ""
                                 selectedAlertType = newType
                             }
-                        }
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }
+                        }, {
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }
+                        })
+                    } else {
+                        AlertFrequencyBottom({ newFrequency: AlertFrequency ->
+                            if (selectedAlertFrequency != newFrequency) {
+                                selectedAlertFrequency = newFrequency
+                            }
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }
+                        }, {
+                            coroutineScope.launch {
+                                bottomSheetState.hide()
+                            }
+                        })
+                    }
+                },
+            ) {
+                PageScaffold(
+                    title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
+                    verticalScrollable = false,
+                    pop = pop,
+                ) {
 
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        Box(
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 10.dp)
+                            .verticalScroll(rememberScrollState())
+                            .imePadding(),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp)
-                                .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard),
+                                .fillMaxWidth(), horizontalAlignment = Alignment.Start
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(horizontal = 23.dp)
-                                    .padding(top = 19.dp, bottom = 22.dp)
-                            ) {
-                                Text(
-                                    text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                        stringResource(R.string.price_in_currency, "USD")
-                                    } else {
-                                        stringResource(R.string.Value)
-                                    }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
+                            Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+                                CoilImage(
+                                    model = coin.iconUrl,
+                                    placeholder = R.drawable.ic_avatar_place_holder,
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(CircleShape),
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
-                                val focusRequester = remember { FocusRequester() }
-                                val interactionSource = remember { MutableInteractionSource() }
-                                val focused = remember { mutableStateOf(false) }
+                                Column {
+                                    Text(text = coin.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
+                                    Text(text = stringResource(R.string.Current_price, "${BigDecimal(coin.currentPrice).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
+                                }
+                            }
 
-                                Spacer(modifier = Modifier.height(10.dp))
-                                BasicTextField(
-                                    value = alertValue,
-                                    onValueChange = { newValue ->
-                                        if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                            val newPrice = newValue.replace(",", "").toBigDecimalOrNull()
-                                            if (newPrice != null) {
-                                                alertValue = newPrice.toPlainString().let {
-                                                    if (newValue.endsWith(".")) {
-                                                        "$it."
-                                                    } else {
-                                                        it
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            AlertTypeSelector(selectedType = selectedAlertType) {
+                                expandType = true
+                                coroutineScope.launch { bottomSheetState.show() }
+                            }
+
+                            Spacer(modifier = Modifier.height(2.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp)
+                                    .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard),
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(horizontal = 23.dp)
+                                        .padding(top = 19.dp, bottom = 22.dp)
+                                ) {
+                                    Text(
+                                        text = if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                            stringResource(R.string.price_in_currency, "USD")
+                                        } else {
+                                            stringResource(R.string.Value)
+                                        }, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    val focusRequester = remember { FocusRequester() }
+                                    val interactionSource = remember { MutableInteractionSource() }
+                                    val focused = remember { mutableStateOf(false) }
+
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    BasicTextField(
+                                        value = alertValue,
+                                        onValueChange = { newValue ->
+                                            if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                                val newPrice = newValue.replace(",", "").toBigDecimalOrNull()
+                                                if (newPrice != null) {
+                                                    alertValue = newPrice.toPlainString().let {
+                                                        if (newValue.endsWith(".")) {
+                                                            "$it."
+                                                        } else {
+                                                            it
+                                                        }
                                                     }
-                                                }
-                                                inputError = if (selectedAlertType != AlertType.PRICE_REACHED && newPrice == currentPrice) {
-                                                    InputError.EQUALS_CURRENT_PRICE
-                                                } else if (newPrice > maxPrice) {
-                                                    InputError.EXCEEDS_MAX_PRICE
-                                                } else if (newPrice < minPrice) {
-                                                    InputError.BELOW_MIN_PRICE
-                                                } else if (selectedAlertType == AlertType.PRICE_DECREASED && newPrice > currentPrice) {
-                                                    InputError.MUST_BE_LESS_THAN_CURRENT_PRICE
-                                                } else if (selectedAlertType == AlertType.PRICE_INCREASED && newPrice < currentPrice) {
-                                                    InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE
+                                                    inputError = if (selectedAlertType != AlertType.PRICE_REACHED && newPrice == currentPrice) {
+                                                        InputError.EQUALS_CURRENT_PRICE
+                                                    } else if (newPrice > maxPrice) {
+                                                        InputError.EXCEEDS_MAX_PRICE
+                                                    } else if (newPrice < minPrice) {
+                                                        InputError.BELOW_MIN_PRICE
+                                                    } else if (selectedAlertType == AlertType.PRICE_DECREASED && newPrice > currentPrice) {
+                                                        InputError.MUST_BE_LESS_THAN_CURRENT_PRICE
+                                                    } else if (selectedAlertType == AlertType.PRICE_INCREASED && newPrice < currentPrice) {
+                                                        InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE
+                                                    } else {
+                                                        null
+                                                    }
                                                 } else {
-                                                    null
+                                                    alertValue = ""
+                                                    inputError = null
                                                 }
                                             } else {
-                                                alertValue = ""
-                                                inputError = null
-                                            }
-                                        } else {
-                                            if (newValue.replace("%", "") == "0.0") {
-                                                alertValue = "0.0"
-                                                inputError = null
-                                                return@BasicTextField
-                                            }
-                                            var dot: Boolean
-                                            val newPercentage = newValue.replace("%", "").let {
-                                                if (it.endsWith(".")) {
-                                                    dot = true
-                                                    it.removeEnd(".")
-                                                } else {
-                                                    dot = false
-                                                    it
-                                                }
-                                            }.toBigDecimalOrNull()
-                                            if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
-                                                if (newPercentage != null) {
-                                                    val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
-                                                    alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
-                                                        if (dot) {
-                                                            "$it.%"
-                                                        } else {
-                                                            "$it%"
-                                                        }
-                                                    }
-                                                    inputError = if (adjustedPercentage.toFloat() > 1000f) {
-                                                        InputError.INCREASE_TOO_HIGH
-                                                    } else if (adjustedPercentage.toFloat() < 0.01f) {
-                                                        InputError.INCREASE_TOO_LOW
-                                                    } else {
-                                                        null
-                                                    }
-                                                } else {
-                                                    alertValue = ""
+                                                if (newValue.replace("%", "") == "0.0") {
+                                                    alertValue = "0.0"
                                                     inputError = null
+                                                    return@BasicTextField
                                                 }
-                                            } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
-                                                if (newPercentage != null) {
-                                                    val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
-                                                    alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
-                                                        if (dot) {
-                                                            "$it.%"
-                                                        } else {
-                                                            "$it%"
-                                                        }
-                                                    }
-                                                    inputError = if (adjustedPercentage.toFloat() > 99.99f) {
-                                                        InputError.DECREASE_TOO_HIGH
-                                                    } else if (adjustedPercentage.toFloat() < 0.01f) {
-                                                        InputError.DECREASE_TOO_LOW
+                                                var dot: Boolean
+                                                val newPercentage = newValue.replace("%", "").let {
+                                                    if (it.endsWith(".")) {
+                                                        dot = true
+                                                        it.removeEnd(".")
                                                     } else {
-                                                        null
+                                                        dot = false
+                                                        it
                                                     }
-                                                } else {
-                                                    alertValue = ""
-                                                    inputError = null
+                                                }.toBigDecimalOrNull()
+                                                if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
+                                                    if (newPercentage != null) {
+                                                        val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
+                                                        alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
+                                                            if (dot) {
+                                                                "$it.%"
+                                                            } else {
+                                                                "$it%"
+                                                            }
+                                                        }
+                                                        inputError = if (adjustedPercentage.toFloat() > 1000f) {
+                                                            InputError.INCREASE_TOO_HIGH
+                                                        } else if (adjustedPercentage.toFloat() < 0.01f) {
+                                                            InputError.INCREASE_TOO_LOW
+                                                        } else {
+                                                            null
+                                                        }
+                                                    } else {
+                                                        alertValue = ""
+                                                        inputError = null
+                                                    }
+                                                } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
+                                                    if (newPercentage != null) {
+                                                        val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
+                                                        alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
+                                                            if (dot) {
+                                                                "$it.%"
+                                                            } else {
+                                                                "$it%"
+                                                            }
+                                                        }
+                                                        inputError = if (adjustedPercentage.toFloat() > 99.99f) {
+                                                            InputError.DECREASE_TOO_HIGH
+                                                        } else if (adjustedPercentage.toFloat() < 0.01f) {
+                                                            InputError.DECREASE_TOO_LOW
+                                                        } else {
+                                                            null
+                                                        }
+                                                    } else {
+                                                        alertValue = ""
+                                                        inputError = null
+                                                    }
                                                 }
                                             }
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .focusRequester(focusRequester)
-                                        .onFocusChanged {
-                                            if (it.isFocused) {
-                                                keyboardController?.show()
-                                            }
-                                            focused.value = it.isFocused
                                         },
-                                    interactionSource = interactionSource,
-                                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                                    textStyle = TextStyle(
-                                        fontSize = 16.sp,
-                                        lineHeight = 16.sp,
-                                        color = if (inputError != null) Color(0xFFDB454F) else MixinAppTheme.colors.textPrimary,
-                                        textAlign = TextAlign.Start,
-                                    ),
-                                    decorationBox = { innerTextField ->
-                                        if (alertValue.isEmpty()) {
-                                            Text(
-                                                if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                                    "0.00"
-                                                } else {
-                                                    "0.00%"
-                                                },
-                                                fontSize = 16.sp,
-                                                lineHeight = 16.sp,
-                                                color = MixinAppTheme.colors.textAssist,
-                                            )
-                                        }
-                                        if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED) || Fiats.getRate() == 1.0) {
-                                            innerTextField()
-                                        } else {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Box(modifier = Modifier.weight(1f)) {
-                                                    innerTextField()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .focusRequester(focusRequester)
+                                            .onFocusChanged {
+                                                if (it.isFocused) {
+                                                    keyboardController?.show()
                                                 }
-
+                                                focused.value = it.isFocused
+                                            },
+                                        interactionSource = interactionSource,
+                                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                                        textStyle = TextStyle(
+                                            fontSize = 16.sp,
+                                            lineHeight = 16.sp,
+                                            color = if (inputError != null) Color(0xFFDB454F) else MixinAppTheme.colors.textPrimary,
+                                            textAlign = TextAlign.Start,
+                                        ),
+                                        decorationBox = { innerTextField ->
+                                            if (alertValue.isEmpty()) {
                                                 Text(
-                                                    text = runCatching { "${BigDecimal(alertValue.replace(",", "")).multiply(BigDecimal(Fiats.getRate())).priceFormat()} ${Fiats.getAccountCurrencyAppearance()}" }.getOrNull() ?: "",
-                                                    fontSize = 12.sp,
+                                                    if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                                        "0.00"
+                                                    } else {
+                                                        "0.00%"
+                                                    },
+                                                    fontSize = 16.sp,
+                                                    lineHeight = 16.sp,
                                                     color = MixinAppTheme.colors.textAssist,
-                                                    modifier = Modifier
-                                                        .weight(1f)
-                                                        .padding(start = 8.dp),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    textAlign = TextAlign.End
                                                 )
                                             }
+                                            if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED) || Fiats.getRate() == 1.0) {
+                                                innerTextField()
+                                            } else {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Box(modifier = Modifier.weight(1f)) {
+                                                        innerTextField()
+                                                    }
+
+                                                    Text(
+                                                        text = runCatching { "${BigDecimal(alertValue.replace(",", "")).multiply(BigDecimal(Fiats.getRate())).priceFormat()} ${Fiats.getAccountCurrencyAppearance()}" }.getOrNull() ?: "",
+                                                        fontSize = 12.sp,
+                                                        color = MixinAppTheme.colors.textAssist,
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .padding(start = 8.dp),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        textAlign = TextAlign.End
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            if (inputError != null) {
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+                                    Text(
+                                        text = when (inputError) {
+                                            InputError.EQUALS_CURRENT_PRICE -> stringResource(R.string.error_equals_current_price)
+                                            InputError.EXCEEDS_MAX_PRICE -> stringResource(R.string.error_exceeds_max_price)
+                                            InputError.BELOW_MIN_PRICE -> stringResource(R.string.error_below_min_price)
+                                            InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_less_than_current_price)
+                                            InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_greater_than_current_price)
+                                            InputError.INCREASE_TOO_HIGH -> stringResource(R.string.error_increase_too_high)
+                                            InputError.INCREASE_TOO_LOW -> stringResource(R.string.error_increase_too_low)
+                                            InputError.DECREASE_TOO_HIGH -> stringResource(R.string.error_decrease_too_high)
+                                            InputError.DECREASE_TOO_LOW -> stringResource(R.string.error_decrease_too_low)
+                                            else -> ""
+                                        },
+                                        color = Color(0xFFDB454F),
+                                        fontSize = 12.sp,
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            PercentagesRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp), selectedAlertType
+                            ) { percentage ->
+                                if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                                    val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
+                                    alertValue = newPrice.toPlainString()
+                                    inputError = null
+                                } else {
+                                    alertValue = when (percentage) {
+                                        0.2f -> "20%"
+                                        0.1f -> "10%"
+                                        0.05f -> "5%"
+                                        -0.05f -> "5%"
+                                        -0.1f -> "10%"
+                                        else -> "20%"
+                                    }
+                                    inputError = null
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            AlertFrequencySelector(selectedAlertFrequency) {
+                                coroutineScope.launch {
+                                    expandType = false
+                                    bottomSheetState.show()
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        val enable = inputError == null &&
+                            alertValue.isNotBlank() &&
+                            (alertValue.replace("%", "").toBigDecimalOrNull() ?: BigDecimal.ZERO).compareTo(BigDecimal.ZERO) != 0
+                        Button(
+                            modifier = Modifier
+                                .height(48.dp)
+                                .align(alignment = Alignment.CenterHorizontally),
+                            enabled = !isLoading && enable,
+                            onClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+
+                                coroutineScope.launch {
+                                    isLoading = true
+                                    if (alert != null) {
+                                        val alertRequest = AlertUpdateRequest(
+                                            type = selectedAlertType.value,
+                                            value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
+                                                alertValue.let {
+                                                    (it.replace("%", "").toBigDecimal().divide(BigDecimal(100))).toPlainString()
+                                                }
+                                            } else {
+                                                alertValue.replace(",", "")
+                                            },
+                                            frequency = selectedAlertFrequency.value,
+                                        )
+                                        val re = viewModel.updateAlert(alert.alertId, alertRequest)
+                                        if (re?.isSuccess == true) {
+                                            pop.invoke()
+                                        }
+                                    } else {
+                                        val alertRequest = AlertRequest(
+                                            coinId = coin.coinId,
+                                            type = selectedAlertType.value,
+                                            value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
+                                                alertValue.let {
+                                                    (it.replace("%", "").toBigDecimal().divide(BigDecimal(100))).toPlainString()
+                                                }
+                                            } else {
+                                                alertValue.replace(",", "")
+                                            },
+                                            frequency = selectedAlertFrequency.value,
+                                            lang = Locale.getDefault().language,
+                                        )
+                                        val re = viewModel.add(alertRequest)
+                                        if (re?.isSuccess == true) {
+                                            onAdd.invoke(coin)
+                                            pop.invoke()
                                         }
                                     }
-                                )
-                            }
-                        }
+                                    isLoading = false
 
-                        if (inputError != null) {
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+                                }
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = if (enable) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                            ),
+                            shape = RoundedCornerShape(32.dp),
+                            elevation = ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp,
+                            ),
+                        ) {
+                            Box(modifier = Modifier.padding(horizontal = 32.dp), contentAlignment = Alignment.Center) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        color = Color.White,
+                                    )
+                                }
                                 Text(
-                                    text = when (inputError) {
-                                        InputError.EQUALS_CURRENT_PRICE -> stringResource(R.string.error_equals_current_price)
-                                        InputError.EXCEEDS_MAX_PRICE -> stringResource(R.string.error_exceeds_max_price)
-                                        InputError.BELOW_MIN_PRICE -> stringResource(R.string.error_below_min_price)
-                                        InputError.MUST_BE_LESS_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_less_than_current_price)
-                                        InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE -> stringResource(R.string.error_must_be_greater_than_current_price)
-                                        InputError.INCREASE_TOO_HIGH -> stringResource(R.string.error_increase_too_high)
-                                        InputError.INCREASE_TOO_LOW -> stringResource(R.string.error_increase_too_low)
-                                        InputError.DECREASE_TOO_HIGH -> stringResource(R.string.error_decrease_too_high)
-                                        InputError.DECREASE_TOO_LOW -> stringResource(R.string.error_decrease_too_low)
-                                        else -> ""
-                                    },
-                                    color = Color(0xFFDB454F),
-                                    fontSize = 12.sp,
+                                    modifier = Modifier.alpha(if (isLoading) 0f else 1f),
+                                    text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
+                                    color = if (enable) Color.White else MixinAppTheme.colors.textAssist,
                                 )
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
                         }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-                        PercentagesRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp), selectedAlertType
-                        ) { percentage ->
-                            if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
-                                alertValue = newPrice.toPlainString()
-                                inputError = null
-                            } else {
-                                alertValue = when (percentage) {
-                                    0.2f -> "20%"
-                                    0.1f -> "10%"
-                                    0.05f -> "5%"
-                                    -0.05f -> "5%"
-                                    -0.1f -> "10%"
-                                    else -> "20%"
-                                }
-                                inputError = null
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        AlertFrequencySelector(selectedAlertFrequency) { newFrequency ->
-                            selectedAlertFrequency = newFrequency
-                        }
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
-
-                    Spacer(modifier = Modifier.height(28.dp))
-
-                    val enable = inputError == null &&
-                        alertValue.isNotBlank() &&
-                        (alertValue.replace("%", "").toBigDecimalOrNull() ?: BigDecimal.ZERO).compareTo(BigDecimal.ZERO) != 0
-                    Button(
-                        modifier = Modifier
-                            .height(48.dp)
-                            .align(alignment = Alignment.CenterHorizontally),
-                        enabled = !isLoading && enable,
-                        onClick = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-
-                            coroutineScope.launch {
-                                isLoading = true
-                                if (alert != null) {
-                                    val alertRequest = AlertUpdateRequest(
-                                        type = selectedAlertType.value,
-                                        value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
-                                            alertValue.let {
-                                                (it.replace("%", "").toFloat() / 100f).toString()
-                                            }
-                                        } else {
-                                            alertValue.replace(",", "")
-                                        },
-                                        frequency = selectedAlertFrequency.value,
-                                    )
-                                    val re = viewModel.updateAlert(alert.alertId, alertRequest)
-                                    if (re?.isSuccess == true) {
-                                        pop.invoke()
-                                    }
-                                } else {
-                                    val alertRequest = AlertRequest(
-                                        coinId = coin.coinId,
-                                        type = selectedAlertType.value,
-                                        value = if (selectedAlertType in listOf(AlertType.PERCENTAGE_DECREASED, AlertType.PERCENTAGE_INCREASED)) {
-                                            alertValue.let {
-                                                (it.replace("%", "").toFloat() / 100f).toString()
-                                            }
-                                        } else {
-                                            alertValue.replace(",", "")
-                                        },
-                                        frequency = selectedAlertFrequency.value,
-                                        lang = Locale.getDefault().language,
-                                    )
-                                    val re = viewModel.add(alertRequest)
-                                    if (re?.isSuccess == true) {
-                                        onAdd.invoke(coin)
-                                        pop.invoke()
-                                    }
-                                }
-                                isLoading = false
-
-                            }
-                        },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            backgroundColor = if (enable) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                        ),
-                        shape = RoundedCornerShape(32.dp),
-                        elevation = ButtonDefaults.elevation(
-                            pressedElevation = 0.dp,
-                            defaultElevation = 0.dp,
-                            hoveredElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
-                    ) {
-                        Box(modifier = Modifier.padding(horizontal = 32.dp), contentAlignment = Alignment.Center) {
-                            if (isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    color = Color.White,
-                                )
-                            }
-                            Text(
-                                modifier = Modifier.alpha(if (isLoading) 0f else 1f),
-                                text = stringResource(if (alert == null) R.string.Add_Alert else R.string.Save),
-                                color = if (enable) Color.White else MixinAppTheme.colors.textAssist,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }

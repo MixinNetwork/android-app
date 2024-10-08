@@ -71,7 +71,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
             )
 
             Text(
-                "${if (alert.type in listOf(PRICE_REACHED, PRICE_INCREASED, PRICE_DECREASED)) stringResource(R.string.Price) else if(alert.type == PERCENTAGE_DECREASED) stringResource(R.string.alert_type_percentage_decreased) else stringResource(R.string.alert_type_percentage_increased)} ${alert.displayValue}", modifier = Modifier.constrainAs(title) {
+                alert.displayValue(), modifier = Modifier.constrainAs(title) {
                     top.linkTo(endIcon.top)
                     bottom.linkTo(endIcon.bottom)
                     linkTo(starIcon.end, endIcon.start, startMargin = 10.dp, endMargin = 10.dp, bias = 0f)
@@ -147,7 +147,7 @@ fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {
 
             Text(
                 if (alert.status == AlertStatus.RUNNING) {
-                    stringResource(alert.frequency.getStringResId())
+                    stringResource(alert.frequency.getTitleResId())
                 } else {
                     stringResource(R.string.Paused)
                 }, modifier = Modifier.constrainAs(subtitle) {

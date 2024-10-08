@@ -4,6 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.R
+import one.mixin.android.ui.wallet.alert.vo.AlertFrequency.DAILY
+import one.mixin.android.ui.wallet.alert.vo.AlertFrequency.EVERY
+import one.mixin.android.ui.wallet.alert.vo.AlertFrequency.ONCE
 
 enum class AlertType(val value: String) {
     @SerializedName("price_reached")
@@ -33,13 +36,24 @@ enum class AlertType(val value: String) {
     }
 
     @StringRes
-    fun getStringResId(): Int {
+    fun getTitleResId(): Int {
         return when (this) {
             PRICE_REACHED -> R.string.alert_type_price_reached
             PRICE_INCREASED -> R.string.alert_type_price_increased
             PRICE_DECREASED -> R.string.alert_type_price_decreased
             PERCENTAGE_INCREASED -> R.string.alert_type_percentage_increased
             PERCENTAGE_DECREASED -> R.string.alert_type_percentage_decreased
+        }
+    }
+
+    @StringRes
+    fun getSubTitleResId(): Int {
+        return when (this) {
+            PRICE_REACHED -> R.string.alert_type_price_reached_description
+            PRICE_INCREASED -> R.string.alert_type_price_increased_description
+            PRICE_DECREASED -> R.string.alert_type_price_decreased_description
+            PERCENTAGE_INCREASED -> R.string.alert_type_percentage_increased_description
+            PERCENTAGE_DECREASED -> R.string.alert_type_percentage_decreased_description
         }
     }
 }
