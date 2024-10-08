@@ -954,6 +954,7 @@ class MainActivity : BlazeBaseActivity() {
                 conversationListFragment.hideCircles()
             }
         }
+        conversationListFragment.hideContainer()
     }
 
     fun openWallet() {
