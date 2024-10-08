@@ -51,7 +51,7 @@ fun AlertSelectItem(
             modifier = Modifier
                 .size(24.dp)
                 .constrainAs(starIcon) {
-                    top.linkTo(parent.top)
+                    top.linkTo(parent.top, 5.dp)
                     start.linkTo(parent.start)
                 }
         )
