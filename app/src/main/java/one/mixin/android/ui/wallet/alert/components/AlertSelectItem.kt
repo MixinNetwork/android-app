@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,10 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun AlertSelectItem(
+    selected: Boolean,
     iconId: Int,
     titleId: Int,
     subTitleId: Int,
@@ -43,7 +46,7 @@ fun AlertSelectItem(
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)
     )
     {
-        val (starIcon, title, subtitle) = createRefs()
+        val (starIcon, endIcon, title, subtitle) = createRefs()
 
         Image(
             painter = painterResource(id = iconId),
@@ -55,12 +58,25 @@ fun AlertSelectItem(
                     start.linkTo(parent.start)
                 }
         )
+
+        Image(
+            painter = painterResource(id = R.drawable.ic_alert_selected),
+            contentDescription = null,
+            modifier = Modifier
+                .alpha(if (selected) 1f else 0f)
+                .size(24.dp)
+                .constrainAs(endIcon) {
+                    top.linkTo(starIcon.top)
+                    bottom.linkTo(starIcon.bottom)
+                    end.linkTo(parent.end)
+                }
+        )
         Text(
             modifier = Modifier
                 .constrainAs(title) {
                     top.linkTo(parent.top)
                     end.linkTo(parent.end)
-                    linkTo(starIcon.end, parent.end, startMargin = 12.dp, bias = 0f)
+                    linkTo(starIcon.end, endIcon.start, startMargin = 12.dp, endMargin = 12.dp, bias = 0f)
                     width = Dimension.fillToConstraints
                 },
             text = stringResource(id = titleId),
@@ -75,7 +91,7 @@ fun AlertSelectItem(
             modifier = Modifier
                 .constrainAs(subtitle) {
                     top.linkTo(title.bottom, 6.dp)
-                    linkTo(title.start, parent.end, bias = 0f)
+                    linkTo(title.start, endIcon.start, endMargin = 12.dp, bias = 0f)
                     width = Dimension.fillToConstraints
                 },
             text = stringResource(id = subTitleId),

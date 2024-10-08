@@ -33,6 +33,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType
 
 @Composable
 fun AlertTypeBottom(
+    currentAlertType: AlertType,
     onTypeSelected: (AlertType) -> Unit,
     onDismissRequest: () -> Unit
 ) {
@@ -45,7 +46,8 @@ fun AlertTypeBottom(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 4.dp, vertical = 12.dp),
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -76,6 +78,7 @@ fun AlertTypeBottom(
             items(AlertType.entries.toTypedArray()) { alertType ->
                 Spacer(Modifier.height(8.dp))
                 AlertSelectItem(
+                    currentAlertType == alertType,
                     alertType.getIconResId(),
                     alertType.getTitleResId(),
                     alertType.getSubTitleResId(),

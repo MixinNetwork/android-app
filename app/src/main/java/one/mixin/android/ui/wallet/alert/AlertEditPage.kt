@@ -126,7 +126,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                 sheetBackgroundColor = Color.Transparent,
                 sheetContent = {
                     if (expandType) {
-                        AlertTypeBottom({ newType: AlertType ->
+                        AlertTypeBottom(selectedAlertType, { newType: AlertType ->
                             if (selectedAlertType != newType) {
                                 inputError = null
                                 alertValue = ""
@@ -141,7 +141,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                             }
                         })
                     } else {
-                        AlertFrequencyBottom({ newFrequency: AlertFrequency ->
+                        AlertFrequencyBottom(selectedAlertFrequency, { newFrequency: AlertFrequency ->
                             if (selectedAlertFrequency != newFrequency) {
                                 selectedAlertFrequency = newFrequency
                             }

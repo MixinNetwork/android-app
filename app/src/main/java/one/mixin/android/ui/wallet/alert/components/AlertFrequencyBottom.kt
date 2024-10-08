@@ -31,6 +31,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 
 @Composable
 fun AlertFrequencyBottom(
+    currentAlertFrequency: AlertFrequency,
     onFrequencySelected: (AlertFrequency) -> Unit,
     onDismissRequest: () -> Unit
 ) {
@@ -43,7 +44,8 @@ fun AlertFrequencyBottom(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 4.dp, vertical = 12.dp),
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -75,6 +77,7 @@ fun AlertFrequencyBottom(
                 Spacer(Modifier.height(8.dp))
 
                 AlertSelectItem(
+                    currentAlertFrequency == alertFrequency,
                     alertFrequency.getIconResId(),
                     alertFrequency.getTitleResId(),
                     alertFrequency.getSubTitleResId(),
