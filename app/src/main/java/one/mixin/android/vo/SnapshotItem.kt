@@ -147,7 +147,7 @@ data class SnapshotItem(
             }
 
             SafeSnapshotType.deposit -> {
-                deposit?.depositHash.isNullOrBlank()
+                deposit?.sender.isNullOrBlank() || deposit?.depositHash.isNullOrBlank()
             }
 
             SafeSnapshotType.snapshot -> {
