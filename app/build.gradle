@@ -109,7 +109,17 @@ android {
         }
     }
 
+    flavorDimensions += "channel"
     productFlavors {
+        googlePlay {
+            dimension "channel"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY", "true"
+        }
+
+        otherChannel {
+            dimension "channel"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY", "false"
+        }
     }
 
     signingConfigs {
