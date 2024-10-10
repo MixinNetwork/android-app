@@ -31,7 +31,7 @@ object Constants {
         const val TIP = "https://tip.id"
         const val INSCRIPTION = "https://mixin.one/inscriptions/"
         const val MARKETPLACE = "https://rune.fan/items/"
-        const val SPACE = "https://mixin.space/txs/"
+        const val SPACE = "https://mixin.space/tx/"
     }
 
     object Tip {
