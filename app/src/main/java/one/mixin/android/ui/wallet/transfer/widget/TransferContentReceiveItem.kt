@@ -15,6 +15,7 @@ class TransferContentReceiveItem : LinearLayout {
     private val _binding: ItemTransferReceiveContentBinding
     private val dp28 = 28.dp
     private val dp8 = 8.dp
+    private val dp6 = 6.dp
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -37,7 +38,10 @@ class TransferContentReceiveItem : LinearLayout {
             item.setOnClickListener {
                 userClick(user)
             }
-            userContainer.addView(item)
+            userContainer.addView(item, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp6
+                bottomMargin = dp6
+            })
         }
     }
 
@@ -47,6 +51,7 @@ class TransferContentReceiveItem : LinearLayout {
         users: List<User>,
         threshold: Int? = null,
         userClick: (User) -> Unit,
+        signers: List<String>? = null
     ) {
         _binding.apply {
             if (threshold != null && users.size > 1) {
@@ -56,11 +61,15 @@ class TransferContentReceiveItem : LinearLayout {
             }
             users.forEach { user ->
                 val item = TransferReceiverItem(context)
-                item.setContent(user)
+                item.setContent(user, signers)
                 item.setOnClickListener {
                     userClick(user)
                 }
-                userContainer.addView(item)
+
+                userContainer.addView(item, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                    topMargin = dp6
+                    bottomMargin = dp6
+                })
             }
         }
     }
