@@ -333,7 +333,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                             state = state,
                             reference = null,
-                            safe = safe
+                            safe = safe,
+                            signers = multisigs.signers,
                         )
                     TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                         parentFragmentManager,
@@ -387,7 +388,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
                         reference = null,
-                        safe = null
+                        safe = null,
+                        signers = multisigs.signers,
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
