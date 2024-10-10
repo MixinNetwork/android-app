@@ -65,7 +65,6 @@ class TransferContentReceiveItem : LinearLayout {
                 item.setOnClickListener {
                     userClick(user)
                 }
-
                 userContainer.addView(item, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
                     topMargin = dp6
                     bottomMargin = dp6

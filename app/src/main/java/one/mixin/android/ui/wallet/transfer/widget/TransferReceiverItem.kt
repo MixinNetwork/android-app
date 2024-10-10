@@ -17,7 +17,6 @@ import one.mixin.android.vo.User
 
 class TransferReceiverItem : LinearLayout {
     private val _binding: ItemReceiverBinding
-    private val dp8 = 8.dp
     private val dp6 = 6.dp
     private val dp4 = 4.dp
 
@@ -29,7 +28,12 @@ class TransferReceiverItem : LinearLayout {
         _binding = ItemReceiverBinding.inflate(LayoutInflater.from(context), this)
         val outValue = TypedValue()
         getContext().theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-        foreground = AppCompatResources.getDrawable(context, outValue.resourceId)
+        _binding.name.foreground = AppCompatResources.getDrawable(context, outValue.resourceId)
+    }
+
+    override fun setOnClickListener(l: OnClickListener?) {
+        _binding.name.setOnClickListener(l)
+        _binding.userAvatar.setOnClickListener(l)
     }
 
     @SuppressLint("SetTextI18n")
