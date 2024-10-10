@@ -1204,21 +1204,9 @@ class TokenRepository
         )
     }
 
-    suspend fun updateAlert(alertId: String, action: String): MixinResponse<Unit>? {
+    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
         return requestRouteAPI(
-            invokeNetwork = { routeService.updateAlert(alertId, action) },
-            successBlock = { response ->
-                response
-            },
-            requestSession = {
-                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
-            }
-        )
-    }
-
-    suspend fun updateAlert(alertId: String, action: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
-        return requestRouteAPI(
-            invokeNetwork = { routeService.updateAlert(alertId, action, request) },
+            invokeNetwork = { routeService.updateAlert(alertId, request) },
             successBlock = { response ->
                 response
             },

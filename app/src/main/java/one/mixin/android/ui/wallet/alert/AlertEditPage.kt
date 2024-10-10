@@ -457,6 +457,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                                 alertValue.replace(",", "")
                                             },
                                             frequency = selectedAlertFrequency.value,
+                                            action = "update"
                                         )
                                         val re = viewModel.updateAlert(alert.alertId, alertRequest)
                                         if (re?.isSuccess == true) {

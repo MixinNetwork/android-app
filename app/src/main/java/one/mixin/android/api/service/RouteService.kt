@@ -209,8 +209,5 @@ interface RouteService {
     suspend fun alerts():MixinResponse<List<Alert>>
 
     @POST("prices/alerts/{id}")
-    suspend fun updateAlert(@Path("id") alertId: String, @Query("action") action: String): MixinResponse<Unit>
-
-    @POST("prices/alerts/{id}")
-    suspend fun updateAlert(@Path("id") alertId: String, @Query("action") action: String, @Body request: AlertUpdateRequest): MixinResponse<Unit>
+    suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Unit>
 }

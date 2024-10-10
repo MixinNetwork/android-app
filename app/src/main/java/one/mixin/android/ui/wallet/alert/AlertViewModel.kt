@@ -32,10 +32,10 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
     suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
 
     suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
-        val r = tokenRepository.updateAlert(alertId, "update", request)
+        val r = tokenRepository.updateAlert(alertId, request)
         if (r?.isSuccess == true) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenRepository.updateAlert(alertId, request.type, request.value, request.frequency)
+                tokenRepository.updateAlert(alertId, request.type!!, request.value!!, request.frequency!!)
             }
         }
         return r
@@ -51,12 +51,12 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     suspend fun updateAlert(alertId: String, action: AlertAction) {
         val r = tokenRepository.updateAlert(
-            alertId, action = when (action) {
+            alertId, AlertUpdateRequest(action = when (action) {
                 AlertAction.DELETE -> "delete"
                 AlertAction.RESUME -> "resume"
                 AlertAction.PAUSE -> "pause"
                 AlertAction.EDIT -> ""
-            }
+            })
         )
         if (r?.isSuccess == true) {
             when (action) {
