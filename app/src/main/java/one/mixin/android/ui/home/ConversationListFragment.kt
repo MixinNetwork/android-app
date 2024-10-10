@@ -417,7 +417,9 @@ class ConversationListFragment : LinkFragment() {
         binding.searchBar.containerDisplay
 
     fun hideContainer() {
-        binding.searchBar.hideContainer()
+        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
+            binding.searchBar.hideContainer()
+        }
     }
 
     fun showPrevious() {
