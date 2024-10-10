@@ -145,18 +145,16 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     marketItem.assetIds!!.first()
                 }, { percentageChange ->
                     if (percentageChange == null) {
-                        currentRise = percentageChange
                         priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         priceRise.text = getString(R.string.N_A)
                     } else {
-                        priceRise.setQuoteText(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
-                        priceRise.text = currentRise
+                        currentRise = String.format("%.2f%%", percentageChange)
+                        priceRise.setQuoteText(currentRise, percentageChange >= 0f)
                     }
                 }, { price, percentageChange ->
                     if (price == null) {
-                        priceRise.text = currentRise
                         priceValue.text = currentPrice
-                        priceRise.setQuoteText(currentRise, currentRise?.startsWith("-") == true)
+                        priceRise.setQuoteText(currentRise, currentRise?.startsWith("-") == false)
                     } else {
                         priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
@@ -293,18 +291,15 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     priceRise.visibility = VISIBLE
                     if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
                         val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
-                        currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
-                        priceRise.text = currentRise
-                        priceRise.setQuoteText(currentRise, isPositive)
                         balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)", isPositive)
                         riseTitle.isVisible = true
                     } else {
                         balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                         balanceChange.text = "0.00%"
-                        priceRise.text = "0.00%"
                         riseTitle.isVisible = false
                     }
+                    currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
+                    priceRise.setQuoteText(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
                             if (ids.size > tokens.size) {
