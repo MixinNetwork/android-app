@@ -62,6 +62,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_57_58
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_58_59
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_59_60
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_60_61
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_61_62
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
@@ -72,6 +73,7 @@ import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.TreasuryConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
+import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.debug.getContent
@@ -115,6 +117,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.safe.DepositEntry
@@ -176,6 +179,8 @@ import kotlin.math.min
         (HistoryPrice::class),
         (MarketCoin::class),
         (MarketFavored::class),
+        (Alert::class),
+        (MarketCapRank::class)
     ],
     version = CURRENT_VERSION,
 )
@@ -267,6 +272,10 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketFavoredDao(): MarketFavoredDao
 
+    abstract fun alertDao(): AlertDao
+
+    abstract fun marketCapRankDao(): MarketCapRankDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
@@ -340,6 +349,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_58_59,
                                 MIGRATION_59_60,
                                 MIGRATION_60_61,
+                                MIGRATION_61_62,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

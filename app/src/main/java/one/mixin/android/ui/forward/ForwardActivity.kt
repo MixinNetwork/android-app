@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.core.content.IntentCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
@@ -128,7 +129,7 @@ class ForwardActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
+        val list = IntentCompat.getParcelableArrayListExtra(intent, ARGS_MESSAGES, ForwardMessage::class.java)
         val action = intent.getParcelableExtra<ForwardAction>(ARGS_ACTION)
         if (action != null && !list.isNullOrEmpty()) {
             val f = ForwardFragment.newInstance(list, action)

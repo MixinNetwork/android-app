@@ -17,17 +17,11 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
     override fun onRun() = runBlocking {
         val response = routeService.market(assetId)
         if (response.isSuccess && response.data != null) {
-            response.data?.let {
-                val local = marketDao.findMarketById(it.coinId)
-                val market = if (local != null) {
-                    it.copy(marketCapRank = it.marketCapRank)
-                } else {
-                    it
-                }
+            response.data?.let { market->
                 marketDao.insert(market)
-                marketCoinDao.insertList(it.assetIds?.map { assetId ->
+                marketCoinDao.insertList(market.assetIds?.map { assetId ->
                     MarketCoin(
-                        coinId = it.coinId,
+                        coinId = market.coinId,
                         assetId = assetId,
                         createdAt = nowInUtc()
                     )

@@ -6,6 +6,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 
@@ -39,12 +40,13 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                 }
                 if (category == "all") {
                     runInTransaction {
-                        marketDao.deleteTop(LIMIT)
-                        marketDao.insertList(list)
+                        marketCapRankDao.deleteAll()
+                        marketCapRankDao.insertList(list.map {
+                            MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
+                        })
                     }
-                } else {
-                    marketDao.upsertList(list)
                 }
+                marketDao.upsertList(list)
                 val ids = list.flatMap { market ->
                     market.assetIds?.map { assetId ->
                         MarketCoin(

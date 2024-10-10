@@ -215,4 +215,12 @@ internal object BaseDbModule {
     @Provides
     fun provideMarketFavoredDao(db: MixinDatabase) = db.marketFavoredDao()
 
+    @Singleton
+    @Provides
+    fun provideAlertDao(db: MixinDatabase) = db.alertDao()
+
+    @Singleton
+    @Provides
+    fun provideMarketCapRankDao(db: MixinDatabase) = db.marketCapRankDao()
+
 }
