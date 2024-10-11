@@ -84,6 +84,7 @@ import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.show
 import one.mixin.android.extension.toUri
 import one.mixin.android.job.BaseJob
@@ -102,6 +103,7 @@ import one.mixin.android.tip.TipNode
 import one.mixin.android.ui.transfer.status.TransferStatusLiveData
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
+import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
@@ -251,6 +253,8 @@ object AppModule {
                         return@run
                     } else if (mixinResponse.errorCode != AUTHENTICATION) {
                         return@run
+                    } else if (mixinResponse.errorCode != PIN_INCORRECT) {
+                        MixinApplication.appContext.defaultSharedPreferences.remove(Constants.BIOMETRIC_PIN_CHECK)
                     }
                     val authorization = response.request.header(authorization)
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
