@@ -679,7 +679,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     else -> showError()
                 }
             }
-        } else if (url.startsWith(Scheme.MIXIN_MARKET, true)) {
+        } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
             lifecycleScope.launch {
