@@ -47,6 +47,7 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
+import one.mixin.android.db.AlertDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.HistoryPriceDao
@@ -80,6 +81,10 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertRequest
+import one.mixin.android.ui.wallet.alert.vo.AlertStatus
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -98,6 +103,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
@@ -152,6 +158,7 @@ class TokenRepository
         private val marketDao: MarketDao,
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
+        private val alertDao: AlertDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -443,6 +450,8 @@ class TokenRepository
         fun assetItemsNotHidden() = tokenDao.assetItemsNotHidden()
 
         fun assetItems() = tokenDao.assetItems()
+
+        fun coinItems() = marketDao.coinItems()
 
         suspend fun allAssetItems() = tokenDao.allAssetItems()
 
@@ -1131,5 +1140,93 @@ class TokenRepository
                 }
             )
         }
+    }
+
+    suspend fun addAlert(alert: AlertRequest): MixinResponse<Alert>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.addAlert(alert) },
+            successBlock = { response ->
+                if (response.isSuccess) {
+                    withContext(Dispatchers.IO) {
+                        alertDao.insert(response.data!!)
+                    }
+                }
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
+
+    fun alertGroups() = alertDao.alertGroups()
+
+    fun alertGroups(coinIds: List<String>) = alertDao.alertGroups(coinIds)
+
+    fun alertGroup(coinId: String) = alertDao.alertGroup(coinId)
+
+    fun alertsByCoinId(coinId:String) = alertDao.alertsByCoinId(coinId)
+
+    suspend fun simpleCoinItem(coinId:String) = marketDao.simpleCoinItem(coinId)
+
+    suspend fun simpleCoinItemByAssetId(assetId:String) = marketDao.simpleCoinItemByAssetId(assetId)
+
+    fun anyAlertByCoinId(coinId: String) = alertDao.anyAlertByCoinId(coinId)
+
+    fun anyAlertByAssetId(coinId: String) = alertDao.anyAlertByAssetId(coinId)
+
+    suspend fun refreshMarket(
+        coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
+        exceptionBlock: (suspend (t: Throwable) -> Boolean)
+    ): MixinResponse<Market>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.market(coinId) },
+            exceptionBlock = exceptionBlock,
+            failureBlock = failureBlock,
+            endBlock = endBlock,
+            successBlock = { response ->
+                withContext(Dispatchers.IO){
+                    val market = response.data!!
+                    marketDao.insert(market)
+                    marketCoinDao.insertList(market.assetIds?.map { assetId ->
+                        MarketCoin(
+                            coinId = market.coinId,
+                            assetId = assetId,
+                            createdAt = nowInUtc()
+                        )
+                    } ?: emptyList())
+                }
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
+
+    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.updateAlert(alertId, request) },
+            successBlock = { response ->
+                response
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            }
+        )
+    }
+
+    fun deleteAlertById(alertId: String) = alertDao.deleteAlertById(alertId)
+
+    fun updateAlertStatus(alertId: String, status: AlertStatus) = alertDao.updateStatus(alertId, status.value)
+
+    fun updateAlert(alertId: String, type: String, value: String, frequency: String) = alertDao.updateAlert(alertId, type, value, frequency)
+
+    fun getTotalAlertCount(): Int {
+        return alertDao.getTotalAlertCount()
+    }
+
+    fun getAlertCountByCoinId(coinId: String): Int {
+        return alertDao.getAlertCountByCoinId(coinId)
     }
 }

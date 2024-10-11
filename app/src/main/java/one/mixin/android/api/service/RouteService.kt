@@ -23,6 +23,9 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.ui.wallet.alert.vo.Alert
+import one.mixin.android.ui.wallet.alert.vo.AlertRequest
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
@@ -187,6 +190,9 @@ interface RouteService {
     @GET("markets")
     suspend fun markets(@Query("category") category: String? = null, @Query("limit") limit: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
 
+    @POST("markets/fetch")
+    suspend fun fetchMarket(@Body ids: List<String>): MixinResponse<List<Market>>
+
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
 
@@ -195,4 +201,13 @@ interface RouteService {
 
     @POST("markets/{id}/unfavorite")
     suspend fun unfavorite(@Path("id") coinId: String): MixinResponse<Unit>
+
+    @POST("prices/alerts")
+    suspend fun addAlert(@Body alert: AlertRequest):MixinResponse<Alert>
+
+    @GET("prices/alerts")
+    suspend fun alerts():MixinResponse<List<Alert>>
+
+    @POST("prices/alerts/{id}")
+    suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Unit>
 }

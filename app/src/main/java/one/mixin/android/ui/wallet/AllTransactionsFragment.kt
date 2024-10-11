@@ -56,7 +56,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
 
-        fun newInstance(user:UserItem? = null, tokenItem: TokenItem? = null):AllTransactionsFragment {
+        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null): AllTransactionsFragment {
             return AllTransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
@@ -160,15 +160,17 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             filterType.setTitle(filterParams.typeTitle)
             filterAsset.updateTokens(R.string.Assets, filterParams.tokenItems)
             filterUser.updateUsers(R.string.Opponents, filterParams.recipients)
-            filterTime.setTitle(filterParams.selectTime?:getString(R.string.Date))
-            titleView.setSubTitle(getString(R.string.All_Transactions), getString(
-                when(filterParams.order) {
-                    SortOrder.Amount -> R.string.sort_by_amount
-                    SortOrder.Value -> R.string.sort_by_value
-                    SortOrder.Oldest -> R.string.sort_by_oldest
-                    else -> R.string.sort_by_recent
-                }
-            ))
+            filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
+            titleView.setSubTitle(
+                getString(R.string.All_Transactions), getString(
+                    when (filterParams.order) {
+                        SortOrder.Amount -> R.string.sort_by_amount
+                        SortOrder.Value -> R.string.sort_by_value
+                        SortOrder.Oldest -> R.string.sort_by_oldest
+                        else -> R.string.sort_by_recent
+                    }
+                )
+            )
             Timber.e(filterParams.toString())
             bindLiveData()
         }
@@ -326,7 +328,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         multiSelectRecipientsListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
     }
 
-    private fun dateRangePicker(): MaterialDatePicker<Pair<Long,Long>> {
+    private fun dateRangePicker(): MaterialDatePicker<Pair<Long, Long>> {
         val constraints = CalendarConstraints.Builder()
             .setEnd(MaterialDatePicker.todayInUtcMilliseconds())
             .setValidator(DateValidatorPointBackward.now())
@@ -418,7 +420,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     3 -> SnapshotType.snapshot
                     else -> SnapshotType.all
                 }
-                if (filterParams.recipients?.isNotEmpty() == true){
+                if (filterParams.recipients?.isNotEmpty() == true) {
                     if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
                         filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
                     } else if (filterParams.type == SnapshotType.snapshot) {
@@ -454,10 +456,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun getCurrentTokens(): List<TokenItem> {
-        return filterParams.tokenItems?: emptyList()
+        return filterParams.tokenItems ?: emptyList()
     }
 
     override fun getCurrentRecipients(): List<Recipient> {
-        return filterParams.recipients?: emptyList()
+        return filterParams.recipients ?: emptyList()
     }
 }
