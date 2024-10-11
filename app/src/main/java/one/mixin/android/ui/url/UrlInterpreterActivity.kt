@@ -158,6 +158,10 @@ class UrlInterpreterActivity : BaseActivity() {
                     toast(R.string.Invalid_Link)
                 }
             }
+            "" -> {
+                MainActivity.show(this)
+                finish()
+            }
             else -> {
                 toast(R.string.Invalid_Link)
             }

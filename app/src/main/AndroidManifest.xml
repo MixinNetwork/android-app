@@ -99,6 +99,7 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host=""/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
