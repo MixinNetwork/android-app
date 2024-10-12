@@ -97,7 +97,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         asset = requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)!!
     }
 
-    private var scrollY= 0
+    private var scrollY = 0
 
     override fun onPause() {
         super.onPause()
@@ -199,7 +199,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
                         market = MarketItem(
                             "", asset.name, asset.symbol, asset.iconUrl, asset.priceUsd,
-                            "", "", "", "", "", asset.changeUsd, "", "", "", "", "", "", "", "", "", "", "",
+                            "", "", "", "", "", runCatching {
+                                (BigDecimal(asset.priceUsd) * BigDecimal(asset.changeUsd)).toPlainString()
+                            }.getOrNull() ?: "0", "", asset.changeUsd, "", "", "", "", "", "", "", "", "",
                             "", "", "", "", listOf(asset.assetId), "", null
                         )
                     }

@@ -396,8 +396,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 balanceRl.isVisible = false
             }) {
                 val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
-                val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
-                if (ids.isNotEmpty()) {
+                val tokens = if (marketItem.coinId.isBlank()) {
+                    walletViewModel.findAssetItemById(marketItem.assetIds!!.first())?.let {
+                        listOf(it)
+                    } ?: emptyList()
+                } else {
+                    walletViewModel.findTokensByCoinId(marketItem.coinId)
+                }
+                if (tokens.isNotEmpty()) {
                     val balances = tokens.sumOf { BigDecimal(it.balance) }
                     val price = BigDecimal(marketItem.currentPrice).multiply(BigDecimal(Fiats.getRate())).multiply(balances)
                     balance.text = "${balances.numberFormat8()} ${marketItem.symbol}"
@@ -411,6 +417,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE
+                    currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                     if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
                         val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
                         balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)", isPositive)
@@ -420,7 +427,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         balanceChange.text = "0.00%"
                         riseTitle.isVisible = false
                     }
-                    currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
                     priceRise.setQuoteText(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
