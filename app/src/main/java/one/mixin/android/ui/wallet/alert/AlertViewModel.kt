@@ -5,10 +5,17 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.RelationshipAction
+import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxAlertsPerAsset
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxTotalAlerts
+import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
@@ -17,9 +24,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AlertViewModel
-@Inject
-internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
-    suspend fun add(alert: AlertRequest) = tokenRepository.addAlert(alert)
+@Inject internal constructor(private val jobManager: MixinJobManager, val userRepository: UserRepository, val tokenRepository: TokenRepository) : ViewModel() {
+    suspend fun add(alert: AlertRequest): MixinResponse<Alert>? {
+        val r = tokenRepository.addAlert(alert)
+        if (r?.isSuccess == true) {
+            addAlertBot()
+        }
+        return r
+    }
 
     fun alertGroups() = tokenRepository.alertGroups()
 
@@ -35,6 +47,7 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
         val r = tokenRepository.updateAlert(alertId, request)
         if (r?.isSuccess == true) {
             viewModelScope.launch(Dispatchers.IO) {
+                addAlertBot()
                 tokenRepository.updateAlert(alertId, request.type!!, request.value!!, request.frequency!!)
             }
         }
@@ -51,14 +64,17 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
 
     suspend fun updateAlert(alertId: String, action: AlertAction) {
         val r = tokenRepository.updateAlert(
-            alertId, AlertUpdateRequest(action = when (action) {
-                AlertAction.DELETE -> "delete"
-                AlertAction.RESUME -> "resume"
-                AlertAction.PAUSE -> "pause"
-                AlertAction.EDIT -> ""
-            })
+            alertId, AlertUpdateRequest(
+                action = when (action) {
+                    AlertAction.DELETE -> "delete"
+                    AlertAction.RESUME -> "resume"
+                    AlertAction.PAUSE -> "pause"
+                    AlertAction.EDIT -> ""
+                }
+            )
         )
         if (r?.isSuccess == true) {
+            addAlertBot()
             when (action) {
                 AlertAction.DELETE -> {
                     viewModelScope.launch(Dispatchers.IO) {
@@ -79,6 +95,15 @@ internal constructor(val tokenRepository: TokenRepository) : ViewModel() {
                 }
 
                 AlertAction.EDIT -> {}
+            }
+        }
+    }
+
+    private fun addAlertBot(){
+        viewModelScope.launch(Dispatchers.IO) {
+            val bot = userRepository.getUserById(MIXIN_ALERT_USER_ID)
+            if (bot == null || bot.relationship != "FRIEND") {
+                jobManager.addJobInBackground(UpdateRelationshipJob(RelationshipRequest(MIXIN_ALERT_USER_ID, RelationshipAction.ADD.name)))
             }
         }
     }
