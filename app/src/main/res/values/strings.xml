@@ -1711,7 +1711,7 @@
     <string name="alert_type_percentage_decreased">24h loss exceeds</string>
     <string name="alert_type_percentage_decreased_description">Triggered when the 24h loss exceeds your set price change. </string>
     <string name="alert_type_percentage_decreased_value">24h loss exceeds %1$s</string>
-    <string name="alert_frequency_every">Continuously</string>
+    <string name="alert_frequency_every">Always</string>
     <string name="alert_frequency_every_description">Receive an alert on every trigger event</string>
     <string name="alert_frequency_daily">Once a day</string>
     <string name="alert_frequency_daily_description">Receive an alert once per day when the trigger event occurs</string>
