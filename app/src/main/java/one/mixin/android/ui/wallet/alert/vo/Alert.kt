@@ -75,7 +75,7 @@ class Alert(
                 }
 
                 else -> {
-                    "${(value.toFloat() * 100f)}%"
+                    "${(value.toBigDecimal().multiply(BigDecimal(100)).stripTrailingZeros().toPlainString())}%"
                 }
             }
         }
