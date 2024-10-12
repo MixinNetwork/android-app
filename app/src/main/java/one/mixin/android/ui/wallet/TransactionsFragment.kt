@@ -148,18 +148,16 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
             walletViewModel.marketById(asset.assetId).observe(viewLifecycleOwner) { market ->
                 if (market != null) {
-                    val priceChange24h = BigDecimal(market.priceChange24h)
-                    val isRising = priceChange24h >= BigDecimal.ZERO
-                    rise.setQuoteText("${(priceChange24h).numberFormat2()}%", isRising)
+                    val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
+                    val isRising = priceChangePercentage24H >= BigDecimal.ZERO
+                    rise.setQuoteText("${(priceChangePercentage24H).numberFormat2()}%", isRising)
                 } else if (asset.priceUsd == "0") {
                     rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
                     rise.text = "0.00%"
-                } else {
-                    if (asset.changeUsd.isNotEmpty()) {
-                        val changeUsd = BigDecimal(asset.changeUsd)
-                        val isRising = changeUsd >= BigDecimal.ZERO
-                        rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
-                    }
+                } else if (asset.changeUsd.isNotEmpty()) {
+                    val changeUsd = BigDecimal(asset.changeUsd)
+                    val isRising = changeUsd >= BigDecimal.ZERO
+                    rise.setQuoteText("${(changeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
                 }
             }
             transactionsTitleLl.setOnClickListener {
