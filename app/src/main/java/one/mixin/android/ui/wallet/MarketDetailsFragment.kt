@@ -439,7 +439,13 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 walletViewModel.syncNoExistAsset(ids.subtract(tokens.map { it.assetId }.toSet()).toList())
                                 dialog.dismiss()
                             }
-                            val nowTokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
+                            val nowTokens = if (marketItem.coinId.isBlank()) {
+                                walletViewModel.findAssetItemById(marketItem.assetIds!!.first())?.let {
+                                    listOf(it)
+                                } ?: emptyList()
+                            } else {
+                                walletViewModel.findTokensByCoinId(marketItem.coinId)
+                            }
                             if (nowTokens.isEmpty()) {
                                 toast(R.string.Data_error)
                                 return@launch
