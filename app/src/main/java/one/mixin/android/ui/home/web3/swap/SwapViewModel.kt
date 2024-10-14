@@ -49,11 +49,8 @@ class SwapViewModel
         suspend fun web3Swap(
             swapRequest: SwapRequest,
         ): MixinResponse<SwapResponse> {
-            val r = assetRepository.web3Swap(swapRequest)
-            if (r.isSuccess) {
-                addRouteBot()
-            }
-            return r
+            addRouteBot()
+            return assetRepository.web3Swap(swapRequest)
         }
 
         suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)
