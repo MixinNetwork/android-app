@@ -342,16 +342,12 @@ object Constants {
     val DNS: Dns = SequentialDns(CustomDns("8.8.8.8"), CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
-    const val MIXIN_BOTS_USER_ID = "68ef7899-3e81-4b3d-8124-83ae652def89"
-    const val MIXIN_DATA_USER_ID = "96c1460b-c7c4-480a-a342-acaa73995a37"
     const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
     const val MIXIN_FEE_USER_ID = "674d6776-d600-4346-af46-58e77d8df185"
     const val MIXIN_ALERT_USER_ID = "e91728d9-d9f5-4e66-bc59-a3e1ed5eec7f"
 
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"
-    const val MIXIN_BOTS_USER_NAME = "Mixin Bots"
-    const val MIXIN_DATA_USER_NAME = "Mixin Data"
 
     const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
