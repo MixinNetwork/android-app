@@ -1,15 +1,23 @@
 package one.mixin.android.ui.home.web3.swap
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.RelationshipAction
+import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.Web3Service
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
@@ -21,6 +29,7 @@ class SwapViewModel
     @Inject
     internal constructor(
         private val assetRepository: AssetRepository,
+        private val jobManager: MixinJobManager,
         private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository,
         private val web3Service: Web3Service,
@@ -39,7 +48,10 @@ class SwapViewModel
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
-        ): MixinResponse<SwapResponse> = assetRepository.web3Swap(swapRequest)
+        ): MixinResponse<SwapResponse> {
+            addRouteBot()
+            return assetRepository.web3Swap(swapRequest)
+        }
 
         suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)
 
@@ -63,4 +75,14 @@ class SwapViewModel
         }
 
         suspend fun allAssetItems() = tokenRepository.allAssetItems()
+
+        private fun addRouteBot(){
+            viewModelScope.launch(Dispatchers.IO) {
+                val bot = userRepository.getUserById(ROUTE_BOT_USER_ID)
+                if (bot == null || bot.relationship != "FRIEND") {
+                    jobManager.addJobInBackground(UpdateRelationshipJob(RelationshipRequest(ROUTE_BOT_USER_ID, RelationshipAction.ADD.name)))
+                }
+            }
+        }
+
 }
