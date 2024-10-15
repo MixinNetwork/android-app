@@ -91,9 +91,11 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
-                android:text="@string/All_Networks"
+                android:text="@string/All"
                 android:checked="true"
                 android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
