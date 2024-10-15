@@ -24,7 +24,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
         binding.avatar.loadToken(asset)
-        binding.root.setOnClickListener { onItemClickListener?.onAsset(asset) }
+        binding.root.setOnClickListener { onItemClickListener?.onAssetClick(asset) }
 
         binding.balance.text = asset.balance + " " + asset.symbol
         binding.balance.highLight(target)

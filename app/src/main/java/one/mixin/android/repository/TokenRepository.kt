@@ -1072,7 +1072,7 @@ class TokenRepository
 
     suspend fun findMarketItemByAssetId(assetId: String) = marketDao.findMarketItemByAssetId(assetId)
 
-    private suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
+    suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
 
     suspend fun checkMarketById(id: String): MarketItem? {
         val marketItem = if (id.isUUID()) {

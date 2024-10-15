@@ -26,13 +26,19 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.TimeUnit
 
@@ -67,6 +73,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
             is TokenItem -> TypeAsset
             is ChatMinimal -> TypeChat
             is User -> TypeUser
+            is Dapp -> TypeDapp
+            is Market -> TypeMarket
+            is SearchBot -> TypeBot
             else -> TypeMessage
         }
     }
@@ -103,7 +112,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 TypeUser -> requireContext().getText(R.string.CONTACTS)
                 TypeChat -> requireContext().getText(R.string.CHATS)
                 TypeMessage -> requireContext().getText(R.string.SEARCH_MESSAGES)
-                else -> "" // todo
+                TypeMarket -> requireContext().getString(R.string.ASSETS)
+                TypeDapp -> requireContext().getString(R.string.DAPPS)
+                TypeBot -> requireContext().getString(R.string.BOTS)
             }
         headerBinding.titleTv.text = text
         adapter.headerView = header
@@ -112,13 +123,32 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         adapter.onItemClickListener =
             object : SearchFragment.OnSearchClickListener {
                 override fun onTipClick() {
+                    // do noting
                 }
 
                 override fun onUrlClick(url: String) {
+                    // do noting
                 }
 
-                override fun onAsset(tokenItem: TokenItem) {
+                override fun onAssetClick(tokenItem: TokenItem) {
                     activity?.let { WalletActivity.showWithToken(it, tokenItem, WalletActivity.Destination.Transactions) }
+                }
+
+                override fun onMarketClick(market: Market) {
+                    lifecycleScope.launch {
+                        searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
+                            WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                        }
+                    }
+                }
+
+                override fun onDappClick(dapp: Dapp) {
+                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                }
+
+                override fun onBotClick(bot: SearchBot) {
+                    val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
@@ -189,7 +219,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                     TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
                     TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
                     TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
-                    else-> emptyList() // todo
+                    TypeMarket -> searchViewModel.fuzzySearch<Market>(cancellationSignal, s, -1)
+                    TypeDapp -> searchViewModel.fuzzySearch<Dapp>(cancellationSignal, s, -1)
+                    TypeBot -> searchViewModel.fuzzySearch<SearchBot>(cancellationSignal, s, -1)
                 }
 
             binding.pb.isInvisible = true

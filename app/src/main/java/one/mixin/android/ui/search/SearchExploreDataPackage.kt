@@ -1,14 +1,14 @@
 package one.mixin.android.ui.search
+import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.Dapp
-import one.mixin.android.vo.User
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.market.Market
-import one.mixin.android.vo.market.MarketItem
 import kotlin.math.min
 
 class SearchExploreDataPackage(
     var marketList: List<Market>? = null,
     var dappList: List<Dapp>? = null,
-    var botList: List<User>? = null,
+    var botList: List<SearchBot>? = null,
     var url: String? = null,
 ) {
     companion object {
@@ -19,16 +19,13 @@ class SearchExploreDataPackage(
 
     private var marketLimit = true
     private var botLimit = true
+    private var dappLimit = true
 
     fun getHeaderFactor(position: Int) =
         when (getItem(position)) {
-            is MarketItem -> if (marketShowMore()) 10 else 0
-            is User -> {
-                when {
-                    position < marketCount() + dappCount() -> if (dappShowMore()) 10 else 0
-                    else -> if (botShowMore()) 10 else 0
-                }
-            }
+            is Market -> if (marketShowMore()) 10 else 0
+            is Dapp -> if (dappShowMore()) 10 else 0
+            is SearchBot -> if (botShowMore()) 10 else 0
             else -> 0
         }
 
@@ -42,7 +39,12 @@ class SearchExploreDataPackage(
     }
 
     fun dappShowMore(): Boolean {
-        return false
+        val dappList = this.dappList
+        return if (dappList == null || !dappLimit) {
+            false
+        } else {
+            dappLimit && dappList.size > LIMIT_COUNT
+        }
     }
 
     fun botShowMore(): Boolean {
@@ -70,25 +72,30 @@ class SearchExploreDataPackage(
             botList?.size ?: 0
         }
 
-    fun getCount() = marketCount() + dappCount() + botCount()
+    fun getCount() = marketCount() + dappCount() + botCount().incTip()
 
     private fun marketItem(position: Int): Market? {
-        return marketList?.get(position)
+        return marketList?.get(position.decTip())
     }
 
     private fun dappItem(position: Int): Dapp? {
-        return dappList?.get(position - marketCount())
+        return dappList?.get(position.decTip() - marketCount())
     }
 
-    private fun botItem(position: Int): User? {
-        return botList?.get(position - marketCount() - dappCount())
+    private fun botItem(position: Int): SearchBot? {
+        return botList?.get(position.decTip() - marketCount() - dappCount())
     }
 
     fun getItem(position: Int): Any? {
         return when {
-            position < marketCount() -> marketItem(position)
-            position < marketCount() + dappCount() -> dappItem(position)
+            showTip && position < 1 -> TipItem()
+            position < marketCount().incTip() -> marketItem(position)
+            position < marketCount().incTip() + dappCount() -> dappItem(position)
             else -> botItem(position)
         }
     }
+
+    private fun Int.incTip() = this + if (showTip) 1 else 0
+
+    private fun Int.decTip() = this - if (showTip) 1 else 0
 }

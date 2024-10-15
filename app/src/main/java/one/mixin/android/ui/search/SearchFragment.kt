@@ -46,9 +46,12 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.RecentUsedApp
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -191,8 +194,16 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 }
 
-                override fun onAsset(tokenItem: TokenItem) {
+                override fun onAssetClick(tokenItem: TokenItem) {
                     activity?.let { WalletActivity.showWithToken(it, tokenItem, WalletActivity.Destination.Transactions) }
+                }
+
+                override fun onMarketClick(market: Market) {
+                    // Todo
+                }
+
+                override fun onDappClick(dapp: Dapp) {
+                    // Todo
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
@@ -209,6 +220,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 override fun onUserClick(user: User) {
                     binding.searchRv.hideKeyboard()
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+                }
+
+                override fun onBotClick(bot: SearchBot) {
+                    // Todo
                 }
 
                 override fun onChatLongClick(
@@ -397,11 +412,17 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     interface OnSearchClickListener {
         fun onUserClick(user: User)
 
+        fun onBotClick(bot: SearchBot)
+
         fun onChatClick(chatMinimal: ChatMinimal)
 
         fun onMessageClick(message: SearchMessageItem)
 
-        fun onAsset(tokenItem: TokenItem)
+        fun onAssetClick(tokenItem: TokenItem)
+
+        fun onMarketClick(market: Market)
+
+        fun onDappClick(dapp: Dapp)
 
         fun onTipClick()
 

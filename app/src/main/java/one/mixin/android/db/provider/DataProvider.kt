@@ -19,6 +19,7 @@ import one.mixin.android.fts.rawSearch
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -245,7 +246,7 @@ class DataProvider {
             id: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<User> {
+        ): List<SearchBot> {
             val _sql = """
         SELECT * FROM users
         WHERE app_id IS NOT NULL 
@@ -291,7 +292,7 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableUser(db, _statement, cancellationSignal),
+                callableBot(db, _statement, cancellationSignal),
             )
         }
 

@@ -11,7 +11,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.Market
 import java.math.BigDecimal
@@ -21,7 +21,7 @@ class MarketHolder(val binding: ItemSearchMarketBinding) : NormalHolder(binding.
     fun bind(
         market: Market,
         target: String,
-        onItemClickListener: SearchExploreFragment.OnSearchClickListener?,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
         binding.avatar.badge.isVisible = false
         binding.avatar.bg.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
@@ -42,7 +42,7 @@ class MarketHolder(val binding: ItemSearchMarketBinding) : NormalHolder(binding.
             if (market.marketCapChangePercentage24h.isNotEmpty()) {
                 val changeUsd = BigDecimal(market.marketCapChangePercentage24h)
                 val isPositive = changeUsd >= BigDecimal.ZERO
-                val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                val t = "${(changeUsd).numberFormat2()}%"
                 binding.changeTv.setQuoteText(if (isPositive) "+$t" else t, isPositive)
             }
         }

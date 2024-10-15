@@ -6,27 +6,22 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemMarketBinding
-import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.databinding.ItemSearchDappBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.databinding.ItemSearchMarketBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
-import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.BotHolder
 import one.mixin.android.ui.search.holder.DappHolder
 import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MarketHolder
-import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.UrlHolder
 import one.mixin.android.vo.Dapp
-import one.mixin.android.vo.User
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.market.Market
-import timber.log.Timber
 
 class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
-    var onItemClickListener: SearchExploreFragment.OnSearchClickListener? = null
+    var onItemClickListener: SearchFragment.OnSearchClickListener? = null
     var query: String = ""
         set(value) {
             field = value
@@ -62,7 +57,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(marketList: List<Market>?, dappList: List<Dapp>?, botList: List<User>?, url: String?) {
+    fun setData(marketList: List<Market>?, dappList: List<Dapp>?, botList: List<SearchBot>?, url: String?) {
         data = SearchExploreDataPackage(marketList, dappList, botList, url)
         data.showTip = shouldTips()
         notifyDataSetChanged()
@@ -75,17 +70,20 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
     @SuppressLint("NotifyDataSetChanged")
     fun setDapps(dapps: List<Dapp>?) {
         data.dappList = dapps
+        data.showTip = shouldTips()
         notifyDataSetChanged()
     }
     @SuppressLint("NotifyDataSetChanged")
     fun setMarkets(markets: List<Market>?) {
         data.marketList = markets
+        data.showTip = shouldTips()
         notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setBots(users:List<User>?) {
+    fun setBots(users:List<SearchBot>?) {
         data.botList = users
+        data.showTip = shouldTips()
         notifyDataSetChanged()
     }
 
@@ -101,15 +99,19 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
             0 -> (holder as UrlHolder).bind(query, onItemClickListener)
             TypeMarket.index -> (holder as MarketHolder).bind(data.getItem(position) as Market, query, onItemClickListener)
             TypeDapp.index -> (holder as DappHolder).bind(data.getItem(position) as Dapp, query, onItemClickListener)
-            TypeBot.index -> (holder as BotHolder).bind(data.getItem(position) as User, query, onItemClickListener)
+            TypeBot.index -> (holder as BotHolder).bind(data.getItem(position) as SearchBot, query, onItemClickListener)
         }
     }
 
-    override fun getItemCount(): Int {
-        return data.getCount().apply {
-            Timber.e("getItem count $this")
+    override fun getItemCount(): Int = data.getCount()
+
+    fun getTypeData(position: Int) =
+        when (getItemViewType(position)) {
+            TypeMarket.index -> if (data.marketShowMore()) data.marketList else null
+            TypeDapp.index -> if (data.dappShowMore()) data.dappList else null
+            TypeBot.index -> if (data.botShowMore()) data.dappList else null
+            else -> if (data.botShowMore()) data.botList else null
         }
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
@@ -124,7 +126,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
         when (data.getItem(position)) {
             is Market -> TypeMarket.index
             is Dapp -> TypeDapp.index
-            is User -> TypeBot.index
+            is SearchBot -> TypeBot.index
             else -> 0
         }
 }

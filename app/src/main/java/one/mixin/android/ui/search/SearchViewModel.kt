@@ -38,6 +38,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -93,6 +94,17 @@ class SearchViewModel
                             escapedQuery,
                             cancellationSignal,
                         )
+                    Dapp::class-> {
+                        getAllDapps().filter { dapp ->
+                            dapp.name.contains(query) || dapp.homeUrl.contains(query)
+                        }
+                    }
+                    Market::class->{
+                        tokenRepository.fuzzyMarkets(escapedQuery, cancellationSignal)
+                    }
+                    SearchBot::class->{
+                        userRepository.fuzzySearchBots(escapedQuery, cancellationSignal)
+                    }
                     else ->
                         messageControlledRunner.cancelPreviousThenRun {
                             conversationRepository.fuzzySearchMessage(
@@ -107,7 +119,7 @@ class SearchViewModel
         suspend fun fuzzyBots(
             cancellationSignal: CancellationSignal,
             query: String?,
-        ): List<User>? {
+        ): List<SearchBot>? {
             return if (query.isNullOrBlank()) {
                 null
             } else {
@@ -274,4 +286,5 @@ class SearchViewModel
 
         fun getAllDapps() = dapps
 
+        suspend fun findMarketItemByCoinId(coinId: String) = tokenRepository.findMarketItemByCoinId(coinId)
     }

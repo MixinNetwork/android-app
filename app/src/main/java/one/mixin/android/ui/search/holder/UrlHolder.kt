@@ -6,13 +6,13 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchTipBinding
 import one.mixin.android.extension.highLight
-import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.ui.search.SearchFragment
 
 class UrlHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bind(
         url: String,
-        onItemClickListener: SearchExploreFragment.OnSearchClickListener?,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
         binding.searchTipTv.text =
             itemView.context.getString(R.string.Open_Link, url)

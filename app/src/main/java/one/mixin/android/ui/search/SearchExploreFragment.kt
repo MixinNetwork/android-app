@@ -3,6 +3,7 @@ package one.mixin.android.ui.search
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CancellationSignal
+import android.os.Parcelable
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -20,18 +22,30 @@ import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchExploreBinding
+import one.mixin.android.databinding.ItemSearchHeaderBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.SearchBot
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -81,6 +95,26 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         binding.searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.searchRv.adapter = searchAdapter
         binding.searchRv.addItemDecoration(decoration)
+        binding.searchRv.addOnItemTouchListener(
+            StickyRecyclerHeadersTouchListener(binding.searchRv, decoration).apply {
+                setOnHeaderClickListener { headerView, position, _, e ->
+
+                    if (ItemSearchHeaderBinding.bind(headerView).searchHeaderMore.x > e.rawX) return@setOnHeaderClickListener
+
+                    searchAdapter.getTypeData(position)?.let {
+                        val f =
+                            SearchSingleFragment.newInstance(
+                                arrayListOf<Parcelable>().apply {
+                                    addAll(it)
+                                },
+                                keyword ?: "",
+                            )
+                        requireActivity().addFragment(this@SearchExploreFragment, f, SearchSingleFragment.TAG, R.id.container)
+                        binding.searchRv.hideKeyboard()
+                    }
+                }
+            },
+        )
         binding.backIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
@@ -92,29 +126,55 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         }
 
         searchAdapter.onItemClickListener =
-            object : UserListener, OnSearchClickListener {
+            object : UserListener, SearchFragment.OnSearchClickListener {
                 override fun onItemClick(user: User) {
-
+                    // do noting
                 }
 
                 override fun onUserClick(user: User) {
+                    // do noting
+                }
+
+                override fun onBotClick(bot: SearchBot) {
+                    val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                }
+
+                override fun onChatClick(chatMinimal: ChatMinimal) {
+                    // do noting
+                }
+
+                override fun onMessageClick(message: SearchMessageItem) {
+                    // do noting
+                }
+
+                override fun onAssetClick(tokenItem: TokenItem) {
+                    // do noting
+                }
+
+                override fun onDappClick(dapp: Dapp) {
+                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                }
+
+                override fun onTipClick() {
+                    // do noting
+                }
+
+                override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
-                        searchViewModel.findUserByAppId(user.appId!!)?.let { user ->
-                            showUserBottom(parentFragmentManager, user)
+                        searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
+                            WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                         }
                     }
                 }
 
-                override fun onDappClick(dapp: Dapp) {
-                    // Todo
-                }
-
-                override fun onMarketClick(market: Market) {
-                    // Todo
-                }
-
                 override fun onUrlClick(url: String) {
-                    // Todo
+                    url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+                }
+
+                override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
+                    // do noting
+                    return false
                 }
             }
 
@@ -194,10 +254,12 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
             if (keyword == null) {
-                // Todo
-                // binding.va.displayedChild = 1
+                //     binding.va.displayedChild = 1
                 return@launch
             }
+            // } else {
+            //     binding.va.displayedChild = 2
+            // }
 
             val cancellationSignal = CancellationSignal()
 
@@ -206,6 +268,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                     searchViewModel.fuzzySearchUrl(keyword).let { url ->
                         searchAdapter.setUrlData(url)
                     }
+                    updateRv(searchUrlJob)
                 }
 
             searchBotsJob =
@@ -213,6 +276,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                     searchViewModel.fuzzyBots(cancellationSignal, keyword).let { bots ->
                         searchAdapter.setBots(bots)
                     }
+                    updateRv(searchBotsJob)
                 }
 
             searchMarketsJob =
@@ -220,27 +284,33 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                     searchViewModel.fuzzyMarkets(cancellationSignal, keyword).let { markets ->
                         searchAdapter.setMarkets(markets)
                     }
+                    updateRv(searchMarketsJob)
                 }
 
             searchDappsJob =
                 launch {
                     searchViewModel.getAllDapps().filter { dapp ->
                         dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
-                    }.let { dapps->
+                    }.let { dapps ->
                         searchAdapter.setDapps(dapps)
                     }
+                    updateRv(searchDappsJob)
                 }
         }
 
+    private fun allJobIsCompleted(job: Job?): Boolean {
+        return listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob).filter {
+            job != it
+        }.all { it?.isCompleted == true }
+    }
 
-    interface OnSearchClickListener {
-        fun onUserClick(user: User)
-
-        fun onDappClick(dapp: Dapp)
-
-        fun onMarketClick(market: Market)
-
-        fun onUrlClick(url: String)
-
+    private fun updateRv(job: Job?) {
+        if (allJobIsCompleted(job)) {
+            // if (searchAdapter.itemCount == 0) {
+            //     binding.va.displayedChild = 0
+            // } else {
+            //     binding.va.displayedChild = 2
+            // }
+        }
     }
 }

@@ -3,7 +3,7 @@ package one.mixin.android.ui.search.holder
 import android.annotation.SuppressLint
 import one.mixin.android.databinding.ItemSearchDappBinding
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.Dapp
 
 class DappHolder constructor(val binding: ItemSearchDappBinding) : NormalHolder(binding.root) {
@@ -11,7 +11,7 @@ class DappHolder constructor(val binding: ItemSearchDappBinding) : NormalHolder(
     fun bind(
         dapp: Dapp,
         target: String,
-        onItemClickListener: SearchExploreFragment.OnSearchClickListener?,
+        onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
         binding.apply {
             avatar.loadUrl(dapp.iconUrl)
