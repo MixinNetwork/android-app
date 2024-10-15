@@ -3,7 +3,7 @@ package one.mixin.android.ui.search.holder
 import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.search.SearchBotsFragment
+import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.vo.User
 
 class BotHolder(
@@ -12,7 +12,7 @@ class BotHolder(
     fun bind(
         user: User,
         target: String,
-        onItemClickListener: SearchBotsFragment.UserListener?,
+        onItemClickListener: SearchExploreFragment.OnSearchClickListener?,
     ) {
         binding.apply {
             normal.setName(user)
@@ -21,7 +21,7 @@ class BotHolder(
             mixinIdTv.highLight(target)
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             root.setOnClickListener {
-                onItemClickListener?.onItemClick(user)
+                onItemClickListener?.onUserClick(user)
             }
         }
     }

@@ -4,12 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.view.View
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentSearchBotsBinding
+import one.mixin.android.databinding.FragmentSearchExploreBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.isUUID
@@ -28,23 +28,22 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.Market
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
-class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
+class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
-    private val searchAdapter: SearchBotAdapter by lazy {
-        SearchBotAdapter { url ->
-            WebActivity.show(requireContext(), url, null)
-        }
+    private val searchAdapter: SearchExploreAdapter by lazy {
+        SearchExploreAdapter()
     }
 
     companion object {
-        const val TAG = "SearchBotsFragment"
+        const val TAG = "SearchExploreFragment"
         const val SEARCH_DEBOUNCE = 300L
     }
 
@@ -63,15 +62,9 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         }
     }
 
-    private var searchJob: Job? = null
+    private val decoration by lazy { StickyRecyclerHeadersDecoration(searchAdapter) }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun bindData(keyword: String? = this@SearchBotsFragment.keyword) {
-        searchJob?.cancel()
-        searchJob = fuzzySearch(keyword)
-    }
-
-    private val binding by viewBinding(FragmentSearchBotsBinding::bind)
+    private val binding by viewBinding(FragmentSearchExploreBinding::bind)
 
     override fun onViewCreated(
         view: View,
@@ -87,6 +80,7 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         }
         binding.searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.searchRv.adapter = searchAdapter
+        binding.searchRv.addItemDecoration(decoration)
         binding.backIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
@@ -98,13 +92,29 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
         }
 
         searchAdapter.onItemClickListener =
-            object : UserListener {
+            object : UserListener, OnSearchClickListener {
                 override fun onItemClick(user: User) {
+
+                }
+
+                override fun onUserClick(user: User) {
                     lifecycleScope.launch {
                         searchViewModel.findUserByAppId(user.appId!!)?.let { user ->
                             showUserBottom(parentFragmentManager, user)
                         }
                     }
+                }
+
+                override fun onDappClick(dapp: Dapp) {
+                    // Todo
+                }
+
+                override fun onMarketClick(market: Market) {
+                    // Todo
+                }
+
+                override fun onUrlClick(url: String) {
+                    // Todo
                 }
             }
 
@@ -117,6 +127,8 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
                 },
                 {},
             )
+
+        binding.va.displayedChild = 1
         lifecycleScope.launch {
             refreshRecentUsedApps()
             fuzzySearch(null)
@@ -157,32 +169,78 @@ class SearchBotsFragment : BaseFragment(R.layout.fragment_search_bots) {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun fuzzySearch(keyword: String?) =
-        lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
-            searchAdapter.url = searchViewModel.fuzzySearchUrl(keyword)
-            if (keyword.isNullOrBlank()) {
-                binding.searchRv.isVisible = true
-                binding.empty.isVisible = false
-                searchAdapter.userList = recentUsedBots
-                searchAdapter.notifyDataSetChanged()
-            } else {
-                searchAdapter.clear()
-                val cancellationSignal = CancellationSignal()
-                val users = searchViewModel.fuzzyBots(cancellationSignal, keyword)
-                searchAdapter.userList = users
-                if (searchAdapter.itemCount <= 0) {
-                    binding.searchRv.isVisible = false
-                    binding.empty.isVisible = true
-                } else {
-                    binding.searchRv.isVisible = true
-                    binding.empty.isVisible = false
-                }
-                searchAdapter.notifyDataSetChanged()
-            }
-        }
 
     interface UserListener {
         fun onItemClick(user: User)
+    }
+
+    private var searchJob: Job? = null
+    private var searchUrlJob: Job? = null
+    private var searchMarketsJob: Job? = null
+    private var searchBotsJob: Job? = null
+    private var searchDappsJob: Job? = null
+
+    @Suppress("UNCHECKED_CAST")
+    private fun bindData(keyword: String? = this@SearchExploreFragment.keyword) {
+        searchJob?.cancel()
+        searchUrlJob?.cancel()
+        searchMarketsJob?.cancel()
+        searchBotsJob?.cancel()
+        searchDappsJob?.cancel()
+        searchJob = fuzzySearch(keyword)
+    }
+
+    private fun fuzzySearch(keyword: String?) =
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            if (keyword == null) {
+                // Todo
+                // binding.va.displayedChild = 1
+                return@launch
+            }
+
+            val cancellationSignal = CancellationSignal()
+
+            searchUrlJob =
+                launch {
+                    searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                        searchAdapter.setUrlData(url)
+                    }
+                }
+
+            searchBotsJob =
+                launch {
+                    searchViewModel.fuzzyBots(cancellationSignal, keyword).let { bots ->
+                        searchAdapter.setBots(bots)
+                    }
+                }
+
+            searchMarketsJob =
+                launch {
+                    searchViewModel.fuzzyMarkets(cancellationSignal, keyword).let { markets ->
+                        searchAdapter.setMarkets(markets)
+                    }
+                }
+
+            searchDappsJob =
+                launch {
+                    searchViewModel.getAllDapps().filter { dapp ->
+                        dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
+                    }.let { dapps->
+                        searchAdapter.setDapps(dapps)
+                    }
+                }
+        }
+
+
+    interface OnSearchClickListener {
+        fun onUserClick(user: User)
+
+        fun onDappClick(dapp: Dapp)
+
+        fun onMarketClick(market: Market)
+
+        fun onUrlClick(url: String)
+
     }
 }

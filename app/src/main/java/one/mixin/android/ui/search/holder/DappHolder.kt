@@ -1,0 +1,26 @@
+package one.mixin.android.ui.search.holder
+
+import android.annotation.SuppressLint
+import one.mixin.android.databinding.ItemSearchDappBinding
+import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.vo.Dapp
+
+class DappHolder constructor(val binding: ItemSearchDappBinding) : NormalHolder(binding.root) {
+    @SuppressLint("SetTextI18n")
+    fun bind(
+        dapp: Dapp,
+        target: String,
+        onItemClickListener: SearchExploreFragment.OnSearchClickListener?,
+    ) {
+        binding.apply {
+            avatar.loadUrl(dapp.iconUrl)
+            nameTv.setTextOnly(dapp.name)
+            nameTv.highLight(target)
+            mixinIdTv.text = dapp.homeUrl
+            root.setOnClickListener {
+                onItemClickListener?.onDappClick(dapp)
+            }
+        }
+    }
+}

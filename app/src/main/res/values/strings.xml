@@ -101,6 +101,7 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
+    <string name="DAPPS">DAPPS</string>
     <string name="Audio">Audio</string>
     <string name="Audios">Audios</string>
     <string name="auth_assets_more">%1$s and more</string>
@@ -887,6 +888,7 @@
     <string name="search_hint">assets, contacts and messages</string>
     <string name="SEARCH_MESSAGES">SEARCH MESSAGES</string>
     <string name="search_placeholder_asset">Name, Symbol</string>
+    <string name="search_placeholder_explore">Name, Symbol, URL</string>
     <string name="search_placeholder_collectible">Search name</string>
     <string name="search_placeholder_number">Search Mixin ID or phone number: </string>
     <plurals name="search_related_message">

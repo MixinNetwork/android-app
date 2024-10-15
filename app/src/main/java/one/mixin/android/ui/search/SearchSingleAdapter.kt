@@ -33,6 +33,10 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
             TypeChat -> ChatHolder(ItemSearchChatBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeUser -> ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeMessage -> MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            else -> {
+                MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                // Todo
+            }
         }
     }
 
@@ -47,6 +51,9 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
                     TypeChat -> (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                     TypeUser -> (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                     TypeMessage -> (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
+                    else->{
+                        // todo
+                    }
                 }
             }
         }

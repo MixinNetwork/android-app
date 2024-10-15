@@ -9,6 +9,7 @@ import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
+import one.mixin.android.db.converter.OptionalListConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
@@ -17,6 +18,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.Callable
@@ -1343,6 +1345,58 @@ fun callableSafeInscription(
                 result.add(item)
             }
             return@Callable result
+        } finally {
+            cursor.close()
+            statement.release()
+        }
+    }
+}
+
+@SuppressLint("RestrictedApi")
+fun callableMarket(
+    db: MixinDatabase,
+    statement: RoomSQLiteQuery,
+    cancellationSignal: CancellationSignal
+): Callable<List<Market>> {
+    return Callable<List<Market>> {
+        val cursor = query(db, statement, false, cancellationSignal)
+        try {
+            val result: MutableList<Market> = ArrayList(cursor.count)
+            while (cursor.moveToNext()) {
+                val item = Market(
+                    coinId = cursor.getString(cursor.getColumnIndexOrThrow("coin_id")),
+                    name = cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                    symbol = cursor.getString(cursor.getColumnIndexOrThrow("symbol")),
+                    iconUrl = cursor.getString(cursor.getColumnIndexOrThrow("icon_url")),
+                    currentPrice = cursor.getString(cursor.getColumnIndexOrThrow("current_price")),
+                    marketCap = cursor.getString(cursor.getColumnIndexOrThrow("market_cap")),
+                    marketCapRank = cursor.getString(cursor.getColumnIndexOrThrow("market_cap_rank")),
+                    totalVolume = cursor.getString(cursor.getColumnIndexOrThrow("total_volume")),
+                    high24h = cursor.getString(cursor.getColumnIndexOrThrow("high_24h")),
+                    low24h = cursor.getString(cursor.getColumnIndexOrThrow("low_24h")),
+                    priceChange24h = cursor.getString(cursor.getColumnIndexOrThrow("price_change_24h")),
+                    priceChangePercentage1H = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_1h")),
+                    priceChangePercentage24H = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_24h")),
+                    priceChangePercentage7D = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_7d")),
+                    priceChangePercentage30D = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_30d")),
+                    marketCapChange24h = cursor.getString(cursor.getColumnIndexOrThrow("market_cap_change_24h")),
+                    marketCapChangePercentage24h = cursor.getString(cursor.getColumnIndexOrThrow("market_cap_change_percentage_24h")),
+                    circulatingSupply = cursor.getString(cursor.getColumnIndexOrThrow("circulating_supply")),
+                    totalSupply = cursor.getString(cursor.getColumnIndexOrThrow("total_supply")),
+                    maxSupply = cursor.getString(cursor.getColumnIndexOrThrow("max_supply")),
+                    ath = cursor.getString(cursor.getColumnIndexOrThrow("ath")),
+                    athChangePercentage = cursor.getString(cursor.getColumnIndexOrThrow("ath_change_percentage")),
+                    athDate = cursor.getString(cursor.getColumnIndexOrThrow("ath_date")),
+                    atl = cursor.getString(cursor.getColumnIndexOrThrow("atl")),
+                    atlChangePercentage = cursor.getString(cursor.getColumnIndexOrThrow("atl_change_percentage")),
+                    atlDate = cursor.getString(cursor.getColumnIndexOrThrow("atl_date")),
+                    assetIds = OptionalListConverter.fromString(cursor.getString(cursor.getColumnIndexOrThrow("asset_ids"))),
+                    sparklineIn7d = cursor.getString(cursor.getColumnIndexOrThrow("sparkline_in_7d")),
+                    updatedAt = cursor.getString(cursor.getColumnIndexOrThrow("updated_at"))
+                )
+                result.add(item)
+            }
+            result
         } finally {
             cursor.close()
             statement.release()

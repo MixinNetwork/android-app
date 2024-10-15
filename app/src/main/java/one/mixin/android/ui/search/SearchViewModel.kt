@@ -16,10 +16,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.pmap
 import one.mixin.android.job.MixinJobManager
@@ -27,16 +29,20 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.util.ControlledRunner
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
@@ -107,6 +113,18 @@ class SearchViewModel
             } else {
                 val escapedQuery = query.trim().escapeSql()
                 userRepository.fuzzySearchBots(escapedQuery, cancellationSignal)
+            }
+        }
+
+        suspend fun fuzzyMarkets(
+            cancellationSignal: CancellationSignal,
+            query: String?,
+        ): List<Market>? {
+            return if (query.isNullOrBlank()) {
+                null
+            } else {
+                val escapedQuery = query.trim().escapeSql()
+                tokenRepository.fuzzyMarkets(escapedQuery, cancellationSignal)
             }
         }
 
@@ -241,4 +259,19 @@ class SearchViewModel
             }.filterNotNull()
 
         suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
+
+        private val dapps by lazy {
+            val gson = GsonHelper.customGson
+            val  list = mutableListOf<Dapp>()
+            listOf(Chain.Ethereum.chainId, Chain.Solana.chainId).forEach {
+                val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$it", null)
+                if (!dapps.isNullOrBlank()){
+                    list.addAll(gson.fromJson(dapps, Array<Dapp>::class.java).toList())
+                }
+            }
+            list
+        }
+
+        fun getAllDapps() = dapps
+
     }

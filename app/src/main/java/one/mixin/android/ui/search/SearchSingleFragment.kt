@@ -103,6 +103,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 TypeUser -> requireContext().getText(R.string.CONTACTS)
                 TypeChat -> requireContext().getText(R.string.CHATS)
                 TypeMessage -> requireContext().getText(R.string.SEARCH_MESSAGES)
+                else -> "" // todo
             }
         headerBinding.titleTv.text = text
         adapter.headerView = header
@@ -188,6 +189,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                     TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
                     TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
                     TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
+                    else-> emptyList() // todo
                 }
 
             binding.pb.isInvisible = true
