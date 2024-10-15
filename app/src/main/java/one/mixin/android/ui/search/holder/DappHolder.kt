@@ -10,13 +10,15 @@ class DappHolder constructor(val binding: ItemSearchDappBinding) : NormalHolder(
     @SuppressLint("SetTextI18n")
     fun bind(
         dapp: Dapp,
-        target: String,
+        target: String?,
         onItemClickListener: SearchFragment.OnSearchClickListener?,
     ) {
         binding.apply {
             avatar.loadUrl(dapp.iconUrl)
             nameTv.setTextOnly(dapp.name)
-            nameTv.highLight(target)
+            if (target != null) {
+                nameTv.highLight(target)
+            }
             mixinIdTv.text = dapp.homeUrl
             root.setOnClickListener {
                 onItemClickListener?.onDappClick(dapp)

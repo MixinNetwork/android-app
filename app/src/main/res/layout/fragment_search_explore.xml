@@ -96,8 +96,8 @@
             android:layout_height="match_parent"
             tools:listitem="@layout/item_search_contact" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recent_rv"
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/recent"
             android:background="?attr/bg_white"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.search
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
@@ -18,29 +17,27 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
-import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchExploreBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.search.components.RecentSearchPage
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -126,17 +123,14 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         }
 
         searchAdapter.onItemClickListener =
-            object : UserListener, SearchFragment.OnSearchClickListener {
-                override fun onItemClick(user: User) {
-                    // do noting
-                }
-
+            object : SearchFragment.OnSearchClickListener {
                 override fun onUserClick(user: User) {
                     // do noting
                 }
 
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, bot.fullName, bot.identityNumber, bot.userId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 
@@ -153,6 +147,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onDappClick(dapp: Dapp) {
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
                     WebActivity.show(requireContext(), dapp.homeUrl, null)
                 }
 
@@ -163,12 +158,15 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
+                            searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
                             WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                         }
                     }
                 }
 
                 override fun onUrlClick(url: String) {
+                    // todo
+                    // searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.LINK, title = dapp.name, subTitle = dapp.homeUrl))
                     url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 }
 
@@ -187,51 +185,16 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 },
                 {},
             )
-
-        binding.va.displayedChild = 1
-        lifecycleScope.launch {
-            refreshRecentUsedApps()
-            fuzzySearch(null)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            refreshRecentUsedApps()
-        }
-    }
-
-    private suspend fun refreshRecentUsedApps() {
-        var botsList =
-            defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
-                ?: return
-        if (botsList.size == 1 && !botsList[0].isUUID()) {
-            getPreviousVersionBotsList()?.let {
-                botsList = it
+        binding.recent.setContent {
+            RecentSearchPage { dapp ->
+                searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
+                WebActivity.show(requireContext(), dapp.homeUrl, null)
             }
         }
-        if (botsList.isEmpty()) return
-        val result = searchViewModel.findBotsByIds(botsList.take(RECENT_USED_BOTS_MAX_COUNT).toSet())
-        if (result.isEmpty()) return
-        result.sortedBy {
-            botsList.indexOf(it.appId)
+        binding.va.displayedChild = 2
+        lifecycleScope.launch {
+            fuzzySearch(null)
         }
-        recentUsedBots = result
-    }
-
-    private var recentUsedBots: List<User>? = null
-
-    private fun getPreviousVersionBotsList(): List<String>? {
-        defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
-            return botsString.deserialize<Array<String>>()?.toList()
-        } ?: return null
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-
-    interface UserListener {
-        fun onItemClick(user: User)
     }
 
     private var searchJob: Job? = null
@@ -253,13 +216,12 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private fun fuzzySearch(keyword: String?) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
-            if (keyword == null) {
-                //     binding.va.displayedChild = 1
+            if (keyword.isNullOrBlank()) {
+                binding.va.displayedChild = 2
                 return@launch
+            } else {
+                binding.va.displayedChild = 1
             }
-            // } else {
-            //     binding.va.displayedChild = 2
-            // }
 
             val cancellationSignal = CancellationSignal()
 
@@ -306,11 +268,11 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
     private fun updateRv(job: Job?) {
         if (allJobIsCompleted(job)) {
-            // if (searchAdapter.itemCount == 0) {
-            //     binding.va.displayedChild = 0
-            // } else {
-            //     binding.va.displayedChild = 2
-            // }
+            if (searchAdapter.itemCount == 0) {
+                binding.va.displayedChild = 0
+            } else {
+                binding.va.displayedChild = 1
+            }
         }
     }
 }
