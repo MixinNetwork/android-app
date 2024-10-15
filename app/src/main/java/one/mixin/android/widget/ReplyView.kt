@@ -181,20 +181,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
         }
-        binding.replyNameTv.text = messageItem.userFullName
-        binding.replyNameTv.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
+        binding.replyNameTv.setReplyName(messageItem)
     }
 
-    private fun getMembershipBadge(messageItem: MessageItem): Drawable? {
-        if (messageItem.membership?.isMembership() != true) return null
-        return messageItem.membership.membershipIcon().let { icon ->
-            if (icon == View.NO_ID) {
-                null
-            } else {
-                AppCompatResources.getDrawable(context, icon)?.also {
-                    it.setBounds(0, 0, dp12, dp12)
-                }
-            }
-        }
-    }
 }

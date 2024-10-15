@@ -37,16 +37,15 @@
         app:layout_constraintVertical_bias="0"
         app:layout_goneMarginBottom="0dp">
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
-            android:minWidth="30dp"
             android:textColor="#19BEF1"
-            android:includeFontPadding="false"
-            android:textSize="14sp" />
+            app:ellipsize="end"
+            app:lines="1"
+            app:minWidth="30dp"
+            app:textSize="14sp" />
 
         <one.mixin.android.widget.linktext.AutoLinkTextView
             android:id="@+id/chat_tv"

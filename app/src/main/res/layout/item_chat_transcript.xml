@@ -38,7 +38,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -46,13 +46,12 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="1.5dp"
         android:layout_marginBottom="1.5dp"
-        android:ellipsize="end"
         android:gravity="start|center_vertical"
-        android:lines="1"
-        android:minWidth="30dp"
         android:textColor="#19BEF1"
-        android:textSize="14sp"
-        android:includeFontPadding="false"
+        app:lines="1"
+        app:ellipsize="end"
+        app:minWidth="30dp"
+        app:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

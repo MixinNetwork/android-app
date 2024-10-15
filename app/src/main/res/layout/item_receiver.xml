@@ -10,6 +10,13 @@
     android:orientation="horizontal"
     tools:parentTag="android.widget.LinearLayout">
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/user_select"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:visibility="gone"
+        android:layout_marginEnd="10dp" />
+
     <one.mixin.android.widget.AvatarView
         android:id="@+id/user_avatar"
         android:layout_width="18dp"
@@ -23,9 +30,9 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:textColor="?attr/text_primary"
-        android:lines="1"
-        android:ellipsize="middle"
-        android:textFontWeight="500"
-        android:textSize="16sp" />
+        app:lines="1"
+        app:ellipsize="middle"
+        app:textFontWeight="500"
+        app:textSize="16sp" />
 
 </merge>

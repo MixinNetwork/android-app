@@ -333,7 +333,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                             state = state,
                             reference = null,
-                            safe = safe
+                            safe = safe,
+                            signers = multisigs.signers,
                         )
                     TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                         parentFragmentManager,
@@ -387,7 +388,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         views = if (multisigs.views.isNullOrEmpty()) null else multisigs.views.joinToString(","),
                         state = state,
                         reference = null,
-                        safe = null
+                        safe = null,
+                        signers = multisigs.signers,
                     )
                 TransferBottomSheetDialogFragment.newInstance(multisigsBiometricItem).showNow(
                     parentFragmentManager,
@@ -677,7 +679,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     else -> showError()
                 }
             }
-        } else if (url.startsWith(Scheme.MIXIN_MARKET, true)) {
+        } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
             lifecycleScope.launch {

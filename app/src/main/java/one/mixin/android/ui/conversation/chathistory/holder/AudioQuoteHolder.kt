@@ -96,16 +96,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.membership != null) {
-                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {

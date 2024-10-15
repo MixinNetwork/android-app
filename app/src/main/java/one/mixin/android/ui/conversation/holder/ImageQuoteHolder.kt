@@ -240,31 +240,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
-            binding.chatName.text = messageItem.userFullName
-            if (messageItem.membership != null) {
-                binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = 3.dp
-            } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
-            }
+            binding.chatName.setMessageName(messageItem)
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }
 
-        if (messageItem.membership != null) {
-            binding.chatName.setCompoundDrawables(null, null, getMembershipBadge(messageItem), null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else if (messageItem.appId != null) {
-            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = 3.dp
-        } else {
-            binding.chatName.setCompoundDrawables(null, null, null, null)
-        }
         binding.chatTime.load(isMe, messageItem.createdAt, messageItem.status, messageItem.isPin ?: false, isRepresentative, messageItem.isSecret(), true)
         binding.chatQuote.bind(fromJsonQuoteMessage(messageItem.quoteContent))
         binding.chatQuote.setOnClickListener {

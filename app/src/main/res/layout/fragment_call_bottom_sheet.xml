@@ -214,11 +214,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/text_primary"
-            android:textSize="18sp"
             android:gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:lines="1"
-            android:ellipsize="end" />
+            app:lines="1"
+            app:ellipsize="end"
+            app:textSize="18sp"/>
     </LinearLayout>
 
 </RelativeLayout>

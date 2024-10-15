@@ -249,8 +249,16 @@
             format="boolean"/>
     </declare-styleable>
     <declare-styleable name="NameTextView">
-        <attr name="badgeSize" format="dimension"/>
-        <attr name="badgePadding" format="dimension"/>
+        <attr name="badgeSize" format="dimension" />
+        <attr name="badgePadding" format="dimension" />
+        <attr name="textColor" format="color|reference" />
+        <attr name="textSize" format="dimension" />
+        <attr name="textFontWeight" format="integer" />
+        <attr name="ellipsize" format="string" />
+        <attr name="maxWidth" format="dimension" />
+        <attr name="minWidth" format="dimension" />
+        <attr name="maxLength" format="integer" />
+        <attr name="lines" format="integer" />
     </declare-styleable>
     <declare-styleable name="InscriptionView">
         <attr name="iconSize" format="dimension"/>

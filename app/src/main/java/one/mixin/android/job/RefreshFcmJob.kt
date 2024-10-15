@@ -20,8 +20,12 @@ class RefreshFcmJob(
             accountService.updateSession(SessionRequest(notificationToken = token))
                 .observeOn(Schedulers.io()).subscribe({}, {})
         } else {
-            FirebaseMessaging.getInstance().token.addOnSuccessListener {
-                accountService.updateSession(SessionRequest(notificationToken = it))
+            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                accountService.updateSession(SessionRequest(notificationToken = token))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io()).subscribe({}, {})
+            }.addOnFailureListener {
+                accountService.updateSession(SessionRequest())
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io()).subscribe({}, {})
             }

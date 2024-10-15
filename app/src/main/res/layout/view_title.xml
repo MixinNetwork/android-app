@@ -98,10 +98,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:maxWidth="240dp"
-            android:singleLine="true"
             android:textColor="?attr/text_primary"
-            android:textSize="18sp" />
+            app:maxWidth="240dp"
+            app:lines="1"
+            app:textSize="18sp" />
 
         <TextView
             android:id="@+id/sub_title_tv"

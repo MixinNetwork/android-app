@@ -42,6 +42,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -393,4 +394,17 @@ class WalletViewModel
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
     fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) = viewModelScope.launch(Dispatchers.IO) { tokenRepository.updateMarketFavored(symbol, coinId, isFavored) }
+
+    suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
+
+    suspend fun simpleCoinItemByAssetId(assetId: String) = tokenRepository.simpleCoinItemByAssetId(assetId)
+
+    fun anyAlertByCoinId(coinId: String) = tokenRepository.anyAlertByCoinId(coinId)
+
+    fun anyAlertByAssetId(assetId: String) = tokenRepository.anyAlertByAssetId(assetId)
+
+    suspend fun refreshMarket(
+        coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
+        exceptionBlock: (suspend (t: Throwable) -> Boolean)
+    ) = tokenRepository.refreshMarket(coinId, endBlock, failureBlock, exceptionBlock)
 }

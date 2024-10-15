@@ -220,6 +220,8 @@ data class MessageItem(
 
     fun isMembership() = membership?.isMembership() == true
 
+    fun isProsperity() = membership?.isProsperity() == true
+
     fun isSharedMembership() = sharedMembership?.isMembership() == true
 }
 

@@ -129,6 +129,7 @@ open class SafeMultisigsBiometricItem(
     val views: String?,
     val index: Int,
     val safe: SafeAccount?,
+    val signers: List<String>?,
     open val senders: Array<String>,
     open val receivers: Array<String>,
     open val receiverThreshold: Int,

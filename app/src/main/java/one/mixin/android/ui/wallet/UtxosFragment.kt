@@ -95,7 +95,7 @@ class UtxosFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         binding.titleView.apply {
-            titleTv.text = "${asset.name} UTXO"
+            titleTv.setTextOnly("${asset.name} UTXO")
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.setOnClickListener {
                 showBottom()

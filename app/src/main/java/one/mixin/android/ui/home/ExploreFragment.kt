@@ -201,27 +201,27 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
+    private val containerFragmentTags = listOf(MarketFragment.TAG, EthereumFragment.TAG, SolanaFragment.TAG)
     private fun navigate(
         destinationFragment: Fragment,
         tag: String,
     ) {
+        if (tag !in containerFragmentTags) return
         val tx = parentFragmentManager.beginTransaction()
         val f = parentFragmentManager.findFragmentByTag(tag)
         if (f == null) {
             tx.add(R.id.fragment_container, destinationFragment, tag)
-            destinations.add(destinationFragment)
         } else {
             tx.show(f)
         }
-        destinations.forEach {
-            if (it.tag != tag) {
-                tx.hide(it)
-            }
+        parentFragmentManager.fragments.filter { fragment ->
+            fragment.tag != tag && fragment.tag in containerFragmentTags
+        }.forEach { fragment ->
+            tx.hide(fragment)
         }
         tx.commitAllowingStateLoss()
     }
 
-    private val destinations = mutableListOf<Fragment>()
     private val ethereumFragment by lazy {
         EthereumFragment()
     }
@@ -474,14 +474,14 @@ class ExploreFragment : BaseFragment() {
                     }
                 itemBinding.apply {
                     avatar.renderApp(a)
-                    name.setText(a.name)
+                    name.setTextOnly(a.name)
                     mixinIdTv.setText(a.description)
                     name.setTextOnly(a.name)
                 }
             } else if (app is ExploreApp) {
                 itemBinding.apply {
                     avatar.setInfo(app.name, app.iconUrl, app.appId)
-                    name.text = app.name
+                    name.setTextOnly(app.name)
                     mixinIdTv.text = app.appNumber
                     name.setName(app)
                 }

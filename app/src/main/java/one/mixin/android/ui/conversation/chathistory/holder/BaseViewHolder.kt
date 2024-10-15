@@ -72,24 +72,6 @@ abstract class BaseViewHolder constructor(containerView: View) :
             chatLayout(isMe, isLast, true)
         }
 
-        protected val botIcon: Drawable? by lazy {
-            AppCompatResources.getDrawable(itemView.context, R.drawable.ic_bot)?.also {
-                it.setBounds(0, 0, dp12, dp12)
-            }
-        }
-
-        protected fun getMembershipBadge(messageItem: ChatHistoryMessageItem): Drawable? {
-            return messageItem.membership.membershipIcon().let { icon ->
-                if (icon == View.NO_ID) {
-                    null
-                } else {
-                    AppCompatResources.getDrawable(itemView.context, icon)?.also {
-                        it.setBounds(0, 0, dp12, dp12)
-                    }
-                }
-            }
-        }
-
         protected val isNightMode by lazy {
             itemView.context.booleanFromAttribute(R.attr.flag_night)
         }
