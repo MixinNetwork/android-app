@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.View
-import androidx.activity.addCallback
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,8 +18,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSearchExploreBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
+import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hideKeyboard
@@ -63,7 +64,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         set(value) {
             if (field != value) {
                 field = value
-                bindData()
+                bindData(value)
             }
         }
 
@@ -179,7 +180,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
         binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
+            .autoDispose(destroyScope)
             .subscribe(
                 {
                     setQueryText(it.toString())
@@ -220,6 +221,14 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         lifecycleScope.launch {
             fuzzySearch(null)
         }
+        RxBus.listen(SearchEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                lifecycleScope.launch {
+                    searchViewModel.getRecentSearch(requireContext().defaultSharedPreferences)
+                }
+            }
     }
 
     private var searchJob: Job? = null
@@ -229,7 +238,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private var searchDappsJob: Job? = null
 
     @Suppress("UNCHECKED_CAST")
-    private fun bindData(keyword: String? = this@SearchExploreFragment.keyword) {
+    private fun bindData(keyword: String?) {
         searchJob?.cancel()
         searchUrlJob?.cancel()
         searchMarketsJob?.cancel()

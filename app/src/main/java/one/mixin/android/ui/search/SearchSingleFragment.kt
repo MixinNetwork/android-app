@@ -18,8 +18,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSearchSingleBinding
 import one.mixin.android.databinding.ViewHeadSearchSingleBinding
+import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableArrayListCompat
@@ -141,6 +143,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
                             searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
+                            RxBus.publish(SearchEvent())
                             WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                         }
                     }
@@ -148,12 +151,14 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
                 override fun onDappClick(dapp: Dapp) {
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
+                    RxBus.publish(SearchEvent())
                     WebActivity.show(requireContext(), dapp.homeUrl, null)
                 }
 
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, bot.fullName, bot.fullName, bot.identityNumber, bot.appId))
+                    RxBus.publish(SearchEvent())
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 

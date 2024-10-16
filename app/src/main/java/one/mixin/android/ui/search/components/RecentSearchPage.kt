@@ -58,7 +58,6 @@ import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
-import timber.log.Timber
 import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -112,14 +111,16 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
                         RecentSearchComponent(it, searchClick)
                     }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Box(
                     modifier = Modifier
                         .height(6.dp)
+                        .fillMaxWidth()
                         .background(color = MixinAppTheme.colors.backgroundWindow)
                 )
             }
             if (dapps.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -166,8 +167,8 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
                 BorderStroke(1.dp, Color(0x0f000000)),
                 shape = RoundedCornerShape(32.dp)
             )
-            .widthIn(max = itemWidth)
             .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = 20.dp)
+            .widthIn(max = itemWidth)
             .clickable { searchClick.invoke(search) }, verticalAlignment = Alignment.CenterVertically
     ) {
         if (search.type == RecentSearchType.LINK) {
@@ -185,7 +186,7 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
                 placeholder = R.drawable.ic_avatar_place_holder
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(search.title ?: "", fontSize = 14.sp, lineHeight = 14.sp, color = MixinAppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (search.type == RecentSearchType.MARKET) {

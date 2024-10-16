@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Config
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
-import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
@@ -29,7 +27,6 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.pmap
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove

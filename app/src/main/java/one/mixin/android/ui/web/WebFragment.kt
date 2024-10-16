@@ -79,10 +79,12 @@ import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
@@ -622,6 +624,7 @@ class WebFragment : BaseFragment() {
                     else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
                     searches.add(RecentSearch(RecentSearchType.LINK, title = name, subTitle = url))
                     sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(searches.takeLast(4)))
+                    RxBus.publish(SearchEvent())
                 }
 
                 override fun onReceivedIcon(
