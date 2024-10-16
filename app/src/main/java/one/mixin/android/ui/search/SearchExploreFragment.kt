@@ -134,7 +134,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
-                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, bot.fullName, bot.fullName, bot.identityNumber, bot.appId))
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 

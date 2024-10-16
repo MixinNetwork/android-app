@@ -163,12 +163,12 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
     }
     Row(
         modifier = Modifier
+            .widthIn(max = itemWidth)
             .border(
                 BorderStroke(1.dp, Color(0x0f000000)),
                 shape = RoundedCornerShape(32.dp)
             )
             .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = 20.dp)
-            .widthIn(max = itemWidth)
             .clickable { searchClick.invoke(search) }, verticalAlignment = Alignment.CenterVertically
     ) {
         if (search.type == RecentSearchType.LINK) {

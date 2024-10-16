@@ -109,7 +109,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
         when (getItemViewType(position)) {
             TypeMarket.index -> if (data.marketShowMore()) data.marketList else null
             TypeDapp.index -> if (data.dappShowMore()) data.dappList else null
-            TypeBot.index -> if (data.botShowMore()) data.dappList else null
+            TypeBot.index -> if (data.botShowMore()) data.botList else null
             else -> if (data.botShowMore()) data.botList else null
         }
 
