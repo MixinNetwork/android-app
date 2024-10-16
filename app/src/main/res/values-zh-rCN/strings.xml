@@ -1582,7 +1582,6 @@
     <string name="Markets">行情</string>
     <string name="view_all">查看所有</string>
     <string name="My_Balance">我的余额</string>
-    <string name="All_Networks">全部网络</string>
     <string name="Stake">质押</string>
     <string name="Stake_SOL">质押 SOL</string>
     <string name="Select_Validator">选择一个验证者</string>
