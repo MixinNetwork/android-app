@@ -75,6 +75,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -107,6 +108,7 @@ import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
@@ -153,6 +155,8 @@ import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.DAppMethod
@@ -188,6 +192,7 @@ class WebFragment : BaseFragment() {
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
+        const val ARGS_SAVE_NAME = "args_save_name"
         const val themeColorScript =
             """
             (function() {
@@ -598,7 +603,25 @@ class WebFragment : BaseFragment() {
                     super.onReceivedTitle(view, title)
                     if (!isBot()) {
                         _binding?.titleTv?.text = title
+                        if (once) {
+                            once = false
+                            val saveName = requireArguments().getBoolean(ARGS_SAVE_NAME, false)
+                            if (saveName) {
+                                saveName(title, url)
+                            }
+                        }
                     }
+                }
+
+                private var once: Boolean = true
+
+                private fun saveName(name: String?, url: String) {
+                    val sp = requireContext().defaultSharedPreferences
+                    val str = sp.getString(PREF_RECENT_SEARCH, null)
+                    val searches = if (str.isNullOrBlank()) mutableListOf()
+                    else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
+                    searches.add(RecentSearch(RecentSearchType.LINK, title = name, subTitle = url))
+                    sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(searches.takeLast(4)))
                 }
 
                 override fun onReceivedIcon(

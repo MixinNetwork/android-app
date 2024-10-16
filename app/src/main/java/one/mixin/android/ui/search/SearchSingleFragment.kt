@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchSingleBinding
 import one.mixin.android.databinding.ViewHeadSearchSingleBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.viewDestroyed
@@ -35,6 +36,8 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -131,23 +134,26 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {
-                    activity?.let { WalletActivity.showWithToken(it, tokenItem, WalletActivity.Destination.Transactions) }
+                    activity?.let { WalletActivity.showWithToken(it, tokenItem, Destination.Transactions) }
                 }
 
                 override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
+                            searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
                             WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                         }
                     }
                 }
 
                 override fun onDappClick(dapp: Dapp) {
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
                     WebActivity.show(requireContext(), dapp.homeUrl, null)
                 }
 
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, bot.fullName, bot.fullName, bot.identityNumber, bot.appId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 

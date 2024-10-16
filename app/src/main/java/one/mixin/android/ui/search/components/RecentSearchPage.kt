@@ -19,10 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +28,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,7 +53,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.vo.Dapp
@@ -63,10 +63,13 @@ import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentSearchPage(dappClick: (Dapp) -> Unit) {
+fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
-    val recentSearch = viewModel.getRecentSearch(context.defaultSharedPreferences)
+    val recentSearches by viewModel.recentSearches.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.getRecentSearch(context.defaultSharedPreferences)
+    }
     val dapps = viewModel.getAllDapps()
     MixinAppTheme {
         Column(
@@ -74,7 +77,7 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            if (!recentSearch.isNullOrEmpty()) {
+            if (recentSearches.isNotEmpty()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -89,7 +92,7 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit) {
                     )
                     Icon(
                         modifier = Modifier.clickable {
-
+                            viewModel.removeRecentSearch(context.defaultSharedPreferences)
                         },
                         painter = painterResource(id = R.drawable.ic_action_delete),
                         contentDescription = null,
@@ -105,8 +108,8 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    recentSearch.forEach {
-                        RecentSearchComponent(it)
+                    recentSearches.forEach {
+                        RecentSearchComponent(it, searchClick)
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -141,17 +144,19 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit) {
 }
 
 @Composable
-fun RecentSearchComponent(search: RecentSearch) {
+fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     var priceChangePercentage24H by remember { mutableStateOf<String?>(null) }
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val itemWidth = ((screenWidthDp - 48) / 2).dp
     if (search.type == RecentSearchType.MARKET) {
         coroutineScope.launch {
             val marketItem = search.primaryKey?.let { viewModel.findMarketItemByCoinId(coinId = it) }
-            Timber.e("market ${marketItem?.coinId} ${marketItem?.priceChange24h}")
             priceChangePercentage24H = marketItem?.priceChangePercentage24H
         }
     }
@@ -161,7 +166,9 @@ fun RecentSearchComponent(search: RecentSearch) {
                 BorderStroke(1.dp, Color(0x0f000000)),
                 shape = RoundedCornerShape(32.dp)
             )
-            .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically
+            .widthIn(max = itemWidth)
+            .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = 20.dp)
+            .clickable { searchClick.invoke(search) }, verticalAlignment = Alignment.CenterVertically
     ) {
         if (search.type == RecentSearchType.LINK) {
             Image(
@@ -172,14 +179,15 @@ fun RecentSearchComponent(search: RecentSearch) {
         } else {
             CoilImage(
                 model = search.iconUrl,
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(search.title ?: "", fontSize = 14.sp, lineHeight = 14.sp, color = MixinAppTheme.colors.textPrimary)
-
+            Text(search.title ?: "", fontSize = 14.sp, lineHeight = 14.sp, color = MixinAppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (search.type == RecentSearchType.MARKET) {
                 if (priceChangePercentage24H != null) {
                     val p = BigDecimal(priceChangePercentage24H)

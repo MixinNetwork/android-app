@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.View
+import androidx.activity.addCallback
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -82,6 +83,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
         // Trigger ViewModel initialization without executing any code
         searchViewModel
         view.setOnClickListener {
@@ -113,7 +115,8 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             },
         )
         binding.backIb.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            binding.searchEt.hideKeyboard()
+            requireActivity().onBackPressed()
         }
         lifecycleScope.launch {
             delay(200)
@@ -130,7 +133,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
-                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, bot.fullName, bot.identityNumber, bot.userId))
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, bot.fullName, bot.fullName, bot.identityNumber, bot.appId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 
@@ -165,9 +168,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onUrlClick(url: String) {
-                    // todo
-                    // searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.LINK, title = dapp.name, subTitle = dapp.homeUrl))
-                    url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+                    url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope, saveName = true)
                 }
 
                 override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
@@ -186,10 +187,34 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 {},
             )
         binding.recent.setContent {
-            RecentSearchPage { dapp ->
+            RecentSearchPage ({ dapp ->
                 searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
                 WebActivity.show(requireContext(), dapp.homeUrl, null)
-            }
+            }, {search->
+                when(search.type){
+                    RecentSearchType.BOT-> {
+                        lifecycleScope.launch {
+                            searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
+                                val f = UserBottomSheetDialogFragment.newInstance(user)
+                                f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            }
+                        }
+                    }
+                    RecentSearchType.DAPP->{
+                        WebActivity.show(requireContext(), search.subTitle?:"", null)
+                    }
+                    RecentSearchType.LINK->{
+                        search.subTitle?.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+                    }
+                    RecentSearchType.MARKET->{
+                        lifecycleScope.launch {
+                            searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
+                                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                            }
+                        }
+                    }
+                }
+            })
         }
         binding.va.displayedChild = 2
         lifecycleScope.launch {

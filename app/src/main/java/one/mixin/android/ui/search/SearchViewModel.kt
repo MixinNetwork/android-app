@@ -15,6 +15,8 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
@@ -301,19 +303,27 @@ internal constructor(
 
     suspend fun findMarketItemByCoinId(coinId: String) = tokenRepository.findMarketItemByCoinId(coinId)
 
-    fun getRecentSearch(sp: SharedPreferences): MutableList<RecentSearch>? {
+    private val _recentSearches = MutableStateFlow<List<RecentSearch>>(emptyList())
+    val recentSearches = _recentSearches.asStateFlow()
+
+    fun getRecentSearch(sp: SharedPreferences) {
         val str = sp.getString(PREF_RECENT_SEARCH, null)
-        return if (str.isNullOrBlank()) null
-        else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
+        val searches = if (str.isNullOrBlank()) emptyList() 
+                       else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toList()
+        _recentSearches.value = searches
     }
 
     fun saveRecentSearch(sp: SharedPreferences, recentSearch: RecentSearch) {
-        val local = getRecentSearch(sp)?: mutableListOf()
-        local.add(recentSearch)
-        sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(local.takeLast(4)))
+        viewModelScope.launch {
+            val local = _recentSearches.value.toMutableList()
+            local.add(recentSearch)
+            sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(local.takeLast(4)))
+            _recentSearches.value = local.takeLast(4)
+        }
     }
 
-    fun removeRecentSearch(sp: SharedPreferences){
+    fun removeRecentSearch(sp: SharedPreferences) {
         sp.remove(PREF_RECENT_SEARCH)
+        _recentSearches.value = emptyList()
     }
 }
