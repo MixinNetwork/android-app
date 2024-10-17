@@ -36,6 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:textColor="?attr/text_primary"
+            app:ellipsize="end"
             app:lines="1"
             app:maxWidth="240dp"
             app:textSize="16sp" />

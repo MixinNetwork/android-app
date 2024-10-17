@@ -33,9 +33,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:textColor="?attr/text_primary"
-            app:maxWidth="220dp"
+            app:maxWidth="240dp"
             app:lines="1"
             app:textFontWeight="500"
+            app:ellipsize="end"
             app:textSize="16sp" />
 
     </LinearLayout>
