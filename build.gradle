@@ -2,14 +2,14 @@ buildscript {
 
     ext {
         ext.fragmentVersion = '1.8.4'
-        ext.activity_version = '1.9.2'
+        ext.activity_version = '1.9.3'
         ext.lifecycleVersion = '2.8.6'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.2'
         ext.coilVersion = '2.7.0'
         ext.collectionx = '1.4.4'
         ext.roomVersion = '2.6.1'
-        ext.navigationVersion = '2.8.2'
+        ext.navigationVersion = '2.8.3'
         ext.workManagerVersion = '2.9.1'
         ext.constraintLayoutVersion = '2.1.4'
         ext.constraintLayoutComposeVersion = '1.0.1'
@@ -105,7 +105,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20240303'
-        ext.composeVersion = '1.7.3'
+        ext.composeVersion = '1.7.4'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
 
