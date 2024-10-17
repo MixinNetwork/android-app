@@ -10,6 +10,7 @@ data class SwapRequest(
     val outputMint: String,
     val slippage: Int,
     val source: String,
+    val payload: String,
 
     val jupiterQuoteResponse: JupiterQuoteResponse? = null,
 )
