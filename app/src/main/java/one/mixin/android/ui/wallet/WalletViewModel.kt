@@ -235,7 +235,7 @@ class WalletViewModel
             defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)
         if (assetsString != null) {
             val assetsList = assetsString.split("=")
-            if (assetsList.isNullOrEmpty()) {
+            if (assetsList.isEmpty()) {
                 defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)
                 return@launch
             }

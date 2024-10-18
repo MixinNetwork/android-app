@@ -9,14 +9,17 @@ import androidx.room.util.query
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
+import one.mixin.android.db.converter.OptionalListConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.Callable
@@ -542,6 +545,163 @@ fun callableUser(
                 tmpIsScam = if (tmp2 == null) null else tmp2 != 0
                 item =
                     User(
+                        tmpUserId!!,
+                        tmpIdentityNumber!!,
+                        tmpRelationship!!,
+                        tmpBiography!!,
+                        tmpFullName,
+                        tmpAvatarUrl,
+                        tmpPhone,
+                        tmpIsVerified,
+                        tmpCreatedAt,
+                        tmpMuteUntil,
+                        tmpHasPin,
+                        tmpAppId,
+                        tmpIsScam,
+                        membership = membershipConverter.revertData(tmpMembership)
+                    )
+                result.add(item)
+            }
+            return@Callable result
+        } finally {
+            cursor.close()
+            statement.release()
+        }
+    }
+}
+
+
+@SuppressLint("RestrictedApi")
+fun callableBot(
+    db: MixinDatabase,
+    statement: RoomSQLiteQuery,
+    cancellationSignal: CancellationSignal,
+): Callable<List<SearchBot>> {
+    return Callable<List<SearchBot>> {
+        val cursor = query(db, statement, false, cancellationSignal)
+        try {
+            val cursorIndexOfUserId =
+                getColumnIndexOrThrow(cursor, "user_id")
+            val cursorIndexOfIdentityNumber =
+                getColumnIndexOrThrow(cursor, "identity_number")
+            val cursorIndexOfRelationship =
+                getColumnIndexOrThrow(cursor, "relationship")
+            val cursorIndexOfBiography =
+                getColumnIndexOrThrow(cursor, "biography")
+            val cursorIndexOfFullName =
+                getColumnIndexOrThrow(cursor, "full_name")
+            val cursorIndexOfAvatarUrl =
+                getColumnIndexOrThrow(cursor, "avatar_url")
+            val cursorIndexOfPhone = getColumnIndexOrThrow(cursor, "phone")
+            val cursorIndexOfIsVerified =
+                getColumnIndexOrThrow(cursor, "is_verified")
+            val cursorIndexOfCreatedAt =
+                getColumnIndexOrThrow(cursor, "created_at")
+            val cursorIndexOfMuteUntil =
+                getColumnIndexOrThrow(cursor, "mute_until")
+            val cursorIndexOfHasPin =
+                getColumnIndexOrThrow(cursor, "has_pin")
+            val cursorIndexOfAppId =
+                getColumnIndexOrThrow(cursor, "app_id")
+            val cursorIndexOfIsScam =
+                getColumnIndexOrThrow(cursor, "is_scam")
+            val cursorIndexOfIsMembership =
+                getColumnIndexOrThrow(cursor, "membership")
+            val result: MutableList<SearchBot> = java.util.ArrayList(cursor.count)
+            while (cursor.moveToNext()) {
+                val item: SearchBot
+                val tmpUserId: String? =
+                    if (cursor.isNull(cursorIndexOfUserId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserId)
+                    }
+                val tmpIdentityNumber: String? =
+                    if (cursor.isNull(cursorIndexOfIdentityNumber)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfIdentityNumber)
+                    }
+                val tmpRelationship: String? =
+                    if (cursor.isNull(cursorIndexOfRelationship)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfRelationship)
+                    }
+                val tmpBiography: String? =
+                    if (cursor.isNull(cursorIndexOfBiography)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfBiography)
+                    }
+                val tmpFullName: String? =
+                    if (cursor.isNull(cursorIndexOfFullName)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfFullName)
+                    }
+                val tmpAvatarUrl: String? =
+                    if (cursor.isNull(cursorIndexOfAvatarUrl)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAvatarUrl)
+                    }
+                val tmpPhone: String? =
+                    if (cursor.isNull(cursorIndexOfPhone)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfPhone)
+                    }
+                val tmpIsVerified: Boolean?
+                val tmp: Int? =
+                    if (cursor.isNull(cursorIndexOfIsVerified)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfIsVerified)
+                    }
+                tmpIsVerified = if (tmp == null) null else tmp != 0
+                val tmpCreatedAt: String? =
+                    if (cursor.isNull(cursorIndexOfCreatedAt)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfCreatedAt)
+                    }
+                val tmpMuteUntil: String? =
+                    if (cursor.isNull(cursorIndexOfMuteUntil)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfMuteUntil)
+                    }
+                val tmpHasPin: Boolean?
+                val tmp1: Int? =
+                    if (cursor.isNull(cursorIndexOfHasPin)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfHasPin)
+                    }
+                tmpHasPin = if (tmp1 == null) null else tmp1 != 0
+                val tmpAppId: String? =
+                    if (cursor.isNull(cursorIndexOfAppId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfAppId)
+                    }
+                val tmpIsScam: Boolean?
+                val tmp2: Int? =
+                    if (cursor.isNull(cursorIndexOfIsScam)) {
+                        null
+                    } else {
+                        cursor.getInt(cursorIndexOfIsScam)
+                    }
+                val tmpMembership: String? =
+                    if (cursor.isNull(cursorIndexOfIsMembership)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfIsMembership)
+                    }
+                tmpIsScam = if (tmp2 == null) null else tmp2 != 0
+                item =
+                    SearchBot(
                         tmpUserId!!,
                         tmpIdentityNumber!!,
                         tmpRelationship!!,
@@ -1343,6 +1503,58 @@ fun callableSafeInscription(
                 result.add(item)
             }
             return@Callable result
+        } finally {
+            cursor.close()
+            statement.release()
+        }
+    }
+}
+
+@SuppressLint("RestrictedApi")
+fun callableMarket(
+    db: MixinDatabase,
+    statement: RoomSQLiteQuery,
+    cancellationSignal: CancellationSignal
+): Callable<List<Market>> {
+    return Callable<List<Market>> {
+        val cursor = query(db, statement, false, cancellationSignal)
+        try {
+            val result: MutableList<Market> = ArrayList(cursor.count)
+            while (cursor.moveToNext()) {
+                val item = Market(
+                    coinId = cursor.getString(cursor.getColumnIndexOrThrow("coin_id")),
+                    name = cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                    symbol = cursor.getString(cursor.getColumnIndexOrThrow("symbol")),
+                    iconUrl = cursor.getString(cursor.getColumnIndexOrThrow("icon_url")),
+                    currentPrice = cursor.getString(cursor.getColumnIndexOrThrow("current_price")),
+                    marketCap = cursor.getString(cursor.getColumnIndexOrThrow("market_cap")),
+                    marketCapRank = cursor.getString(cursor.getColumnIndexOrThrow("market_cap_rank")),
+                    totalVolume = cursor.getString(cursor.getColumnIndexOrThrow("total_volume")),
+                    high24h = cursor.getString(cursor.getColumnIndexOrThrow("high_24h")),
+                    low24h = cursor.getString(cursor.getColumnIndexOrThrow("low_24h")),
+                    priceChange24h = cursor.getString(cursor.getColumnIndexOrThrow("price_change_24h")),
+                    priceChangePercentage1H = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_1h")),
+                    priceChangePercentage24H = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_24h")),
+                    priceChangePercentage7D = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_7d")),
+                    priceChangePercentage30D = cursor.getString(cursor.getColumnIndexOrThrow("price_change_percentage_30d")),
+                    marketCapChange24h = cursor.getString(cursor.getColumnIndexOrThrow("market_cap_change_24h")),
+                    marketCapChangePercentage24h = cursor.getString(cursor.getColumnIndexOrThrow("market_cap_change_percentage_24h")),
+                    circulatingSupply = cursor.getString(cursor.getColumnIndexOrThrow("circulating_supply")),
+                    totalSupply = cursor.getString(cursor.getColumnIndexOrThrow("total_supply")),
+                    maxSupply = cursor.getString(cursor.getColumnIndexOrThrow("max_supply")),
+                    ath = cursor.getString(cursor.getColumnIndexOrThrow("ath")),
+                    athChangePercentage = cursor.getString(cursor.getColumnIndexOrThrow("ath_change_percentage")),
+                    athDate = cursor.getString(cursor.getColumnIndexOrThrow("ath_date")),
+                    atl = cursor.getString(cursor.getColumnIndexOrThrow("atl")),
+                    atlChangePercentage = cursor.getString(cursor.getColumnIndexOrThrow("atl_change_percentage")),
+                    atlDate = cursor.getString(cursor.getColumnIndexOrThrow("atl_date")),
+                    assetIds = OptionalListConverter.fromString(cursor.getString(cursor.getColumnIndexOrThrow("asset_ids"))),
+                    sparklineIn7d = cursor.getString(cursor.getColumnIndexOrThrow("sparkline_in_7d")),
+                    updatedAt = cursor.getString(cursor.getColumnIndexOrThrow("updated_at"))
+                )
+                result.add(item)
+            }
+            result
         } finally {
             cursor.close()
             statement.release()

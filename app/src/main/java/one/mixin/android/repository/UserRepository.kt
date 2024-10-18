@@ -42,6 +42,7 @@ import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
@@ -78,7 +79,7 @@ class UserRepository
         suspend fun fuzzySearchBots(
             query: String,
             cancellationSignal: CancellationSignal,
-        ): List<User> =
+        ): List<SearchBot> =
             DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
         suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)

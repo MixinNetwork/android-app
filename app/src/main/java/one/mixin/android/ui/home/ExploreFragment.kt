@@ -50,7 +50,7 @@ import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.web3.EthereumFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.home.web3.SolanaFragment
-import one.mixin.android.ui.search.SearchBotsFragment
+import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -100,8 +100,8 @@ class ExploreFragment : BaseFragment() {
             searchIb.setOnClickListener {
                 activity?.addFragment(
                     this@ExploreFragment,
-                    SearchBotsFragment(),
-                    SearchBotsFragment.TAG,
+                    SearchExploreFragment(),
+                    SearchExploreFragment.TAG,
                 )
             }
             scanIb.setOnClickListener {

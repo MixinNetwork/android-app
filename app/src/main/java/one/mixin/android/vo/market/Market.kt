@@ -1,16 +1,20 @@
 package one.mixin.android.vo.market
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.converter.OptionalListConverter
 
 @Entity(
     tableName = "markets",
 )
 @TypeConverters(OptionalListConverter::class)
+@Parcelize
 data class Market(
     @PrimaryKey
     @SerializedName("coin_id")
@@ -100,4 +104,4 @@ data class Market(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String
-)
+):Parcelable
