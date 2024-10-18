@@ -100,7 +100,11 @@ class SwapFragment : BaseFragment() {
             SwapFragment().withArgs {
                 when (T::class) {
                     Web3Token::class -> {
-                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { if (tokens != null) { addAll(tokens) } })
+                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply {
+                            if (tokens != null) {
+                                addAll(tokens)
+                            }
+                        })
                     }
 
                     TokenItem::class -> {
@@ -138,7 +142,7 @@ class SwapFragment : BaseFragment() {
     private val swapViewModel by viewModels<SwapViewModel>()
     private val textInputFlow = MutableStateFlow("")
 
-    private val scope:CoroutineScope
+    private val scope: CoroutineScope
         get() {
             return this.lifecycleScope
         }
@@ -248,17 +252,21 @@ class SwapFragment : BaseFragment() {
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
-                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(
-                                                if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
-                                                inputMint,
-                                                if (inMixin()) 0 else qr.inAmount.toLong(),
-                                                if (inMixin()) qr.inAmount else "0",
-                                                outputMint,
-                                                qr.slippage,
-                                                qr.source,
-                                                qr.payload,
-                                                qr.jupiterQuoteResponse,
-                                            )) },
+                                            invokeNetwork = {
+                                                swapViewModel.web3Swap(
+                                                    SwapRequest(
+                                                        if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
+                                                        inputMint,
+                                                        if (inMixin()) 0 else qr.inAmount.toLong(),
+                                                        if (inMixin()) qr.inAmount else "0",
+                                                        outputMint,
+                                                        qr.slippage,
+                                                        qr.source,
+                                                        qr.payload,
+                                                        qr.jupiterQuoteResponse,
+                                                    )
+                                                )
+                                            },
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
@@ -315,7 +323,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun openSwapTransfer(swapResult: SwapResponse){
+    private suspend fun openSwapTransfer(swapResult: SwapResponse) {
         val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
@@ -418,7 +426,7 @@ class SwapFragment : BaseFragment() {
                     }
                     dismissNow()
                 }
-            }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment .TAG)
+            }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -497,7 +505,7 @@ class SwapFragment : BaseFragment() {
             if (swapTokens.isNotEmpty()) {
                 (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens)
             }
-            if (fromToken != null  && toToken != null) {
+            if (fromToken != null && toToken != null) {
                 refreshTokensPrice(listOf(fromToken!!, toToken!!))
             }
         }
