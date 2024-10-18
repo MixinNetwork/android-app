@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -137,6 +138,11 @@ class SwapFragment : BaseFragment() {
     private val swapViewModel by viewModels<SwapViewModel>()
     private val textInputFlow = MutableStateFlow("")
 
+    private val scope:CoroutineScope
+        get() {
+            return this.lifecycleScope
+        }
+
     @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,7 +152,7 @@ class SwapFragment : BaseFragment() {
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
 
-        lifecycleScope.launch {
+        scope.launch {
             textInputFlow
                 .debounce(500L)
                 .distinctUntilChanged()
@@ -161,7 +167,7 @@ class SwapFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        lifecycleScope.launch {
+        scope.launch {
             initFromTo()
             refreshTokens()
             initAmount()
@@ -231,7 +237,7 @@ class SwapFragment : BaseFragment() {
                                 currentText = a
                                 refreshQuote(a)
                             }, {
-                                lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                                scope.launch(CoroutineExceptionHandler { _, error ->
                                     toast(error.message ?: getString(R.string.Unknown))
                                 }) {
                                     val qr = quoteResp ?: return@launch
@@ -285,7 +291,7 @@ class SwapFragment : BaseFragment() {
                                         requireActivity(),
                                         signMessage,
                                         onTxhash = { hash, serializedTx ->
-                                            lifecycleScope.launch {
+                                            scope.launch {
                                                 txhash = hash
                                                 val txStateFragment =
                                                     TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
@@ -359,7 +365,7 @@ class SwapFragment : BaseFragment() {
                             toToken = fromToken
                         }
                         fromToken = token
-                        lifecycleScope.launch {
+                        scope.launch {
                             refreshTokensPrice(listOf(token))
                             onTextChanged(currentText)
                         }
@@ -378,7 +384,7 @@ class SwapFragment : BaseFragment() {
                             toToken = fromToken
                         }
                         fromToken = token
-                        lifecycleScope.launch {
+                        scope.launch {
                             refreshTokensPrice(listOf(token))
                             onTextChanged(currentText)
                         }
@@ -406,7 +412,7 @@ class SwapFragment : BaseFragment() {
                         fromToken = toToken
                     }
                     toToken = token
-                    lifecycleScope.launch {
+                    scope.launch {
                         refreshTokensPrice(listOf(token))
                         onTextChanged(currentText)
                     }
@@ -549,7 +555,7 @@ class SwapFragment : BaseFragment() {
                 outputText = "0"
             } else {
                 quoteJob =
-                    lifecycleScope.launch {
+                    scope.launch {
                         quote(text)
                         repeat(100) { t ->
                             quoteCountDown = t / 100f
@@ -631,7 +637,7 @@ class SwapFragment : BaseFragment() {
         val list = mutableListOf<String>()
         fromToken?.let { list.add(it.assetId) }
         toToken?.let { list.add(it.assetId) }
-        lifecycleScope.launch {
+        scope.launch {
             val newTokens = swapViewModel.syncAndFindTokens(list)
             if (newTokens.isEmpty()) {
                 return@launch
