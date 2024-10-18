@@ -126,7 +126,6 @@ interface MessageDao : BaseDao<Message> {
         WHERE conversation_id = :conversationId
         AND category IN ($IMAGES, $VIDEOS, $LIVES) 
         AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
-        ORDER BY created_at ASC, rowid ASC
     """,
     )
     suspend fun indexMediaMessages(
@@ -159,7 +158,6 @@ interface MessageDao : BaseDao<Message> {
         WHERE conversation_id = :conversationId 
         AND category IN ($IMAGES, $VIDEOS)
         AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
-        ORDER BY created_at DESC, rowid DESC
         """,
     )
     suspend fun indexMediaMessagesExcludeLive(
