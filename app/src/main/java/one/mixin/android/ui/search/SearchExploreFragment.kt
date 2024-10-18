@@ -116,13 +116,13 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             },
         )
         binding.backIb.setOnClickListener {
-            binding.searchEt.hideKeyboard()
+            binding.searchEt.et.hideKeyboard()
             requireActivity().onBackPressed()
         }
         lifecycleScope.launch {
             delay(200)
             if (isAdded) {
-                binding.searchEt.showKeyboard()
+                binding.searchEt.et.showKeyboard()
             }
         }
 
@@ -178,7 +178,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
             }
 
-        binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        binding.searchEt.et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe(

@@ -622,7 +622,9 @@ class WebFragment : BaseFragment() {
                     val str = sp.getString(PREF_RECENT_SEARCH, null)
                     val searches = if (str.isNullOrBlank()) mutableListOf()
                     else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
-                    searches.add(0, RecentSearch(RecentSearchType.LINK, title = name, subTitle = url))
+                    val recent = RecentSearch(RecentSearchType.LINK, title = name, subTitle = url)
+                    searches.remove(recent)
+                    searches.add(0, recent)
                     sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(searches.take(4)))
                     RxBus.publish(SearchEvent())
                 }

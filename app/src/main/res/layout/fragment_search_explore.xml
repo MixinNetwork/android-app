@@ -30,7 +30,7 @@
             app:srcCompat="@drawable/ic_back"
             tools:ignore="ContentDescription" />
 
-        <EditText
+        <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,6 +48,7 @@
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
             android:textSize="14sp" />
+
     </RelativeLayout>
 
     <ViewAnimator

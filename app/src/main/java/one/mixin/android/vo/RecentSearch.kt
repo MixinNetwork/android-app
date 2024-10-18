@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-class RecentSearch(
+data class RecentSearch(
     val type: RecentSearchType,
     val iconUrl:String?= null,
     val title: String?= null,

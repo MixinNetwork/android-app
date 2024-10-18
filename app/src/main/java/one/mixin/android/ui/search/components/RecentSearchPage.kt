@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,7 +87,7 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        stringResource(R.string.Recent_Searches),
+                        stringResource(R.string.Recent),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist
                     )
@@ -134,7 +136,7 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
                         color = MixinAppTheme.colors.textAssist
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 dapps.forEach {
                     DappComponent(it, dappClick)
                 }
@@ -168,8 +170,12 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
                 BorderStroke(1.dp, Color(0x0f000000)),
                 shape = RoundedCornerShape(32.dp)
             )
+            .clip(RoundedCornerShape(32.dp))
+            .clickable {
+                searchClick.invoke(search)
+            }
             .padding(start = 6.dp, top = 6.dp, bottom = 6.dp, end = 20.dp)
-            .clickable { searchClick.invoke(search) }, verticalAlignment = Alignment.CenterVertically
+            , verticalAlignment = Alignment.CenterVertically
     ) {
         if (search.type == RecentSearchType.LINK) {
             Image(
@@ -226,7 +232,7 @@ fun DappComponent(dapp: Dapp, dappClick: (Dapp) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { dappClick.invoke(dapp) }
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
@@ -247,5 +253,4 @@ fun DappComponent(dapp: Dapp, dappClick: (Dapp) -> Unit) {
             )
         }
     }
-    Spacer(modifier = Modifier.height(16.dp))
 }

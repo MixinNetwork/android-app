@@ -296,13 +296,26 @@ class DataProvider {
             )
         }
 
-        @Suppress("LocalVariableName", "JoinDeclarationAndAssignment")
+        @Suppress("LocalVariableName")
         suspend fun fuzzyMarkets(
             keyword: String,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<Market> {
-            val _sql = "SELECT * FROM markets WHERE symbol LIKE '%' || ? || '%'  ESCAPE '\\' OR name LIKE '%' || ? || '%'  ESCAPE '\\'"
+            val _sql = """
+                SELECT *
+                FROM markets
+                WHERE symbol LIKE '%' || ? || '%' ESCAPE '\' 
+                   OR name LIKE '%' || ? || '%' ESCAPE '\'
+                ORDER BY
+                  CASE
+                    WHEN symbol = ? THEN 1 
+                    WHEN name = ? THEN 1   
+                    ELSE 2                
+                  END,
+                  symbol ASC,             
+                  name ASC
+            """
             val _statement = RoomSQLiteQuery.acquire(_sql, 2)
             var _argIndex = 1
             _statement.bindString(_argIndex, keyword)
