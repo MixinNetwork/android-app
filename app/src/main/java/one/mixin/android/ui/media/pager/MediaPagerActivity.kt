@@ -110,7 +110,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         intent.getStringExtra(MESSAGE_ID) as String
     }
     private val mediaSource by lazy {
-        MediaSource.values()[intent.getIntExtra(MEDIA_SOURCE, 0)]
+        MediaSource.entries[intent.getIntExtra(MEDIA_SOURCE, 0)]
     }
     private val ratio by lazy {
         intent.getFloatExtra(RATIO, 0f)

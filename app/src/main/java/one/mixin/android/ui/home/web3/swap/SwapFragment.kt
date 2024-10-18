@@ -250,6 +250,7 @@ class SwapFragment : BaseFragment() {
                                                 outputMint,
                                                 qr.slippage,
                                                 qr.source,
+                                                qr.payload,
                                                 qr.jupiterQuoteResponse,
                                             )) },
                                             successBlock = {
@@ -258,6 +259,7 @@ class SwapFragment : BaseFragment() {
                                             exceptionBlock = { t ->
                                                 isLoading = false
                                                 errorInfo = t.message
+                                                Timber.e(t)
                                                 return@handleMixinResponse false
                                             },
                                             failureBlock = { r ->
@@ -579,6 +581,7 @@ class SwapFragment : BaseFragment() {
             },
             exceptionBlock = { t ->
                 errorInfo = t.message
+                Timber.e(t)
                 return@handleMixinResponse true
             },
             failureBlock = { r ->
