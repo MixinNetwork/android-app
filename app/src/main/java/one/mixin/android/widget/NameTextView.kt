@@ -82,13 +82,11 @@ class NameTextView : LinearLayoutCompat {
         }
 
         val ellipsize = a.getString(R.styleable.NameTextView_ellipsize)
-        if (ellipsize != null) {
-            textView.ellipsize = when {
-                ellipsize.equalsIgnoreCase("end") -> TextUtils.TruncateAt.END
-                ellipsize.equalsIgnoreCase("start") -> TextUtils.TruncateAt.START
-                ellipsize.equalsIgnoreCase("middle") -> TextUtils.TruncateAt.MIDDLE
-                else -> null
-            }
+        textView.ellipsize = when {
+            ellipsize?.equalsIgnoreCase("end") == true -> TextUtils.TruncateAt.END
+            ellipsize?.equalsIgnoreCase("start") == true -> TextUtils.TruncateAt.START
+            ellipsize?.equalsIgnoreCase("middle") == true -> TextUtils.TruncateAt.MIDDLE
+            else -> TextUtils.TruncateAt.END // default end
         }
         val maxWidth = a.getDimensionPixelSize(R.styleable.NameTextView_maxWidth, 0)
         if (maxWidth > 0) {
@@ -98,8 +96,8 @@ class NameTextView : LinearLayoutCompat {
         if (maxWidth > 0) {
             textView.minWidth = minWidth
         }
-        val maxLength  = a.getInt(R.styleable.NameTextView_maxLength, 0)
-        if (maxLength>0){
+        val maxLength = a.getInt(R.styleable.NameTextView_maxLength, 0)
+        if (maxLength > 0) {
             textView.filters = arrayOf(InputFilter.LengthFilter(maxLength))
         }
         val lines = a.getInt(R.styleable.NameTextView_lines, 1)
@@ -503,7 +501,6 @@ class NameTextView : LinearLayoutCompat {
         }
         this.textView.setCompoundDrawables(null, null, getMessageBadge(message), null)
     }
-
 
     fun setName(conversationItem: ConversationItem) {
         this.textView.text = conversationItem.getConversationName()
