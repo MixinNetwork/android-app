@@ -30,7 +30,7 @@
             app:srcCompat="@drawable/ic_back"
             tools:ignore="ContentDescription" />
 
-        <EditText
+        <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
             android:background="@null"
             android:drawablePadding="6dp"
             android:gravity="center_vertical"
-            android:hint="@string/search_placeholder_app"
+            android:hint="@string/search_placeholder_explore"
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:importantForAutofill="no"
             android:inputType="text"
@@ -48,9 +48,11 @@
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
             android:textSize="14sp" />
+
     </RelativeLayout>
 
-    <FrameLayout
+    <ViewAnimator
+        android:id="@+id/va"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -95,5 +97,12 @@
             android:layout_height="match_parent"
             tools:listitem="@layout/item_search_contact" />
 
-    </FrameLayout>
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/recent"
+            android:background="?attr/bg_white"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </ViewAnimator>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

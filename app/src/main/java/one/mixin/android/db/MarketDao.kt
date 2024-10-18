@@ -1,3 +1,4 @@
+
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
@@ -17,6 +18,11 @@ interface MarketDao : BaseDao<Market> {
 
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id WHERE m.coin_id = :coinId")
     fun marketByCoinId(coinId: String): LiveData<MarketItem?>
+
+    @Query(
+        "SELECT * FROM markets WHERE symbol LIKE '%' || :query || '%'  ESCAPE '\\' OR name LIKE '%' || :query || '%'  ESCAPE '\\'"
+    )
+    fun fuzzyMarkets(query: String):List<Market>
 
     @RewriteQueriesToDropUnusedColumns
     @Query(

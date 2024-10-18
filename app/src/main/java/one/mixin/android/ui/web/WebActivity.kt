@@ -43,6 +43,7 @@ class WebActivity : BaseActivity() {
             conversationId: String?,
             app: App? = null,
             appCard: AppCardData? = null,
+            saveName: Boolean? = null
         ) {
             context.startActivity(
                 Intent(context, WebActivity::class.java).apply {
@@ -61,6 +62,7 @@ class WebActivity : BaseActivity() {
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
+                            putBoolean(WebFragment.ARGS_SAVE_NAME, saveName?:false)
                         },
                     )
                 },

@@ -77,6 +77,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
+import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
@@ -100,6 +101,7 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
+import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
@@ -1070,7 +1072,7 @@ class TokenRepository
 
     suspend fun findMarketItemByAssetId(assetId: String) = marketDao.findMarketItemByAssetId(assetId)
 
-    private suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
+    suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
 
     suspend fun checkMarketById(id: String): MarketItem? {
         val marketItem = if (id.isUUID()) {
@@ -1229,4 +1231,10 @@ class TokenRepository
     fun getAlertCountByCoinId(coinId: String): Int {
         return alertDao.getAlertCountByCoinId(coinId)
     }
+
+    suspend fun fuzzyMarkets(
+        query: String,
+        cancellationSignal: CancellationSignal,
+    ): List<Market> =
+        DataProvider.fuzzyMarkets(query, appDatabase, cancellationSignal)
 }

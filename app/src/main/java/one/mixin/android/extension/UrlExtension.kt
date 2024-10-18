@@ -49,8 +49,9 @@ fun String.openAsUrlOrWeb(
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null,
+    saveName: Boolean = false,
 ) = openAsUrl(context, supportFragmentManager, scope, currentConversation = conversationId, app = app) {
-    WebActivity.show(context, this, conversationId, app, appCard)
+    WebActivity.show(context, this, conversationId, app, appCard, saveName)
 }
 
 fun String.openAsUrlOrQrScan(

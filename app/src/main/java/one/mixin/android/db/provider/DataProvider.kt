@@ -19,9 +19,11 @@ import one.mixin.android.fts.rawSearch
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 
@@ -244,7 +246,7 @@ class DataProvider {
             id: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ): List<User> {
+        ): List<SearchBot> {
             val _sql = """
         SELECT * FROM users
         WHERE app_id IS NOT NULL 
@@ -290,7 +292,40 @@ class DataProvider {
                 db,
                 false,
                 cancellationSignal,
-                callableUser(db, _statement, cancellationSignal),
+                callableBot(db, _statement, cancellationSignal),
+            )
+        }
+
+        @Suppress("LocalVariableName")
+        suspend fun fuzzyMarkets(
+            keyword: String,
+            db: MixinDatabase,
+            cancellationSignal: CancellationSignal,
+        ): List<Market> {
+            val _sql = """
+                SELECT *
+                FROM markets
+                WHERE symbol LIKE '%' || ? || '%' ESCAPE '\' 
+                   OR name LIKE '%' || ? || '%' ESCAPE '\'
+                ORDER BY
+                  CASE
+                    WHEN symbol = ? THEN 1 
+                    WHEN name = ? THEN 1   
+                    ELSE 2                
+                  END,
+                  symbol ASC,             
+                  name ASC
+            """
+            val _statement = RoomSQLiteQuery.acquire(_sql, 2)
+            var _argIndex = 1
+            _statement.bindString(_argIndex, keyword)
+            _argIndex = 2
+            _statement.bindString(_argIndex, keyword)
+            return CoroutinesRoom.execute(
+                db,
+                false,
+                cancellationSignal,
+                callableMarket(db, _statement, cancellationSignal),
             )
         }
 
