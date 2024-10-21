@@ -43,12 +43,12 @@ class AlertViewModel
 
     suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
 
-    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
+    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Alert>? {
         val r = tokenRepository.updateAlert(alertId, request)
         if (r?.isSuccess == true) {
             viewModelScope.launch(Dispatchers.IO) {
                 addAlertBot()
-                tokenRepository.updateAlert(alertId, request.type!!, request.value!!, request.frequency!!)
+                tokenRepository.insertAlert(r.data!!)
             }
         }
         return r
@@ -84,13 +84,13 @@ class AlertViewModel
 
                 AlertAction.RESUME -> {
                     viewModelScope.launch(Dispatchers.IO) {
-                        tokenRepository.updateAlertStatus(alertId, AlertStatus.RUNNING)
+                        tokenRepository.insertAlert(r.data!!)
                     }
                 }
 
                 AlertAction.PAUSE -> {
                     viewModelScope.launch(Dispatchers.IO) {
-                        tokenRepository.updateAlertStatus(alertId, AlertStatus.PAUSED)
+                        tokenRepository.insertAlert(r.data!!)
                     }
                 }
 
