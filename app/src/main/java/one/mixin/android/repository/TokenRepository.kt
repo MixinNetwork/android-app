@@ -1235,4 +1235,22 @@ class TokenRepository
         cancellationSignal: CancellationSignal,
     ): List<Market> =
         DataProvider.fuzzyMarkets(query, appDatabase, cancellationSignal)
+
+    suspend fun searchMarket(query: String) = withContext(Dispatchers.IO){
+        val response = routeService.searchMarket(query)
+        response.data?.let { list->
+            marketDao.upsertList(list)
+            val now = nowInUtc()
+            val ids = list.flatMap { market ->
+                market.assetIds?.map { assetId ->
+                    MarketCoin(
+                        coinId = market.coinId,
+                        assetId = assetId,
+                        createdAt = now
+                    )
+                } ?: emptyList()
+            }
+            marketCoinDao.insertIgnoreList(ids)
+        }
+    }
 }
