@@ -25,6 +25,8 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
             invokeNetwork = {
                 routeService.markets(category = category, limit = LIMIT)
             },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
             successBlock = { response ->
                 val list = response.data!!
                 val now = nowInUtc()

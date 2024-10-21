@@ -7,7 +7,6 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCoin
-import one.mixin.android.vo.market.MarketFavored
 
 class RefreshAlertsJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -23,6 +22,8 @@ class RefreshAlertsJob : BaseJob(
             invokeNetwork = {
                 routeService.alerts()
             },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
             successBlock = { response ->
                 val list = response.data!!
                 list.map{it.coinId}.distinct().mapNotNull { coinId ->
@@ -50,6 +51,8 @@ class RefreshAlertsJob : BaseJob(
             invokeNetwork = {
                 routeService.fetchMarket(ids)
             },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
             successBlock = { response ->
                 val list = response.data!!
                 val now = nowInUtc()

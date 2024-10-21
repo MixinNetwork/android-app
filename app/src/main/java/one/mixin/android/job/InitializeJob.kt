@@ -30,6 +30,8 @@ class InitializeJob(private val botId: String, private val botName: String) :
             invokeNetwork = {
                 userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name, botName))
             },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
             successBlock = {
                 it.data?.let { u ->
                     userDao.insertUpdate(u, appDao)
