@@ -248,7 +248,7 @@ class SwapFragment : BaseFragment() {
                                     val inputMint = fromToken?.getUnique() ?: return@launch
                                     val outputMint = toToken?.getUnique() ?: return@launch
 
-                                    if (quoteJob?.isActive == true) quoteJob?.cancel()
+                                    quoteJob?.takeIf { it.isActive }?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
@@ -549,7 +549,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun refreshQuote(text: String) {
-        if (quoteJob?.isActive == true) quoteJob?.cancel()
+        quoteJob?.takeIf { it.isActive }?.cancel()
         if (text.isBlank()) {
             outputText = "0"
         } else {
