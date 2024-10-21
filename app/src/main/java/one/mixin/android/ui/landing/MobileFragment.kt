@@ -147,6 +147,13 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             keyboard.animate().translationY(0f).start()
+            go.setOnClickListener {
+                activity?.addFragment(
+                    this@MobileFragment,
+                    MnemonicPhraseFragment.newInstance(),
+                    MnemonicPhraseFragment.TAG
+                )
+            }
         }
     }
 
