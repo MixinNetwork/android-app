@@ -572,7 +572,8 @@
     <string name="Landing_back">Landing back</string>
     <string name="landing_delete_content">Your account will be deleted on %1$s, if you continue to log in, the request to delete your account will be cancelled.</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
-    <string name="landing_introduction">Tap \"Agree &amp; Continue\" to accept  the %1$s and %2$s</string>
+    <string name="landing_introduction">By proceeding, you agree to the %1$s and %2$s.</string>
+    <string name="landing_desc">An open source crypto wallet with Signal messaging.</string>
     <string name="landing_invitation_dialog_content">We will send a 4-digit code to your phone number %1$s, please enter the code in next screen.</string>
     <string name="landing_anonymous_dialog_content">We will send a 4-digit code to your anonymous number %1$s, please enter the code in next screen.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
@@ -1739,4 +1740,6 @@
     <string name="All_Alert">All Alert</string>
     <string name="Trending_Dapps">Trending Dapps</string>
     <string name="Paste">Paste</string>
+    <string name="or">or</string>
+    <string name="Sign_in_with_Mnemonic_Phrase">Sign in with Mnemonic Phrase</string>
 </resources>

@@ -483,7 +483,6 @@
     <string name="Label">標題</string>
     <string name="landing_delete_content">您的賬戶將於 %1$s 被刪除，如果您繼續登入，刪除您賬戶的請求將被取消。</string>
     <string name="landing_enter_mobile_tip">我們不會公開你的手機號碼</string>
-    <string name="landing_introduction">點選 \"同意並繼續\" 接受 Mixin %1$s和%2$s</string>
     <string name="landing_invitation_dialog_content">我們將傳送4位驗證碼到手機 %1$s, 請在下一個頁面輸入</string>
     <string name="landing_validation_title">請輸入傳送至以下號碼的 4 位驗證碼：%1$s</string>
     <string name="Language">語言</string>

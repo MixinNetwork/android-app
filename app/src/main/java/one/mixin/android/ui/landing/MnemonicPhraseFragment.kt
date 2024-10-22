@@ -1,6 +1,5 @@
 package one.mixin.android.ui.landing
 
-import MnemonicPhraseInput
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
@@ -8,6 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentMnemonicPhraseBinding
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

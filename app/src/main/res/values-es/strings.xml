@@ -518,7 +518,6 @@
     <string name="Landing_back">Aterrizando de vuelta</string>
     <string name="landing_delete_content">Tu cuenta se eliminará el %1$s; si continúas iniciando sesión, se cancelará la solicitud para eliminar tu cuenta.</string>
     <string name="landing_enter_mobile_tip">Nunca mostraremos tu número de móvil públicamente.</string>
-    <string name="landing_introduction">Toca Aceptar y continuar para aceptar %1$s y %2$s.</string>
     <string name="landing_invitation_dialog_content">Te enviaremos un código de 4 dígitos a tu número de teléfono %1$s. Introduce el código en la siguiente pantalla.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>

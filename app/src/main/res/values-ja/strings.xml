@@ -491,7 +491,6 @@
     <string name="Landing_back">ログイン</string>
     <string name="landing_delete_content">あなたのアカウントは(%1$s) 後に消去されます。ログインを継続する場合、あなたのアカウント消去はキャンセルされます。</string>
     <string name="landing_enter_mobile_tip">Mixin社はあなたの電話番号を決して公表しません</string>
-    <string name="landing_introduction">\"同意して続ける\"をタップして%1$sと%2$sを確認</string>
     <string name="landing_invitation_dialog_content">4桁のコードを電話番号%1$sに送信します、次の画面でコードを入力してください</string>
     <string name="landing_privacy_policy_url">プライバシーポリシー: https://mixin.one/pages/privacy </string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>

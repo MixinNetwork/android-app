@@ -8,8 +8,6 @@ import android.text.Selection
 import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.view.isVisible
@@ -22,7 +20,6 @@ import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -33,6 +30,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
@@ -47,6 +45,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.extension.dp
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -112,19 +111,26 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
             }
             backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            val policy: String = requireContext().getString(R.string.Privacy_Policy)
+            val termsService: String = requireContext().getString(R.string.Terms_of_Service)
+            val policyWrapper = requireContext().getString(R.string.landing_introduction, "**$policy**", "**$termsService**")
+            val policyUrl = getString(R.string.landing_privacy_policy_url)
+            val termsUrl = getString(R.string.landing_terms_url)
+            binding.introductionTv.highlightStarTag(
+                policyWrapper,
+                arrayOf(policyUrl, termsUrl),
+            )
+
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
             countryCodeEt.showSoftInputOnFocus = false
-            mobileFab.setOnClickListener { showDialog() }
+            continueBn.setOnClickListener { showDialog() }
             mobileEt.showSoftInputOnFocus = false
             mobileEt.addTextChangedListener(mWatcher)
-            mobileEt.requestFocus()
-            version.text = getString(R.string.current_version, BuildConfig.VERSION_NAME)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mobileEt.setAutofillHints(AUTOFILL_HINT_PHONE)
             }
             mobileCover.isClickable = true
-
             countryPicker = CountryPicker.newInstance()
             countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
                 mCountry = Country()
@@ -146,8 +152,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             keyboard.tipTitleEnabled = false
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
-            keyboard.animate().translationY(0f).start()
-            go.setOnClickListener {
+            mnemonicPhrase.setOnClickListener {
                 activity?.addFragment(
                     this@MobileFragment,
                     MnemonicPhraseFragment.newInstance(),
@@ -155,11 +160,17 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 )
             }
         }
+        setupFocusListeners()
     }
 
     override fun onBackPressed(): Boolean {
         if (captchaView?.isVisible() == true) {
             hideLoading()
+            return true
+        }
+        if (binding.keyboard.translationY == 0f) {
+            binding.mobileEt.clearFocus()
+            binding.countryCodeEt.clearFocus()
             return true
         }
         if (pin == null) {
@@ -188,8 +199,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
         if (viewDestroyed()) return
 
-        binding.mobileFab.show()
-        binding.mobileCover.visibility = VISIBLE
+        binding.continueBn.isEnabled = true
+        binding.mobileCover.isVisible = true
         val phoneNum = anonymousNumber ?: phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest =
             VerificationRequest(
@@ -276,8 +287,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                             override fun onStop() {
                                 if (viewDestroyed()) return
 
-                                binding.mobileFab.hide()
-                                binding.mobileCover.visibility = GONE
+                                binding.continueBn.isEnabled = true
+                                binding.mobileCover.isVisible = false
                             }
 
                             override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
@@ -293,8 +304,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private fun hideLoading() {
         if (viewDestroyed()) return
 
-        binding.mobileFab.hide()
-        binding.mobileCover.visibility = GONE
+        binding.continueBn.isEnabled = true
+        binding.mobileCover.isVisible = false
         captchaView?.hide()
     }
 
@@ -304,7 +315,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.apply {
             val country = mCountry
             if (country == null) {
-                mobileFab.isVisible = false
+                continueBn.isEnabled = false
                 return
             }
 
@@ -323,7 +334,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     phoneNumber = validResult.second
                     validResult.first
                 }
-            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && valid
+            continueBn.isEnabled = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && valid
         }
     }
 
@@ -356,7 +367,6 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
         binding.apply {
             if (dialCode == xinDialCode) {
-                enterTip.isVisible = false
                 mobileEt.hint = getString(R.string.Anonymous_Number)
                 if (titleSwitcher.displayedChild != 1) {
                     if (pin != null) {
@@ -366,7 +376,6 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     }
                 }
             } else {
-                enterTip.isVisible = true
                 mobileEt.hint = getString(R.string.Phone_Number)
                 if (titleSwitcher.displayedChild != 0) {
                     if (pin != null) {
@@ -572,6 +581,41 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
             override fun afterTextChanged(s: Editable?) {
                 handleEditView()
+                handleTextChange(s)
             }
         }
+
+    private fun setupFocusListeners() {
+        binding.countryCodeEt.setOnFocusChangeListener { _, hasFocus ->
+            handleFocusChange(hasFocus)
+        }
+
+        binding.mobileEt.setOnFocusChangeListener { _, hasFocus ->
+            handleFocusChange(hasFocus)
+        }
+    }
+
+    private fun handleFocusChange(hasFocus: Boolean) {
+        if (hasFocus) {
+            binding.orLl.isVisible = false
+            binding.mnemonicPhrase.isVisible = false
+            binding.keyboard.animate().translationY(0f).start()
+        } else {
+            if (binding.mobileEt.text.isNullOrEmpty()) {
+                binding.orLl.isVisible = true
+                binding.mnemonicPhrase.isVisible = true
+            }
+            binding.keyboard.animate().translationY(300.dp.toFloat()).start()
+        }
+    }
+
+    private fun handleTextChange(s: Editable?) {
+        if (s.isNullOrEmpty() && !binding.mobileEt.hasFocus() && !binding.countryCodeEt.hasFocus()) {
+            binding.orLl.isVisible = true
+            binding.mnemonicPhrase.isVisible = true
+        } else {
+            binding.orLl.isVisible = false
+            binding.mnemonicPhrase.isVisible = false
+        }
+    }
 }

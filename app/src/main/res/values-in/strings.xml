@@ -337,7 +337,6 @@
     <string name="Label">Label</string>
     <string name="Landing_back">Landing back</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan pernah menampilkan nomor ponsel Anda secara publik.</string>
-    <string name="landing_introduction">Ketuk \"Setuju &amp; Lanjutkan\" untuk menerima %1$s dan %2$s</string>
     <string name="landing_invitation_dialog_content">Kami akan mengirim kode 4 digit ke nomor telepon Anda %1$s, harap masukkan kode tersebut pada layar berikutnya.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
