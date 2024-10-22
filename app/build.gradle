@@ -10,6 +10,7 @@ plugins {
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
     id "org.jetbrains.kotlin.plugin.compose" version "2.0.21"
+    id 'com.google.firebase.firebase-perf'
 }
 
 def versionMajor = 1
@@ -202,7 +203,8 @@ ksp {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
-    implementation platform("com.google.firebase:firebase-bom:33.4.0")
+    implementation platform("com.google.firebase:firebase-bom:33.5.0")
+    implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation("androidx.activity:activity-ktx:$activity_version")
