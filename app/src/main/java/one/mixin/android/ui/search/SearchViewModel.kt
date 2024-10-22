@@ -148,7 +148,12 @@ internal constructor(
             null
         } else {
             val escapedQuery = query.trim().escapeSql()
-            tokenRepository.fuzzyMarkets(escapedQuery, cancellationSignal)
+            var result = tokenRepository.fuzzyMarkets(escapedQuery, cancellationSignal)
+            if (result.isEmpty()) {
+                tokenRepository.searchMarket(query.trim())
+            }
+            result = tokenRepository.fuzzyMarkets(escapedQuery, cancellationSignal)
+            result
         }
     }
 
