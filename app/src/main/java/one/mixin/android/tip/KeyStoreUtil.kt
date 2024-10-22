@@ -8,7 +8,6 @@ import android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
 import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.google.protobuf.Mixin
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
@@ -109,7 +108,7 @@ private fun getKeyByAlias(
 private fun storeAesKeyInEncryptedPreferences(context: Context, alias: String, key: SecretKey) {
     val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
-        alias,
+        "Encrypted-Preferences",
         MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
@@ -122,7 +121,7 @@ private fun storeAesKeyInEncryptedPreferences(context: Context, alias: String, k
 private fun getAesKeyFromEncryptedPreferences(context: Context, alias: String): SecretKey? {
     val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
-        alias,
+        "Encrypted-Preferences",
         MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
