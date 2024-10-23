@@ -29,6 +29,8 @@ fun getChainNetwork(
 ): String? {
     if (chainId == Constants.ChainId.MixinVirtualMachine) {
         return "MVM"
+    } else if (chainId == Constants.ChainId.Base) {
+        return "Base"
     }
 
     if (assetId == chainId && !bepChains.contains(chainId)) return null
