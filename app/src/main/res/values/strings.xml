@@ -1752,4 +1752,5 @@
     <string name="Create_Mnemonic_Phrase">Create Mnemonic Phrase</string>
     <string name="mnemonic_phrase_instruction_1">The 13 Mnemonic Phrase generated for the account are only for Mixin Network related products.</string>
     <string name="mnemonic_phrase_instruction_2">The Mnemonic Phrase will be associated with a key shard of the MPC wallet that you manage.</string>
+    <string name="Creating_your_account">Creating your account...</string>
 </resources>

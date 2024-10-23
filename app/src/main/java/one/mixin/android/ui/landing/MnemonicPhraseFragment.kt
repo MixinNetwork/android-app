@@ -6,6 +6,7 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.util.viewBinding
@@ -34,7 +35,11 @@ class MnemonicPhraseFragment: BaseFragment(R.layout.fragment_compose) {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.compose.setContent {
-            MnemonicPhrasePage()
+            MnemonicPhrasePage {
+                // todo
+                toast(R.string.Success)
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
         }
     }
 }

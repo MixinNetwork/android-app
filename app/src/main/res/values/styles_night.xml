@@ -61,6 +61,7 @@
         <item name="bg_market_gradient_end">@color/marketGradientEndNight</item>
         <item name="icon_chain">@color/iconChainNight</item>
         <item name="bg_market_card">@drawable/bg_market_card_night</item>
+        <item name="ic_logo">@drawable/ic_logo_mixin_night</item>
 
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>
