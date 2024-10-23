@@ -331,6 +331,13 @@
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
+    <style name="AppTheme.MaterialWindowButton">
+        <item name="android:background">@drawable/bg_round_window_btn</item>
+        <item name="android:textColor">@color/colorBlue</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
     <style name="AppTheme.MaterialGrayButton">
         <item name="android:background">@drawable/bg_round_gray_btn</item>
         <item name="android:textColor">?attr/text_primary</item>

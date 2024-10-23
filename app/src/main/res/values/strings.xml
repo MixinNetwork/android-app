@@ -1742,4 +1742,14 @@
     <string name="Paste">Paste</string>
     <string name="or">or</string>
     <string name="Sign_in_with_Mnemonic_Phrase">Sign in with Mnemonic Phrase</string>
+    <string name="landing_have_account">I already have an account</string>
+    <string name="landing_create">Create account</string>
+    <string name="Create_Account">Create Acount</string>
+    <string name="Mobile_Phone">Mobile Phone</string>
+    <string name="Mnemonic_Phrase">Mnemonic Phrase</string>
+    <string name="create_introduction">MPC Wallet, %1$s, Self-custody, Social Recovery</string>
+    <string name="Convenience">Convenience</string>
+    <string name="Create_Mnemonic_Phrase">Create Mnemonic Phrase</string>
+    <string name="mnemonic_phrase_instruction_1">The 13 Mnemonic Phrase generated for the account are only for Mixin Network related products.</string>
+    <string name="mnemonic_phrase_instruction_2">The Mnemonic Phrase will be associated with a key shard of the MPC wallet that you manage.</string>
 </resources>

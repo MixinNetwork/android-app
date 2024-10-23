@@ -57,12 +57,26 @@
 
     <Button
         style="@style/AppTheme.MaterialButton"
-        android:id="@+id/continue_tv"
+        android:id="@+id/create_tv"
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:layout_marginBottom="16dp"
-        android:text="@string/Continue"
+        android:text="@string/landing_create"
         android:textColor="@color/white"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/continue_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        style="@style/AppTheme.MaterialWindowButton"
+        android:id="@+id/continue_tv"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="38dp"
+        android:text="@string/landing_have_account"
         android:layout_marginStart="36dp"
         android:layout_marginEnd="36dp"
         android:textSize="14sp"

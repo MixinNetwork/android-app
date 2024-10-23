@@ -1,0 +1,48 @@
+package one.mixin.android.ui.landing
+
+import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import one.mixin.android.R
+import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.addFragment
+import one.mixin.android.ui.landing.components.CreateAccountPage
+import one.mixin.android.util.viewBinding
+
+class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
+    companion object {
+        const val TAG: String = "LandingFragment"
+
+        fun newInstance() = CreateAccountFragment()
+    }
+
+    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val binding by viewBinding(FragmentComposeBinding::bind)
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.titleView.setSubTitle(requireContext().getString(R.string.Create_Account), "")
+        binding.titleView.leftIb.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.compose.setContent {
+            CreateAccountPage({
+                activity?.addFragment(
+                    this@CreateAccountFragment,
+                    MobileFragment.newInstance(),
+                    MobileFragment.TAG,
+                )
+            },{
+                activity?.addFragment(
+                    this@CreateAccountFragment,
+                    MnemonicPhraseFragment.newInstance(),
+                    MnemonicPhraseFragment.TAG,
+                )
+            }, {}, {}, {}, {})
+        }
+    }
+}

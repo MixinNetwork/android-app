@@ -7,7 +7,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.viewBinding
@@ -40,6 +39,13 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         )
 
         binding.version.text = getString(R.string.current_version, BuildConfig.VERSION_NAME)
+        binding.createTv.setOnClickListener {
+            activity?.addFragment(
+                this@LandingFragment,
+                CreateAccountFragment.newInstance(),
+                CreateAccountFragment.TAG,
+            )
+        }
         binding.continueTv.setOnClickListener {
             activity?.addFragment(
                 this@LandingFragment,

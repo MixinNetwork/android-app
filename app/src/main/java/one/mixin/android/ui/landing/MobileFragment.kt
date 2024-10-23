@@ -29,6 +29,7 @@ import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
@@ -45,7 +46,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
-import one.mixin.android.extension.dp
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -155,8 +155,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             mnemonicPhrase.setOnClickListener {
                 activity?.addFragment(
                     this@MobileFragment,
-                    MnemonicPhraseFragment.newInstance(),
-                    MnemonicPhraseFragment.TAG
+                    LandingMnemonicPhraseFragment.newInstance(),
+                    LandingMnemonicPhraseFragment.TAG
                 )
             }
         }
