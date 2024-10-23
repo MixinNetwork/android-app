@@ -38,7 +38,8 @@ class MnemonicPhraseFragment: BaseFragment(R.layout.fragment_compose) {
             MnemonicPhrasePage {
                 // todo
                 toast(R.string.Success)
-                requireActivity().onBackPressedDispatcher.onBackPressed()
+                InitializeActivity.showSetupPin(requireContext())
+                requireActivity().finish()
             }
         }
     }

@@ -1705,8 +1705,8 @@
     <string name="Create_Account">创建帐户</string>
     <string name="Mobile_Phone">手机</string>
     <string name="Mnemonic_Phrase">助记词</string>
-    <string name="create_introduction">MPC Wallet, %1$s, Self-custody, Social Recovery</string>
-    <string name="Convenience">Convenience</string>
+    <string name="create_introduction">MPC 钱包，%1$s，自我保管，社交恢复</string>
+    <string name="Convenience">便利性</string>
     <string name="Create_Mnemonic_Phrase">创建助记词</string>
     <string name="mnemonic_phrase_instruction_1">创建账号生成的 13 个助记词仅用于 Mixin Network 相关产品。</string>
     <string name="mnemonic_phrase_instruction_2">助记词将关联到由您管理的 MPC 钱包的一个密钥分片。</string>

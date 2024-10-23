@@ -94,7 +94,7 @@ internal constructor(
     // Mock function to simulate the process
     suspend fun mockCreateMnemonicPhrase(): MnemonicPhraseState? {
         _mnemonicPhraseState.value = MnemonicPhraseState.Creating
-        delay(5000)
+        delay(2000)
 
         if (Math.random() < 0.5) {
             _mnemonicPhraseState.value = MnemonicPhraseState.Success
