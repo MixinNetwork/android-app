@@ -29,7 +29,7 @@ fun getChainNetwork(
 ): String? {
     if (chainId == Constants.ChainId.MixinVirtualMachine) {
         return "MVM"
-    } else if (chainId == Constants.ChainId.BaseVirtualMachine) {
+    } else if (chainId == Constants.ChainId.Base) {
         return "Base"
     }
 
