@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import one.mixin.android.MixinApplication
 import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
@@ -50,7 +51,12 @@ class TextLoader(context: Context) {
                 val request = Request.Builder().url(url).build()
                 val response = okHttpClient.newCall(request).execute()
                 if (response.isSuccessful) {
-                    response.body?.string()
+                    val contentType = response.header("Content-Type") ?: ""
+                    if (contentType.matches(Regex("^text/.*"))) {
+                        response.body?.string()?.stripInvisibleCharacters()
+                    } else {
+                        null
+                    }
                 } else {
                     null
                 }
@@ -59,6 +65,10 @@ class TextLoader(context: Context) {
                 null
             }
         }
+    }
+
+    private fun String.stripInvisibleCharacters(): String {
+        return this.trim().replace(Regex("[\\s\\p{Cf}\\p{Cc}\\p{Cn}]"), "■")
     }
 }
 
