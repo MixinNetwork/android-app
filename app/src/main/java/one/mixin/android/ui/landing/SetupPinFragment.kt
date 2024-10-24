@@ -96,20 +96,15 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                         })
                     }
                     composable(SetupPinDestination.Loading.name) {
-                        SetPinLoadingPage({
-                            navController.navigate(SetupPinDestination.Setup.name)
-                        }, {
+                        SetPinLoadingPage {
                             navController.navigate(SetupPinDestination.Quiz.name)
-                        })
+                        }
                     }
                     composable(SetupPinDestination.Quiz.name) {
-                        QuizPage({
+                        QuizPage {
                             // Todo
                             navController.navigate(SetupPinDestination.Initial.name)
-                        }, {
-                            // Todo
-                            navController.navigate(SetupPinDestination.Initial.name)
-                        })
+                        }
                     }
                 }
             }

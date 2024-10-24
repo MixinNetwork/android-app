@@ -24,7 +24,8 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.TipBody
-import one.mixin.android.ui.landing.mnemonic.MnemonicPhraseState
+import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.ui.landing.vo.SetupState
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -102,5 +103,20 @@ internal constructor(
             _mnemonicPhraseState.value = MnemonicPhraseState.Failure
         }
         return _mnemonicPhraseState.value
+    }
+
+    private val _setupState = MutableLiveData<SetupState>(SetupState.Loading)
+    val setupState: LiveData<SetupState> get() = _setupState
+
+    suspend fun mockLoadingToFailure(): SetupState? {
+        delay(2000)
+        _setupState.value = SetupState.Failure
+        return _setupState.value
+    }
+
+    suspend fun mockLoadingToSuccess(): SetupState? {
+        delay(1000)
+        _setupState.value = SetupState.Success
+        return _setupState.value
     }
 }

@@ -19,7 +19,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 fun PageScaffold(
     title: String,
     verticalScrollable: Boolean = true,
-    pop: () -> Unit,
+    pop: (() -> Unit)?,
     actions: @Composable RowScope.() -> Unit = {},
     body: @Composable ColumnScope.() -> Unit,
 ) {
@@ -32,12 +32,14 @@ fun PageScaffold(
                 },
                 actions = actions,
                 navigationIcon = {
-                    IconButton(onClick = { pop() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.icon,
-                        )
+                    pop?.let { pop ->
+                        IconButton(onClick = { pop() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.icon,
+                            )
+                        }
                     }
                 },
             )

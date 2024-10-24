@@ -1763,4 +1763,9 @@
     <string name="Set_up_pin_desc_2">Please confirm \nyour 6 digit PIN again</string>
     <string name="Set_up_pin_tip_1">If lost, there is no way to recover your wallet.</string>
     <string name="Set_up_pin_tip_2">It’s rare to see a third confirmation somewhere else, \nso please remember the PIN is unrecoverable if lost.</string>
+    <string name="Set_up_pin_warning">Please keep the app in the foreground while verifying and synchronizing shard keys to the TIP network; do not force quit the app during the setup process.</string>
+    <string name="Set_up_Pin_question">What happens if I lose my PIN?</string>
+    <string name="Set_up_Pin_answer_1">I can recover my account later.</string>
+    <string name="Set_up_Pin_answer_2">I’ll lose access to my account and funds.</string>
+    <string name="What_is_Pin">What is PIN?</string>
 </resources>
