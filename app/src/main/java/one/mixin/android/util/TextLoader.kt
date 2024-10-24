@@ -51,12 +51,7 @@ class TextLoader(context: Context) {
                 val request = Request.Builder().url(url).build()
                 val response = okHttpClient.newCall(request).execute()
                 if (response.isSuccessful) {
-                    val contentType = response.header("Content-Type") ?: ""
-                    if (contentType.matches(Regex("^text/.*"))) {
-                        response.body?.string()?.stripInvisibleCharacters()
-                    } else {
-                        null
-                    }
+                    response.body?.string()?.stripInvisibleCharacters()
                 } else {
                     null
                 }
