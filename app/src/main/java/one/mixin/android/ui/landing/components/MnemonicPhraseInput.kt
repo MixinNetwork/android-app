@@ -128,7 +128,8 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 stringResource(R.string.Paste), fontSize = 12.sp,
-                                fontWeight = W500
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
                             )
                         }
                     } else {
@@ -145,7 +146,8 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 stringResource(R.string.Paste), fontSize = 12.sp,
-                                fontWeight = W500
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
                             )
                         }
                     }

@@ -17,6 +17,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -86,7 +87,7 @@ fun QuizPage(next: () -> Unit) {
                 ),
             ) {
                 Text(
-                    text = stringResource(R.string.Retry), color = Color.White
+                    text = stringResource(R.string.Done), color = Color.White
                 )
             }
             Spacer(modifier = Modifier.height(26.dp))
@@ -102,20 +103,25 @@ fun QuizPage(next: () -> Unit) {
 @Composable
 fun Answer(str: String, option: Int, selectedOption: Int, onOptionSelected: (Int) -> Unit) {
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .padding(horizontal = 20.dp, vertical = 18.dp)
             .background(MixinAppTheme.colors.backgroundWindow)
             .clickable {
                 onOptionSelected(option)
-            },
-        verticalAlignment = Alignment.CenterVertically
+            }
+            .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
         RadioButton(
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MixinAppTheme.colors.accent,
+                unselectedColor = MixinAppTheme.colors.textPrimary
+            ),
             selected = (option == selectedOption), onClick = null, modifier = Modifier.size(16.dp)
         )
         Text(
-            text = str, modifier = Modifier.padding(start = 10.dp), color = MixinAppTheme.colors.textPrimary, minLines = 2
+            text = str, modifier = Modifier.padding(start = 10.dp), color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp
         )
     }
 }

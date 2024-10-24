@@ -1768,4 +1768,18 @@
     <string name="Set_up_Pin_answer_1">I can recover my account later.</string>
     <string name="Set_up_Pin_answer_2">I’ll lose access to my account and funds.</string>
     <string name="What_is_Pin">What is PIN?</string>
+    <string name="Recovery_Kit">Recovery Kit</string>
+    <string name="Recovery_Kit_instruction">Mixin Messenger 的 MPC 钱包基于去中心化密钥协议 TIP 构建，您可以通过手机号、助记词或可信联系人登录恢复你的账号，钱包完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
+    <string name="Recovery_Kit_Attention">Attention: The recovery kit cannot help you to recover PIN</string>
+    <string name="Mobile_Number">Mobile Number</string>
+    <string name="Recovery_Contact">Recovery Contact</string>
+    <string name="Set_up">Set Up</string>
+    <string name="Mnemonic_Phrase_instruction">你可以通过助记词登录你的账号，当前助记词已关联到 MPC 钱包的密钥分片，完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
+    <string name="Backup_Mnemonic_Phrase">Backup Mnemonic Phrase</string>
+    <string name="Before_you_proceed">Before you proceed</string>
+    <string name="Before_you_proceed_desc">Read the following, then save the phrase securely.</string>
+    <string name="Before_you_proceed_instruction_1">创建账号生成的 13 个助记词仅用于 Mixin Network 相关产品。</string>
+    <string name="Before_you_proceed_instruction_2">助记词无法帮你恢复你的 PIN ！</string>
+    <string name="Before_you_proceed_instruction_3">确保没有人或监控摄像头正在看你的屏幕！</string>
+    <string name="Show_Mnemonic_Phrase">Show Mnemonic Phrase</string>
 </resources>
