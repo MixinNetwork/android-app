@@ -1,6 +1,16 @@
 package one.mixin.android.ui.landing.components
 
 import PageScaffold
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,11 +38,14 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
@@ -45,11 +58,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.ui.unit.IntOffset
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dpToPx
@@ -61,8 +71,9 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
-    val pinCodeAttempts by remember { mutableIntStateOf(0) }
-    val firstPinCode by remember { mutableStateOf("") }
+    var pinCodeAttempts by remember { mutableIntStateOf(0) }
+    var firstPinCode by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
     val list = listOf(
         "1",
         "2",
@@ -94,25 +105,35 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(70.dp))
 
-        AnimatedVisibility(
-            visible = true,
-            enter = slideInHorizontally(initialOffsetX = { -it }),
-            exit = slideOutHorizontally(targetOffsetX = { -it })
-        ) {
+        AnimatedContent(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            targetState = pinCodeAttempts,
+            transitionSpec = {
+                if (targetState > initialState) {
+                    slideInHorizontally { w -> w } + fadeIn() togetherWith
+                        slideOutHorizontally { w -> -w } + fadeOut()
+                } else {
+                    slideInHorizontally { w -> -w } + fadeIn() togetherWith
+                        slideOutHorizontally { w -> w } + fadeOut()
+                }.using(
+                    SizeTransform(clip = false)
+                )
+            }, label = "title"
+        ) { count ->
             Text(
                 stringResource(
-                    when (pinCodeAttempts) {
-                        0 -> R.string.Set_up_pin_desc_1
-                        1 -> R.string.Set_up_pin_desc_2
-                        2 -> R.string.Set_up_pin_desc_2
-                        else -> R.string.Set_up_pin_desc_1
+                    if (count <= 0) {
+                        R.string.Set_up_pin_desc_1
+                    } else {
+                        R.string.Set_up_pin_desc_2
                     }
                 ),
                 color = MixinAppTheme.colors.textPrimary,
                 minLines = 2,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
                 fontWeight = FontWeight.W600,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+                lineHeight = 27.sp
             )
         }
 
@@ -136,32 +157,68 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            onClick = {
-                next()
-            },
-            colors = ButtonDefaults.outlinedButtonColors(
-                backgroundColor = if (pinCodeAttempts == 2 && pinCode == firstPinCode) MixinAppTheme.colors.accent else Color.Gray
-            ),
-            shape = RoundedCornerShape(32.dp),
-            elevation = ButtonDefaults.elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp,
-            ),
-            enabled = pinCodeAttempts == 2 && pinCode == firstPinCode
-        ) {
+        Spacer(modifier = Modifier.height(40.dp))
+        AnimatedContent(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            targetState = pinCodeAttempts,
+            transitionSpec = {
+                if (targetState > initialState) {
+                    slideInHorizontally { w -> w } + fadeIn() togetherWith
+                        slideOutHorizontally { w -> -w } + fadeOut()
+                } else {
+                    slideInHorizontally { w -> -w } + fadeIn() togetherWith
+                        slideOutHorizontally { w -> w } + fadeOut()
+                }.using(
+                    SizeTransform(clip = false)
+                )
+            }, label = "title"
+        ) { count ->
             Text(
-                text = stringResource(R.string.Next),
-                color = Color.White
+                when (count) {
+                    0 -> ""
+                    1 -> stringResource(R.string.Set_up_pin_tip_1)
+                    else -> stringResource(R.string.Set_up_pin_tip_2)
+                },
+                color = MixinAppTheme.colors.red,
+                minLines = 2,
+                textAlign = TextAlign.Center,
+                fontSize = 12.sp,
+                lineHeight = 16.sp
             )
         }
+        Spacer(modifier = Modifier.weight(1f))
+
+        Box(
+            modifier = Modifier
+                .alpha(if (pinCodeAttempts > 0) 1f else 0f)
+                .padding(horizontal = 36.dp)
+        ) {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                onClick = {
+                    next()
+                },
+                colors = ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = if (pinCodeAttempts == 2 && pinCode == firstPinCode) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray
+                ),
+                shape = RoundedCornerShape(32.dp),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
+                enabled = pinCodeAttempts == 2 && pinCode == firstPinCode
+            ) {
+                Text(
+                    text = stringResource(R.string.Next),
+                    color = Color.White
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
 
         Box(
             modifier =
@@ -218,8 +275,26 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
                                         } else if (pinCode.length < 6) {
                                             pinCode += list[index]
                                             if (pinCode.length == 6) {
-                                                // Todo
-                                                pinCode = ""
+                                                if (pinCodeAttempts < 2) {
+                                                    pinCodeAttempts++
+                                                    if (pinCodeAttempts == 1) {
+                                                        firstPinCode = pinCode
+                                                    } else if (pinCode != firstPinCode) {
+                                                        pinCodeAttempts = 0
+                                                    }
+                                                    coroutineScope.launch {
+                                                        delay(100)
+                                                        pinCode = ""
+                                                    }
+                                                } else {
+                                                    if (pinCode != firstPinCode) {
+                                                        pinCodeAttempts = 0
+                                                        coroutineScope.launch {
+                                                            delay(100)
+                                                            pinCode = ""
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }

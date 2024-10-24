@@ -1754,11 +1754,13 @@
     <string name="mnemonic_phrase_instruction_2">The Mnemonic Phrase will be associated with a key shard of the MPC wallet that you manage.</string>
     <string name="Creating_your_account">Creating your account…</string>
     <string name="Set_up_Pin">Set up PIN</string>
-   <string name="Set_up_Pin_desc">The MPC wallet of Mixin Messenger is built on the decentralized key protocol TIP, where the PIN is one of the key shards. The complete key of the wallet only exists in the TEE secure environment of the current device. Read the documentation to learn more about %1$s.</string>
+    <string name="Set_up_Pin_desc">The MPC wallet of Mixin Messenger is built on the decentralized key protocol TIP, where the PIN is one of the key shards. The complete key of the wallet only exists in the TEE secure environment of the current device. Read the documentation to learn more about %1$s.</string>
     <string name="Set_up_Pin_more">More information</string>
     <string name="set_up_pin_instruction_1">Please complete the operation under a stable network environment.</string>
     <string name="set_up_pin_instruction_2">Please keep the app in the foreground and do not force quit it during the setup process.</string>
     <string name="set_up_pin_instruction_3">The process cannot be canceled when it begins. Please remember the 6-digit PIN and reenter it if the process is aborted unexpectedly.</string>
     <string name="Set_up_pin_desc_1">Set a 6-digit PIN for your wallet</string>
     <string name="Set_up_pin_desc_2">Please confirm \nyour 6 digit PIN again</string>
+    <string name="Set_up_pin_tip_1">If lost, there is no way to recover your wallet.</string>
+    <string name="Set_up_pin_tip_2">It’s rare to see a third confirmation somewhere else, \nso please remember the PIN is unrecoverable if lost.</string>
 </resources>
