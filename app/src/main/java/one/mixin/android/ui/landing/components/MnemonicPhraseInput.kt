@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.font.FontWeight.Companion.W500
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,13 +44,17 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
-fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
+fun MnemonicPhraseInput(
+    state: MnemonicState,
+    mnemonicList: List<String> = emptyList(),
+    onComplete: (List<String>) -> Unit,
+) {
     var inputs by remember { mutableStateOf(List(13) { "" }) }
     MixinAppTheme {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -58,15 +64,24 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
             Spacer(modifier = Modifier.height(30.dp))
 
             Text(
-                text = "Log in with Mnemonic Phrase", fontSize = 18.sp,
+                text = when (state) {
+                    MnemonicState.Input -> "Log in with Mnemonic Phrase"
+                    MnemonicState.Display -> "Write down your Mnemonic Phrase"
+                    MnemonicState.Verify -> "Check your Mnemonic Phrase"
+                }, fontSize = 18.sp,
                 color = MixinAppTheme.colors.textPrimary,
                 fontWeight = SemiBold
             )
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Enter or paste your 13 word phrase.", fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
+                text = when (state) {
+                    MnemonicState.Input -> "Enter or paste your 13 word phrase."
+                    MnemonicState.Display -> "Write it down on a piece of paper and keep it in a safe place."
+                    MnemonicState.Verify -> "Select each word in the order it was presented to you."
+                }, fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(44.dp))
@@ -74,7 +89,6 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxWidth(),
                 columns = GridCells.Fixed(3),
-                contentPadding = PaddingValues(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -86,33 +100,51 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
                                 .background(MixinAppTheme.colors.backgroundWindow)
                                 .padding(8.dp)
                         ) {
-                            BasicTextField(
-                                value = inputs[index],
-                                onValueChange = { newText ->
-                                    inputs = inputs.toMutableList().also { it[index] = newText }
-
-                                    if (inputs.all { it.isNotEmpty() }) {
-                                        onComplete(inputs.joinToString(" "))
-                                    }
-                                },
-                                singleLine = true,
-                                textStyle = LocalTextStyle.current.copy(
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 13.sp,
-                                    fontWeight = W500
-                                ),
-                                decorationBox = { innerTextField ->
-                                    Row {
-                                        Text(
-                                            "${index + 1}",
-                                            color = MixinAppTheme.colors.textPrimary,
-                                            fontSize = 13.sp,
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        innerTextField()
-                                    }
+                            if (state == MnemonicState.Display) {
+                                Row {
+                                    Text(
+                                        "${index + 1}",
+                                        color = MixinAppTheme.colors.textMinor,
+                                        fontSize = 13.sp,
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        mnemonicList.getOrNull(index)?:"",
+                                        color = MixinAppTheme.colors.textPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = W500
+                                    )
                                 }
-                            )
+                            } else {
+                                BasicTextField(
+                                    value = inputs[index],
+                                    onValueChange = { newText ->
+                                        inputs = inputs.toMutableList().also { it[index] = newText }
+
+                                        if (inputs.all { it.isNotEmpty() }) {
+                                            // todo check
+                                            // onComplete(inputs)
+                                        }
+                                    },
+                                    singleLine = true,
+                                    textStyle = LocalTextStyle.current.copy(
+                                        color = MixinAppTheme.colors.textMinor,
+                                        fontSize = 13.sp,
+                                        fontWeight = W500
+                                    ),
+                                    decorationBox = { innerTextField ->
+                                        Row {
+                                            Text(
+                                                "${index + 1}",
+                                                color = MixinAppTheme.colors.textPrimary,
+                                                fontSize = 13.sp,
+                                            )
+                                            Spacer(Modifier.width(8.dp))
+                                            innerTextField()
+                                        }
+                                    }
+                                )
+                            }
                         }
                     } else if (index == 13) {
                         Row(
@@ -120,51 +152,78 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
                                 .clip(RoundedCornerShape(4.dp))
                                 .padding(8.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_paste),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary,
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                stringResource(R.string.Paste), fontSize = 12.sp,
-                                fontWeight = W500,
-                                color = MixinAppTheme.colors.textPrimary,
-                            )
+                            if (state == MnemonicState.Input) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_paste),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.Paste), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            }
                         }
                     } else {
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    inputs = inputs.map { "" }
+                                }
                                 .padding(8.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_action_delete),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary,
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                stringResource(R.string.Paste), fontSize = 12.sp,
-                                fontWeight = W500,
-                                color = MixinAppTheme.colors.textPrimary,
-                            )
+                            if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_action_delete),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.Delete), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            }
                         }
                     }
                 }
             }
+            if (state == MnemonicState.Display){
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    modifier = Modifier.align(Alignment.Start),
+                    text = "· Store in vault or safe place.", fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    modifier = Modifier.align(Alignment.Start),
+                    text = "· Don’t share it with a network.", fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
+                enabled = state == MnemonicState.Display || inputs.all { it.isNotEmpty() },
                 onClick = {
+                    onComplete.invoke(if (state == MnemonicState.Display) mnemonicList else inputs)
                 },
                 colors =
                 ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
+                    backgroundColor = if (state == MnemonicState.Display || inputs.all { it.isNotEmpty() }) {
+                        MixinAppTheme.colors.accent
+                    } else {
+                        MixinAppTheme.colors.backgroundGray
+                    }
                 ),
                 shape = RoundedCornerShape(32.dp),
                 elevation =
@@ -177,14 +236,23 @@ fun MnemonicPhraseInput(onComplete: (String) -> Unit) {
             ) {
                 Text(stringResource(R.string.Complete), color = Color.White)
             }
+
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
+}
+
+enum class MnemonicState {
+    Input,
+    Display,
+    Verify
 }
 
 @Preview(backgroundColor = 0xFFFFFFFF, showSystemUi = true)
 @Composable
 fun MnemonicPhraseInputPreview() {
-    MnemonicPhraseInput { content ->
-
-    }
+    MnemonicPhraseInput(
+        state = MnemonicState.Input,
+        onComplete = { mnemonicList -> /* Handle mnemonic change */ },
+    )
 }

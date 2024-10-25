@@ -18,7 +18,7 @@ import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupShownPage
-import one.mixin.android.ui.wallet.alert.AlertFragment.AlertDestination
+import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupVerifyPage
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -36,7 +36,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     enum class MnemonicPhraseBackupStep {
-        Initial, Before, Pin, MnemonicPhrase
+        Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify
     }
 
     override fun onViewCreated(
@@ -104,6 +104,14 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhrase.name) {
                         MnemonicPhraseBackupShownPage({
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }, {
+                            navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name)
+                        })
+                    }
+
+                    composable(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name) {
+                        MnemonicPhraseBackupVerifyPage({
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
                             // Todo

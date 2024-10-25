@@ -19,7 +19,6 @@ import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetPinPage
 import one.mixin.android.ui.landing.components.SetupPinPage
-import one.mixin.android.ui.wallet.alert.AlertFragment.AlertDestination
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

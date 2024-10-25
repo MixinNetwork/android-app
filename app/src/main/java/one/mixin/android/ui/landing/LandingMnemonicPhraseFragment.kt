@@ -8,6 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
+import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -34,7 +35,8 @@ class LandingMnemonicPhraseFragment: BaseFragment(R.layout.fragment_compose) {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.compose.setContent {
-            MnemonicPhraseInput{}
+            MnemonicPhraseInput(MnemonicState.Input, onComplete = {
+            })
         }
     }
 }

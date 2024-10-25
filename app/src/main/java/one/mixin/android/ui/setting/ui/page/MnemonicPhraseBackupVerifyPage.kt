@@ -16,7 +16,7 @@ import one.mixin.android.ui.landing.components.MnemonicState
 import kotlin.random.Random
 
 @Composable
-fun MnemonicPhraseBackupShownPage(pop: () -> Unit, next: (List<String>) -> Unit) {
+fun MnemonicPhraseBackupVerifyPage(pop: () -> Unit, next: (List<String>) -> Unit) {
     var mnemonicList by remember { mutableStateOf(emptyList<String>()) }
 
     LaunchedEffect(Unit) {
@@ -29,7 +29,7 @@ fun MnemonicPhraseBackupShownPage(pop: () -> Unit, next: (List<String>) -> Unit)
             verticalScrollable = false,
             pop = pop,
         ) {
-            MnemonicPhraseInput(MnemonicState.Display, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) })
+            MnemonicPhraseInput(MnemonicState.Verify, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) })
         }
     }
 }
