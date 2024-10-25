@@ -24,6 +24,8 @@ class RefreshGlobalWeb3MarketJob() : BaseJob(
     override fun onRun(): Unit = runBlocking{
         requestRouteAPI(
             invokeNetwork = { routeService.globalMarket() },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
             successBlock = { response ->
                 if (response.isSuccess) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(PREF_GLOBAL_MARKET, GsonHelper.customGson.toJson(response.data!!))

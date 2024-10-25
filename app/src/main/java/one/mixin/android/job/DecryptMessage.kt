@@ -282,6 +282,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             invokeNetwork = {
                                 userApi.getUserByIdSuspend(id)
                             },
+                            defaultErrorHandle = {},
+                            defaultExceptionHandle = {},
                             successBlock = {
                                 it.data?.let { u ->
                                     userDao.insertUpdate(u, appDao)

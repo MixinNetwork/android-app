@@ -26,6 +26,8 @@ class UpdateFavoriteJob(private val symbol: String, private val coinId: String, 
         if (isFavored == true) {
             requestRouteAPI(
                 invokeNetwork = { routeService.unfavorite(coinId) },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
                 successBlock = { _ ->
                     marketFavoredDao.insert(
                         MarketFavored(
@@ -42,6 +44,8 @@ class UpdateFavoriteJob(private val symbol: String, private val coinId: String, 
         } else {
             requestRouteAPI(
                 invokeNetwork = { routeService.favorite(coinId) },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
                 successBlock = { _ ->
                     marketFavoredDao.insert(
                         MarketFavored(
