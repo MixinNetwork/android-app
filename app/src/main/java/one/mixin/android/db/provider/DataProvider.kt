@@ -309,12 +309,13 @@ class DataProvider {
                    OR name LIKE '%' || ? || '%' ESCAPE '\'
                 ORDER BY
                   CASE
-                    WHEN symbol = ? THEN 1 
-                    WHEN name = ? THEN 1   
-                    ELSE 2                
+                    WHEN symbol LIKE ? || '%' THEN 1
+                    WHEN name LIKE ? || '%' THEN 1
+                    ELSE 2
                   END,
-                  symbol ASC,             
-                  name ASC
+                  CAST(market_cap_rank AS INTEGER) ASC,
+                  symbol ASC,
+                  name ASC;
             """
             val _statement = RoomSQLiteQuery.acquire(_sql, 2)
             var _argIndex = 1

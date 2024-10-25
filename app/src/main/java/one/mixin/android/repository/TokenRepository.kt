@@ -1169,6 +1169,8 @@ class TokenRepository
 
     fun alertsByCoinId(coinId:String) = alertDao.alertsByCoinId(coinId)
 
+    fun insertAlert(alert: Alert) = alertDao.insert(alert)
+
     suspend fun simpleCoinItem(coinId:String) = marketDao.simpleCoinItem(coinId)
 
     suspend fun simpleCoinItemByAssetId(assetId:String) = marketDao.simpleCoinItemByAssetId(assetId)
@@ -1206,7 +1208,7 @@ class TokenRepository
         )
     }
 
-    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Unit>? {
+    suspend fun updateAlert(alertId: String, request: AlertUpdateRequest): MixinResponse<Alert>? {
         return requestRouteAPI(
             invokeNetwork = { routeService.updateAlert(alertId, request) },
             successBlock = { response ->
@@ -1219,10 +1221,6 @@ class TokenRepository
     }
 
     fun deleteAlertById(alertId: String) = alertDao.deleteAlertById(alertId)
-
-    fun updateAlertStatus(alertId: String, status: AlertStatus) = alertDao.updateStatus(alertId, status.value)
-
-    fun updateAlert(alertId: String, type: String, value: String, frequency: String) = alertDao.updateAlert(alertId, type, value, frequency)
 
     fun getTotalAlertCount(): Int {
         return alertDao.getTotalAlertCount()
@@ -1237,4 +1235,22 @@ class TokenRepository
         cancellationSignal: CancellationSignal,
     ): List<Market> =
         DataProvider.fuzzyMarkets(query, appDatabase, cancellationSignal)
+
+    suspend fun searchMarket(query: String) = withContext(Dispatchers.IO){
+        val response = routeService.searchMarket(query)
+        response.data?.let { list->
+            marketDao.upsertList(list)
+            val now = nowInUtc()
+            val ids = list.flatMap { market ->
+                market.assetIds?.map { assetId ->
+                    MarketCoin(
+                        coinId = market.coinId,
+                        assetId = assetId,
+                        createdAt = now
+                    )
+                } ?: emptyList()
+            }
+            marketCoinDao.insertIgnoreList(ids)
+        }
+    }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mapbox.maps.extension.style.expressions.dsl.generated.max
 import com.mapbox.maps.extension.style.expressions.dsl.generated.mod
 import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -37,6 +38,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.vo.Fiats
+import timber.log.Timber
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -49,6 +51,10 @@ fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, normalizedMaxRa
 
     val minValue = values.minOrNull() ?: 0f
     val maxValue = values.maxOrNull() ?: 0f
+
+    if (minValue == maxValue) {
+        return Triple(values.map { 0.5f }, 0, values.size - 1)
+    }
 
     val minIndex = values.indexOf(minValue)
     val maxIndex = values.indexOf(maxValue)

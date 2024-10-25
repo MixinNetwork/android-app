@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -99,7 +100,11 @@ class SwapFragment : BaseFragment() {
             SwapFragment().withArgs {
                 when (T::class) {
                     Web3Token::class -> {
-                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply { if (tokens != null) { addAll(tokens) } })
+                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply {
+                            if (tokens != null) {
+                                addAll(tokens)
+                            }
+                        })
                     }
 
                     TokenItem::class -> {
@@ -137,6 +142,11 @@ class SwapFragment : BaseFragment() {
     private val swapViewModel by viewModels<SwapViewModel>()
     private val textInputFlow = MutableStateFlow("")
 
+    private val scope: CoroutineScope
+        get() {
+            return this.lifecycleScope
+        }
+
     @OptIn(FlowPreview::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,7 +156,7 @@ class SwapFragment : BaseFragment() {
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
 
-        lifecycleScope.launch {
+        scope.launch {
             textInputFlow
                 .debounce(500L)
                 .distinctUntilChanged()
@@ -161,7 +171,7 @@ class SwapFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        lifecycleScope.launch {
+        scope.launch {
             initFromTo()
             refreshTokens()
             initAmount()
@@ -231,28 +241,32 @@ class SwapFragment : BaseFragment() {
                                 currentText = a
                                 refreshQuote(a)
                             }, {
-                                lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                                scope.launch(CoroutineExceptionHandler { _, error ->
                                     toast(error.message ?: getString(R.string.Unknown))
                                 }) {
                                     val qr = quoteResp ?: return@launch
                                     val inputMint = fromToken?.getUnique() ?: return@launch
                                     val outputMint = toToken?.getUnique() ?: return@launch
 
-                                    quoteJob?.cancel()
+                                    quoteJob?.takeIf { it.isActive }?.cancel()
                                     isLoading = true
                                     val swapResult =
                                         handleMixinResponse(
-                                            invokeNetwork = { swapViewModel.web3Swap(SwapRequest(
-                                                if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
-                                                inputMint,
-                                                if (inMixin()) 0 else qr.inAmount.toLong(),
-                                                if (inMixin()) qr.inAmount else "0",
-                                                outputMint,
-                                                qr.slippage,
-                                                qr.source,
-                                                qr.payload,
-                                                qr.jupiterQuoteResponse,
-                                            )) },
+                                            invokeNetwork = {
+                                                swapViewModel.web3Swap(
+                                                    SwapRequest(
+                                                        if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
+                                                        inputMint,
+                                                        if (inMixin()) 0 else qr.inAmount.toLong(),
+                                                        if (inMixin()) qr.inAmount else "0",
+                                                        outputMint,
+                                                        qr.slippage,
+                                                        qr.source,
+                                                        qr.payload,
+                                                        qr.jupiterQuoteResponse,
+                                                    )
+                                                )
+                                            },
                                             successBlock = {
                                                 return@handleMixinResponse it.data
                                             },
@@ -285,7 +299,7 @@ class SwapFragment : BaseFragment() {
                                         requireActivity(),
                                         signMessage,
                                         onTxhash = { hash, serializedTx ->
-                                            lifecycleScope.launch {
+                                            scope.launch {
                                                 txhash = hash
                                                 val txStateFragment =
                                                     TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
@@ -309,7 +323,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun openSwapTransfer(swapResult: SwapResponse){
+    private suspend fun openSwapTransfer(swapResult: SwapResponse) {
         val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
@@ -359,7 +373,7 @@ class SwapFragment : BaseFragment() {
                             toToken = fromToken
                         }
                         fromToken = token
-                        lifecycleScope.launch {
+                        scope.launch {
                             refreshTokensPrice(listOf(token))
                             onTextChanged(currentText)
                         }
@@ -378,7 +392,7 @@ class SwapFragment : BaseFragment() {
                             toToken = fromToken
                         }
                         fromToken = token
-                        lifecycleScope.launch {
+                        scope.launch {
                             refreshTokensPrice(listOf(token))
                             onTextChanged(currentText)
                         }
@@ -406,13 +420,13 @@ class SwapFragment : BaseFragment() {
                         fromToken = toToken
                     }
                     toToken = token
-                    lifecycleScope.launch {
+                    scope.launch {
                         refreshTokensPrice(listOf(token))
                         onTextChanged(currentText)
                     }
                     dismissNow()
                 }
-            }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment .TAG)
+            }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -491,7 +505,7 @@ class SwapFragment : BaseFragment() {
             if (swapTokens.isNotEmpty()) {
                 (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens)
             }
-            if (fromToken != null  && toToken != null) {
+            if (fromToken != null && toToken != null) {
                 refreshTokensPrice(listOf(fromToken!!, toToken!!))
             }
         }
@@ -535,7 +549,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun refreshQuote(text: String) {
-        quoteJob?.cancel()
+        quoteJob?.takeIf { it.isActive }?.cancel()
         if (text.isBlank()) {
             outputText = "0"
         } else {
@@ -549,7 +563,7 @@ class SwapFragment : BaseFragment() {
                 outputText = "0"
             } else {
                 quoteJob =
-                    lifecycleScope.launch {
+                    scope.launch {
                         quote(text)
                         repeat(100) { t ->
                             quoteCountDown = t / 100f
@@ -631,7 +645,7 @@ class SwapFragment : BaseFragment() {
         val list = mutableListOf<String>()
         fromToken?.let { list.add(it.assetId) }
         toToken?.let { list.add(it.assetId) }
-        lifecycleScope.launch {
+        scope.launch {
             val newTokens = swapViewModel.syncAndFindTokens(list)
             if (newTokens.isEmpty()) {
                 return@launch
