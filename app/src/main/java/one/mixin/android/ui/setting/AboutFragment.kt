@@ -54,7 +54,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                     override fun onSingleClick() {}
                 },
             )
-            twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
+            twitter.setOnClickListener { context?.openUrl("https://x.com/intent/follow?screen_name=MixinMessenger") }
             facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
