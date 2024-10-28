@@ -65,9 +65,9 @@ fun MnemonicPhraseInput(
 
             Text(
                 text = when (state) {
-                    MnemonicState.Input -> "Log in with Mnemonic Phrase"
-                    MnemonicState.Display -> "Write down your Mnemonic Phrase"
-                    MnemonicState.Verify -> "Check your Mnemonic Phrase"
+                    MnemonicState.Input -> stringResource(R.string.log_in_whit_mnemonic_phrase)
+                    MnemonicState.Display -> stringResource(R.string.write_down_mnemonic_phrase)
+                    MnemonicState.Verify -> stringResource(R.string.check_mnemonic_phrase)
                 }, fontSize = 18.sp,
                 color = MixinAppTheme.colors.textPrimary,
                 fontWeight = SemiBold
@@ -76,9 +76,9 @@ fun MnemonicPhraseInput(
 
             Text(
                 text = when (state) {
-                    MnemonicState.Input -> "Enter or paste your 13 word phrase."
-                    MnemonicState.Display -> "Write it down on a piece of paper and keep it in a safe place."
-                    MnemonicState.Verify -> "Select each word in the order it was presented to you."
+                    MnemonicState.Input -> stringResource(R.string.enter_mnemonic_phrase)
+                    MnemonicState.Display -> stringResource(R.string.write_down_mnemonic_phrase_desc)
+                    MnemonicState.Verify -> stringResource(R.string.check_mnemonic_phrase_desc)
                 }, fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
                 textAlign = TextAlign.Center
@@ -196,13 +196,13 @@ fun MnemonicPhraseInput(
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     modifier = Modifier.align(Alignment.Start),
-                    text = "· Store in vault or safe place.", fontSize = 14.sp,
+                    text = stringResource(R.string.mnemonic_phrase_tip_1), fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     modifier = Modifier.align(Alignment.Start),
-                    text = "· Don’t share it with a network.", fontSize = 14.sp,
+                    text = stringResource(R.string.mnemonic_phrase_tip_2), fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
             }
