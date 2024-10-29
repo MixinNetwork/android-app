@@ -21,6 +21,7 @@ fun HighlightedTextWithClick(
     modifier: Modifier,
     vararg highlightTexts: String,
     color: Color = MixinAppTheme.colors.textAssist,
+    textAlign: TextAlign = TextAlign.Center,
     fontSize: TextUnit = 14.sp,
     lineHeight: TextUnit = 19.6.sp,
     onTextClick: (String) -> Unit,
@@ -64,6 +65,6 @@ fun HighlightedTextWithClick(
         color = color,
         fontSize = fontSize,
         lineHeight = lineHeight,
-        textAlign = TextAlign.Center
+        textAlign = textAlign
     )
 }

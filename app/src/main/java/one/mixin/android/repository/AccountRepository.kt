@@ -83,6 +83,9 @@ class AccountRepository
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
             accountService.verification(request)
 
+        suspend fun verification(request: AccountRequest): MixinResponse<VerificationResponse> =
+            accountService.verification(request)
+
         suspend fun create(
             id: String,
             request: AccountRequest,

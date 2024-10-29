@@ -45,6 +45,11 @@ internal constructor(
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
+    fun upsertUser(u: User) =
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.upsert(u)
+        }
+
     suspend fun create(
         id: String,
         request: AccountRequest,
@@ -92,17 +97,22 @@ internal constructor(
     private val _mnemonicPhraseState = MutableLiveData<MnemonicPhraseState>(MnemonicPhraseState.Initial)
     val mnemonicPhraseState: LiveData<MnemonicPhraseState> get() = _mnemonicPhraseState
 
-    // Mock function to simulate the process
-    suspend fun mockCreateMnemonicPhrase(): MnemonicPhraseState? {
-        _mnemonicPhraseState.value = MnemonicPhraseState.Creating
-        delay(2000)
+    fun updateMnemonicPhraseState(state: MnemonicPhraseState){
+        _mnemonicPhraseState.value = state
+    }
 
-        if (Math.random() < 0.5) {
-            _mnemonicPhraseState.value = MnemonicPhraseState.Success
-        } else {
-            _mnemonicPhraseState.value = MnemonicPhraseState.Failure
-        }
-        return _mnemonicPhraseState.value
+    suspend fun anonymousRequest(publicKeyHex: String, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null): MixinResponse<VerificationResponse> {
+        val r = accountRepository.verification(
+            VerificationRequest(
+                purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
+                public_key_hex = publicKeyHex,
+                message_hex = messageHex,
+                signature_hex = signatureHex,
+                hCaptchaResponse = hCaptchaResponse,
+                gRecaptchaResponse = gRecaptchaResponse
+            )
+        )
+        return r
     }
 
     private val _setupState = MutableLiveData<SetupState>(SetupState.Loading)

@@ -12,7 +12,7 @@ import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class LandingMnemonicPhraseFragment: BaseFragment(R.layout.fragment_compose) {
+class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mnemonic_phrase) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
 
@@ -36,7 +36,8 @@ class LandingMnemonicPhraseFragment: BaseFragment(R.layout.fragment_compose) {
         }
         binding.compose.setContent {
             MnemonicPhraseInput(MnemonicState.Input, onComplete = {
-            })
+            }
+            )
         }
     }
 }

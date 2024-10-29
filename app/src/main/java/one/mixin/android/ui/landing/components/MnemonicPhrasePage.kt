@@ -17,7 +17,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.landing.MobileViewModel
@@ -35,10 +33,10 @@ import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 
 @Composable
 fun MnemonicPhrasePage(
-    onSuccess: () -> Unit
+    errorInfo: String?,
+    requestCaptcha: () -> Unit
 ) {
     val viewModel = hiltViewModel<MobileViewModel>()
-    val coroutineScope = rememberCoroutineScope()
     val mnemonicPhraseState by viewModel.mnemonicPhraseState.observeAsState(MnemonicPhraseState.Initial)
     MixinAppTheme {
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -70,7 +68,6 @@ fun MnemonicPhrasePage(
             Spacer(modifier = Modifier.height(16.dp))
             when (mnemonicPhraseState) {
                 MnemonicPhraseState.Initial -> {
-
                     NumberedText(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
@@ -86,7 +83,7 @@ fun MnemonicPhrasePage(
 
                 MnemonicPhraseState.Creating -> {
                     Text(
-                        "This shouldn’t take long.", //  todo
+                        stringResource(R.string.mnemonic_phrase_take_long),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         fontSize = 14.sp, color = MixinAppTheme.colors.textMinor
                     )
@@ -94,7 +91,7 @@ fun MnemonicPhrasePage(
 
                 MnemonicPhraseState.Failure -> {
                     Text(
-                        "Failure", // todo
+                        errorInfo ?: "",
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         fontSize = 14.sp, color = MixinAppTheme.colors.red
                     )
@@ -123,12 +120,7 @@ fun MnemonicPhrasePage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        coroutineScope.launch {
-                            val state = viewModel.mockCreateMnemonicPhrase()
-                            if (state == MnemonicPhraseState.Success) {
-                                onSuccess.invoke()
-                            }
-                        }
+                        requestCaptcha.invoke()
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = MixinAppTheme.colors.accent

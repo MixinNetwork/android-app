@@ -86,6 +86,13 @@ fun calculateAgreement(
     return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
 }
 
+fun calculateSignature(
+    privateKey: ByteArray,
+    message: ByteArray,
+): ByteArray {
+    return Curve25519.getInstance(BEST).calculateSignature(privateKey, message)
+}
+
 fun initFromSeedAndSign(
     seed: ByteArray,
     signTarget: ByteArray,

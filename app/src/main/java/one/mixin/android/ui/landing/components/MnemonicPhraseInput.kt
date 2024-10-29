@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,7 +46,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 fun MnemonicPhraseInput(
     state: MnemonicState,
     mnemonicList: List<String> = emptyList(),
-    onComplete: (List<String>) -> Unit,
+    onComplete: (List<String>) -> Unit
 ) {
     var inputs by remember { mutableStateOf(List(13) { "" }) }
     MixinAppTheme {

@@ -46,6 +46,11 @@ interface AccountService {
         @Body request: VerificationRequest,
     ): MixinResponse<VerificationResponse>
 
+    @POST("verifications")
+    suspend fun verification(
+        @Body request: AccountRequest,
+    ): MixinResponse<VerificationResponse>
+
     @POST("verifications/{id}")
     suspend fun create(
         @Path("id") id: String,
