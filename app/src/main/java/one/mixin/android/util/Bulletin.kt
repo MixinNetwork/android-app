@@ -13,6 +13,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.Account
 import one.mixin.android.widget.BulletinView
+import timber.log.Timber
 
 class BulletinBoard {
     private val bulletins = mutableListOf<Bulletin>()
@@ -215,6 +216,34 @@ class EmergencyContactBulletin(
 
             override fun onSetting() {
                 SettingActivity.showEmergencyContact(context)
+            }
+        }
+}
+
+class BackupMnemonicPhraseBulletin(
+
+    private val bulletinView: BulletinView,
+    private val account: Account?,
+) : Bulletin {
+
+    private val context = bulletinView.context
+
+    override fun show(chain: Bulletin.Chain): Boolean {
+        val exported = (account?.exportedSalt ?: true)
+        if (!exported) {
+            bulletinView.setTypeAndCallback(BulletinView.Type.BackupMnemonicPhrase, bulletinMnemonicPhraseCallback)
+        }
+        return !exported
+    }
+
+    private val bulletinMnemonicPhraseCallback =
+        object : BulletinView.Callback {
+            override fun onClose() {
+               // do nothing
+            }
+
+            override fun onSetting() {
+                SettingActivity.showMnemonicPhrase(context)
             }
         }
 }

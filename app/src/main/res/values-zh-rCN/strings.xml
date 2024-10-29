@@ -112,6 +112,7 @@
     <string name="Back_To_Merchant">返回商家</string>
     <string name="Backing_Up">正在备份…</string>
     <string name="Backup">备份</string>
+    <string name="Backed_Up">已备份</string>
     <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
     <string name="Backup_delete">删除备份</string>
     <string name="backup_des">备份对话记录到外部存储以便在重新安装 Mixin 时还原对话记录，备份到外部存储的对话不会进行加密处理。</string>

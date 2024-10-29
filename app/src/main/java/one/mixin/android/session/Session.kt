@@ -36,9 +36,11 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
+import one.mixin.android.util.xinDialCode
 import one.mixin.android.vo.Account
 import one.mixin.eddsa.Ed25519Sign
 import timber.log.Timber
@@ -95,6 +97,17 @@ object Session {
                 null
             }
         }
+
+    fun hasPhone():Boolean {
+        val account = getAccount()
+        val phone = account?.phone
+        return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)
+    }
+
+    fun exportedSalt():Boolean {
+        val account = getAccount()
+        return (account?.exportedSalt == true).not() // todo
+    }
 
     fun clearAccount() {
         self = null

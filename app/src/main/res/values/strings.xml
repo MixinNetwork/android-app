@@ -116,6 +116,7 @@
     <string name="Back_To_Merchant">Back to Merchant</string>
     <string name="Backing_Up">Backing Up…</string>
     <string name="Backup">Backup</string>
+    <string name="Backed_Up">Backed Up</string>
     <string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
     <string name="Backup_delete">Backup delete</string>
     <string name="backup_des">Back up your messages to external storage. You can restore them when you reinstall Mixin. Messages you back up are not protected while in external storage.</string>
@@ -1791,4 +1792,6 @@
     <string name="mnemonic_phrase_tip_1">" · Store in vault or safe place."</string>
     <string name="mnemonic_phrase_tip_2">· Don’t share it with a network.</string>
     <string name="mnemonic_phrase_take_long">This shouldn’t take long.</string>
+    <string name="Backup_Now">Backup Now</string>
+    <string name="Backup_Mnemonic_Phrase_desc">Protect your assets by backing up your mnemonic phrase now.</string>
 </resources>

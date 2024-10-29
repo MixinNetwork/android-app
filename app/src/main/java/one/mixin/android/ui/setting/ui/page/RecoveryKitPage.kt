@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
@@ -58,14 +59,16 @@ fun RecoveryKitPage(phoneClick: () -> Unit, mnemonicPhraseClick: () -> Unit, rec
                     ClickItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                            .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), stringResource(R.string.Added)
+                            .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Add)
                     )
-                    ClickItem(modifier = Modifier.clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase), stringResource(R.string.Backup))
+                    ClickItem(modifier = Modifier.clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase),
+                        if (Session.exportedSalt()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup)
+                    )
                     ClickItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
                             .clickable { recoveryClick.invoke() },
-                        stringResource(R.string.Recovery_Contact), stringResource(R.string.Set_up)
+                        stringResource(R.string.Recovery_Contact), if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Add)
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
