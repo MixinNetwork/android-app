@@ -62,7 +62,7 @@ internal constructor(
         id: String,
         verificationCode: String,
         pin: String,
-        saltBase64:String? =null,
+        saltBase64: String? = null,
     ): MixinResponse<Account> =
         accountRepository.changePhone(
             id,
