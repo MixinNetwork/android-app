@@ -1795,4 +1795,12 @@
     <string name="Backup_Now">Backup Now</string>
     <string name="Backup_Mnemonic_Phrase_desc">Protect your assets by backing up your mnemonic phrase now.</string>
     <string name="Backup_Mnemonic_Phrase_Warning">Please back up your mnemonic words now! This mnemonic is one of the MPC wallet key fragments. Once the device is lost or the application is uninstalled, if you do not have a backup, you will not be able to log in to your current Mixin account again (%1$s).</string>
+    <string name="Add_Phone_desc">你可以通过手机号登录你的账号，手机号将关联至 MPC 钱包的密钥分片，完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
+    <string name="Change_Phone_desc">你可以通过手机号登录你的账号，当前手机号（%1$s）已关联到 MPC 钱包的密钥分片，完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%2$s。</string>
+    <string name="Add_Mobile_Number">Add Mobile Number</string>
+    <string name="add_phone_instruction_1">手机号和助记词将链接到同一个密钥分片。</string>
+    <string name="add_phone_instruction_2">手机号和助记词登录的是同一个账号。</string>
+    <string name="add_phone_instruction_3">无法添加一个已注册为 Mixin Messenger 账号的手机号。</string>
+    <string name="add_phone_instruction_4">手机号绑定后无法删除。</string>
+    <string name="Change_Mobile_Number">Change Mobile Number</string>
 </resources>
