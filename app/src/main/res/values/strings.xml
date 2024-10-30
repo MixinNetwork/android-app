@@ -1794,4 +1794,5 @@
     <string name="mnemonic_phrase_take_long">This shouldn’t take long.</string>
     <string name="Backup_Now">Backup Now</string>
     <string name="Backup_Mnemonic_Phrase_desc">Protect your assets by backing up your mnemonic phrase now.</string>
+    <string name="Backup_Mnemonic_Phrase_Warning">Please back up your mnemonic words now! This mnemonic is one of the MPC wallet key fragments. Once the device is lost or the application is uninstalled, if you do not have a backup, you will not be able to log in to your current Mixin account again (%1$s).</string>
 </resources>

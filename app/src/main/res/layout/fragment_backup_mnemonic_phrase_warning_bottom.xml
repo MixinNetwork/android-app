@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_upper_round"
+    android:paddingBottom="16dp">
+
+    <ImageView
+        android:layout_marginTop="58dp"
+        android:src="@drawable/ic_mnemonic_phrase"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="96dp"
+        android:layout_height="91dp" />
+
+    <TextView
+        android:layout_marginTop="24dp"
+        android:textFontWeight="600"
+        android:textSize="20sp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Backup_Mnemonic_Phrase"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/warning"
+        android:layout_marginTop="16dp"
+        android:textSize="14sp"
+        android:textColor="?attr/text_minor"
+        android:gravity="center_horizontal"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:text="@string/Backup_Mnemonic_Phrase_Warning"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <Button
+        style="@style/AppTheme.MaterialButton"
+        android:id="@+id/backup_now"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="43dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:text="@string/Backup_Now"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/later"
+        android:text="@string/Later"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/selector_blue_tv"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="12dp" />
+
+</one.mixin.android.widget.BottomSheetLinearLayout>

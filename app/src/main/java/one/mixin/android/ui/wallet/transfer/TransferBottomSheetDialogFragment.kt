@@ -77,7 +77,6 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
-import timber.log.Timber
 import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException

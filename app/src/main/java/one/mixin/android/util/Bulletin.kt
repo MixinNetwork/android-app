@@ -242,6 +242,7 @@ class BackupMnemonicPhraseBulletin(
                // do nothing
             }
 
+
             override fun onSetting() {
                 SettingActivity.showMnemonicPhrase(context)
             }
