@@ -49,14 +49,15 @@ import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 
 @AndroidEntryPoint
-class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
+class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
         const val ARGS_FROM = "args_from"
         const val FROM_LANDING = 0
-        const val FROM_CHANGE_PHONE_ACCOUNT = 1
-        const val FROM_DELETE_ACCOUNT = 2
+        const val FROM_LANDING_CREATE = 1
+        const val FROM_CHANGE_PHONE_ACCOUNT = 2
+        const val FROM_DELETE_ACCOUNT = 3
 
         fun newInstance(
             pin: String? = null,
@@ -120,6 +121,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 policyWrapper,
                 arrayOf(policyUrl, termsUrl),
             )
+            binding.orLl.isVisible = from == FROM_LANDING
+            binding.mnemonicPhrase.isVisible = from == FROM_LANDING
 
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
@@ -200,6 +203,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         if (viewDestroyed()) return
 
         binding.continueBn.isEnabled = true
+        binding.continueBn.displayedChild = 0
         binding.mobileCover.isVisible = true
         val phoneNum = anonymousNumber ?: phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest =
@@ -226,6 +230,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
             }
         }
+        binding.continueBn.displayedChild = 1
         mobileViewModel.loginVerification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
@@ -239,6 +244,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                         return@subscribe
                     }
                     hideLoading()
+
                     val verificationResponse = r.data as VerificationResponse
                     if (!r.data?.deactivatedAt.isNullOrBlank() && from == FROM_LANDING) {
                         LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
@@ -288,6 +294,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                                 if (viewDestroyed()) return
 
                                 binding.continueBn.isEnabled = true
+                                binding.continueBn.displayedChild = 0
                                 binding.mobileCover.isVisible = false
                             }
 
@@ -303,8 +310,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private fun hideLoading() {
         if (viewDestroyed()) return
-
         binding.continueBn.isEnabled = true
+        binding.continueBn.displayedChild = 0
         binding.mobileCover.isVisible = false
         captchaView?.hide()
     }
@@ -602,8 +609,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             binding.keyboard.animate().translationY(0f).start()
         } else {
             if (binding.mobileEt.text.isNullOrEmpty()) {
-                binding.orLl.isVisible = true
-                binding.mnemonicPhrase.isVisible = true
+                binding.orLl.isVisible = from == FROM_LANDING
+                binding.mnemonicPhrase.isVisible = from == FROM_LANDING
             }
             binding.keyboard.animate().translationY(300.dp.toFloat()).start()
         }
@@ -611,8 +618,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private fun handleTextChange(s: Editable?) {
         if (s.isNullOrEmpty() && !binding.mobileEt.hasFocus() && !binding.countryCodeEt.hasFocus()) {
-            binding.orLl.isVisible = true
-            binding.mnemonicPhrase.isVisible = true
+            binding.orLl.isVisible = from == FROM_LANDING
+            binding.mnemonicPhrase.isVisible = from == FROM_LANDING
         } else {
             binding.orLl.isVisible = false
             binding.mnemonicPhrase.isVisible = false

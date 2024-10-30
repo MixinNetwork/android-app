@@ -18,4 +18,5 @@ data class AccountRequest(
     val public_key_hex: String? = null,
     val message_hex: String? = null,
     val signature_hex: String? = null,
+    val salt_base64: String? = null,
 )

@@ -62,6 +62,7 @@ internal constructor(
         id: String,
         verificationCode: String,
         pin: String,
+        saltBase64:String? =null,
     ): MixinResponse<Account> =
         accountRepository.changePhone(
             id,
@@ -69,6 +70,7 @@ internal constructor(
                 verificationCode,
                 purpose = VerificationPurpose.PHONE.name,
                 pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode)),
+                salt_base64 = saltBase64
             ),
         )
 

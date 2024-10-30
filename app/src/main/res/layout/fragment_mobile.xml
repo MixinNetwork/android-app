@@ -120,7 +120,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
 
-        <Button
+        <ViewAnimator
             style="@style/AppTheme.MaterialButton"
             android:id="@+id/continue_bn"
             android:layout_width="0dp"
@@ -134,7 +134,24 @@
             android:enabled="false"
             app:layout_constraintTop_toBottomOf="@id/introduction_tv"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent" >
+
+            <TextView
+                android:id="@+id/continue_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/Continue"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.WhiteAccent" />
+        </ViewAnimator>
 
         <LinearLayout
             android:id="@+id/or_ll"

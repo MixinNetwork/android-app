@@ -32,12 +32,15 @@ import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_FROM
@@ -47,12 +50,14 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
+import one.mixin.android.ui.tip.RetryRegister
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -81,6 +86,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     private val viewModel by viewModels<MobileViewModel>()
+
+    @Inject
+    lateinit var tip: Tip
 
     private var mCountDownTimer: CountDownTimer? = null
 
@@ -191,7 +199,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             showLoading()
             handleMixinResponse(
                 invokeNetwork = {
-                    viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
+                    if (pin != null) {
+                        val seed = tip.getOrRecoverTipPriv(requireContext(), pin!!).getOrThrow()
+                        val (_, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin!!, seed)
+                        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!, saltBase64)
+                    } else {
+                        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
+                    }
                 },
                 successBlock = {
                     withContext(Dispatchers.IO) {
