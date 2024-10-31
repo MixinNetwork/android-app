@@ -925,7 +925,7 @@
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗。</string>
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
-    <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号的情况下登录你的账号。</string>
+    <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号或者助记词的情况下登录你的账号。</string>
     <string name="setting_emergency_create_success">添加紧急联系人成功</string>
     <string name="setting_emergency_desc">请放心，即使您的手机号丢失无法找回钱包资产也很安全，请牢记您的 PIN，阅读文档**了解更多**。</string>
     <string name="setting_emergency_pin_tip">紧急联系人受 PIN 加密保护</string>

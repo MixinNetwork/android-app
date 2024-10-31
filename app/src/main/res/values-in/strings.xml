@@ -572,7 +572,6 @@
     <string name="setting_desktop_confirm">Konfirmasikan masuk ke Mixin Messenger Desktop</string>
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
     <string name="setting_emergency_change_mobile">Ingin mengubah nomor ponsel Anda sekarang?</string>
-    <string name="setting_emergency_content">Kontak darurat ditujukan untuk membantu Anda masuk ke akun Anda jika Anda lupa akun dan tidak dapat mengambil kembali nomor ponsel Anda.</string>
     <string name="setting_emergency_create_success">Berhasil membuat kontak darurat</string>
     <string name="setting_emergency_desc">Saat nomor ponsel Anda hilang, hubungi kontak darurat Anda melalui telepon atau cara lain untuk mendapatkan ID Mixin dan kode verifikasi. Baca Kontak Darurat kami untuk **mempelajari selengkapnya**.</string>
     <string name="setting_emergency_pin_tip">Kontak darurat Anda dilindungi dengan PIN</string>

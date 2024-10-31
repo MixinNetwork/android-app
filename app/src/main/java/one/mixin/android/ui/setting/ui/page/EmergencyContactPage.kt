@@ -46,8 +46,6 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
-import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipType
 import one.mixin.android.vo.Account
 import timber.log.Timber
 
@@ -78,7 +76,7 @@ fun EmergencyContactPage() {
                     Modifier
                         .height(83.dp)
                         .width(92.dp),
-                painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
+                painter = painterResource(R.drawable.ic_emergency),
                 contentDescription = null,
             )
             Box(modifier = Modifier.height(28.dp))
@@ -115,34 +113,6 @@ fun EmergencyContactPage() {
                 titleColor = MixinAppTheme.colors.accent,
             ) {
                 showEnableTip = true
-            }
-
-            if (showEnableTip) {
-                EmergencyContactTipBottomSheet(
-                    onDismissRequest = {
-                        showEnableTip = false
-                    },
-                    onConfirmed = {
-                        showEnableTip = false
-
-                        val activity = context.findFragmentActivityOrNull()
-
-                        if (Session.getAccount()?.hasPin == true) {
-                            activity?.supportFragmentManager?.inTransaction {
-                                setCustomAnimations(
-                                    R.anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom,
-                                    R.anim.slide_in_bottom,
-                                    R.anim.slide_out_bottom,
-                                )
-                                    .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
-                                    .addToBackStack(null)
-                            }
-                        } else {
-                            activity?.let { TipActivity.show(it, TipType.Create, true) }
-                        }
-                    },
-                )
             }
         } else {
             HasEmergencyLayout(

@@ -866,7 +866,6 @@
     <string name="setting_desktop_logout_failed">El cierre de sesión del escritorio ha fallado.</string>
     <string name="setting_duplicate_transfer_desc">Muestra un cuadro de diálogo de confirmación cuando transfieres la misma cantidad a la misma persona dentro de las 6 horas.</string>
     <string name="setting_emergency_change_mobile">¿Quieres cambiar tu número de móvil ahora?</string>
-    <string name="setting_emergency_content">El contacto de emergencia está diseñado para ayudarte a iniciar sesión en tu cuenta si se pierde y no puede recuperar tu número de teléfono móvil.</string>
     <string name="setting_emergency_create_success">Crear contacto de emergencia con éxito</string>
     <string name="setting_emergency_desc">Cuando haya perdido tu número de teléfono móvil, comunícate con tu contacto de emergencia por teléfono u otros medios para obtener la ID de Mixin y el código de verificación. Lea nuestro contacto de emergencia para **aprender más**.</string>
     <string name="setting_emergency_pin_tip">Tu contacto de emergencia está protegido por PIN</string>

@@ -950,7 +950,7 @@
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
-    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account when you are unable to access your phone number.</string>
+    <string name="setting_emergency_content">The recovery contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number or mnemonic phrase.</string>
     <string name="setting_emergency_create_success">Create emergency contact successfully</string>
     <string name="setting_emergency_desc">When you lose your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
@@ -1803,4 +1803,13 @@
     <string name="add_phone_instruction_3">无法添加一个已注册为 Mixin Messenger 账号的手机号。</string>
     <string name="add_phone_instruction_4">手机号绑定后无法删除。</string>
     <string name="Change_Mobile_Number">Change Mobile Number</string>
+    <string name="Add_Recovery_Contact_desc">The recovery contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number or mnemonic phrase.</string>
+    <string name="add_recovery_contact_instruction_1">添加你信任的人为恢复联系人，例如你的家人、朋友或同事。</string>
+    <string name="add_recovery_contact_instruction_2">若你无法通过手机号或助记词登录账号，请当面或致电寻求协助。</string>
+    <string name="add_recovery_contact_instruction_3">恢复联系人无法转移您 Mixin 钱包里的资产，但可以协助你重新访问账号。</string>
+    <string name="add_recovery_contact_instruction_4">恢复联系人无法帮你恢复你的 PIN ！</string>
+    <string name="Im_Ready">I’m Ready</string>
+    <string name="add_recovery_contact_before_instruction_1">要添加的恢复联系人已下载并登录了 Mixin Messenger。</string>
+    <string name="add_recovery_contact_before_instruction_2">要添加的恢复联系人保持 Mixin Messenger 在线或者正在与您面对面。</string>
+    <string name="add_recovery_contact_before_instruction_3">要添加的恢复联系人已添加当前账号（%1$s）为联系人，否则对方可能无法收到验证码。</string>
 </resources>

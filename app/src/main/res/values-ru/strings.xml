@@ -835,7 +835,6 @@
     <string name="setting_desktop_logout_failed">Выход из рабочего стола не удался.</string>
     <string name="setting_duplicate_transfer_desc">Отображение диалогового окна подтверждения при переводе одной и той же суммы одному и тому же человеку в течение 6 часов.</string>
     <string name="setting_emergency_change_mobile">Вы хотите изменить свой номер мобильного телефона сейчас?</string>
-    <string name="setting_emergency_content">Экстренный контакт предназначен для того, чтобы помочь вам войти в свою учетную запись, если вы потерялись и не можете восстановить свой номер мобильного телефона.</string>
     <string name="setting_emergency_create_success">Создать экстренный контакт успешно</string>
     <string name="setting_emergency_desc">Если вы потеряли свой номер мобильного телефона, свяжитесь со своим экстренным контактом по телефону или другим способом, чтобы получить Mixin ID и код подтверждения. Прочтите нашу контактную информацию для экстренных случаев, чтобы **узнать больше**.</string>
     <string name="setting_emergency_pin_tip">Ваш экстренный контакт защищен PIN-кодом</string>

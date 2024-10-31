@@ -618,7 +618,6 @@
     <string name="setting_desktop_logout_failed">Log keluar desktop gagal.</string>
     <string name="setting_duplicate_transfer_desc">Paparkan dialog pengesahan apabila anda memindahkan jumlah yang sama kepada orang yang sama dalam masa 6 jam</string>
     <string name="setting_emergency_change_mobile">Adakah anda mahu menukar nombor telefon bimbit anda sekarang?</string>
-    <string name="setting_emergency_content">Kenalan kecemasan direka untuk membantu anda log masuk ke akaun anda sekiranya anda tersesat dan tidak dapat semula nombor telefon bimbit anda.</string>
     <string name="setting_emergency_create_success">Buat kenalan kecemasan berjaya</string>
     <string name="setting_emergency_desc">Apabila anda kehilangan nombor telefon bimbit, sila hubungi kenalan kecemasan anda melalui telefon atau cara lain untuk mendapatkan ID Mixin dan kod pengesahan. Baca Kenalan Kecemasan kami untuk **mengetahui lebih lanjut**.</string>
     <string name="setting_emergency_pin_tip">Kenalan kecemasan anda dilindungi oleh PIN</string>

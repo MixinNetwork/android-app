@@ -70,9 +70,6 @@
         <item name="music_floating_bg">@color/musicFloatingBgNight</item>
         <item name="music_play_pause_bg">@color/musicPlayPauseBgNight</item>
 
-        <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
-        <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
-
         <item name="flag_night">true</item>
         <item name="code_border">@color/codeBorderNight</item>
         <item name="nft_border">@color/nftBorderNight</item>

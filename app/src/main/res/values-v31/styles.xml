@@ -88,7 +88,6 @@
         <item name="bg_market_card">@drawable/bg_market_card</item>
         <item name="ic_logo">@drawable/ic_logo_mixin</item>
 
-        <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>
