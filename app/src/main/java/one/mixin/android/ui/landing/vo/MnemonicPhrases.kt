@@ -1,7 +1,6 @@
-package one.mixin.android.ui.landing
+package one.mixin.android.ui.landing.vo
 
 import java.security.MessageDigest
-import kotlin.experimental.and
 import kotlin.experimental.or
 
 val MnemonicPhrases = listOf(

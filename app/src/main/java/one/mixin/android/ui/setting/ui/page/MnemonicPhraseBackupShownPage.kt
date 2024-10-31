@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.landing.MnemonicPhrases
+import one.mixin.android.ui.landing.vo.MnemonicPhrases
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
 import kotlin.random.Random

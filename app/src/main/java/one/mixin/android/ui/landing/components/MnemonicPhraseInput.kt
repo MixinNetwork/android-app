@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
@@ -61,7 +62,6 @@ fun MnemonicPhraseInput(
                 contentDescription = null,
             )
             Spacer(modifier = Modifier.height(30.dp))
-
             Text(
                 text = when (state) {
                     MnemonicState.Input -> stringResource(R.string.log_in_whit_mnemonic_phrase)
@@ -108,7 +108,7 @@ fun MnemonicPhraseInput(
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Text(
-                                        mnemonicList.getOrNull(index)?:"",
+                                        mnemonicList.getOrNull(index) ?: "",
                                         color = MixinAppTheme.colors.textPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = W500
@@ -119,13 +119,13 @@ fun MnemonicPhraseInput(
                                     value = inputs[index],
                                     onValueChange = { newText ->
                                         inputs = inputs.toMutableList().also { it[index] = newText }
-
                                         if (inputs.all { it.isNotEmpty() }) {
                                             // todo check
                                             // onComplete(inputs)
                                         }
                                     },
                                     singleLine = true,
+                                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                                     textStyle = LocalTextStyle.current.copy(
                                         color = MixinAppTheme.colors.textMinor,
                                         fontSize = 13.sp,
@@ -191,7 +191,7 @@ fun MnemonicPhraseInput(
                     }
                 }
             }
-            if (state == MnemonicState.Display){
+            if (state == MnemonicState.Display) {
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     modifier = Modifier.align(Alignment.Start),

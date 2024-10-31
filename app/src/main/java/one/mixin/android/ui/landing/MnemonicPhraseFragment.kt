@@ -33,7 +33,9 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.session.Session.getEd25519KeyPair
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
@@ -47,23 +49,32 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.CaptchaView
+import one.mixin.eddsa.KeyPair.Companion.newKeyPairFromSeed
 import timber.log.Timber
 
 @AndroidEntryPoint
 class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
+        const val ARGS_MNEMONIC_PHRASE = "mnemonic_phrase"
 
         fun newInstance(
+            words: ArrayList<String>? = null
         ): MnemonicPhraseFragment =
             MnemonicPhraseFragment().apply {
-
+                withArgs {
+                    putStringArrayList(ARGS_MNEMONIC_PHRASE, words)
+                }
             }
     }
 
     private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private var errorInfo: String? = null
+
+    private val words by lazy {
+        requireArguments().getStringArrayList(ARGS_MNEMONIC_PHRASE)
+    }
 
     override fun onViewCreated(
         view: View,
@@ -75,15 +86,21 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }
         binding.compose.setContent {
             MnemonicPhrasePage(errorInfo) {
-                anonymousRequest()
+                if (words.isNullOrEmpty()) {
+                    anonymousRequest()
+                }
             }
+        }
+        if (!words.isNullOrEmpty()) {
+            // Todo covert
+            anonymousRequest(getEd25519KeyPair())
         }
     }
 
-    private fun anonymousRequest() {
+    private fun anonymousRequest(key: EdKeyPair?=null) {
         lifecycleScope.launch {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
-            val sessionKey = generateEd25519KeyPair()
+            val sessionKey = key?:generateEd25519KeyPair()
             val publicKey = sessionKey.publicKey
             val message = AnonymousMessage("", nowInUtc()).doAnonymousPOW()
             val messageHex = GsonHelper.customGson.toJson(message).toHex()
@@ -229,7 +246,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
-
                 MixinApplication.get().isOnline.set(true)
 
                 when {
@@ -237,6 +253,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         mobileViewModel.upsertUser(account.toUser())
                         InitializeActivity.showSetupName(requireContext())
                     }
+
                     else -> {
                         RestoreActivity.show(requireContext())
                     }
