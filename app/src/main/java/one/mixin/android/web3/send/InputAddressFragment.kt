@@ -176,8 +176,17 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             if (isIcapAddress(text)) {
                 binding.addrEt.setText(decodeICAP(text))
             } else {
-                binding.addrEt.setText(text)
+                binding.addrEt.setText(formatAddress(text))
             }
+        }
+    }
+
+    private fun formatAddress(text: String): String {
+        val colonIndex = text.indexOf(':')
+        return if (colonIndex != -1) {
+            text.substring(colonIndex + 1)
+        } else {
+            text
         }
     }
 
