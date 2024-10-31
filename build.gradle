@@ -1,7 +1,7 @@
 buildscript {
 
     ext {
-        ext.fragmentVersion = '1.8.4'
+        ext.fragmentVersion = '1.8.5'
         ext.activity_version = '1.9.3'
         ext.lifecycleVersion = '2.8.7'
         ext.appcompatVersion = '1.7.0'
