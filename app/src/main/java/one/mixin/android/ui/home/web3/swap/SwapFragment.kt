@@ -485,10 +485,6 @@ class SwapFragment : BaseFragment() {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                     toToken = swapTokens.getOrNull(1)
                 } else {
-                    val found = swapTokens.firstOrNull { s -> s.assetId == fromToken?.assetId }
-                    if (found == null) {
-                        toast(getString(R.string.swap_not_supported, fromToken?.symbol))
-                    }
                     if (toToken != null) {
                         val toFound = swapTokens.firstOrNull { s -> s.assetId == toToken?.assetId }
                         if (toFound == null) {
