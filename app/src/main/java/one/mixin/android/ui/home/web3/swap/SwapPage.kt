@@ -186,7 +186,7 @@ fun SwapPage(
                             },
                             colors =
                                 ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
+                                    backgroundColor = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                                 ),
                             shape = RoundedCornerShape(32.dp),
                             elevation =
