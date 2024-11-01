@@ -48,7 +48,7 @@ fun deleteKeyByAlias(alias: String): Boolean {
     return false
 }
 
-private fun getKeyByAlias(
+fun getKeyByAlias(
     alias: String,
     userAuthenticationRequired: Boolean = false,
 ): SecretKey? {

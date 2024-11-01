@@ -43,6 +43,7 @@ import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import timber.log.Timber
+import tip.Tip
 import java.io.IOException
 import javax.inject.Inject
 
@@ -574,8 +575,12 @@ class Tip
 
             val iv = tipPriv.slice(0..15).toByteArray()
             val ciphertext = tipPriv.slice(16 until tipPriv.size).toByteArray()
-            val cipher = getDecryptCipher(Constants.Tip.ALIAS_TIP_PRIV, iv)
-            return cipher.doFinal(ciphertext)
+            return runCatching {
+                val cipher = getDecryptCipher(Constants.Tip.ALIAS_TIP_PRIV, iv)
+                cipher.doFinal(ciphertext)
+            }.onFailure {
+                Tip.decryptCBC(getKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)?.encoded, iv, ciphertext)
+            }.getOrNull()
         }
 
         private fun storeTipPriv(

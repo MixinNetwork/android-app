@@ -18,6 +18,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNullException
 import timber.log.Timber
+import tip.Tip
 import javax.inject.Inject
 
 class Ephemeral
@@ -75,11 +76,14 @@ class Ephemeral
 
         private fun readEphemeralSeed(context: Context): ByteArray? {
             val ephemeralSeed = context.defaultSharedPreferences.getString(Constants.Tip.EPHEMERAL_SEED, null)?.hexStringToByteArray() ?: return null
-
             val iv = ephemeralSeed.slice(0..15).toByteArray()
             val ciphertext = ephemeralSeed.slice(16 until ephemeralSeed.size).toByteArray()
-            val cipher = getDecryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED, iv)
-            return cipher.doFinal(ciphertext)
+            return runCatching {
+                val cipher = getDecryptCipher(Constants.Tip.ALIAS_EPHEMERAL_SEED, iv)
+                cipher.doFinal(ciphertext)
+            }.onFailure {
+                Tip.decryptCBC(getKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)?.encoded, iv, ciphertext)
+            }.getOrNull()
         }
 
         private fun storeEphemeralSeed(

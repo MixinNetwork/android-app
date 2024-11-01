@@ -6,6 +6,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.toHex
+import tip.Tip
 
 // legacy: hex
 // new   : hex, hex ...
@@ -71,6 +72,10 @@ internal fun deleteLatestSalts(context: Context): Boolean {
 private fun decryptSalt(salt: ByteArray): ByteArray {
     val iv = salt.slice(0..15).toByteArray()
     val ciphertext = salt.slice(16 until salt.size).toByteArray()
-    val cipher = getDecryptCipher(Constants.Tip.ALIAS_SPEND_SALT, iv)
-    return cipher.doFinal(ciphertext)
+    return runCatching {
+        val cipher = getDecryptCipher(Constants.Tip.ALIAS_TIP_PRIV, iv)
+        cipher.doFinal(ciphertext)
+    }.onFailure {
+        Tip.decryptCBC(getKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)?.encoded, iv, ciphertext)
+    }.getOrThrow()
 }
