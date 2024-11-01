@@ -270,7 +270,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) :
             val isMe = meId == messageItem.userId
             if (isFirst && !isMe) {
                 binding.chatName.visibility = View.VISIBLE
-                binding.chatName.setName(messageItem)
+                binding.chatName.setMessageName(messageItem)
                 binding.chatName.setTextColor(getColorById(messageItem.userId))
                 binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             } else {

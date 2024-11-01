@@ -589,6 +589,7 @@ class SwapFragment : BaseFragment() {
         isLoading = true
         errorInfo = null
         val resp = handleMixinResponse(
+            switchContext = scope.coroutineContext,
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage.toString(), getSource()) },
             successBlock = {
                 return@handleMixinResponse it.data

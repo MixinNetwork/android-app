@@ -193,6 +193,9 @@ interface RouteService {
     @POST("markets/fetch")
     suspend fun fetchMarket(@Body ids: List<String>): MixinResponse<List<Market>>
 
+    @GET("markets/search/{query}")
+    suspend fun searchMarket(@Path("query") query: String):MixinResponse<List<Market>>
+
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
 
@@ -209,5 +212,5 @@ interface RouteService {
     suspend fun alerts():MixinResponse<List<Alert>>
 
     @POST("prices/alerts/{id}")
-    suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Unit>
+    suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Alert>
 }
