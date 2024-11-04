@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -87,38 +88,37 @@ fun AppCard(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = contentClick, onLongClick = contentLongClick
             )) {
-            if (!appCardData.coverUrl.isNullOrBlank()) {
-                CoilImage(
-                    model = appCardData.coverUrl,
-                    placeholder = R.drawable.bot_default,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1.0f)
-                        .wrapContentHeight()
-                        .padding(
-                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
-                                if (isLast) 6.dp else 7.dp
-                            } else 0.dp
-                        )
-                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+            Box(
+                modifier = Modifier.padding(
+                    start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
+                        if (isLast) 6.dp else 7.dp
+                    } else 0.dp
                 )
-            } else if (appCardData.cover != null) {
-                CoilImage(
-                    model = appCardData.cover.url,
-                    placeholder = appCardData.cover.thumbnailDrawable,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(appCardData.cover.radio)
-                        .wrapContentHeight()
-                        .padding(
-                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
-                                if (isLast) 6.dp else 7.dp
-                            } else 0.dp
-                        )
-                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                )
+            ) {
+                if (!appCardData.coverUrl.isNullOrBlank()) {
+                    CoilImage(
+                        model = appCardData.coverUrl,
+                        placeholder = R.drawable.bot_default,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1.0f)
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                    )
+                } else if (appCardData.cover != null) {
+                    CoilImage(
+                        model = appCardData.cover.url,
+                        placeholder = appCardData.cover.thumbnailDrawable,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(appCardData.cover.radio)
+                            .wrapContentHeight()
+
+                            .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
             Column(modifier = Modifier
