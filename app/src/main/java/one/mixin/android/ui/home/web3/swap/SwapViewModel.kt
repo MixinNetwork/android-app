@@ -34,7 +34,7 @@ class SwapViewModel
         private val userRepository: UserRepository,
         private val web3Service: Web3Service,
     ) : ViewModel() {
-        suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
+        suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
         suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source)
 

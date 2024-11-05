@@ -296,7 +296,7 @@ class Web3ViewModel
                 return@withContext getSolanaRpc().isBlockhashValid(blockhash, Commitment.PROCESSED)
             }
 
-        suspend fun getBotPublicKey(botId: String) = userRepository.getBotPublicKey(botId)
+        suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
         fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
             accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

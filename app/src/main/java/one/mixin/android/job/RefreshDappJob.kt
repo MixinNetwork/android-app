@@ -28,7 +28,7 @@ class RefreshDappJob : BaseJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            userRepo.getBotPublicKey(WEB3_BOT_USER_ID)
+            userRepo.getBotPublicKey(WEB3_BOT_USER_ID, false)
             val response = web3Service.dapps()
             if (response.isSuccess && response.data != null) {
                 val gson = GsonHelper.customGson
@@ -59,7 +59,7 @@ class RefreshDappJob : BaseJob(
                 }
                 RxBus.publish(WCChangeEvent())
             } else if (response.errorCode == 401) {
-                userRepo.getBotPublicKey(WEB3_BOT_USER_ID)
+                userRepo.getBotPublicKey(WEB3_BOT_USER_ID, true)
             } else {
                 delay(3000)
                 jobManager.addJobInBackground(RefreshDappJob())
