@@ -109,7 +109,7 @@ buildscript {
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
 
-        ext.sumsubVersion = '1.32.2'
+        ext.sumsubVersion = '1.33.1'
         ext.checkoutFramesVersion = '4.2.3'
         ext.checkoutSecureVersion = '3.2.2'
         ext.checkoutRiskVersion = '1.0.6'
@@ -127,7 +127,7 @@ buildscript {
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.1'
+        classpath 'com.android.tools.build:gradle:8.7.2'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.2'
@@ -137,8 +137,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.7.1' apply false
-    id 'com.android.library' version '8.7.1' apply false
+    id 'com.android.application' version '8.7.2' apply false
+    id 'com.android.library' version '8.7.2' apply false
     id 'org.jetbrains.kotlin.android' version '2.0.21' apply false
     id "org.jetbrains.kotlin.kapt" version "2.0.21" apply false
     id 'com.google.dagger.hilt.android' version '2.52' apply false
