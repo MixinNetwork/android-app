@@ -440,7 +440,7 @@ class SwapFragment : BaseFragment() {
             },
             failureBlock = {
                 if (it.errorCode == 401) {
-                    swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
+                    swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                     refreshTokens()
                 } else if (it.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()

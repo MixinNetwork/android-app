@@ -121,7 +121,7 @@ class TransactionStateFragment : BaseFragment() {
                             },
                             failureBlock = {
                                 if (it.errorCode == 401) {
-                                    web3ViewModel.getBotPublicKey(ROUTE_BOT_USER_ID)
+                                    web3ViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                                     refreshTx()
                                 }
                                 return@handleMixinResponse true

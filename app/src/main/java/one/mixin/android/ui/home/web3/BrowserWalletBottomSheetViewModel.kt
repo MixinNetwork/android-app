@@ -74,7 +74,7 @@ class BrowserWalletBottomSheetViewModel
                 }
             )
             if (parsedTx == null && meet401) {
-                userRepo.getBotPublicKey(ROUTE_BOT_USER_ID)
+                userRepo.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                 return parseWeb3Tx(tx)
             } else {
                 return parsedTx
