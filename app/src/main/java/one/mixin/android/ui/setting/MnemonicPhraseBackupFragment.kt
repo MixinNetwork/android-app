@@ -13,22 +13,38 @@ import androidx.navigation.compose.rememberNavController
 import blockchain.Blockchain
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.request.AnonymousMessage
+import one.mixin.android.api.request.RegisterRequest
+import one.mixin.android.api.request.doAnonymousPOW
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.generateRandomBytes
+import one.mixin.android.crypto.initFromSeedAndSign
+import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
+import one.mixin.android.session.Session.getEd25519KeyPair
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.readEncryptedSalt
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
+import one.mixin.android.ui.landing.vo.mnemonicChecksumIndex
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupShownPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupVerifyPage
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -54,7 +70,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private var pin = ""
-    private var mnemonic = ""
+    private var mnemonic = emptyList<String>()
 
     override fun onViewCreated(
         view: View,
@@ -117,14 +133,18 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                         }, { pin ->
                             this@MnemonicPhraseBackupFragment.pin = pin
                             lifecycleScope.launch {
-                                this@MnemonicPhraseBackupFragment.mnemonic = Blockchain.newMnemonic(generateRandomBytes(16))
+                                val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+                                val salt = tip.getSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+                                this@MnemonicPhraseBackupFragment.mnemonic = String(salt) // Todo upload 13 words
+                                    .split(" ")
+                                    .let { list -> list + list[mnemonicChecksumIndex(list, 3)] }
                                 navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
                             }
                         })
                     }
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhrase.name) {
-                        MnemonicPhraseBackupShownPage(mnemonic.split(" "), {
+                        MnemonicPhraseBackupShownPage(mnemonic, {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
                             navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name)
@@ -132,15 +152,21 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                     }
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name) {
-                        MnemonicPhraseBackupVerifyPage({
+                        MnemonicPhraseBackupVerifyPage(mnemonic, {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
-                        }, {
+                        }, { inputs->
                             lifecycleScope.launch {
-                                // val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-                                // val saltBase64 = tip.generateMnemonicSaltAndEncryptedSaltBase64(mnemonic, pin, seed)
-                                // Todo salt export
-                                // ExportRequest()
-                                // walletViewModel.saltExport()
+                                Timber.e("${inputs == mnemonic}")
+                                val selfId =Session.getSessionId()!!
+                                val key = getEd25519KeyPair()!!
+
+                                walletViewModel.saltExport(
+                                    ExportRequest(
+                                        publicKey = key.privateKey.hexString(),
+                                        signature = initFromSeedAndSign(key.privateKey, selfId.encodeToByteArray()).hexString(),
+                                        pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin),
+                                    )
+                                )
                             }
                         })
                     }

@@ -22,6 +22,7 @@ object TipBody {
     private const val TIPOAuthApprove = "TIP:OAUTH:APPROVE:"
     private const val TIPProvisioningCreate = "TIP:PROVISIONING:UPDATE:"
     private const val TIPBodyForSequencerRegister = "SEQUENCER:REGISTER:"
+    private const val TIPBodyForExport = "TIP:USER:EXPORT:PRIVATE:"
 
     fun forVerify(timestamp: Long): ByteArray =
         String.format("%s%032d", TIPVerify, timestamp).toByteArray()
@@ -106,6 +107,9 @@ object TipBody {
 
     fun forOAuthApprove(authorizationId: String): ByteArray =
         (TIPOAuthApprove + authorizationId).hashToBody()
+
+    fun forExport(userId: String): ByteArray =
+        (TIPBodyForExport + userId).hashToBody()
 
     fun forProvisioningCreate(
         id: String,

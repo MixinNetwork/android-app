@@ -23,6 +23,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,10 @@ fun MnemonicPhraseInput(
     onComplete: (List<String>) -> Unit
 ) {
     var inputs by remember { mutableStateOf(List(13) { "" }) }
+    // test code todo remove
+    LaunchedEffect(state) {
+        inputs = mnemonicList
+    }
     MixinAppTheme {
         Column(
             modifier = Modifier

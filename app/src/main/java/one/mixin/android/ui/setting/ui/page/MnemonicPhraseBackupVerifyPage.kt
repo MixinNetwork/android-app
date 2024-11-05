@@ -16,13 +16,7 @@ import one.mixin.android.ui.landing.components.MnemonicState
 import kotlin.random.Random
 
 @Composable
-fun MnemonicPhraseBackupVerifyPage(pop: () -> Unit, next: (List<String>) -> Unit) {
-    var mnemonicList by remember { mutableStateOf(emptyList<String>()) }
-
-    LaunchedEffect(Unit) {
-        mnemonicList = MnemonicPhrases.shuffled(Random).take(13)
-    }
-
+fun MnemonicPhraseBackupVerifyPage(mnemonicList:List<String>,pop: () -> Unit, next: (List<String>) -> Unit) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Mnemonic_Phrase),

@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,6 +62,7 @@ import org.bouncycastle.math.raw.Mod
 fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
+    var isLoading by remember { mutableStateOf(false) }
     var pinCode by remember { mutableStateOf("") }
     var errorInfo by remember { mutableStateOf("") }
     val viewModel = hiltViewModel<WalletViewModel>()
@@ -116,24 +118,27 @@ fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(errorInfo, modifier = Modifier.alpha(if(errorInfo.isNotBlank()) 1f else 0f), color = MixinAppTheme.colors.tipError)
+                Text(errorInfo, modifier = Modifier.alpha(if (errorInfo.isNotBlank()) 1f else 0f), color = MixinAppTheme.colors.tipError)
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
+                        isLoading = true
                         coroutineScope.launch {
                             runCatching {
                                 viewModel.verifyPin(pinCode)
-                            }.onSuccess { response->
-                                if (response.isSuccess){
+                            }.onSuccess { response ->
+                                if (response.isSuccess) {
                                     next(pinCode)
                                 } else {
+                                    isLoading = false
                                     errorInfo = response.errorDescription
                                     pinCode = ""
                                 }
-                            }.onFailure { t->
+                            }.onFailure { t ->
+                                isLoading = false
                                 errorInfo = t.message ?: ""
                                 pinCode = ""
                             }
@@ -153,10 +158,17 @@ fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
                         focusedElevation = 0.dp,
                     ),
                 ) {
-                    Text(
-                        text = stringResource(R.string.Continue),
-                        color = Color.White
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = Color.White,
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.Continue),
+                            color = Color.White
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(36.dp))
 

@@ -168,7 +168,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             }
 
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
+            val (salt, saltBase64) = tip.generateMnemonicSaltAndEncryptedSaltBase64(pin, seed)
             val spendSeed = tip.getSpendPriv(salt, seed)
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()

@@ -530,7 +530,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     updateTipStep(RetryRegister(null, errorInfo))
                     return@runCatching false
                 }
-            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
+            val (salt, saltBase64) = tip.generateMnemonicSaltAndEncryptedSaltBase64(pin, seed)
             val spendSeed = tip.getSpendPriv(salt, seed)
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
