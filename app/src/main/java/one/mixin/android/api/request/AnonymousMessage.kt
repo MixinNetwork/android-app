@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.toHex
 import one.mixin.android.util.GsonHelper
-import timber.log.Timber
 import kotlin.random.Random
 
 class AnonymousMessage(

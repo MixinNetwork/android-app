@@ -1,7 +1,9 @@
 package one.mixin.android.ui.landing.vo
 
+import com.google.common.base.Stopwatch
 import one.mixin.android.extension.sha256
-import kotlin.experimental.or
+import org.bitcoinj.crypto.PBKDF2SHA512
+import java.util.zip.CRC32
 
 val MnemonicPhrases = listOf(
     "abandon",
@@ -2054,89 +2056,19 @@ val MnemonicPhrases = listOf(
     "zoo"
 )
 
-fun toMnemonic(entropy: ByteArray): List<String> {
-    require(entropy.isNotEmpty()) { "entropy is empty" }
-    require(entropy.size % 4 == 0) { "entropy length not multiple of 32 bits" }
-
-    val hash = entropy.sha256()
-    val checksumLengthBits = entropy.size * 8 / 32
-
-    val combinedBits = ByteArray(entropy.size + 1)
-    System.arraycopy(entropy, 0, combinedBits, 0, entropy.size)
-    System.arraycopy(hash, 0, combinedBits, entropy.size, checksumLengthBits / 8)
-
-    val words = mutableListOf<String>()
-    val nwords = combinedBits.size * 8 / 11
-    for (i in 0 until nwords) {
-        var index = 0
-        for (j in 0 until 11) {
-            index = (index shl 1) or ((combinedBits[(i * 11 + j) / 8].toInt() shr (7 - (i * 11 + j) % 8)) and 0x1)
-        }
-        words.add(MnemonicPhrases[index])
-    }
-
-    return words
-}
-
-class MnemonicException(message: String?) : Exception(message) {
-    class MnemonicLengthException(message: String) : Exception(message)
-    class MnemonicWordException(word: String) : Exception("Invalid mnemonic word: $word")
-    class MnemonicChecksumException : Exception("Invalid checksum")
-}
-
-fun toEntropy(words: List<String>): ByteArray {
-    if (words.size % 3 != 0) {
-        throw MnemonicException.MnemonicLengthException("Word list size must be multiple of three words.")
-    }
-
-    if (words.isEmpty()) {
-        throw MnemonicException.MnemonicLengthException("Word list is empty.")
-    }
-
-    val concatLenBits = words.size * 11
-    val concatBits = BooleanArray(concatLenBits)
-
-    for ((wordIndex, word) in words.withIndex()) {
-        val ndx = MnemonicPhrases.indexOf(word)
-        if (ndx < 0) {
-            throw MnemonicException.MnemonicWordException(word)
-        }
-
-        for (ii in 0 until 11) {
-            concatBits[(wordIndex * 11) + ii] = (ndx and (1 shl (10 - ii))) != 0
+fun mnemonicChecksumIndex(words: List<String>, prefixLen: Int): Int {
+    val trimmedWords = StringBuilder()
+    for (word in words) {
+        if (word.length < prefixLen) {
+            trimmedWords.append(word)
+        } else {
+            trimmedWords.append(word.substring(0, prefixLen))
         }
     }
 
-    val checksumLengthBits = concatLenBits / 33
-    val entropyLengthBits = concatLenBits - checksumLengthBits
+    val crc32 = CRC32()
+    crc32.update(trimmedWords.toString().toByteArray())
+    val checksum = crc32.value
 
-    val entropy = ByteArray(entropyLengthBits / 8)
-    for (ii in entropy.indices) {
-        for (jj in 0 until 8) {
-            if (concatBits[(ii * 8) + jj]) {
-                entropy[ii] = (entropy[ii] or (1 shl (7 - jj)).toByte())
-            }
-        }
-    }
-
-    val hash = entropy.sha256()
-    val hashBits = bytesToBits(hash)
-
-    for (i in 0 until checksumLengthBits) {
-        if (concatBits[entropyLengthBits + i] != hashBits[i]) {
-            throw MnemonicException.MnemonicChecksumException()
-        }
-    }
-
-    return entropy
-}
-
-fun bytesToBits(bytes: ByteArray): BooleanArray {
-    val bits = BooleanArray(bytes.size * 8)
-    for (i in bytes.indices) {
-        for (j in 0 until 8) {
-            bits[i * 8 + j] = (bytes[i].toInt() and (1 shl (7 - j))) != 0
-        }
-    }
-    return bits
+    return (checksum % words.size).toInt()
 }
