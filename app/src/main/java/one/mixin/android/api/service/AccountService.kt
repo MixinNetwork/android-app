@@ -19,6 +19,8 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AddressResponse
 import one.mixin.android.api.response.DeviceCheckResponse
+import one.mixin.android.api.response.ExportRequest
+import one.mixin.android.api.response.ExportResponse
 import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
@@ -92,6 +94,9 @@ interface AccountService {
     suspend fun deactivate(
         @Body request: DeactivateRequest,
     ): MixinResponse<Account>
+
+    @POST("me/salt_export")
+    suspend fun saltExport(@Body exportRequest: ExportRequest):MixinResponse<ExportResponse>
 
     @POST("logout")
     suspend fun logout(

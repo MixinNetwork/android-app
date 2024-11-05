@@ -24,6 +24,7 @@ import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -407,4 +408,6 @@ class WalletViewModel
         coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
         exceptionBlock: (suspend (t: Throwable) -> Boolean)
     ) = tokenRepository.refreshMarket(coinId, endBlock, failureBlock, exceptionBlock)
+
+    suspend fun saltExport(exportRequest: ExportRequest) = accountRepository.saltExport(exportRequest)
 }

@@ -49,7 +49,6 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.CaptchaView
-import one.mixin.eddsa.KeyPair.Companion.newKeyPairFromSeed
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -97,12 +96,12 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }
     }
 
-    private fun anonymousRequest(key: EdKeyPair?=null) {
+    private fun anonymousRequest(key: EdKeyPair? = null) {
         lifecycleScope.launch {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
-            val sessionKey = key?:generateEd25519KeyPair()
+            val sessionKey = key ?: generateEd25519KeyPair()
             val publicKey = sessionKey.publicKey
-            val message = AnonymousMessage("", nowInUtc()).doAnonymousPOW()
+            val message = AnonymousMessage(createdAt = nowInUtc()).doAnonymousPOW()
             val messageHex = GsonHelper.customGson.toJson(message).toHex()
             val signature = initFromSeedAndSign(sessionKey.privateKey.toTypedArray().toByteArray(), GsonHelper.customGson.toJson(message).toByteArray())
             val r = handleMixinResponse(

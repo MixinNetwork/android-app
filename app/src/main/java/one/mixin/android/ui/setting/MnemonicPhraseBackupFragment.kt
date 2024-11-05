@@ -5,21 +5,31 @@ import android.view.View
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import blockchain.Blockchain
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupShownPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupVerifyPage
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
@@ -33,11 +43,18 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
             }
     }
 
+    @Inject
+    lateinit var tip: Tip
+
     private val binding by viewBinding(FragmentComposeBinding::bind)
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     enum class MnemonicPhraseBackupStep {
         Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify
     }
+
+    private var pin = ""
+    private var mnemonic = ""
 
     override fun onViewCreated(
         view: View,
@@ -97,13 +114,17 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                     composable(MnemonicPhraseBackupStep.Pin.name) {
                         MnemonicPhraseBackupPinPage({
                             requireActivity().onBackPressedDispatcher.onBackPressed()
-                        }, {
-                            navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
+                        }, { pin ->
+                            this@MnemonicPhraseBackupFragment.pin = pin
+                            lifecycleScope.launch {
+                                this@MnemonicPhraseBackupFragment.mnemonic = Blockchain.newMnemonic(generateRandomBytes(16))
+                                navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
+                            }
                         })
                     }
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhrase.name) {
-                        MnemonicPhraseBackupShownPage({
+                        MnemonicPhraseBackupShownPage(mnemonic.split(" "), {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
                             navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name)
@@ -114,7 +135,13 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                         MnemonicPhraseBackupVerifyPage({
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
-                            // Todo
+                            lifecycleScope.launch {
+                                // val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
+                                // val saltBase64 = tip.generateMnemonicSaltAndEncryptedSaltBase64(mnemonic, pin, seed)
+                                // Todo salt export
+                                // ExportRequest()
+                                // walletViewModel.saltExport()
+                            }
                         })
                     }
                 }

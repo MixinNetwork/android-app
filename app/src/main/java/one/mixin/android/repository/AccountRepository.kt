@@ -23,6 +23,8 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.ExportRequest
+import one.mixin.android.api.response.ExportResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
@@ -186,6 +188,15 @@ class AccountRepository
                         pinCipher.encryptPin(pin, TipBody.forUserDeactivate(verificationId)),
                         verificationId,
                     ),
+                )
+            }
+
+        suspend fun saltExport(
+            exportRequest: ExportRequest
+        ): MixinResponse<ExportResponse> =
+            withContext(Dispatchers.IO) {
+                accountService.saltExport(
+                    exportRequest
                 )
             }
 

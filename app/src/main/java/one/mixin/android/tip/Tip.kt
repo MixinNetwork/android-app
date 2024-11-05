@@ -1,6 +1,7 @@
 package one.mixin.android.tip
 
 import android.content.Context
+import blockchain.Blockchain
 import com.lambdapioneer.argon2kt.Argon2Kt
 import ed25519.Ed25519
 import one.mixin.android.Constants
@@ -169,6 +170,17 @@ class Tip
             val encryptedSalt = aesEncrypt(saltAESKey, salt)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
             return Pair(salt, aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode())
+        }
+
+        fun generateMnemonicSaltAndEncryptedSaltBase64(
+            mnemonic: String,
+            pin: String,
+            tipPriv: ByteArray,
+        ): String {
+            val saltAESKey = generateSaltAESKey(pin, tipPriv)
+            val encryptedSalt = aesEncrypt(saltAESKey, mnemonic.encodeToByteArray())
+            val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+            return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
         }
 
         suspend fun getEncryptedSalt(context: Context): ByteArray {

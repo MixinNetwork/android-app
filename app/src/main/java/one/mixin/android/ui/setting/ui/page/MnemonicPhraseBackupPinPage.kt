@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
@@ -45,17 +46,24 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.wallet.alert.AlertViewModel
+import org.bouncycastle.math.raw.Mod
 
 @Composable
-fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: () -> Unit) {
+fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var pinCode by remember { mutableStateOf("") }
+    var errorInfo by remember { mutableStateOf("") }
+    val viewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val list = listOf(
         "1",
@@ -107,13 +115,30 @@ fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: () -> Unit) {
                         )
                     }
                 }
-
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(errorInfo, modifier = Modifier.alpha(if(errorInfo.isNotBlank()) 1f else 0f), color = MixinAppTheme.colors.tipError)
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    onClick = next,
+                    onClick = {
+                        coroutineScope.launch {
+                            runCatching {
+                                viewModel.verifyPin(pinCode)
+                            }.onSuccess { response->
+                                if (response.isSuccess){
+                                    next(pinCode)
+                                } else {
+                                    errorInfo = response.errorDescription
+                                    pinCode = ""
+                                }
+                            }.onFailure { t->
+                                errorInfo = t.message ?: ""
+                                pinCode = ""
+                            }
+                        }
+                    },
                     colors =
                     ButtonDefaults.outlinedButtonColors(
                         backgroundColor = if (pinCode.length < 6) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent

@@ -14,8 +14,7 @@ class AnonymousMessage(
     val createdAt: String
 )
 
-fun AnonymousMessage.doAnonymousPOW(): AnonymousMessage {
-    val anonymousNumberDifficulty = 1
+fun AnonymousMessage.doAnonymousPOW(anonymousNumberDifficulty:Int = 1): AnonymousMessage {
     val prefix = "0".repeat(anonymousNumberDifficulty)
     val data = ByteArray(32)
 
@@ -25,7 +24,6 @@ fun AnonymousMessage.doAnonymousPOW(): AnonymousMessage {
         val messageBuf = GsonHelper.customGson.toJson(this).toByteArray()
         val hash = messageBuf.sha256()
         val hashHex = hash.toHex()
-        Timber.e("json ${GsonHelper.customGson.toJson(this)} hex:$hashHex")
         if (hashHex.startsWith(prefix)) {
             return this
         }
