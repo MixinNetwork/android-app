@@ -28,7 +28,7 @@ class RefreshDappJob : BaseJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            getBotPublicKey()
+            userRepo.getBotPublicKey(WEB3_BOT_USER_ID)
             val response = web3Service.dapps()
             if (response.isSuccess && response.data != null) {
                 val gson = GsonHelper.customGson
@@ -59,46 +59,10 @@ class RefreshDappJob : BaseJob(
                 }
                 RxBus.publish(WCChangeEvent())
             } else if (response.errorCode == 401) {
-                getBotPublicKey()
+                userRepo.getBotPublicKey(WEB3_BOT_USER_ID)
             } else {
                 delay(3000)
                 jobManager.addJobInBackground(RefreshDappJob())
             }
         }
-
-    private suspend fun getBotPublicKey() {
-        val key =
-            participantSessionDao.findBotPublicKey(
-                generateConversationId(
-                    WEB3_BOT_USER_ID,
-                    Session.getAccountId()!!,
-                ),
-                WEB3_BOT_USER_ID,
-            )
-        if (key != null) {
-            MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
-        } else {
-            val sessionResponse = userService.fetchSessionsSuspend(listOf(WEB3_BOT_USER_ID))
-            if (sessionResponse.isSuccess) {
-                val sessionData = requireNotNull(sessionResponse.data)[0]
-                participantSessionDao.insertSuspend(
-                    ParticipantSession(
-                        generateConversationId(
-                            sessionData.userId,
-                            Session.getAccountId()!!,
-                        ),
-                        sessionData.userId,
-                        sessionData.sessionId,
-                        publicKey = sessionData.publicKey,
-                    ),
-                )
-                MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
-            } else {
-                throw MixinResponseException(
-                    sessionResponse.errorCode,
-                    sessionResponse.errorDescription,
-                )
-            }
-        }
-    }
 }
