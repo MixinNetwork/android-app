@@ -17,6 +17,7 @@ class MnemonicTest {
         assertEquals(seed.hexString() ,"878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096")
         val key = Bip32ECKeyPair.generateKeyPair(seed)
         println(key.privateKey.toByteArray().hexString())
+        println(key.publicKey.toByteArray().hexString())
         assertEquals(key.privateKey.toByteArray().hexString() ,"7e56ecf5943d79e1f5f87e11c768253d7f3fcf30ae71335611e366c578b4564e")
 
         var mnemonic = "ought darted yawning apricot hold odds goblet logic loyal drying tucks atom".split(" ")

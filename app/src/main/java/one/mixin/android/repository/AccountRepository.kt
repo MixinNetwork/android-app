@@ -193,12 +193,7 @@ class AccountRepository
 
         suspend fun saltExport(
             exportRequest: ExportRequest
-        ): MixinResponse<ExportResponse> =
-            withContext(Dispatchers.IO) {
-                accountService.saltExport(
-                    exportRequest
-                )
-            }
+        ): MixinResponse<ExportResponse> = accountService.saltExport(exportRequest)
 
         suspend fun authorize(
             authorizationId: String,

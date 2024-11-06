@@ -55,8 +55,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.wallet.WalletViewModel
-import one.mixin.android.ui.wallet.alert.AlertViewModel
-import org.bouncycastle.math.raw.Mod
 
 @Composable
 fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {

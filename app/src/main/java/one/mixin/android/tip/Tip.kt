@@ -1,11 +1,12 @@
 package one.mixin.android.tip
 
 import android.content.Context
-import blockchain.Blockchain
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.lambdapioneer.argon2kt.Argon2Kt
-import com.walletconnect.util.randomBytes
 import ed25519.Ed25519
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
@@ -45,6 +46,8 @@ import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import org.bitcoinj.crypto.MnemonicCode
+import org.bitcoinj.crypto.MnemonicCode.toSeed
+import org.web3j.crypto.Bip32ECKeyPair
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -163,15 +166,51 @@ class Tip
                 }
             }
 
-        fun generateMnemonicSaltAndEncryptedSaltBase64(
-            pin: String,
-            tipPriv: ByteArray,
-        ): Pair<ByteArray, String> {
-            val mnemonic = MnemonicCode().toMnemonic(generateRandomBytes(16)).joinToString(" ").encodeToByteArray()
+        fun getMasterKey(context: Context): Bip32ECKeyPair {
+            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+            val seed = toSeed(salt.split(" "), "")
+            val masterKey = Bip32ECKeyPair.generateKeyPair(seed)
+            return masterKey
+        }
+
+        fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray): String {
+            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
-            val encryptedSalt = aesEncrypt(saltAESKey, mnemonic)
+            val encryptedSalt = aesEncrypt(saltAESKey, salt.toByteArray())
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
-            return Pair(mnemonic, aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode())
+            return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
+        }
+
+        fun generateMnemonicSaltAndStore(context: Context): String {
+            val salt = MnemonicCode().toMnemonic(generateRandomBytes(16)).joinToString(" ")
+            storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, salt)
+            return salt
+        }
+
+        private fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, mnemonic: String) {
+            val encryptedPrefs = EncryptedSharedPreferences.create(
+                context,
+                "Encrypted-Mnemonic",
+                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+
+            val encodedKey = mnemonic.toHex()
+            encryptedPrefs.edit().putString(alias, encodedKey).apply()
+        }
+
+        private fun getMnemonicFromEncryptedPreferences(context: Context, alias: String): String? {
+            val encryptedPrefs = EncryptedSharedPreferences.create(
+                context,
+                "Encrypted-Mnemonic",
+                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+
+            val encodedText = encryptedPrefs.getString(alias, null) ?: return null
+            return String(encodedText.hexStringToByteArray())
         }
 
         suspend fun getEncryptedSalt(context: Context): ByteArray {

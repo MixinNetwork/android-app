@@ -1,8 +1,5 @@
 package one.mixin.android.ui.landing.vo
 
-import com.google.common.base.Stopwatch
-import one.mixin.android.extension.sha256
-import org.bitcoinj.crypto.PBKDF2SHA512
 import java.util.zip.CRC32
 
 val MnemonicPhrases = listOf(

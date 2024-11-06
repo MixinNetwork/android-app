@@ -2,28 +2,22 @@ package one.mixin.android.ui.setting.ui.page
 
 import PageScaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.landing.vo.MnemonicPhrases
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
-import kotlin.random.Random
 
 @Composable
-fun MnemonicPhraseBackupVerifyPage(mnemonicList:List<String>,pop: () -> Unit, next: (List<String>) -> Unit) {
+fun MnemonicPhraseBackupVerifyPage(mnemonicList: List<String>, pop: () -> Unit, next: (List<String>) -> Unit, tip: Tip, pin: String) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Mnemonic_Phrase),
             verticalScrollable = false,
             pop = pop,
         ) {
-            MnemonicPhraseInput(MnemonicState.Verify, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) })
+            MnemonicPhraseInput(MnemonicState.Verify, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) }, tip, pin)
         }
     }
 }

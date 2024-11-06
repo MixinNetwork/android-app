@@ -8,7 +8,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -22,6 +24,7 @@ import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.initFromSeedAndSign
+import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
@@ -37,6 +40,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.Session.getEd25519KeyPair
 import one.mixin.android.session.decryptPinToken
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
@@ -50,6 +54,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.CaptchaView
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
@@ -70,6 +75,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private var errorInfo: String? = null
+
+    @Inject
+    lateinit var tip: Tip
 
     private val words by lazy {
         requireArguments().getStringArrayList(ARGS_MNEMONIC_PHRASE)
@@ -100,13 +108,16 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         lifecycleScope.launch {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = key ?: generateEd25519KeyPair()
-            val publicKey = sessionKey.publicKey
-            val message = AnonymousMessage(createdAt = nowInUtc()).doAnonymousPOW()
+            val salt = tip.generateMnemonicSaltAndStore(requireContext())
+            val edKey = newKeyPairFromMnemonic(salt)
+            val message = withContext(Dispatchers.IO) {
+                AnonymousMessage(createdAt = nowInUtc()).doAnonymousPOW()
+            }
             val messageHex = GsonHelper.customGson.toJson(message).toHex()
-            val signature = initFromSeedAndSign(sessionKey.privateKey.toTypedArray().toByteArray(), GsonHelper.customGson.toJson(message).toByteArray())
+            val signature = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), GsonHelper.customGson.toJson(message).toByteArray())
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(publicKey.hexString(), messageHex, signature.hexString())
+                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signature.hexString())
                 },
 
                 successBlock = { r ->
@@ -122,7 +133,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
-                        initAndLoadCaptcha(sessionKey, publicKey.hexString(), messageHex, signature.hexString())
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString())
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                         mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
@@ -132,13 +143,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                createAccount(sessionKey, r.data!!.id)
+                createAccount(sessionKey, edKey, r.data!!.id)
             }
         }
     }
 
     private var captchaView: CaptchaView? = null
-    private fun initAndLoadCaptcha(key: EdKeyPair, publicKeyHex: String, messageHex: String, signatureHex: String) =
+    private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -152,7 +163,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                             override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                                 val t = value.second
-                                reSend(key, publicKeyHex, messageHex, signatureHex, if (!value.first.isG()) t else null, if (value.first.isG()) t else null)
+                                reSend(sessionKey, edKey, messageHex, signatureHex, if (!value.first.isG()) t else null, if (value.first.isG()) t else null)
                             }
                         },
                     )
@@ -161,11 +172,11 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
         }
 
-    private fun reSend(key: EdKeyPair, publicKeyHex: String, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null) {
+    private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null) {
         lifecycleScope.launch {
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(publicKeyHex, messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse)
+                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse)
                 },
 
                 successBlock = { r ->
@@ -187,18 +198,18 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                createAccount(key, r.data!!.id)
+                createAccount(sessionKey, edKey, r.data!!.id)
             } else {
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Initial)
             }
         }
     }
 
-    private fun createAccount(key: EdKeyPair, verificationId: String) {
+    private fun createAccount(sessionKey: EdKeyPair, edKey: EdKeyPair,verificationId: String) {
         lifecycleScope.launch {
             SignalProtocol.initSignal(requireContext().applicationContext)
             val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
-            val sessionSecret = key.publicKey.base64Encode()
+            val sessionSecret = sessionKey.publicKey.base64Encode()
             val r = handleMixinResponse(
                 invokeNetwork = {
                     mobileViewModel.create(
@@ -206,7 +217,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         AccountRequest(
                             purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
                             session_secret = sessionSecret,
-                            signature_hex = initFromSeedAndSign(key.privateKey.toTypedArray().toByteArray(), verificationId.toByteArray()).toHex(),
+                            signature_hex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), verificationId.toByteArray()).toHex(),
                             registration_id = registrationId,
                         )
                     )
@@ -239,7 +250,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     clearDatabase(requireContext())
                     defaultSharedPreferences.clear()
                 }
-                val privateKey = key.privateKey
+                val privateKey = sessionKey.privateKey
                 val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
                 Session.storeEd25519Seed(privateKey.base64Encode())
                 Session.storePinToken(pinToken.base64Encode())
