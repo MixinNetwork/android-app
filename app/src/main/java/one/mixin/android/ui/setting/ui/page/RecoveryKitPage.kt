@@ -62,7 +62,7 @@ fun RecoveryKitPage(phoneClick: () -> Unit, mnemonicPhraseClick: () -> Unit, rec
                             .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Add)
                     )
                     ClickItem(modifier = Modifier.clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase),
-                        if (Session.exportedSalt()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup)
+                        if (Session.saltExported()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup)
                     )
                     ClickItem(
                         modifier = Modifier

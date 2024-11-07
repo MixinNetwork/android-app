@@ -1812,4 +1812,5 @@
     <string name="add_recovery_contact_before_instruction_1">要添加的恢复联系人已下载并登录了 Mixin Messenger。</string>
     <string name="add_recovery_contact_before_instruction_2">要添加的恢复联系人保持 Mixin Messenger 在线或者正在与您面对面。</string>
     <string name="add_recovery_contact_before_instruction_3">要添加的恢复联系人已添加当前账号（%1$s）为联系人，否则对方可能无法收到验证码。</string>
+    <string name="Invalid_mnemonic">Invalid mnemonic</string>
 </resources>

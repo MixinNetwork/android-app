@@ -43,6 +43,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.vo.Account
 import one.mixin.eddsa.Ed25519Sign
+import org.threeten.bp.Instant
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -104,9 +105,11 @@ object Session {
         return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)
     }
 
-    fun exportedSalt():Boolean {
+    fun saltExported(): Boolean {
         val account = getAccount()
-        return (account?.exportedSalt == true).not() // todo
+        val exportedSaltAt = account?.exportedSaltAt ?: return false
+        val baseInstant = Instant.parse("0001-01-01T00:00:00Z")
+        return Instant.parse(exportedSaltAt).isAfter(baseInstant)
     }
 
     fun clearAccount() {

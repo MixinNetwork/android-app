@@ -17,8 +17,10 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.toast
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.vo.mnemonicChecksumIndex
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
@@ -136,9 +138,9 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                     composable(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name) {
                         MnemonicPhraseBackupVerifyPage(mnemonic, {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
-                        }, { inputs ->
-                            // Todo
-                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }, {
+                            toast(R.string.Backup_success)
+                            MainActivity.reopen(requireContext())
                         }, tip, pin)
                     }
                 }

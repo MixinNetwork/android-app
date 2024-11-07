@@ -261,11 +261,10 @@ fun MnemonicPhraseInput(
                                     loading = true
                                     if (mnemonicList != inputs) {
                                         // Todo
-                                        errorInfo = "Invalid mnemonic"
+                                        errorInfo = context.getString(R.string.Invalid_mnemonic)
                                     } else {
                                         val selfId = Session.getAccountId()!!
-                                        val salt = tip!!.generateMnemonicSaltAndStore(context)
-                                        val edKey = newKeyPairFromMnemonic(salt)
+                                        val edKey = tip!!.getMnemonicEdKey(context)
                                         val r = walletViewModel.saltExport(
                                             ExportRequest(
                                                 publicKey = edKey.publicKey.toHex(),

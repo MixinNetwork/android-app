@@ -16,10 +16,12 @@ import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipService
 import one.mixin.android.crypto.BasePinCipher
+import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
+import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.event.TipEvent
@@ -181,10 +183,17 @@ class Tip
             return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
         }
 
+        // Each user can only generate once
         fun generateMnemonicSaltAndStore(context: Context): String {
             val salt = MnemonicCode().toMnemonic(generateRandomBytes(16)).joinToString(" ")
             storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, salt)
             return salt
+        }
+
+        fun getMnemonicEdKey(context: Context): EdKeyPair {
+            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+            val edKey = newKeyPairFromMnemonic(salt)
+            return edKey
         }
 
         private fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, mnemonic: String) {

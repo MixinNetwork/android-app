@@ -60,8 +60,8 @@ data class Account(
     val membership: Membership?,
     @SerializedName("system")
     val system: AppVersion?,
-    @SerializedName("exported_salt")
-    val exportedSalt: Boolean?
+    @SerializedName("exported_salt_at")
+    val exportedSaltAt: String?
 )
 
 fun Account.toUser(): User {

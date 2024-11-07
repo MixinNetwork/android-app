@@ -13,7 +13,6 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.Account
 import one.mixin.android.widget.BulletinView
-import timber.log.Timber
 
 class BulletinBoard {
     private val bulletins = mutableListOf<Bulletin>()
@@ -229,7 +228,7 @@ class BackupMnemonicPhraseBulletin(
     private val context = bulletinView.context
 
     override fun show(chain: Bulletin.Chain): Boolean {
-        val exported = (account?.exportedSalt ?: true)
+        val exported = Session.saltExported()
         if (!exported) {
             bulletinView.setTypeAndCallback(BulletinView.Type.BackupMnemonicPhrase, bulletinMnemonicPhraseCallback)
         }
