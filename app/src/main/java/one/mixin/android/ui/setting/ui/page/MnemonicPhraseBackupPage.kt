@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
@@ -58,7 +59,15 @@ fun MnemonicPhraseBackupPage(pop: () -> Unit, next: () -> Unit) {
                         .padding(20.dp), horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(stringResource(R.string.Backup_Mnemonic_Phrase), fontSize = 16.sp, color = MixinAppTheme.colors.textMinor)
+                    Text(
+                        stringResource(
+                            if (Session.saltExported()) {
+                                R.string.Show_Mnemonic_Phrase
+                            } else {
+                                R.string.Backup_Mnemonic_Phrase
+                            }
+                        ), fontSize = 16.sp, color = MixinAppTheme.colors.textMinor
+                    )
                     Icon(
                         tint = Color.Unspecified,
                         contentDescription = null,

@@ -11,6 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -99,17 +100,23 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             }
         }
         if (!words.isNullOrEmpty()) {
-            // Todo covert
-            anonymousRequest(getEd25519KeyPair())
+            anonymousRequest(words)
         }
     }
 
-    private fun anonymousRequest(key: EdKeyPair? = null) {
+    private fun anonymousRequest(words: List<String>? = null) {
         lifecycleScope.launch {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
-            val sessionKey = key ?: generateEd25519KeyPair()
-            val salt = tip.generateMnemonicSaltAndStore(requireContext())
-            val edKey = newKeyPairFromMnemonic(salt)
+            val sessionKey = generateEd25519KeyPair()
+            val edKey = if (words != null) {
+                val mnemonic = words.joinToString(" ")
+                tip.storeMnemonicInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, mnemonic)
+                newKeyPairFromMnemonic(mnemonic)
+            } else {
+                val mnemonic = tip.generateMnemonicSaltAndStore(requireContext())
+                newKeyPairFromMnemonic(mnemonic)
+            }
+            Timber.e("PublicKey:${edKey.publicKey.hexString()}")
             val message = withContext(Dispatchers.IO) {
                 AnonymousMessage(createdAt = nowInUtc()).doAnonymousPOW()
             }

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.landing.components
 
+import android.content.ClipData
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,11 +53,13 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.session.Session.getEd25519KeyPair
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.landing.vo.MnemonicPhrases
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.util.ErrorHandler
@@ -76,10 +79,6 @@ fun MnemonicPhraseInput(
     val context = LocalContext.current
     val walletViewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
-    // test code todo remove
-    LaunchedEffect(state) {
-        inputs = mnemonicList
-    }
     MixinAppTheme {
         Column(
             modifier = Modifier
@@ -149,10 +148,6 @@ fun MnemonicPhraseInput(
                                     value = inputs[index],
                                     onValueChange = { newText ->
                                         inputs = inputs.toMutableList().also { it[index] = newText }
-                                        if (inputs.all { it.isNotEmpty() }) {
-                                            // todo check
-                                            // onComplete(inputs)
-                                        }
                                     },
                                     singleLine = true,
                                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
@@ -179,6 +174,20 @@ fun MnemonicPhraseInput(
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    val clipboard = context.getClipboardManager()
+                                    val clipData: ClipData? = clipboard.primaryClip
+
+                                    if (clipData != null && clipData.itemCount > 0) {
+                                        val pastedText = clipData.getItemAt(0).text.toString()
+                                        val words = pastedText.split(" ")
+                                        if (words.size == 13 && words.all { MnemonicPhrases.contains(it) }) {
+                                            inputs = words
+                                        } else {
+                                            errorInfo = context.getString(R.string.Invalid_mnemonic)
+                                        }
+                                    }
+                                }
                                 .padding(8.dp)
                         ) {
                             if (state == MnemonicState.Input) {

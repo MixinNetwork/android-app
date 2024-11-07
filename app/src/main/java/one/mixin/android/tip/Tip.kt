@@ -169,7 +169,10 @@ class Tip
             }
 
         fun getMasterKey(context: Context): Bip32ECKeyPair {
-            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+            var salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+            if (salt == null) { // Register safe must generate mnemonic
+                salt = generateMnemonicSaltAndStore(context)
+            }
             val seed = toSeed(salt.split(" "), "")
             val masterKey = Bip32ECKeyPair.generateKeyPair(seed)
             return masterKey
@@ -196,7 +199,21 @@ class Tip
             return edKey
         }
 
-        private fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, mnemonic: String) {
+        suspend fun getMnemonicOrFetchFromSafe(context: Context, pin: String): List<String> {
+            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+            if (salt != null) {
+                return salt.split(" ")
+            } else {
+                val tipPriv = getOrRecoverTipPriv(context, pin).getOrThrow()
+                val salt = getSalt(getEncryptedSalt(context), pin, tipPriv)
+                // Todo old user salt 32 bytes
+                val mn = String(salt)
+                storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, mn)
+                return mn.split(" ")
+            }
+        }
+
+        fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, mnemonic: String) {
             val encryptedPrefs = EncryptedSharedPreferences.create(
                 context,
                 "Encrypted-Mnemonic",
@@ -207,6 +224,18 @@ class Tip
 
             val encodedKey = mnemonic.toHex()
             encryptedPrefs.edit().putString(alias, encodedKey).apply()
+        }
+
+        fun clearMnemonic(context: Context, alias: String){
+            val encryptedPrefs = EncryptedSharedPreferences.create(
+                context,
+                "Encrypted-Mnemonic",
+                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+
+            encryptedPrefs.edit().remove(alias).apply()
         }
 
         private fun getMnemonicFromEncryptedPreferences(context: Context, alias: String): String? {

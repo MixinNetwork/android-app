@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -215,6 +216,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                                 requireArguments().getString(ARGS_PHONE_NUM)
                                     ?: return@withContext
                             viewModel.updatePhone(a.userId, phone)
+                            tip.clearMnemonic(requireContext(), Constants.Tip.MNEMONIC)
                             a.phone = phone
                             Session.storeAccount(a)
                         }

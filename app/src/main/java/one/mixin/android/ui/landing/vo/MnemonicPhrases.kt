@@ -2053,7 +2053,7 @@ val MnemonicPhrases = listOf(
     "zoo"
 )
 
-fun mnemonicChecksumIndex(words: List<String>, prefixLen: Int): Int {
+fun mnemonicChecksumIndex(words: List<String>, prefixLen: Int = 3): Int {
     val trimmedWords = StringBuilder()
     for (word in words) {
         if (word.length < prefixLen) {

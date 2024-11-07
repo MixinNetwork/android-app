@@ -12,15 +12,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.vo.mnemonicChecksumIndex
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
@@ -50,7 +51,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     private val walletViewModel by viewModels<WalletViewModel>()
 
     enum class MnemonicPhraseBackupStep {
-        Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify
+        Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify, MnemonicPhraseDisplay
     }
 
     private var pin = ""
@@ -99,7 +100,11 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                         MnemonicPhraseBackupPage({
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
-                            navController.navigate(MnemonicPhraseBackupStep.Before.name)
+                            if (Session.saltExported()) {
+                                navController.navigate(MnemonicPhraseBackupStep.Pin.name)
+                            } else {
+                                navController.navigate(MnemonicPhraseBackupStep.Before.name)
+                            }
                         })
                     }
 
@@ -117,13 +122,22 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                         }, { pin ->
                             this@MnemonicPhraseBackupFragment.pin = pin
                             lifecycleScope.launch {
-                                val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-                                val salt = tip.getSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
-                                this@MnemonicPhraseBackupFragment.mnemonic = String(salt) // Todo upload 13 words
-                                    .split(" ")
-                                    .let { list -> list + list[mnemonicChecksumIndex(list, 3)] }
-                                navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
+                                mnemonic = tip.getMnemonicOrFetchFromSafe(requireContext(), pin)
+                                    .let { list -> list + list[mnemonicChecksumIndex(list)] }
+                                if (Session.saltExported()) {
+                                    navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name)
+                                } else {
+                                    navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
+                                }
                             }
+                        })
+                    }
+
+                    composable(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name) {
+                        MnemonicPhraseBackupShownPage(mnemonic, {
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }, {
+                            requireActivity().finish()
                         })
                     }
 
@@ -140,7 +154,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
                             toast(R.string.Backup_success)
-                            MainActivity.reopen(requireContext())
+                            requireActivity().finish()
                         }, tip, pin)
                     }
                 }
