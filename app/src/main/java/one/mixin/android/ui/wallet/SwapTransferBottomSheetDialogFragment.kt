@@ -290,10 +290,10 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 text =
                                 errorInfo ?: stringResource(
                                     id =
-                                    if (step == Step.Done) {
-                                        R.string.swap_message_success
-                                    } else {
-                                        R.string.swap_inner_desc
+                                    when (step) {
+                                        Step.Done -> R.string.swap_message_success
+                                        Step.Error -> R.string.Data_error
+                                        else -> R.string.swap_inner_desc
                                     },
                                 ),
                                 textAlign = TextAlign.Center,
@@ -507,7 +507,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (t.isUtxoException()) {
             t.getUtxoExceptionMsg(requireContext())
         } else {
-            t.message
+            t.message ?: t.toString()
         }
         reportException("$TAG handleException", t)
         step = Step.Error
