@@ -367,7 +367,7 @@ class UserRepository
         }
 
         @Suppress("KotlinConstantConditions")
-        suspend fun getBotPublicKey(botId: String) {
+        suspend fun getBotPublicKey(botId: String, force: Boolean) {
             if (botId != ROUTE_BOT_USER_ID && botId != WEB3_BOT_USER_ID) return
 
             val key =
@@ -378,7 +378,7 @@ class UserRepository
                     ),
                     botId,
                 )
-            if (key != null) {
+            if (key != null && !force) {
                 if (botId == ROUTE_BOT_USER_ID) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
                 } else if (botId == WEB3_BOT_USER_ID) {
