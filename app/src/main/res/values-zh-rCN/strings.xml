@@ -1401,7 +1401,7 @@
     <string name="Withdrawal_Failed">提现失败</string>
     <string name="Multisig_Signing_Failed">多签交易失败</string>
     <string name="Multisig_Signing_Successful">多签交易成功</string>
-    <string name="multisig_signing_successful_description">这笔交易已经成功收集到足够的签名，当前签名自动自动忽略。</string>
+    <string name="multisig_signing_successful_description">这笔交易已经成功收集到足够的签名，当前签名自动忽略。</string>
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
