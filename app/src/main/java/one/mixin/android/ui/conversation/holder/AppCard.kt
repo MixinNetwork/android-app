@@ -165,7 +165,7 @@ val Int.textDp: TextUnit
     @Composable get() = this.textDp(density = LocalDensity.current)
 
 private const val URL_PATTERN = "\\b[a-zA-Z+]+:(?://)?[\\w-]+(?:\\.[\\w-]+)*(?:[\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?\\b/?"
-private const val BOT_PATTERN = "(?<=^|\\D)(7000|7000\\d{6})(?=\$|\\D)"
+private const val BOT_PATTERN = "(?<=^|\\D)7000\\d{6}(?=$|\\D)"
 
 private const val LONG_CLICK_TIME = 200L
 
