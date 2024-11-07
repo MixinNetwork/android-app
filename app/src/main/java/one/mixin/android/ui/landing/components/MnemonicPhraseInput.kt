@@ -4,7 +4,6 @@ import android.content.ClipData
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,10 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -26,7 +25,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -44,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.font.FontWeight.Companion.W500
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,17 +52,13 @@ import one.mixin.android.R
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.initFromSeedAndSign
-import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.hexString
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
-import one.mixin.android.session.Session.getEd25519KeyPair
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.landing.vo.MnemonicPhrases
 import one.mixin.android.ui.wallet.WalletViewModel
-import one.mixin.android.ui.wallet.alert.AlertViewModel
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 
 @Composable
@@ -82,6 +78,7 @@ fun MnemonicPhraseInput(
     MixinAppTheme {
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -113,136 +110,129 @@ fun MnemonicPhraseInput(
             )
 
             Spacer(modifier = Modifier.height(44.dp))
-
-            LazyVerticalGrid(
-                modifier = Modifier.fillMaxWidth(),
-                columns = GridCells.Fixed(3),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(15) { index ->
-                    if (index < 13) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MixinAppTheme.colors.backgroundWindow)
-                                .padding(8.dp)
-                        ) {
-                            if (state == MnemonicState.Display) {
-                                Row {
-                                    Text(
-                                        "${index + 1}",
-                                        color = MixinAppTheme.colors.textMinor,
-                                        fontSize = 13.sp,
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(
-                                        mnemonicList.getOrNull(index) ?: "",
-                                        color = MixinAppTheme.colors.textPrimary,
-                                        fontSize = 13.sp,
-                                        fontWeight = W500
-                                    )
-                                }
-                            } else {
-                                BasicTextField(
-                                    value = inputs[index],
-                                    onValueChange = { newText ->
-                                        inputs = inputs.toMutableList().also { it[index] = newText }
-                                    },
-                                    singleLine = true,
-                                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                                    textStyle = LocalTextStyle.current.copy(
-                                        color = MixinAppTheme.colors.textMinor,
-                                        fontSize = 13.sp,
-                                        fontWeight = W500
-                                    ),
-                                    decorationBox = { innerTextField ->
-                                        Row {
-                                            Text(
-                                                "${index + 1}",
-                                                color = MixinAppTheme.colors.textPrimary,
-                                                fontSize = 13.sp,
-                                            )
-                                            Spacer(Modifier.width(8.dp))
-                                            innerTextField()
-                                        }
-                                    }
+            InputGrid(15, 10.dp) { index ->
+                if (index < 13) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MixinAppTheme.colors.backgroundWindow)
+                            .padding(8.dp)
+                    ) {
+                        if (state == MnemonicState.Display) {
+                            Row {
+                                Text(
+                                    "${index + 1}",
+                                    color = MixinAppTheme.colors.textMinor,
+                                    fontSize = 13.sp,
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    mnemonicList.getOrNull(index) ?: "",
+                                    color = MixinAppTheme.colors.textPrimary,
+                                    fontSize = 13.sp,
+                                    fontWeight = W500
                                 )
                             }
+                        } else {
+                            BasicTextField(
+                                value = inputs[index],
+                                onValueChange = { newText ->
+                                    inputs = inputs.toMutableList().also { it[index] = newText }
+                                },
+                                singleLine = true,
+                                cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                                textStyle = LocalTextStyle.current.copy(
+                                    color = MixinAppTheme.colors.textMinor,
+                                    fontSize = 13.sp,
+                                    fontWeight = W500
+                                ),
+                                decorationBox = { innerTextField ->
+                                    Row {
+                                        Text(
+                                            "${index + 1}",
+                                            color = MixinAppTheme.colors.textPrimary,
+                                            fontSize = 13.sp,
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        innerTextField()
+                                    }
+                                }
+                            )
                         }
-                    } else if (index == 13) {
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .clickable {
+                    }
+                } else if (index == 13) {
+                    Row(
+                        modifier = Modifier
+                            .alpha(if (state == MnemonicState.Input) 1f else 0f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                if (state == MnemonicState.Input) {
                                     val clipboard = context.getClipboardManager()
                                     val clipData: ClipData? = clipboard.primaryClip
-
                                     if (clipData != null && clipData.itemCount > 0) {
                                         val pastedText = clipData.getItemAt(0).text.toString()
                                         val words = pastedText.split(" ")
-                                        if (words.size == 13 && words.all { MnemonicPhrases.contains(it) }) {
+                                        if (words.size == 13 && isMnemonicValid(words.subList(0, 12))) {
                                             inputs = words
                                         } else {
                                             errorInfo = context.getString(R.string.Invalid_mnemonic)
                                         }
                                     }
                                 }
-                                .padding(8.dp)
-                        ) {
-                            if (state == MnemonicState.Input) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_paste),
-                                    contentDescription = null,
-                                    tint = MixinAppTheme.colors.textPrimary,
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    stringResource(R.string.Paste), fontSize = 12.sp,
-                                    fontWeight = W500,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                )
                             }
-                        }
-                    } else {
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .clickable {
-                                    if (state == MnemonicState.Input || state == MnemonicState.Verify) {
-                                        inputs = inputs.map { "" }
-                                    } else if (state == MnemonicState.Display) {
-                                        val clipboard = context.getClipboardManager()
-                                        clipboard.setPrimaryClip(ClipData.newPlainText(null, mnemonicList.joinToString("")))
-                                    }
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_paste),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.textPrimary,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.Paste), fontSize = 12.sp,
+                            fontWeight = W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                                    inputs = inputs.map { "" }
+                                } else if (state == MnemonicState.Display) {
+                                    val clipboard = context.getClipboardManager()
+                                    clipboard.setPrimaryClip(ClipData.newPlainText(null, mnemonicList.joinToString(" ")))
                                 }
-                                .padding(8.dp)
-                        ) {
-                            if (state == MnemonicState.Input || state == MnemonicState.Verify) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_action_delete),
-                                    contentDescription = null,
-                                    tint = MixinAppTheme.colors.textPrimary,
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    stringResource(R.string.Delete), fontSize = 12.sp,
-                                    fontWeight = W500,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                )
-                            } else if (state == MnemonicState.Display) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_copy_gray),
-                                    contentDescription = null,
-                                    tint = MixinAppTheme.colors.textPrimary,
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    stringResource(R.string.Copy), fontSize = 12.sp,
-                                    fontWeight = W500,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                )
                             }
+                            .padding(8.dp)
+                    ) {
+                        if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_action_delete),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                stringResource(R.string.Delete), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+                        } else if (state == MnemonicState.Display) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_copy_gray),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                stringResource(R.string.Copy), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
                         }
                     }
                 }
@@ -260,6 +250,7 @@ fun MnemonicPhraseInput(
                     text = stringResource(R.string.mnemonic_phrase_tip_2), fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                 )
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             if (errorInfo.isNotBlank()) {
@@ -269,6 +260,7 @@ fun MnemonicPhraseInput(
                     text = errorInfo, fontSize = 14.sp,
                     color = MixinAppTheme.colors.tipError,
                 )
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -286,7 +278,6 @@ fun MnemonicPhraseInput(
                                 runCatching {
                                     loading = true
                                     if (mnemonicList != inputs) {
-                                        // Todo
                                         errorInfo = context.getString(R.string.Invalid_mnemonic)
                                     } else {
                                         val selfId = Session.getAccountId()!!
@@ -299,12 +290,15 @@ fun MnemonicPhraseInput(
                                             )
                                         )
 
-                                        if (!r.isSuccess) {
-                                            errorInfo = context.getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                                        errorInfo = if (!r.isSuccess) {
+                                            context.getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                                        } else {
+                                            ""
                                         }
                                     }
                                 }.onSuccess {
                                     loading = false
+                                    Session.storeAccount(Session.getAccount()!!.copy(exportedSaltAt = nowInUtc()))
                                     if (errorInfo.isBlank()) onComplete.invoke(inputs)
                                 }.onFailure {
                                     errorInfo = it.message ?: ""
@@ -346,6 +340,36 @@ fun MnemonicPhraseInput(
             }
 
             Spacer(modifier = Modifier.height(30.dp))
+        }
+    }
+}
+
+@Composable
+fun InputGrid(
+    size: Int,
+    spacing: Dp,
+    content: @Composable (index: Int) -> Unit
+) {
+    Column {
+        for (rowIndex in 0 until (size + 2) / 3) {
+            if (rowIndex > 0) {
+                Spacer(modifier = Modifier.height(spacing))
+            }
+            Row {
+                for (columnIndex in 0 until 3) {
+                    val index = rowIndex * 3 + columnIndex
+                    if (columnIndex > 0) {
+                        Spacer(modifier = Modifier.width(spacing))
+                    }
+                    if (index < size) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            content(index)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
         }
     }
 }

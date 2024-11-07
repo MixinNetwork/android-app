@@ -21,11 +21,13 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putLong
@@ -541,6 +543,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val edKey = tip.getMnemonicEdKey(requireContext())
             val registerResp =
                 viewModel.registerPublicKey(
                     registerRequest =
@@ -549,6 +552,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             signature = Session.getRegisterSignature(selfId, spendSeed),
                             pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
                             salt = saltBase64,
+                            saltPublicHex = edKey.publicKey.hexString(),
+                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfId.toByteArray()).hexString()
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {

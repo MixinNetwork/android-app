@@ -1,8 +1,8 @@
 package one.mixin.android.crypto.mnemonic
 
+import one.mixin.android.crypto.toSeed
+import one.mixin.android.crypto.mnemonicChecksumIndex
 import one.mixin.android.extension.hexString
-import one.mixin.android.ui.landing.vo.mnemonicChecksumIndex
-import org.bitcoinj.crypto.MnemonicCode.toSeed
 import org.junit.Test
 import org.web3j.crypto.Bip32ECKeyPair
 import kotlin.test.assertEquals

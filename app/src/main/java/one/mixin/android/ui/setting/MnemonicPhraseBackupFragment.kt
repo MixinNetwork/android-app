@@ -22,13 +22,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.landing.vo.mnemonicChecksumIndex
+import one.mixin.android.crypto.mnemonicChecksumIndex
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupShownPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupVerifyPage
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.viewBinding
 import javax.inject.Inject
 

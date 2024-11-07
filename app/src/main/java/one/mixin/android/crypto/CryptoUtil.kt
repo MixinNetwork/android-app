@@ -14,7 +14,6 @@ import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
-import org.bitcoinj.crypto.MnemonicCode.toSeed
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.web3j.crypto.Bip32ECKeyPair
@@ -82,7 +81,7 @@ fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
 }
 
 fun newKeyPairFromMnemonic(mnemonic: String): EdKeyPair {
-    val seed = toSeed(mnemonic.split(" "), "")
+    val seed = toSeed(mnemonic.split(" ").subList(0, 12), "")
     val masterKey = Bip32ECKeyPair.generateKeyPair(seed)
     val edKeySeed = masterKey.privateKey.toByteArray().let {
         if (it.size == 33) {
