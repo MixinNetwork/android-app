@@ -48,7 +48,6 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     lateinit var tip: Tip
 
     private val binding by viewBinding(FragmentComposeBinding::bind)
-    private val walletViewModel by viewModels<WalletViewModel>()
 
     enum class MnemonicPhraseBackupStep {
         Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify, MnemonicPhraseDisplay

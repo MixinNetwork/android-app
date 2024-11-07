@@ -30,6 +30,7 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceString
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.remove
@@ -45,6 +46,7 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
+import one.mixin.android.ui.landing.vo.MnemonicPhrases
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import org.bitcoinj.crypto.MnemonicCode
@@ -52,6 +54,7 @@ import org.bitcoinj.crypto.MnemonicCode.toSeed
 import org.web3j.crypto.Bip32ECKeyPair
 import timber.log.Timber
 import java.io.IOException
+import java.math.BigInteger
 import javax.inject.Inject
 
 class Tip
@@ -206,10 +209,27 @@ class Tip
             } else {
                 val tipPriv = getOrRecoverTipPriv(context, pin).getOrThrow()
                 val salt = getSalt(getEncryptedSalt(context), pin, tipPriv)
-                // Todo old user salt 32 bytes
+                if (salt.size == 32){ // legend user salt 32 bytes
+                    val mn =  legendSaltToMnemonic(salt)
+                    storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, mn.joinToString(" "))
+                    return mn
+                }
                 val mn = String(salt)
                 storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, mn)
                 return mn.split(" ")
+            }
+
+        }
+
+        private fun legendSaltToMnemonic(salt: ByteArray): List<String> {
+            require(salt.size == 32) { "Input ByteArray must be 32 bytes long." }
+            val hexString = salt.hexString()
+            val chunkedList = hexString.chunked(5)
+            val resultList = chunkedList.subList(0, 11).toMutableList()
+            val mergedItem = chunkedList[11] + chunkedList[12]
+            resultList.add(mergedItem)
+            return resultList.map { BigInteger(it, 16).mod(BigInteger.valueOf(2048)).toInt()  }.map { index->
+                MnemonicPhrases[index]
             }
         }
 
@@ -274,7 +294,7 @@ class Tip
                 return argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
             }
 
-        fun getSalt(
+        private fun getSalt(
             encryptedSalt: ByteArray,
             pin: String,
             tipPriv: ByteArray,

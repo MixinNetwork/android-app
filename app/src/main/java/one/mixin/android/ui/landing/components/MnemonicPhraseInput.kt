@@ -209,7 +209,12 @@ fun MnemonicPhraseInput(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
-                                    inputs = inputs.map { "" }
+                                    if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                                        inputs = inputs.map { "" }
+                                    } else if (state == MnemonicState.Display) {
+                                        val clipboard = context.getClipboardManager()
+                                        clipboard.setPrimaryClip(ClipData.newPlainText(null, mnemonicList.joinToString("")))
+                                    }
                                 }
                                 .padding(8.dp)
                         ) {
@@ -222,6 +227,18 @@ fun MnemonicPhraseInput(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     stringResource(R.string.Delete), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            } else if (state == MnemonicState.Display) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_copy_gray),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.Copy), fontSize = 12.sp,
                                     fontWeight = W500,
                                     color = MixinAppTheme.colors.textPrimary,
                                 )
