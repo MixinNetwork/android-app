@@ -21,9 +21,11 @@ import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
+import one.mixin.android.crypto.getMnemonicFromEncryptedPreferences
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.storeMnemonicInEncryptedPreferences
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.event.TipEvent
@@ -32,7 +34,6 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceString
-import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.remove
@@ -50,11 +51,9 @@ import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
-import org.bitcoinj.crypto.MnemonicCode
 import org.web3j.crypto.Bip32ECKeyPair
 import timber.log.Timber
 import java.io.IOException
-import java.math.BigInteger
 import javax.inject.Inject
 
 class Tip
@@ -172,11 +171,11 @@ class Tip
             }
 
         fun getMasterKey(context: Context): Bip32ECKeyPair {
-            var salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
-            if (salt == null) { // Register safe must generate mnemonic
-                salt = generateMnemonicSaltAndStore(context)
+            var entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+            if (entropy == null) { // Register safe must generate mnemonic
+                entropy = generateEntropyAndStore(context)
             }
-            val seed = toSeed(salt.split(" "), "")
+            val seed = toSeed(toMnemonic(entropy).split(" "), "")
             val masterKey = Bip32ECKeyPair.generateKeyPair(seed)
             return masterKey
         }
@@ -184,92 +183,35 @@ class Tip
         fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray): String {
             val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
-            val encryptedSalt = aesEncrypt(saltAESKey, salt.toByteArray())
+            val encryptedSalt = aesEncrypt(saltAESKey, salt)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
             return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
         }
 
         // Each user can only generate once
-        fun generateMnemonicSaltAndStore(context: Context): String {
-            val salt = toMnemonic(generateRandomBytes(16))
-            storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, salt)
-            return salt
+        fun generateEntropyAndStore(context: Context): ByteArray {
+            val entropy = generateRandomBytes(16)
+            storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
+            return entropy
         }
 
         fun getMnemonicEdKey(context: Context): EdKeyPair {
-            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
-            val edKey = newKeyPairFromMnemonic(salt)
+            val entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+            val edKey = newKeyPairFromMnemonic(toMnemonic(entropy))
             return edKey
         }
 
         suspend fun getMnemonicOrFetchFromSafe(context: Context, pin: String): List<String> {
-            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
-            if (salt != null) {
-                return salt.split(" ")
+            val entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+            if (entropy != null) {
+                return toMnemonic(entropy).split(" ")
             } else {
                 val tipPrivateKey = getOrRecoverTipPriv(context, pin).getOrThrow()
-                val safeSalt = getSalt(getEncryptedSalt(context), pin, tipPrivateKey)
-                if (safeSalt.size == 32){ // legacy user salt 32 bytes
-                    val mn =  legendSaltToMnemonic(safeSalt)
-                    storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, mn.joinToString(" "))
-                    return mn
-                }
-                val mn = String(safeSalt)
-                storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, mn)
+                val safeEntropy = getSalt(getEncryptedSalt(context), pin, tipPrivateKey)
+                val mn = toMnemonic(safeEntropy) // legacy user salt 32 bytes
+                storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
                 return mn.split(" ")
             }
-        }
-
-        private fun legendSaltToMnemonic(salt: ByteArray): List<String> {
-            require(salt.size == 32) { "Input ByteArray must be 32 bytes long." }
-            val hexString = salt.hexString()
-            val chunkedList = hexString.chunked(5)
-            val resultList = chunkedList.subList(0, 11).toMutableList()
-            val mergedItem = chunkedList[11] + chunkedList[12]
-            resultList.add(mergedItem)
-
-            return resultList.map {
-                val index = BigInteger(it, 16).mod(MnemonicCode.INSTANCE.wordList.size.toBigInteger()).toInt()
-                MnemonicCode.INSTANCE.wordList[index]
-            }
-        }
-
-        fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, mnemonic: String) {
-            val encryptedPrefs = EncryptedSharedPreferences.create(
-                context,
-                ENCRYPTED_MNEMONIC,
-                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-
-            val encodedKey = mnemonic.toHex()
-            encryptedPrefs.edit().putString(alias, encodedKey).apply()
-        }
-
-        fun clearMnemonic(context: Context, alias: String){
-            val encryptedPrefs = EncryptedSharedPreferences.create(
-                context,
-                ENCRYPTED_MNEMONIC,
-                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-
-            encryptedPrefs.edit().remove(alias).apply()
-        }
-
-        private fun getMnemonicFromEncryptedPreferences(context: Context, alias: String): String? {
-            val encryptedPrefs = EncryptedSharedPreferences.create(
-                context,
-                ENCRYPTED_MNEMONIC,
-                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-
-            val encodedText = encryptedPrefs.getString(alias, null) ?: return null
-            return String(encodedText.hexStringToByteArray())
         }
 
         suspend fun getEncryptedSalt(context: Context): ByteArray {

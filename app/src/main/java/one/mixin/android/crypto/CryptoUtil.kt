@@ -2,14 +2,20 @@
 
 package one.mixin.android.crypto
 
+import android.content.Context
 import android.os.Build
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
 import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
+import one.mixin.android.Constants.Tip.ENCRYPTED_MNEMONIC
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
@@ -312,4 +318,42 @@ private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
     }
         .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
     return strippedKey.toString().trim { it <= ' ' }
+}
+
+fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
+    val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_MNEMONIC,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    val encodedKey = entropy.toHex()
+    encryptedPrefs.edit().putString(alias, encodedKey).apply()
+}
+
+fun clearMnemonic(context: Context, alias: String){
+    val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_MNEMONIC,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    encryptedPrefs.edit().remove(alias).apply()
+}
+
+fun getMnemonicFromEncryptedPreferences(context: Context, alias: String): ByteArray? {
+    val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_MNEMONIC,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    val encodedText = encryptedPrefs.getString(alias, null) ?: return null
+    return encodedText.hexStringToByteArray()
 }

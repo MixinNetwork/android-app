@@ -26,6 +26,9 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.crypto.storeMnemonicInEncryptedPreferences
+import one.mixin.android.crypto.toEntropy
+import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
@@ -109,11 +112,24 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (words != null) {
-                val mnemonic = words.joinToString(" ")
-                tip.storeMnemonicInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, mnemonic)
+                val w = words.let {
+                    when (words.size) {
+                        13 -> {
+                            words.subList(0, 12)
+                        }
+
+                        25 -> {
+                            words.subList(0, 24)
+                        }
+
+                        else -> throw IllegalArgumentException("Invalid mnemonic")
+                    }
+                }
+                val mnemonic = w.joinToString(" ")
+                storeMnemonicInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, toEntropy(w))
                 newKeyPairFromMnemonic(mnemonic)
             } else {
-                val mnemonic = tip.generateMnemonicSaltAndStore(requireContext())
+                val mnemonic = toMnemonic(tip.generateEntropyAndStore(requireContext()))
                 newKeyPairFromMnemonic(mnemonic)
             }
             Timber.e("PublicKey:${edKey.publicKey.hexString()}")

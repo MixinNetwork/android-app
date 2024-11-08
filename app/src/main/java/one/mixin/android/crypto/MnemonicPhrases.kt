@@ -9,7 +9,9 @@ fun isMnemonicValid(words: List<String>): Boolean {
     }.getOrNull() != null
 }
 
-fun toMnemonic(seed: ByteArray): String = MnemonicCode.INSTANCE.toMnemonic(seed).joinToString(" ")
+fun toMnemonic(entropy: ByteArray): String = MnemonicCode.INSTANCE.toMnemonic(entropy).joinToString(" ")
+
+fun toEntropy(words: List<String>): ByteArray = MnemonicCode.INSTANCE.toEntropy(words)
 
 fun toSeed(words: List<String>, passphrase: String): ByteArray = MnemonicCode.toSeed(words, passphrase)
 

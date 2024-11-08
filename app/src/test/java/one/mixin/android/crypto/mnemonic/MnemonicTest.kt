@@ -2,7 +2,9 @@ package one.mixin.android.crypto.mnemonic
 
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.crypto.mnemonicChecksumIndex
+import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.extension.hexString
+import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Test
 import org.web3j.crypto.Bip32ECKeyPair
 import kotlin.test.assertEquals
@@ -28,5 +30,13 @@ class MnemonicTest {
         index = mnemonicChecksumIndex(mnemonic, 3)
         println(mnemonic[index])
         assertEquals("vogue", mnemonic[index])
+
+        // from 32 byte salt
+        val legacyMn = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail"
+        val legacySeed = toSeed(legacyMn.split(" "), "")
+        val legacyKey = Bip32ECKeyPair.generateKeyPair(legacySeed)
+        println(legacyKey.privateKey.toByteArray().hexString())
+        println(legacyKey.publicKey.toByteArray().hexString())
+        assertEquals(legacyKey.privateKey.toByteArray().hexString(), "140d51ebe0eecba895236984b59144c0c98f60cd21d470ff55910985611031f6")
     }
 }

@@ -28,6 +28,7 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.crypto.clearMnemonic
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
@@ -216,7 +217,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                                 requireArguments().getString(ARGS_PHONE_NUM)
                                     ?: return@withContext
                             viewModel.updatePhone(a.userId, phone)
-                            tip.clearMnemonic(requireContext(), Constants.Tip.MNEMONIC)
+                            clearMnemonic(requireContext(), Constants.Tip.MNEMONIC)
                             a.phone = phone
                             Session.storeAccount(a)
                         }

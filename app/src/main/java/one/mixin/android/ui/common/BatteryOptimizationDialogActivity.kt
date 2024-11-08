@@ -12,6 +12,7 @@ import android.text.style.StyleSpan
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.handleIgnoreBatteryOptimization
+import one.mixin.android.session.Session
 import one.mixin.android.util.RomUtil
 import timber.log.Timber
 
@@ -23,6 +24,7 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
             context: Context,
             newTask: Boolean = false,
         ) {
+            if (!Session.hasSafe()) return
             Intent(context, BatteryOptimizationDialogActivity::class.java).apply {
                 putExtra(ARGS_NEW_TASK, newTask)
                 if (newTask) {
