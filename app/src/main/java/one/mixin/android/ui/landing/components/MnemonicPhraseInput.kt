@@ -69,7 +69,8 @@ fun MnemonicPhraseInput(
     tip: Tip? = null,
     pin: String? = null
 ) {
-    var inputs by remember { mutableStateOf(List(13) { "" }) }
+    var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
+    var inputs by remember { mutableStateOf(List(if (!legacy) 13 else 25) { "" }) }
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -84,7 +85,9 @@ fun MnemonicPhraseInput(
         ) {
             Column(
                 modifier =
-                Modifier.verticalScroll(rememberScrollState()),
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
@@ -114,8 +117,8 @@ fun MnemonicPhraseInput(
                 )
 
                 Spacer(modifier = Modifier.height(44.dp))
-                InputGrid(15, 10.dp) { index ->
-                    if (index < 13) {
+                InputGrid(if (legacy) 27 else 15, 10.dp) { index ->
+                    if (index < inputs.size) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -165,7 +168,7 @@ fun MnemonicPhraseInput(
                                 )
                             }
                         }
-                    } else if (index == 13) {
+                    } else if (index == if (legacy) 25 else 13) {
                         Row(
                             modifier = Modifier
                                 .alpha(if (state == MnemonicState.Input) 1f else 0f)
@@ -199,7 +202,7 @@ fun MnemonicPhraseInput(
                                 color = MixinAppTheme.colors.textPrimary,
                             )
                         }
-                    } else {
+                    } else if (index == if (legacy) 26 else 14) {
                         Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
@@ -268,7 +271,7 @@ fun MnemonicPhraseInput(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
