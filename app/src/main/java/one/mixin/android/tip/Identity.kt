@@ -21,7 +21,7 @@ class Identity
         // The two returns are private key and watcher
         suspend fun getIdentityPrivAndWatcher(pin: String): Pair<ByteArray, ByteArray> {
             val plain = getIdentitySeed()
-            val hashResult: Argon2KtResult = argon2Kt.argon2IHash(pin, plain)
+            val hashResult: Argon2KtResult = argon2Kt.argon2IHash(pin.toByteArray(), plain)
             return Pair(hashResult.rawHashAsByteArray(), plain.sha3Sum256())
         }
 

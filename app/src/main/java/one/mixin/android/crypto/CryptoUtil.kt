@@ -92,24 +92,6 @@ fun newKeyPairFromMnemonic(mnemonic: String): EdKeyPair {
     return newKeyPairFromSeed(masterKey.privKeyBytes)
 }
 
-fun newMasterPrivateKeyFromMnemonic(mnemonic: String): DeterministicKey {
-    val seed = toSeed(mnemonic.split(" ").let { list ->
-        when (list.size) {
-            25 -> {
-                list.subList(0, 24)
-            }
-            13 -> {
-                list.subList(0, 12)
-            }
-            else -> {
-                list
-            }
-        }
-    }, "")
-    val masterKeyPrivateKey = createMasterPrivateKey(seed)
-    return masterKeyPrivateKey
-}
-
 fun calculateAgreement(
     publicKey: ByteArray,
     privateKey: ByteArray,
@@ -191,25 +173,13 @@ fun ByteArray.sha3Sum256(): ByteArray {
 }
 
 fun Argon2Kt.argon2IHash(
-    pin: String,
-    seed: String,
-): Argon2KtResult =
-    argon2IHash(pin, seed.toByteArray())
-
-fun Argon2Kt.argon2IHash(
-    pin: String,
-    seed: ByteArray,
-): Argon2KtResult =
-    argon2IHash(pin.toByteArray(), seed)
-
-fun Argon2Kt.argon2IHash(
-    pin: ByteArray,
-    seed: ByteArray,
+    password: ByteArray,
+    salt: ByteArray,
 ): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
-        password = pin,
-        salt = seed,
+        password = password,
+        salt = salt,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
         hashLengthInBytes = 32,

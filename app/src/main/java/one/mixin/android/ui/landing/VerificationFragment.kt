@@ -203,7 +203,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 invokeNetwork = {
                     if (pin != null) {
                         val seed = tip.getOrRecoverTipPriv(requireContext(), pin!!).getOrThrow()
-                        val saltBase64 = tip.getEncryptSalt(requireContext(), pin!!, seed)
+                        val saltBase64 = tip.getEncryptSalt(requireContext(), pin!!, seed, force = true)
                         viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!, saltBase64)
                     } else {
                         viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)

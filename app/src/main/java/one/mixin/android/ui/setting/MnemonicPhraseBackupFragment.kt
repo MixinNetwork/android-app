@@ -120,8 +120,14 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                         }, { pin ->
                             this@MnemonicPhraseBackupFragment.pin = pin
                             lifecycleScope.launch {
-                                mnemonic = tip.getMnemonicOrFetchFromSafe(requireContext(), pin)
-                                    .let { list -> list + list[mnemonicChecksumIndex(list)] }
+                                val list = tip.getMnemonicOrFetchFromSafe(requireContext(), pin)
+                                if (list == null) {
+                                    toast(R.string.Data_error)
+                                    requireActivity().finish()
+                                    return@launch
+                                }
+                                mnemonic = list
+                                    .let { l -> l + l[mnemonicChecksumIndex(l)] }
                                 if (Session.saltExported()) {
                                     navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name)
                                 } else {

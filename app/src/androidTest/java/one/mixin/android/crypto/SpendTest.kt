@@ -21,9 +21,9 @@ class SpendTest {
         assertEquals(legacyKey.privateKey.toByteArray().hexString(), "140d51ebe0eecba895236984b59144c0c98f60cd21d470ff55910985611031f6")
         val tipSeed = "35c7b06243a170bf9cfe68df3bb3082d50a35dc16ddb6f5ce1eb37cf2caeecc3".hexStringToByteArray()
         val argon2Kt = Argon2Kt()
-        val spendSeed = argon2Kt.argon2IHash(legacySeed, tipSeed).rawHashAsByteArray()
+        val spendSeed = argon2Kt.argon2IHash(tipSeed, legacyKey.privKeyBytes).rawHashAsByteArray()
         val spendKeyPair = newKeyPairFromSeed(spendSeed)
-        assertEquals(spendKeyPair.privateKey.hexString(), "56cf1c919c17986ada2d9d7ef1485806a5b4874140dfaefaf68666e31a1f6430")
+        assertEquals(spendKeyPair.privateKey.hexString(), "c016795daacdc144e0f91a27ac29de7fb0ca5a9fa27dc75281cbfeee52607230")
     }
 
     @Test
@@ -36,8 +36,8 @@ class SpendTest {
         assertEquals(key.privateKeyAsHex, "9d9a820a6dd9c1bba705d57b91d4c20cc00d4bba3815479153ca2c13403907bf")
         val tipSeed = "35c7b06243a170bf9cfe68df3bb3082d50a35dc16ddb6f5ce1eb37cf2caeecc3".hexStringToByteArray()
         val argon2Kt = Argon2Kt()
-        val spendSeed = argon2Kt.argon2IHash(seed, tipSeed).rawHashAsByteArray()
+        val spendSeed = argon2Kt.argon2IHash(tipSeed, key.privKeyBytes).rawHashAsByteArray()
         val spendKeyPair = newKeyPairFromSeed(spendSeed)
-        assertEquals(spendKeyPair.privateKey.hexString(), "a8883d100dbf34f00337a7fbe6f600c917a85b173739bab9de871e77bc7776eb")
+        assertEquals(spendKeyPair.privateKey.hexString(), "80a25fe62ccc43fd010001c701305ae459df31bda7f2908c38777dfc0ed0c15c")
     }
 }

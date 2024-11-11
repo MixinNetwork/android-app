@@ -207,6 +207,7 @@ fun MnemonicPhraseInput(
                     } else if (index == if (legacy) 25 else 13) {
                         Row(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .alpha(if (state == MnemonicState.Input) 1f else 0f)
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
@@ -243,6 +244,7 @@ fun MnemonicPhraseInput(
                     } else if (index == if (legacy) 26 else 14) {
                         Row(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
                                     if (state == MnemonicState.Input || state == MnemonicState.Verify) {

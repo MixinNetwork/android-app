@@ -53,7 +53,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
-import org.web3j.crypto.Bip32ECKeyPair
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -181,8 +180,12 @@ class Tip
             return createMasterPrivateKey(seed)
         }
 
-        fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray): String {
-            val salt = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+        fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, force: Boolean = false): String {
+            val salt = if (Session.hasPhone() || force) {
+                getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+            } else {
+                byteArrayOf(0x00)
+            }
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
             val encryptedSalt = aesEncrypt(saltAESKey, salt)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
@@ -202,13 +205,14 @@ class Tip
             return edKey
         }
 
-        suspend fun getMnemonicOrFetchFromSafe(context: Context, pin: String): List<String> {
+        suspend fun getMnemonicOrFetchFromSafe(context: Context, pin: String): List<String>? {
             val entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
             if (entropy != null) {
                 return toMnemonic(entropy).split(" ")
             } else {
                 val tipPrivateKey = getOrRecoverTipPriv(context, pin).getOrThrow()
                 val safeEntropy = getSalt(getEncryptedSalt(context), pin, tipPrivateKey)
+                if (safeEntropy.contentEquals(byteArrayOf(0x00)))return null
                 val mn = toMnemonic(safeEntropy) // legacy user salt 32 bytes
                 storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
                 return mn.split(" ")
@@ -258,7 +262,7 @@ class Tip
             pin: String,
             tipPriv: ByteArray,
         ): ByteArray =
-            argon2Kt.argon2IHash(pin, tipPriv).rawHashAsByteArray()
+            argon2Kt.argon2IHash(pin.toByteArray(), tipPriv).rawHashAsByteArray()
 
         suspend fun checkCounter(
             tipCounter: Int,

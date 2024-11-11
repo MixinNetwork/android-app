@@ -1,15 +1,43 @@
 package one.mixin.android.crypto
 
+import blockchain.Blockchain
+import org.bitcoinj.crypto.DeterministicKey
+import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
 import org.bitcoinj.crypto.MnemonicCode
 import java.util.zip.CRC32
 
 fun isMnemonicValid(words: List<String>): Boolean {
-    return runCatching {
+    val nativeResult = runCatching {
         MnemonicCode.toSeed(words, "")
     }.getOrNull() != null
+    require(Blockchain.isMnemonicValid(words.joinToString(" ")) == nativeResult)
+    return nativeResult
 }
 
-fun toMnemonic(entropy: ByteArray): String = MnemonicCode.INSTANCE.toMnemonic(entropy).joinToString(" ")
+fun toMnemonic(entropy: ByteArray): String {
+    return MnemonicCode.INSTANCE.toMnemonic(entropy).joinToString(" ").also {
+        require(Blockchain.newMnemonic(entropy) == it)
+    }
+}
+
+fun newMasterPrivateKeyFromMnemonic(mnemonic: String): DeterministicKey {
+    val seed = toSeed(mnemonic.split(" ").let { list ->
+        when (list.size) {
+            25 -> {
+                list.subList(0, 24)
+            }
+            13 -> {
+                list.subList(0, 12)
+            }
+            else -> {
+                list
+            }
+        }
+    }, "")
+    val masterKeyPrivateKey = createMasterPrivateKey(seed)
+    require(Blockchain.mnemonicToMasterKey(mnemonic) == masterKeyPrivateKey.privateKeyAsHex)
+    return masterKeyPrivateKey
+}
 
 fun toEntropy(words: List<String>): ByteArray = MnemonicCode.INSTANCE.toEntropy(words)
 
