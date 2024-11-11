@@ -153,7 +153,7 @@
                         android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentStart="true"
                         android:layout_marginEnd="12dp"
-                        android:textFontWeight="500"
+                        android:textFontWeight="600"
                         android:textSize="18sp"
                         android:text="@string/N_A"
                         android:textColor="?attr/text_primary"
