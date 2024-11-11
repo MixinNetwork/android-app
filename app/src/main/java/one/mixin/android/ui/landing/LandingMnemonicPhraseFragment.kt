@@ -39,7 +39,9 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
             MnemonicPhraseInput(MnemonicState.Input, onComplete = {
                 val list = ArrayList<String>()
                 list.addAll(it)
-                if (list.size == 13 && list[mnemonicChecksumIndex(list.subList(0, 12))] == list[12]) {
+                if (list.size == 25 && list[mnemonicChecksumIndex(list.subList(0, 24))] == list[24]) {
+                    navTo(MnemonicPhraseFragment.newInstance(list), MnemonicPhraseFragment.TAG)
+                } else if (list.size == 13 && list[mnemonicChecksumIndex(list.subList(0, 12))] == list[12]) {
                     navTo(MnemonicPhraseFragment.newInstance(list), MnemonicPhraseFragment.TAG)
                 } else {
                     toast(R.string.Invalid_mnemonic)

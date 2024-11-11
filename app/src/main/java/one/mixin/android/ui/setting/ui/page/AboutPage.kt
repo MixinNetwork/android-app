@@ -98,9 +98,10 @@ fun AboutPage() {
                     .padding(it)
                     .verticalScroll(rememberScrollState()),
         ) {
-            val navController = LocalSettingNav.current
             val context = LocalContext.current
-            val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
+            val attrs = context.obtainStyledAttributes(intArrayOf(R.attr.ic_logo))
+            val logoResId = attrs.getResourceId(0, R.drawable.ic_logo_mixin) // 默认值为 ic_logo_mixin
+            attrs.recycle() // 记得回收
             Image(
                 modifier =
                     Modifier
@@ -114,7 +115,7 @@ fun AboutPage() {
                             }
                         }
                         .align(Alignment.CenterHorizontally),
-                painter = painterResource(id = R.drawable.ic_logo),
+                painter = painterResource(id = logoResId),
                 contentDescription = null,
             )
             AboutTile(

@@ -180,7 +180,9 @@ fun MnemonicPhraseInput(
                                         if (clipData != null && clipData.itemCount > 0) {
                                             val pastedText = clipData.getItemAt(0).text.toString()
                                             val words = pastedText.split(" ")
-                                            if (words.size == 13 && isMnemonicValid(words.subList(0, 12))) {
+                                            if (legacy && words.size == 25 && isMnemonicValid(words.subList(0, 24))) {
+                                                inputs = words
+                                            } else if (words.size == 13 && isMnemonicValid(words.subList(0, 12))) {
                                                 inputs = words
                                             } else {
                                                 errorInfo = context.getString(R.string.Invalid_mnemonic)
