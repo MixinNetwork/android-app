@@ -1,12 +1,16 @@
 package one.mixin.android.ui.landing.components
 
 import android.content.ClipData
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +27,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -115,8 +120,39 @@ fun MnemonicPhraseInput(
                     color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center
                 )
-
-                Spacer(modifier = Modifier.height(44.dp))
+                if (state == MnemonicState.Input) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
+                        BN(
+                            onClick = {
+                                legacy = false
+                                inputs = List(13) { "" }
+                            },
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
+                            ),
+                        ) {
+                            Text("13 words", color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        BN(
+                            onClick = {
+                                legacy = true
+                                inputs = List(25) { "" }
+                            },
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray
+                            ),
+                        ) {
+                            Text("25 words", color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(44.dp))
+                }
                 InputGrid(if (legacy) 27 else 15, 10.dp) { index ->
                     if (index < inputs.size) {
                         Box(
@@ -395,5 +431,29 @@ fun MnemonicPhraseInputPreview() {
     MnemonicPhraseInput(
         state = MnemonicState.Input,
         onComplete = { mnemonicList -> /* Handle mnemonic change */ },
+    )
+}
+
+
+@Composable
+fun BN(onClick: () -> Unit, border: BorderStroke, content: @Composable RowScope.() -> Unit) {
+    Button(
+        modifier = Modifier
+            .height(36.dp).padding(horizontal = 8.dp),
+        onClick = onClick,
+        colors =
+        ButtonDefaults.outlinedButtonColors(
+            Color.Transparent
+        ),
+        shape = RoundedCornerShape(32.dp),
+        border = border,
+        elevation =
+        ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+        content = content
     )
 }

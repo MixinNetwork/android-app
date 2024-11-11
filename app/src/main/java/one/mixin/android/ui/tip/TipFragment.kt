@@ -533,11 +533,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     return@runCatching false
                 }
             val masterKey = tip.getMasterKey(this.requireContext())
-            val salt = masterKey.privateKey.toByteArray().let {
-                if (it.size == 33) {
-                    it.copyOfRange(1, it.size)
-                } else it
-            }
+            val salt = masterKey.privKeyBytes
             val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed)
             val spendSeed = tip.getSpendPriv(salt, seed)
             val keyPair = newKeyPairFromSeed(spendSeed)

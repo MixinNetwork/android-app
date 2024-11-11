@@ -20,9 +20,10 @@ import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
+import org.bitcoinj.crypto.DeterministicKey
+import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
-import org.web3j.crypto.Bip32ECKeyPair
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -87,14 +88,26 @@ fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
 }
 
 fun newKeyPairFromMnemonic(mnemonic: String): EdKeyPair {
-    val seed = toSeed(mnemonic.split(" ").subList(0, 12), "")
-    val masterKey = Bip32ECKeyPair.generateKeyPair(seed)
-    val edKeySeed = masterKey.privateKey.toByteArray().let {
-        if (it.size == 33) {
-            it.copyOfRange(1, it.size)
-        } else it
-    }
-    return newKeyPairFromSeed(edKeySeed)
+    val masterKey = newMasterPrivateKeyFromMnemonic(mnemonic)
+    return newKeyPairFromSeed(masterKey.privKeyBytes)
+}
+
+fun newMasterPrivateKeyFromMnemonic(mnemonic: String): DeterministicKey {
+    val seed = toSeed(mnemonic.split(" ").let { list ->
+        when (list.size) {
+            25 -> {
+                list.subList(0, 24)
+            }
+            13 -> {
+                list.subList(0, 12)
+            }
+            else -> {
+                list
+            }
+        }
+    }, "")
+    val masterKeyPrivateKey = createMasterPrivateKey(seed)
+    return masterKeyPrivateKey
 }
 
 fun calculateAgreement(
@@ -333,7 +346,7 @@ fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, entropy
     encryptedPrefs.edit().putString(alias, encodedKey).apply()
 }
 
-fun clearMnemonic(context: Context, alias: String){
+fun clearMnemonic(context: Context, alias: String) {
     val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
         ENCRYPTED_MNEMONIC,

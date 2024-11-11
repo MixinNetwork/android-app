@@ -51,6 +51,8 @@ import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
+import org.bitcoinj.crypto.DeterministicKey
+import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
 import org.web3j.crypto.Bip32ECKeyPair
 import timber.log.Timber
 import java.io.IOException
@@ -170,14 +172,13 @@ class Tip
                 }
             }
 
-        fun getMasterKey(context: Context): Bip32ECKeyPair {
+        fun getMasterKey(context: Context): DeterministicKey {
             var entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
             if (entropy == null) { // Register safe must generate mnemonic
                 entropy = generateEntropyAndStore(context)
             }
             val seed = toSeed(toMnemonic(entropy).split(" "), "")
-            val masterKey = Bip32ECKeyPair.generateKeyPair(seed)
-            return masterKey
+            return createMasterPrivateKey(seed)
         }
 
         fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray): String {
