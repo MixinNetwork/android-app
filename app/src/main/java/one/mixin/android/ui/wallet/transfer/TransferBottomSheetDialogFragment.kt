@@ -45,6 +45,7 @@ import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -516,10 +517,13 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun handleError(throwable: Throwable) {
+    private suspend fun handleError(throwable: Throwable) {
         canRetry = true
         transferViewModel.errorMessage =
             when (throwable) {
+                is TipNetworkException -> {
+                    handleWithErrorCodeAndDesc(throwable.error)
+                }
                 is IOException ->
                     when (throwable) {
                         is SocketTimeoutException -> getString(R.string.error_connection_timeout)
@@ -553,8 +557,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 is ExecutionException -> {
                     if (throwable.cause is CronetException) {
                         val extra =
-                            if (throwable is org.chromium.net.NetworkException) {
-                                val e = throwable as org.chromium.net.NetworkException
+                            if (throwable.cause is org.chromium.net.NetworkException) {
+                                val e = throwable.cause as org.chromium.net.NetworkException
                                 "${e.errorCode}, ${e.cronetInternalErrorCode}"
                             } else {
                                 ""
@@ -569,12 +573,27 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
+    private suspend fun handleWithErrorCodeAndDesc(error: ResponseError): String {
+        val errorCode = error.code
+        val errorDescription = error.description
+        return if (errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+            requireContext().getString(R.string.error_pin_check_too_many_request)
+        } else if (errorCode == ErrorHandler.PIN_INCORRECT) {
+            val errorCount = bottomViewModel.errorCount()
+            requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, errorCount)
+        } else {
+            requireContext().getMixinErrorStringByCode(errorCode, errorDescription)
+        }
+    }
+
     private fun showPin() {
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
-                    handleError(error)
-                    transferViewModel.updateStatus(TransferStatus.FAILED)
+                    lifecycleScope.launch {
+                        handleError(error)
+                        transferViewModel.updateStatus(TransferStatus.FAILED)
+                    }
                 },
             ) {
                 transferViewModel.updateStatus(TransferStatus.IN_PROGRESS)
