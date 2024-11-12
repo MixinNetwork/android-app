@@ -291,8 +291,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
-                val action = uri.getQueryParameter("action") ?: "sign"
-                if (!action.equals("sign", true) && !action.equals("unlock", true)) {
+                var action = uri.getQueryParameter("action") ?: "sign"
+                if (!action.equals("sign", true) && !action.equals("unlock", true) && !action.equals("revoke", true)) {
                     showError()
                     return@launch
                 }
@@ -315,6 +315,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
                             action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
                             action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
+                            action == "revoke" && signers.isEmpty() -> {
+                                action = "unlock"
+                                state = SignatureState.unlocked.name
+                            }
                         }
                     }
                     val multisigsBiometricItem =
