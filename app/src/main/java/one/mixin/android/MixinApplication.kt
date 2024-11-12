@@ -271,9 +271,9 @@ open class MixinApplication :
             WebStorage.getInstance().deleteAllData()
             releaseAll()
             PipVideoView.release()
+            clearMnemonic(this@MixinApplication, Constants.Tip.MNEMONIC)
             applicationScope.launch {
                 clearData(sessionId)
-
                 withContext(Dispatchers.Main) {
                     val entryPoint =
                         EntryPointAccessors.fromApplication(

@@ -120,15 +120,13 @@ internal constructor(
     private val _setupState = MutableLiveData<SetupState>(SetupState.Loading)
     val setupState: LiveData<SetupState> get() = _setupState
 
-    suspend fun mockLoadingToFailure(): SetupState? {
-        delay(2000)
-        _setupState.value = SetupState.Failure
+    fun setState(state: SetupState): SetupState? {
+        _setupState.value = state
         return _setupState.value
     }
 
-    suspend fun mockLoadingToSuccess(): SetupState? {
-        delay(1000)
-        _setupState.value = SetupState.Success
-        return _setupState.value
-    }
+    suspend fun getEncryptedTipBody(
+        userId: String,
+        pin: String,
+    ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
 }

@@ -9,14 +9,17 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ContactRequest
+import one.mixin.android.api.request.DeactivateRequest
 import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
@@ -30,6 +33,7 @@ class SettingViewModel
         private val userRepository: UserRepository,
         private val contactService: ContactService,
         private val tokenRepository: TokenRepository,
+        private val pinCipher: PinCipher,
     ) : ViewModel() {
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
             accountRepository.verification(request)
@@ -73,4 +77,11 @@ class SettingViewModel
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
         suspend fun findAllAssetIdSuspend() = tokenRepository.findAllAssetIdSuspend()
-    }
+
+        suspend fun getDeactivateTipBody(
+            userId: String,
+            pin: String,
+        ): String = pinCipher.encryptPin(pin, TipBody.forDeactivate(userId))
+
+        suspend fun deactivate(request: DeactivateRequest) = accountRepository.deactivate(request)
+}

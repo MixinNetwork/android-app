@@ -54,9 +54,6 @@ fun SetPinLoadingPage(next: () -> Unit) {
         },
         pop = null,
     ) {
-        LaunchedEffect(setupState) {
-            viewModel.mockLoadingToFailure()
-        }
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 36.dp)) {
             Spacer(modifier = Modifier.height(120.dp))
             Icon(painter = painterResource(R.drawable.ic_wallet_pin), tint = Color.Unspecified, contentDescription = null)
@@ -94,7 +91,7 @@ fun SetPinLoadingPage(next: () -> Unit) {
                         .height(48.dp),
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.mockLoadingToSuccess()
+                            viewModel.setState(SetupState.Success)
                             next()
                         }
                     },

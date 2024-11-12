@@ -18,6 +18,7 @@ import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
+import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
@@ -189,6 +190,13 @@ class AccountRepository
                         verificationId,
                     ),
                 )
+            }
+
+        suspend fun deactivate(
+            request: DeactivateRequest
+        ): MixinResponse<Account> =
+            withContext(Dispatchers.IO) {
+                accountService.deactivate(request)
             }
 
         suspend fun saltExport(

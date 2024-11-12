@@ -944,6 +944,7 @@
     <string name="setting_data_wifi">When connected on Wi-Fi</string>
     <string name="setting_delete_account_content_2">Local messages and Backups will not be Deleted automatically</string>
     <string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to **learn more**.</string>
+    <string name="setting_delete_anonymous_account_pin_content">If you continue, your profile and account details will be delete on %1$s.</string>
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
     <string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be abandoned along with the wallet and cannot be recovered.</string>
     <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
