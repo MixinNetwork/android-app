@@ -1742,11 +1742,11 @@
     <string name="Backup_Mnemonic_Phrase">备份助记词</string>
     <string name="Before_you_proceed">请在继续之前</string>
     <string name="Before_you_proceed_desc">阅读以下内容，然后安全保存助记词。</string>
-    <string name="Before_you_proceed_instruction_1">创建帐户生成的13个助词仅用于Mixin Network相关产品。</string>
+    <string name="Before_you_proceed_instruction_1">创建帐户生成的13个或25个助记词仅用于Mixin Network相关产品。</string>
     <string name="Before_you_proceed_instruction_2">助记词无法帮助您恢复您的 PIN！</string>
     <string name="Before_you_proceed_instruction_3">确保没有人或监控摄像头正在看您的屏幕！</string>
     <string name="Show_Mnemonic_Phrase">显示助记词</string>
-    <string name="enter_mnemonic_phrase">输入或粘贴您的13个助记词。</string>
+    <string name="enter_mnemonic_phrase">输入或粘贴您的 %1$d 个助记词。</string>
     <string name="log_in_whit_mnemonic_phrase">助记词登录</string>
     <string name="write_down_mnemonic_phrase">写下您的助记词</string>
     <string name="check_mnemonic_phrase">检查您的助记词</string>
@@ -1772,5 +1772,6 @@
     <string name="Im_Ready">准备好了</string>
     <string name="add_recovery_contact_before_instruction_1">您要添加的恢复联系人已下载并登录在Mixin Messenger中。</string>
     <string name="add_recovery_contact_before_instruction_2">您要添加的恢复联系人将使Mixin Messenger保持在线状态或与您面对面。</string>
+    <string name="Check_Backup">检查备份</string>
 </resources>
 
