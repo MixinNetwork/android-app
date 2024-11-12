@@ -34,6 +34,7 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.getTransactionResult
+import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
@@ -1308,14 +1309,18 @@ class BottomSheetViewModel
             pin: String,
         ): MixinResponse<TransactionResponse> {
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-            return if (t.action == "sign") {
-                val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
-                val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
-                tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
-            } else if (t.action == "unlock") {
-                tokenRepository.unlockTransactionMultisigs(t.traceId)
-            } else {
-                throw Exception("no support action" + t.action)
+            return when (t.action) {
+                SignatureAction.sign.name -> {
+                    val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+                    val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
+                    tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
+                }
+                SignatureAction.revoke.name -> {
+                    tokenRepository.unlockTransactionMultisigs(t.traceId)
+                }
+                else -> {
+                    throw Exception("no support action" + t.action)
+                }
             }
         }
 
