@@ -26,7 +26,7 @@
     <string name="Add_circle">Add Circle</string>
     <string name="Add_Contact">Add Contact</string>
     <string name="Add_conversations">Add Conversations</string>
-    <string name="Add_emergency_contact">Add emergency contact</string>
+    <string name="Add_emergency_contact">Add recovery contact</string>
     <string name="Add_group_description">Add group description</string>
     <string name="Add_memo">Add Memo</string>
     <string name="Add_participants">Add Participants</string>
@@ -167,7 +167,7 @@
     <string name="Chain">Chain</string>
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
-    <string name="Change_emergency_contact">Change emergency contact</string>
+    <string name="Change_emergency_contact">Change recovery contact</string>
     <string name="Change_Number_Instead">Change Number Instead</string>
     <string name="Change_Phone_Number">Change Phone Number</string>
     <string name="Change_PIN">Change PIN</string>
@@ -320,7 +320,7 @@
     <string name="Delete">Delete</string>
     <string name="delete_account_hint">Delete your account info and profile photo</string>
     <string name="Delete_address">Delete address</string>
-    <string name="Delete_emergency_contact">Delete emergency contact</string>
+    <string name="Delete_emergency_contact">Delete recovery contact</string>
     <string name="Delete_for_everyone">Delete for Everyone</string>
     <string name="Delete_for_me">Delete for me</string>
     <string name="Delete_Group">Delete Group</string>
@@ -382,12 +382,12 @@
     <string name="Edit_Group_Description">Edit Group Description</string>
     <string name="Edit_group_name">Edit Group Name</string>
     <string name="Edit_Name">Edit Name</string>
-    <string name="Emergency_Contact">Emergency Contact</string>
+    <string name="Emergency_Contact">Recovery Contact</string>
     <string name="Empty_address_book">Empty address book</string>
     <string name="Enable_after_1_minute">Enabled after 1 minute</string>
     <string name="Enable_after_30_minutes">Enabled after 30 minutes</string>
     <string name="Enable_db_debug">Enable db debug</string>
-    <string name="Enable_Emergency_Contact">Enable Emergency Contact</string>
+    <string name="Enable_Emergency_Contact">Enable Recovery Contact</string>
     <string name="Enable_immediately">Enabled immediately</string>
     <string name="Enable_web_debug">Enable web debug</string>
     <string name="Web_debug">Web debug</string>
@@ -398,7 +398,7 @@
     <string name="Enter_PIN_to_delete_account">Enter your PIN to delete your account</string>
     <string name="Enter_your_phone_number">Enter your phone number</string>
     <string name="Enter_your_anonymous_number">Enter your anonymous number</string>
-    <string name="Enter_your_emergency_contact_Mixin_ID">Enter your emergency contact Mixin ID</string>
+    <string name="Enter_your_emergency_contact_Mixin_ID">Enter your recovery contact Mixin ID</string>
     <string name="Enter_your_new_PIN">Enter your new PIN</string>
     <string name="Enter_your_old_PIN">Enter your old PIN</string>
     <string name="Enter_your_PIN">Enter your PIN</string>
@@ -419,7 +419,7 @@
     <string name="error_invalid_address">ERROR 30102: Invalid address format. Please enter the correct %1$s %2$s address!</string>
     <string name="error_invalid_address_plain">ERROR 30102: Invalid address format.</string>
     <string name="error_invalid_code_too_frequent">ERROR 20129: Send verification code too frequent, please try again later.</string>
-    <string name="error_invalid_emergency_contact">ERROR 20130: Invalid emergency contact</string>
+    <string name="error_invalid_emergency_contact">ERROR 20130: Invalid recovery contact</string>
     <string name="error_invalid_pin_format">ERROR 20118: Invalid PIN format. </string>
     <string name="error_memo_too_long">Memo has too many characters, maximum is 200</string>
     <string name="error_not_found">ERROR 404: Not found</string>
@@ -791,6 +791,7 @@
     <string name="Process_can_not_be_stop">The process cannot be canceled when it begins. Please remember the 6-digit PIN and reenter it if the process is aborted unexpectedly.</string>
     <string name="Profile">Profile</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
+    <string name="profile_add_number">Do you want to add your phone number?</string>
     <string name="Profile_photo">Profile Photo</string>
     <string name="profile_share_bot_hint">If you want to share a bot, add it to your contacts first</string>
     <string name="Public_profile">Public profile (required)</string>
@@ -838,8 +839,8 @@
     <string name="Remove_UTXO">Remove the UTXO?</string>
     <string name="Remove_Bot">Remove Bot</string>
     <string name="Remove_Contact">Remove Contact</string>
-    <string name="Remove_emergency_contact">Remove emergency contact</string>
-    <string name="Remove_emergency_contact_confirmation">Remove emergency contact?</string>
+    <string name="Remove_emergency_contact">Remove recovery contact</string>
+    <string name="Remove_emergency_contact_confirmation">Remove recovery contact?</string>
     <string name="Remove_Participants">Remove Participants</string>
     <string name="Remove_Stickers">Remove Stickers</string>
     <string name="Removing">Removing…</string>
@@ -902,7 +903,7 @@
     <string name="Secured_by_TIP">Secured by TIP</string>
     <string name="Security">Security</string>
     <string name="Select">Select</string>
-    <string name="Select_Emergency_Contact">Select Emergency Contact</string>
+    <string name="Select_Emergency_Contact">Select Recovery Contact</string>
     <string name="Send">Send</string>
     <string name="Sending">Sending</string>
     <string name="Send_as_file">Send as file</string>
@@ -951,13 +952,13 @@
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_emergency_content">The recovery contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number or mnemonic phrase.</string>
-    <string name="setting_emergency_create_success">Create emergency contact successfully</string>
-    <string name="setting_emergency_desc">When you lose your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
-    <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
+    <string name="setting_emergency_create_success">Create recovery contact successfully</string>
+    <string name="setting_emergency_desc">When you lose your mobile number, please contact your recovery contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
+    <string name="setting_emergency_pin_tip">Your recovery contact is protected by PIN</string>
     <string name="setting_emergency_send_code">Enter the 4-digit code sent to Mixin ID: %1$s</string>
-    <string name="setting_emergency_set">Set emergency contact</string>
-    <string name="setting_emergency_set_message">Confirm to set Mixin ID %1$s as your emergency contact? Please note that the other party must add you as a contact to set up successfully.</string>
-    <string name="setting_emergency_warning">The emergency contact cannot help you to recover your PIN.</string>
+    <string name="setting_emergency_set">Set recovery contact</string>
+    <string name="setting_emergency_set_message">Confirm to set Mixin ID %1$s as your recovery contact? Please note that the other party must add you as a contact to set up successfully.</string>
+    <string name="setting_emergency_warning">The recovery contact cannot help you to recover your PIN.</string>
     <string name="setting_enable_biometric_pay">Enable Biometric Pay?</string>
     <string name="setting_incognito_prompt">Disable keyboard personalized learning</string>
     <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
@@ -988,7 +989,7 @@
     <string name="snapshot_Hash">Snapshot Hash</string>
     <string name="Sign_in">Sign in</string>
     <string name="Sign_in_desktop_app">Sign in desktop app</string>
-    <string name="Sign_with_emergency_contact">Sign in with emergency contact</string>
+    <string name="Sign_with_emergency_contact">Sign in with recovery contact</string>
     <string name="Sign_with_phone_number">Sign in with phone number</string>
     <string name="Silence_Notification">Silence Notification</string>
     <string name="Size">Size</string>
@@ -1125,7 +1126,7 @@
     <string name="Videos">Videos</string>
     <string name="View">View</string>
     <string name="View_Authorization">View Authorization</string>
-    <string name="View_emergency_contact">View emergency contact</string>
+    <string name="View_emergency_contact">View recovery contact</string>
     <string name="View_Wallet">View Wallet</string>
     <string name="Voice_call">Voice call</string>
     <string name="Waiting">Waiting</string>
@@ -1188,7 +1189,7 @@
     <string name="You">You</string>
     <string name="You_deleted_this_message">You deleted this message</string>
     <string name="You_have_left_the_group">You have left the group</string>
-    <string name="Your_emergency_contact_has_been_changed">Your emergency contact has been changed</string>
+    <string name="Your_emergency_contact_has_been_changed">Your recovery contact has been changed</string>
     <string name="your_pin_has_been_created">Your PIN has been created</string>
     <string name="text_size">Text Size</string>
     <string name="from_system">From system</string>

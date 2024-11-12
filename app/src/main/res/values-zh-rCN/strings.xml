@@ -26,7 +26,7 @@
     <string name="Add_circle">添加圈子</string>
     <string name="Add_Contact">添加联系人</string>
     <string name="Add_conversations">添加会话</string>
-    <string name="Add_emergency_contact">添加紧急联系人</string>
+    <string name="Add_emergency_contact">添加恢复联系人</string>
     <string name="Add_group_description">添加群公告</string>
     <string name="Add_memo">点击添加 Memo（备注）</string>
     <string name="Add_participants">添加成员</string>
@@ -163,7 +163,7 @@
     <string name="Chain">所属公链</string>
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金额</string>
-    <string name="Change_emergency_contact">修改紧急联系人</string>
+    <string name="Change_emergency_contact">修改恢复联系人</string>
     <string name="Change_Number_Instead">仅修改手机号码</string>
     <string name="Change_Phone_Number">修改手机号</string>
     <string name="Change_PIN">修改 PIN</string>
@@ -309,7 +309,7 @@
     <string name="Delete">删除</string>
     <string name="delete_account_hint">删除你的账户和个人照片</string>
     <string name="Delete_address">删除地址</string>
-    <string name="Delete_emergency_contact">删除紧急联系人</string>
+    <string name="Delete_emergency_contact">删除恢复联系人</string>
     <string name="Delete_for_everyone">撤回</string>
     <string name="Delete_for_me">删除</string>
     <string name="Delete_Group">删除群组</string>
@@ -370,12 +370,12 @@
     <string name="Edit_Group_Description">编辑群公告</string>
     <string name="Edit_group_name">编辑名称</string>
     <string name="Edit_Name">修改昵称</string>
-    <string name="Emergency_Contact">紧急联系人</string>
+    <string name="Emergency_Contact">恢复联系人</string>
     <string name="Empty_address_book">通讯录内容为空</string>
     <string name="Enable_after_1_minute">在 1 分钟之后启动</string>
     <string name="Enable_after_30_minutes">在 30 分钟后启动</string>
     <string name="Enable_db_debug">已开启 db 调试</string>
-    <string name="Enable_Emergency_Contact">启用紧急联系人</string>
+    <string name="Enable_Emergency_Contact">启用恢复联系人</string>
     <string name="Enable_immediately">立即启动</string>
     <string name="Enable_web_debug">已开启 Web 调试</string>
     <string name="Web_debug">Web 调试</string>
@@ -386,7 +386,7 @@
     <string name="Enter_new_phone_number">输入你的新手机号码</string>
     <string name="Enter_new_anonymous_number">输入你的新匿名号码</string>
     <string name="Enter_PIN_to_delete_account">输入你的 PIN 以注销你的账户</string>
-    <string name="Enter_your_emergency_contact_Mixin_ID">请输入紧急联系人的 Mixin ID</string>
+    <string name="Enter_your_emergency_contact_Mixin_ID">请输入恢复联系人的 Mixin ID</string>
     <string name="Enter_your_new_PIN">输入你的新 PIN</string>
     <string name="Enter_your_old_PIN">输入你的旧 PIN</string>
     <string name="Enter_your_PIN">输入你的 PIN</string>
@@ -407,7 +407,7 @@
     <string name="error_invalid_address">错误 30102：地址格式错误。请输入正确的 %1$s %2$s 的地址！</string>
     <string name="error_invalid_address_plain">错误 30102：地址格式错误。</string>
     <string name="error_invalid_code_too_frequent">错误 20129：发送验证码太频繁，请稍后再试</string>
-    <string name="error_invalid_emergency_contact">错误 20130：紧急联系人不正确</string>
+    <string name="error_invalid_emergency_contact">错误 20130：恢复联系人不正确</string>
     <string name="error_invalid_pin_format">错误 20118：PIN 格式不正确</string>
     <string name="error_memo_too_long">Memo 字符超长，最多为 200</string>
     <string name="error_not_found">错误 404：没有找到相应的信息</string>
@@ -769,6 +769,7 @@
     <string name="Process_can_not_be_stop">流程一旦开始无法取消，请牢记 6 位数字 PIN，意外中止流程需要再次输入</string>
     <string name="Profile">个人资料</string>
     <string name="profile_modify_number">你想要修改手机号码么？</string>
+    <string name="profile_add_number">你想要添加手机号码么？</string>
     <string name="Profile_photo">个人头像</string>
     <string name="profile_share_bot_hint">如果您希望分享机器人，请先添加联系人。</string>
     <string name="Public_profile">个人资料（必须）</string>
@@ -815,8 +816,8 @@
     <string name="Remove_UTXO">删除这个 UTXO?</string>
     <string name="Remove_Bot">删除机器人</string>
     <string name="Remove_Contact">删除联系人</string>
-    <string name="Remove_emergency_contact">移除紧急联系人</string>
-    <string name="Remove_emergency_contact_confirmation">确定移除紧急联系人？</string>
+    <string name="Remove_emergency_contact">移除恢复联系人</string>
+    <string name="Remove_emergency_contact_confirmation">确定移除恢复联系人？</string>
     <string name="Remove_Participants">移除成员</string>
     <string name="Remove_Stickers">移除所有表情</string>
     <string name="Removing">正在移除…</string>
@@ -878,7 +879,7 @@
     <string name="Secured_by_TIP">由 TIP 提供安全保障</string>
     <string name="Security">安全</string>
     <string name="Select">选择</string>
-    <string name="Select_Emergency_Contact">选择紧急联系人</string>
+    <string name="Select_Emergency_Contact">选择恢复联系人</string>
     <string name="Send">发送</string>
     <string name="Sending">发送中</string>
     <string name="Send_as_file">按文件发送</string>
@@ -925,14 +926,14 @@
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗。</string>
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
-    <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号或者助记词的情况下登录你的账号。</string>
-    <string name="setting_emergency_create_success">添加紧急联系人成功</string>
+    <string name="setting_emergency_content">恢复联系人旨在帮助你在丢失且无法找回手机号或者助记词的情况下登录你的账号。</string>
+    <string name="setting_emergency_create_success">添加恢复联系人成功</string>
     <string name="setting_emergency_desc">请放心，即使您的手机号丢失无法找回钱包资产也很安全，请牢记您的 PIN，阅读文档**了解更多**。</string>
-    <string name="setting_emergency_pin_tip">紧急联系人受 PIN 加密保护</string>
+    <string name="setting_emergency_pin_tip">恢复联系人受 PIN 加密保护</string>
     <string name="setting_emergency_send_code">请输入发送至以下 Mixin ID 的 4 位验证码：%1$s</string>
-    <string name="setting_emergency_set">设置紧急联系人</string>
-    <string name="setting_emergency_set_message">确认设置 Mixin ID %1$s 为你的紧急联系人？注意双方必须互为联系人才能设置成功！</string>
-    <string name="setting_emergency_warning">注意：紧急联系人无法帮助找回支付 PIN</string>
+    <string name="setting_emergency_set">设置恢复联系人</string>
+    <string name="setting_emergency_set_message">确认设置 Mixin ID %1$s 为你的恢复联系人？注意双方必须互为联系人才能设置成功！</string>
+    <string name="setting_emergency_warning">注意：恢复联系人无法帮助找回支付 PIN</string>
     <string name="setting_enable_biometric_pay">开启生物识别支付？</string>
     <string name="setting_incognito_prompt">禁止键盘个性化学习。</string>
     <string name="setting_mobile_contact_warning">确定删除已同步到 Mixin 服务器的通讯录？</string>
@@ -963,7 +964,7 @@
     <string name="snapshot_Hash">快照哈希</string>
     <string name="Sign_in">登录</string>
     <string name="Sign_in_desktop_app">登录桌面端</string>
-    <string name="Sign_with_emergency_contact">通过紧急联系人登录</string>
+    <string name="Sign_with_emergency_contact">通过恢复联系人登录</string>
     <string name="Sign_with_phone_number">通过手机号登录</string>
     <string name="Silence_Notification">静音通知</string>
     <string name="Size">大小</string>
@@ -1099,7 +1100,7 @@
     <string name="Videos">视频</string>
     <string name="View">查看</string>
     <string name="View_Authorization">查看授权</string>
-    <string name="View_emergency_contact">查看紧急联系人</string>
+    <string name="View_emergency_contact">查看恢复联系人</string>
     <string name="View_Wallet">查看钱包</string>
     <string name="Voice_call">语音通话</string>
     <string name="Waiting">等待中</string>
@@ -1158,7 +1159,7 @@
     <string name="You">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
-    <string name="Your_emergency_contact_has_been_changed">紧急联系人已更改</string>
+    <string name="Your_emergency_contact_has_been_changed">恢复联系人已更改</string>
     <string name="your_pin_has_been_created">PIN 已创建</string>
     <string name="text_size">字体大小</string>
     <string name="from_system">跟随系统</string>
