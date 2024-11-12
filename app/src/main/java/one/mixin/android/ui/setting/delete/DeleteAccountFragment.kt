@@ -80,16 +80,13 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
     }
 
     private fun verifyDeleteAccount() {
-        if (Session.getAccount()?.hasPin == true) {
+        if (!Session.hasPhone()){
+            deleteAnonymousUser()
+        } else if (Session.getAccount()?.hasPin == true) {
             VerifyBottomSheetDialogFragment.newInstance().apply {
                 if (Session.hasPhone()) {
                     setContinueCallback { dialog ->
                         showTip(dialog)
-                    }
-                } else {
-                    // Anonymous user
-                    setOnPinSuccess { pin ->
-                        deleteAnonymousUser(this, pin)
                     }
                 }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
@@ -125,19 +122,15 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         }
     }
 
-    private fun deleteAnonymousUser(dialog: DialogFragment, pin:String) {
+    private fun deleteAnonymousUser() {
         lifecycleScope.launch {
             if (viewModel.findAllAssetIdSuspend().isEmpty()) {
-                showDeleteDialog(pin) {
-                    dialog.dismiss()
-                }
+                DeleteAccountPinBottomSheetDialogFragment.newInstance(null).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
             } else {
-                dialog.dismiss()
                 DeleteAccountTipBottomSheetDialogFragment.newInstance()
                     .setContinueCallback { dialog ->
-                        showDeleteDialog(pin) {
-                            dialog.dismiss()
-                        }
+                        dialog.dismiss()
+                        DeleteAccountPinBottomSheetDialogFragment.newInstance(null).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
                     }
                     .showNow(
                         parentFragmentManager,
@@ -145,52 +138,6 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     )
             }
         }
-    }
-
-    private fun showDeleteDialog(
-        pin: String,
-        callback: () -> Unit,
-    ) {
-        alertDialogBuilder()
-            .setMessage(
-                getString(R.string.setting_delete_anonymous_account_pin_content, localDateString(System.currentTimeMillis() + 60 * 60 * 1000 * 24 * 30L))
-            )
-            .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                dialog.dismiss()
-                callback.invoke()
-            }
-            .setPositiveButton(R.string.Continue) { dialog, _ ->
-                lifecycleScope.launch {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            viewModel.deactivate(DeactivateRequest(pin = viewModel.getDeactivateTipBody(Session.getAccountId()!!, pin)))
-                        },
-                        successBlock = { response ->
-                            if (viewDestroyed()) return@handleMixinResponse
-                            dialog.dismiss()
-                            if (response.isSuccess) {
-                                MixinApplication.get().closeAndClear()
-                            }
-                            binding.deleteCover.isVisible = false
-                        },
-                        failureBlock = { r ->
-                            if (viewDestroyed()) return@handleMixinResponse true
-                            if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
-                                initAndLoadCaptcha()
-                                return@handleMixinResponse true
-                            }
-                            binding.deleteCover.isVisible = false
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            if (viewDestroyed()) return@handleMixinResponse false
-                            binding.deleteCover.isVisible = false
-                            return@handleMixinResponse false
-                        }
-                    )
-                }
-            }
-            .show()
     }
 
     private fun showDialog(

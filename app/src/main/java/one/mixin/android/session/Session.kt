@@ -99,7 +99,7 @@ object Session {
             }
         }
 
-    fun hasPhone():Boolean {
+    fun hasPhone(): Boolean {
         val account = getAccount()
         val phone = account?.phone
         return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)

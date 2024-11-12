@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
@@ -24,7 +23,6 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
             }
     }
 
-    private val mobileViewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     override fun onViewCreated(
@@ -33,6 +31,7 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.compose.setContent {
             RecoveryKitPage({
                 navTo(AddPhoneFragment.newInstance(), AddPhoneFragment.TAG)

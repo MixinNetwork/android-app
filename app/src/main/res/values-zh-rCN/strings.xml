@@ -1736,7 +1736,7 @@
     <string name="Set_up_Pin_answer_2">我将无法访问我的帐户和资金。</string>
     <string name="What_is_Pin">什么是 PIN ?</string>
     <string name="Recovery_Kit_instruction">Mixin Messenger的MPC钱包基于去中心化密钥协议TIP构建。您可以通过手机号码、助记符或受信任的联系人登录来恢复您的帐户。钱包的完整密钥仅存在于当前设备的TEK安全环境中。阅读文档以了解%1$s。</string>
-    <string name="Recovery_Kit_Attention">注意：Recovery Kit无法帮助您恢复密码</string>
+    <string name="Recovery_Kit_Attention">注意：Recovery Kit 无法帮助您恢复密码</string>
     <string name="Mobile_Number">手机号码</string>
     <string name="Recovery_Contact">恢复联系人</string>
     <string name="Backup_Mnemonic_Phrase">备份助记词</string>
