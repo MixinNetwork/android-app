@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeCollectible
@@ -86,6 +88,18 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
+        SELECT i.* FROM outputs o 
+        INNER JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
+        INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
+        INNER JOIN tokens t on t.collection_hash = i.collection_hash
+        WHERE o.state = 'unspent' AND ic.collection_hash = :collectionHash
+        ORDER BY i.sequence ASC
+        """,
+    )
+    fun inscriptionItemsFlowByCollectionHash(collectionHash: String): Flow<List<InscriptionItem>>
+
+    @Query(
+        """
         SELECT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o 
         INNER JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
@@ -115,6 +129,17 @@ interface OutputDao : BaseDao<Output> {
     )
     fun collections(orderBy: String): LiveData<List<SafeCollection>>
 
+
+    @Query(
+        """
+        SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, COUNT(CASE WHEN o.state = 'unspent' THEN o.inscription_hash END) AS inscription_count
+        FROM inscription_collections ic 
+        INNER JOIN inscription_items i ON ic.collection_hash = i.collection_hash
+        LEFT JOIN outputs o ON o.inscription_hash = i.inscription_hash
+        WHERE  ic.collection_hash = :hash 
+        """,
+    )
+    fun collectionFlowByHash(hash: String): Flow<SafeCollection?>
 
     @Query(
         """

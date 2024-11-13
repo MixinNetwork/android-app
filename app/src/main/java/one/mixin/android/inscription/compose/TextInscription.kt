@@ -22,7 +22,7 @@ import one.mixin.android.util.TextLoaderComposable
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 @Composable
-fun TextInscription(iconUrl: String?, contentUrl:String?, modifier:Modifier = Modifier) {
+fun TextInscription(iconUrl: String?, contentUrl: String?, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -43,7 +43,7 @@ fun TextInscription(iconUrl: String?, contentUrl:String?, modifier:Modifier = Mo
                     .data(iconUrl)
                     .transformations(CoilRoundedHexagonTransformation())
                     .build(),
-                modifier =Modifier.size(100.dp),
+                modifier = Modifier.size(100.dp),
                 placeholder = R.drawable.ic_text_inscription,
             )
             Spacer(modifier = Modifier.height(10.dp))

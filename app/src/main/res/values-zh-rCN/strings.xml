@@ -1213,6 +1213,7 @@
     <string name="search_placeholder_address">名称, 地址</string>
     <string name="search_placeholder_dapp">名称, URL</string>
     <string name="search_placeholder_app">搜索 ID 或 名字</string>
+    <string name="search_placeholder_inscription">搜索 ID</string>
     <string name="NO_DAPP">没有 dApp</string>
     <string name="dapp_description">此 dApp 已经与你的钱包连接，并被授权查看你的钱包余额及活动，也可向你发出转账请求。</string>
     <string name="disconnect">断开连接</string>
@@ -1697,4 +1698,5 @@
     <string name="Alert_Not_Support">暂不支持</string>
     <string name="All_Alert">所有价格预警</string>
     <string name="Trending_Dapps">热门 dApp</string>
+    <string name="Send_Collectible">发送藏品</string>
 </resources>

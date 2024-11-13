@@ -1242,6 +1242,7 @@
     <string name="search_placeholder_address">Label, Address</string>
     <string name="search_placeholder_dapp">Name, URL</string>
     <string name="search_placeholder_app">Search ID or name</string>
+    <string name="search_placeholder_inscription">Search ID</string>
     <string name="NO_DAPP">NO DAPP</string>
     <string name="dapp_description">This dApp has connected to your wallet, it can view your wallet balance, activity and request approval for transactions.</string>
     <string name="disconnect">Disconnect</string>
@@ -1738,4 +1739,5 @@
     <string name="Alert_Not_Support">Not Support</string>
     <string name="All_Alert">All Alert</string>
     <string name="Trending_Dapps">Trending Dapps</string>
+    <string name="Send_Collectible">Send Collectible</string>
 </resources>
