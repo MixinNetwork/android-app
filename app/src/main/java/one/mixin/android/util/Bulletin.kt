@@ -220,7 +220,6 @@ class EmergencyContactBulletin(
 }
 
 class BackupMnemonicPhraseBulletin(
-
     private val bulletinView: BulletinView,
     private val account: Account?,
 ) : Bulletin {
@@ -228,11 +227,11 @@ class BackupMnemonicPhraseBulletin(
     private val context = bulletinView.context
 
     override fun show(chain: Bulletin.Chain): Boolean {
-        val exported = Session.saltExported()
-        if (!exported) {
+        val display = !Session.saltExported() && !Session.hasPhone()
+        if (display) {
             bulletinView.setTypeAndCallback(BulletinView.Type.BackupMnemonicPhrase, bulletinMnemonicPhraseCallback)
         }
-        return !exported
+        return display
     }
 
     private val bulletinMnemonicPhraseCallback =

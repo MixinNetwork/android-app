@@ -959,9 +959,6 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun openWallet() {
-        if (!Session.saltExported()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().show(supportFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
-        }
         navigationController.pushWallet(walletFragment)
     }
 
