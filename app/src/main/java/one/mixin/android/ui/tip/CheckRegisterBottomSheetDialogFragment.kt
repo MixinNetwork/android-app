@@ -171,7 +171,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             }
 
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-            val masterKey = tip.getMasterKey(this.requireContext())
+            val masterKey = tip.getMasterKeyFromMnemonic(this.requireContext())
             val salt = masterKey.privKeyBytes
             val saltBase64 = tip.getEncryptSalt(requireContext(), pin, seed)
             val spendSeed = tip.getSpendPriv(seed, salt)

@@ -171,7 +171,7 @@ class Tip
                 }
             }
 
-        fun getMasterKey(context: Context): DeterministicKey {
+        fun getMasterKeyFromMnemonic(context: Context): DeterministicKey {
             var entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
             if (entropy == null) { // Register safe must generate mnemonic
                 entropy = generateEntropyAndStore(context)
