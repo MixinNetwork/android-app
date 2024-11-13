@@ -239,7 +239,7 @@ class Tip
             ): ByteArray {
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
                 val salt = aesDecrypt(saltAESKey, encryptedSalt)
-                return argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
+                return getSpendPriv(tipPriv, salt)
             }
 
         private fun getSalt(
