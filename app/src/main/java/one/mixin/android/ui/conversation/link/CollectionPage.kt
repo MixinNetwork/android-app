@@ -198,6 +198,7 @@ fun CollectionItem(name: String, inscription: InscriptionItem, click: (Inscripti
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(8.dp)),
+                        fontSize = 6.sp
                     )
                 } else {
                     CoilImage(
