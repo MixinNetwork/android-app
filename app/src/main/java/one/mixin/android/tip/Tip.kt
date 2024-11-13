@@ -253,8 +253,8 @@ class Tip
         }
 
         fun getSpendPriv(
-            salt: ByteArray,
             tipPriv: ByteArray,
+            salt: ByteArray,
         ): ByteArray =
             argon2Kt.argon2IHash(tipPriv, salt).rawHashAsByteArray()
 

@@ -536,7 +536,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val masterKey = tip.getMasterKey(this.requireContext())
             val salt = masterKey.privKeyBytes
             val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed)
-            val spendSeed = tip.getSpendPriv(salt, seed)
+            val spendSeed = tip.getSpendPriv(seed, salt)
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
