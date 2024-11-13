@@ -9,24 +9,15 @@
     android:focusable="true"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/back_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin12"
-        android:background="@drawable/mixin_ripple"
-        android:contentDescription="@string/Landing_back"
-        android:padding="@dimen/margin12"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.023"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_arrow_back" />
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/back_iv"
+        android:layout_below="@id/title_view"
         android:orientation="vertical">
 
         <TextSwitcher

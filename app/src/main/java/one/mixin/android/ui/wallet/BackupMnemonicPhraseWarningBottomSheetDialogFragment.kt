@@ -43,7 +43,10 @@ class BackupMnemonicPhraseWarningBottomSheetDialogFragment : MixinBottomSheetDia
             dismissNow()
         }
         binding.later.setOnClickListener {
+            laterCallback?.invoke()
             dismissNow()
         }
     }
+
+    var laterCallback: (() -> Unit)? = null
 }

@@ -194,7 +194,7 @@ class EmergencyContactBulletin(
     override fun show(chain: Bulletin.Chain): Boolean {
         val emergencyContactTime = context.defaultSharedPreferences.getLong(PREF_EMERGENCY_CONTACT, 0)
         if (System.currentTimeMillis() - emergencyContactTime > INTERVAL_7_DAYS &&
-            extraCondition &&
+            extraCondition && Session.hasPhone() &&
             (Session.getAccount()?.hasEmergencyContact == true).not()
         ) {
             bulletinView.setTypeAndCallback(BulletinView.Type.EmergencyContact, bulletinEmergencyContactCallback)

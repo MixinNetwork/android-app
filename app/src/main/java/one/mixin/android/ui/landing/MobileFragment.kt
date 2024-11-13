@@ -111,7 +111,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             if (pin != null) {
                 titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
             }
-            backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+            binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             val policy: String = requireContext().getString(R.string.Privacy_Policy)
             val termsService: String = requireContext().getString(R.string.Terms_of_Service)
             val policyWrapper = requireContext().getString(R.string.landing_introduction, "**$policy**", "**$termsService**")
