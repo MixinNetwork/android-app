@@ -13,18 +13,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
 fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
+    val context = LocalContext.current
     MixinAppTheme {
         Column {
             MixinTopAppBar(
@@ -48,7 +52,7 @@ fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
                         fontSize = 14.sp,
                         lineHeight = 21.sp
                     ) {
-
+                        context.openUrl(Constants.HelpLink.TIP)
                     }
                 } else {
                     HighlightedTextWithClick(
@@ -59,7 +63,7 @@ fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
                         fontSize = 14.sp,
                         lineHeight = 21.sp
                     ) {
-
+                        context.openUrl(Constants.HelpLink.TIP)
                     }
                 }
                 Spacer(modifier = Modifier.height(36.dp))

@@ -18,17 +18,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
 fun MnemonicPhraseBackupPage(pop: () -> Unit, next: () -> Unit) {
+    val context = LocalContext.current
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Mnemonic_Phrase),
@@ -47,7 +51,7 @@ fun MnemonicPhraseBackupPage(pop: () -> Unit, next: () -> Unit) {
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     stringResource(R.string.Set_up_Pin_more)
                 ) {
-                    // Todo
+                    context.openUrl(Constants.HelpLink.TIP)
                 }
                 Spacer(modifier = Modifier.height(36.dp))
                 Row(
