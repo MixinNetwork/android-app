@@ -962,11 +962,15 @@ class TokenRepository
 
         fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = outputDao.collectibles(sortOrder.name)
 
+        fun inscriptionItemsFlowByCollectionHash(collectionHash: String): Flow<List<InscriptionItem>> = inscriptionCollectionDao.inscriptionItemsFlowByCollectionHash(collectionHash)
+
         fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = outputDao.collectiblesByHash(collectionHash)
 
         fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
 
         fun collectionByHash(hash: String): LiveData<SafeCollection?> = outputDao.collectionByHash(hash)
+
+        fun collectionFlowByHash(hash: String): Flow<InscriptionCollection?> = inscriptionCollectionDao.collectionFlowByHash(hash)
 
         fun inscriptionByHash(hash: String) = inscriptionDao.inscriptionByHash(hash)
 

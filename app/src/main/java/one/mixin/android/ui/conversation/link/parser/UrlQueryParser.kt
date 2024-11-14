@@ -96,4 +96,8 @@ class UrlQueryParser(uri: Uri, from: Int) {
     val inscription: String? by lazy {
         uri.getQueryParameter("inscription")
     }
+
+    val inscriptionCollection: String? by lazy {
+        uri.getQueryParameter("inscription_collection")
+    }
 }
