@@ -142,10 +142,10 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
                     Icon(
                         painter = painterResource(R.drawable.ic_collectibles),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textMinor,
+                        tint = MixinAppTheme.colors.textRemarks,
                     )
                     Spacer(modifier = Modifier.height(22.dp))
-                    Text(stringResource(R.string.NO_COLLECTIBLES), color = MixinAppTheme.colors.textMinor)
+                    Text(stringResource(R.string.NO_COLLECTIBLES), color = MixinAppTheme.colors.textRemarks)
                 }
             } else if (filteredCollectibles.isEmpty()) {
                 Column(
@@ -156,10 +156,10 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
                     Icon(
                         painter = painterResource(R.drawable.ic_empty_file),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textMinor,
+                        tint = MixinAppTheme.colors.textRemarks,
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textMinor)
+                    Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textRemarks)
                 }
             } else {
                 LazyColumn {
