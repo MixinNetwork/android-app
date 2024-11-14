@@ -96,7 +96,7 @@ interface AccountService {
     ): MixinResponse<Account>
 
     @POST("me/salt_export")
-    suspend fun saltExport(@Body exportRequest: ExportRequest): MixinResponse<ExportResponse>
+    suspend fun saltExport(@Body exportRequest: ExportRequest): MixinResponse<Account>
 
     @POST("logout")
     suspend fun logout(

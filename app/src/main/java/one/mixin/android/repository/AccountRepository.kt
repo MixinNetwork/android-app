@@ -201,7 +201,7 @@ class AccountRepository
 
         suspend fun saltExport(
             exportRequest: ExportRequest
-        ): MixinResponse<ExportResponse> = accountService.saltExport(exportRequest)
+        ): MixinResponse<Account> = accountService.saltExport(exportRequest)
 
         suspend fun authorize(
             authorizationId: String,

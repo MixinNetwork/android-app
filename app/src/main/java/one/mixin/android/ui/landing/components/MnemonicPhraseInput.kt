@@ -331,6 +331,9 @@ fun MnemonicPhraseInput(
                                                 pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
                                             )
                                         )
+                                        r.data?.let {
+                                            Session.storeAccount(it)
+                                        }
 
                                         errorInfo = if (!r.isSuccess) {
                                             context.getMixinErrorStringByCode(r.errorCode, r.errorDescription)
@@ -340,7 +343,6 @@ fun MnemonicPhraseInput(
                                     }
                                 }.onSuccess {
                                     loading = false
-                                    Session.storeAccount(Session.getAccount()!!.copy(exportedSaltAt = nowInUtc()))
                                     if (errorInfo.isBlank()) onComplete.invoke(inputs)
                                 }.onFailure {
                                     errorInfo = it.message ?: ""
