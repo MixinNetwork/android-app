@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.home.web3.components.InscriptionState
+import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeCollectible
@@ -115,7 +117,6 @@ interface OutputDao : BaseDao<Output> {
     )
     fun collections(orderBy: String): LiveData<List<SafeCollection>>
 
-
     @Query(
         """
         SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, COUNT(CASE WHEN o.state = 'unspent' THEN o.inscription_hash END) AS inscription_count
@@ -163,4 +164,5 @@ interface OutputDao : BaseDao<Output> {
     """,
     )
     suspend fun findUnspentInscriptionHash(): List<String>
+
 }

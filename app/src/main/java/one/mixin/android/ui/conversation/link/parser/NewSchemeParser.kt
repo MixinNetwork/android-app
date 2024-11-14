@@ -18,6 +18,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.conversation.link.CollectionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -54,11 +55,11 @@ class NewSchemeParser(
             val asset = urlQueryParser.asset
             val amount = urlQueryParser.amount
             val traceId = urlQueryParser.trace ?: UUID.randomUUID().toString()
-            if ((asset != null && amount != null) || urlQueryParser.inscription != null) {
+            if ((asset != null && amount != null) || urlQueryParser.inscription != null || urlQueryParser.inscriptionCollection != null) {
                 val status = getPaymentStatus(traceId) ?: return Result.failure(ParserError(FAILURE))
                 if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
                 val token: TokenItem?
-                if (urlQueryParser.inscription == null) {
+                if (urlQueryParser.inscription == null && urlQueryParser.inscriptionCollection == null) {
                     token = checkToken(asset!!) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
                     val tokensExtra = linkViewModel.findTokensExtra(asset)
                     if (tokensExtra == null) {
@@ -72,6 +73,11 @@ class NewSchemeParser(
 
                 if (payType == PayType.Uuid) {
                     val user = linkViewModel.refreshUser(urlQueryParser.userId) ?: return Result.failure(ParserError(FAILURE))
+                    if (urlQueryParser.inscriptionCollection != null) {
+                        checkInscriptionCollection(urlQueryParser.inscriptionCollection!!) ?: return Result.failure(ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.collectible_not_found)))
+                        CollectionBottomSheetDialogFragment.newInstance(urlQueryParser.inscriptionCollection!!, traceId, urlQueryParser.userId, urlQueryParser.memo).showNow(bottomSheet.parentFragmentManager, CollectionBottomSheetDialogFragment.TAG)
+                        return Result.success(SUCCESS)
+                    }
                     val biometricItem =
                         if (urlQueryParser.inscription != null) {
                             buildInscriptionTransfer(urlQueryParser, user.userId, traceId)
