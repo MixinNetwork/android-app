@@ -318,6 +318,9 @@
     <string name="default_time">00:00</string>
     <string name="Delete">Delete</string>
     <string name="delete_account_hint">Delete your account info and profile photo</string>
+    <string name="delete_account_hint_2">Local messages and Backups will not be Deleted automatically</string>
+    <string name="delete_account_hint_3">Transactions CANNOT be deleted</string>
+    <string name="delete_account_hint_4">All assets will be lost</string>
     <string name="Delete_address">Delete address</string>
     <string name="Delete_emergency_contact">Delete emergency contact</string>
     <string name="Delete_for_everyone">Delete for Everyone</string>
@@ -939,7 +942,6 @@
     <string name="setting_data_mobile">When using mobile data</string>
     <string name="setting_data_title">Media auto-download</string>
     <string name="setting_data_wifi">When connected on Wi-Fi</string>
-    <string name="setting_delete_account_content_2">Local messages and Backups will not be Deleted automatically</string>
     <string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to **learn more**.</string>
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
     <string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be abandoned along with the wallet and cannot be recovered.</string>
@@ -1050,7 +1052,6 @@
     <string name="Transaction_Id">Transaction Id</string>
     <string name="Transaction_Type">Transaction Type</string>
     <string name="Transactions">Transactions</string>
-    <string name="Transactions_CANNOT_be_deleted">Transactions CANNOT be deleted</string>
     <string name="Transcript">Transcript</string>
     <string name="Transfer">Transfer</string>
     <string name="Transfer_Amount">Transfer Amount</string>
