@@ -306,7 +306,7 @@ fun MnemonicPhraseInput(
                 Spacer(modifier = Modifier.height(8.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Button(
                 modifier = Modifier
                     .fillMaxWidth()

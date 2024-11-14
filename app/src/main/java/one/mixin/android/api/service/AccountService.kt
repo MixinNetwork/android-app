@@ -20,7 +20,6 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AddressResponse
 import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.ExportRequest
-import one.mixin.android.api.response.ExportResponse
 import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
