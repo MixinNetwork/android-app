@@ -142,7 +142,7 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
                     Icon(
                         painter = painterResource(R.drawable.ic_collectibles),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textRemarks,
+                        tint = Color(0xFFD3D4D5),
                     )
                     Spacer(modifier = Modifier.height(22.dp))
                     Text(stringResource(R.string.NO_COLLECTIBLES), color = MixinAppTheme.colors.textRemarks)
@@ -156,7 +156,7 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
                     Icon(
                         painter = painterResource(R.drawable.ic_empty_file),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textRemarks,
+                        tint = Color(0xFFD3D4D5),
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textRemarks)
