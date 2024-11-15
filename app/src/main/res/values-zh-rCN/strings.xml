@@ -1340,7 +1340,7 @@
     <string name="insufficient_balance">余额不足</string>
     <string name="utxo_count_exceeded">该交易使用的 UTXO 数量过多，请尝试首先归集 UTXO 或者分批转账。</string>
     <string name="Combine_utxo">归集 UTXO</string>
-    <string name="asset_migration_hint">您还有资产在旧的 Mixin 网络，点击查看。</string>
+    <string name="Legacy_Network">旧网络</string>
     <string name="deposit_hash">充值哈希</string>
     <string name="withdrawal_hash">提现哈希</string>
     <string name="Anonymous">匿名</string>

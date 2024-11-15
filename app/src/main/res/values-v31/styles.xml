@@ -73,7 +73,9 @@
         <item name="bg_tip_warning">@color/bgTipWarning</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
 
-        <item name="ic_wallet">@color/musicPlayed</item>
+        <item name="ic_wallet_receive">#0FB321</item>
+        <item name="ic_wallet_send">#3D75E3</item>
+        <item name="ic_wallet_swap">#8A6BFF</item>
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>
         <item name="music_buffered">@color/musicBuffered</item>

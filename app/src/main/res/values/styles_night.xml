@@ -62,7 +62,9 @@
         <item name="icon_chain">@color/iconChainNight</item>
         <item name="bg_market_card">@drawable/bg_market_card_night</item>
 
-        <item name="ic_wallet">@color/white</item>
+        <item name="ic_wallet_receive">#82D28B</item>
+        <item name="ic_wallet_send">#75B6FF</item>
+        <item name="ic_wallet_swap">#B085FF</item>
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>
         <item name="music_buffered">@color/musicBufferedNight</item>

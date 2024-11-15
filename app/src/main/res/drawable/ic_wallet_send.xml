@@ -9,13 +9,13 @@
       android:fillAlpha="0.2"/>
   <path
       android:pathData="M24.707,16.293C24.317,15.902 23.683,15.902 23.293,16.293L18.293,21.293C17.902,21.683 17.902,22.317 18.293,22.707C18.683,23.098 19.317,23.098 19.707,22.707L23,19.414V28C23,28.552 23.448,29 24,29C24.552,29 25,28.552 25,28V19.414L28.293,22.707C28.683,23.098 29.317,23.098 29.707,22.707C30.098,22.317 30.098,21.683 29.707,21.293L24.707,16.293Z"
-      android:fillColor="?attr/music_played"
+      android:fillColor="?attr/ic_wallet_send"
       android:fillType="evenOdd"/>
   <path
       android:pathData="M18,31L30,31"
       android:strokeLineJoin="round"
       android:strokeWidth="2"
       android:fillColor="#00000000"
-      android:strokeColor="?attr/music_played"
+      android:strokeColor="?attr/ic_wallet_send"
       android:strokeLineCap="round"/>
 </vector>

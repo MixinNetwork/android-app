@@ -403,17 +403,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         }
         walletViewModel.assetsWithBalance().observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                _headBinding?.migrate?.isVisible = true
-                _headBinding?.migrate?.setOnClickListener {
-                    lifecycleScope.launch click@{
-                        val bot = walletViewModel.findBondBotUrl() ?: return@click
-                        WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
-                    }
-                }
-            } else {
-                _headBinding?.migrate?.isVisible = false
-            }
+            migrateEnable = it.isNotEmpty()
         }
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -423,6 +413,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         checkPin()
     }
+
+    private var migrateEnable = false
 
     private var lastFiatCurrency :String? = null
 
@@ -621,12 +613,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
+        bottomBinding.migrate.isVisible = migrateEnable
         bottomBinding.hide.setOnClickListener {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.Hidden)
             bottomSheet.dismiss()
         }
         bottomBinding.transactionsTv.setOnClickListener {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+            bottomSheet.dismiss()
+        }
+        bottomBinding.migrate.setOnClickListener {
+            lifecycleScope.launch click@{
+                val bot = walletViewModel.findBondBotUrl() ?: return@click
+                WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
+            }
             bottomSheet.dismiss()
         }
 
