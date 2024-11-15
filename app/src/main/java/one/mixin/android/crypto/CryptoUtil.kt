@@ -20,8 +20,6 @@ import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
 import one.mixin.eddsa.Field25519
-import org.bitcoinj.crypto.DeterministicKey
-import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
 import org.komputing.khash.keccak.KeccakParameter
 import org.komputing.khash.keccak.extensions.digestKeccak
 import org.whispersystems.curve25519.Curve25519
@@ -303,7 +301,7 @@ private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
     return strippedKey.toString().trim { it <= ' ' }
 }
 
-fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
+fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
     val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
         ENCRYPTED_MNEMONIC,
@@ -316,7 +314,7 @@ fun storeMnemonicInEncryptedPreferences(context: Context, alias: String, entropy
     encryptedPrefs.edit().putString(alias, encodedKey).apply()
 }
 
-fun clearMnemonic(context: Context, alias: String) {
+fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
     val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
         ENCRYPTED_MNEMONIC,
@@ -328,7 +326,7 @@ fun clearMnemonic(context: Context, alias: String) {
     encryptedPrefs.edit().remove(alias).apply()
 }
 
-fun getMnemonicFromEncryptedPreferences(context: Context, alias: String): ByteArray? {
+fun getValueFromEncryptedPreferences(context: Context, alias: String): ByteArray? {
     val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
         ENCRYPTED_MNEMONIC,

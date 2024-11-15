@@ -21,7 +21,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
-import one.mixin.android.crypto.clearMnemonic
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentTipBinding
@@ -556,7 +556,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             return@runCatching if (registerResp.isSuccess) {
                 Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
                 if (Session.hasPhone()) { // Only clear Phone user
-                    clearMnemonic(requireContext(), Constants.Tip.MNEMONIC)
+                    removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                 }
                 true
             } else {

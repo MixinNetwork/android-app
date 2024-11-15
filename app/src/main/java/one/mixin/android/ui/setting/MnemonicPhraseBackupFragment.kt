@@ -115,7 +115,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                     }
 
                     composable(MnemonicPhraseBackupStep.Pin.name) {
-                        MnemonicPhraseBackupPinPage({
+                        MnemonicPhraseBackupPinPage(tip, {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, { pin ->
                             this@MnemonicPhraseBackupFragment.pin = pin

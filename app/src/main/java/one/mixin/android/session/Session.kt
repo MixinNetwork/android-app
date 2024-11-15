@@ -107,7 +107,7 @@ object Session {
 
     fun saltExported(): Boolean {
         val account = getAccount()
-        val exportedSaltAt = account?.exportedSaltAt ?: return false
+        val exportedSaltAt = account?.saltExportedAt ?: return false
         val baseInstant = Instant.parse("0001-01-01T00:00:00Z")
         return Instant.parse(exportedSaltAt).isAfter(baseInstant)
     }

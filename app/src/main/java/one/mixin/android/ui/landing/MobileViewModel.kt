@@ -9,7 +9,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
@@ -70,7 +69,7 @@ internal constructor(
                 verificationCode,
                 purpose = VerificationPurpose.PHONE.name,
                 pin = pinCipher.encryptPin(pin, TipBody.forPhoneNumberUpdate(id, verificationCode)),
-                salt_base64 = saltBase64
+                saltBase64 = saltBase64
             ),
         )
 
@@ -107,9 +106,9 @@ internal constructor(
         val r = accountRepository.verification(
             VerificationRequest(
                 purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
-                public_key_hex = publicKeyHex,
-                message_hex = messageHex,
-                signature_hex = signatureHex,
+                masterPublicHex = publicKeyHex,
+                masterMessageHex = messageHex,
+                masterSignatureHex = signatureHex,
                 hCaptchaResponse = hCaptchaResponse,
                 gRecaptchaResponse = gRecaptchaResponse
             )

@@ -90,15 +90,17 @@ fun MnemonicPhrasePage(
                 }
 
                 MnemonicPhraseState.Failure -> {
-                    Text(
-                        errorInfo ?: "",
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        fontSize = 14.sp, color = MixinAppTheme.colors.red
-                    )
                 }
 
                 MnemonicPhraseState.Success -> {
                 }
+            }
+            if (!errorInfo.isNullOrBlank()) {
+                Text(
+                    errorInfo,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontSize = 14.sp, color = MixinAppTheme.colors.red
+                )
             }
 
             Spacer(modifier = Modifier.weight(1f))

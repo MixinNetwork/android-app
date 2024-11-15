@@ -1,12 +1,9 @@
 package one.mixin.android.tip
 
 import android.content.Context
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.lambdapioneer.argon2kt.Argon2Kt
 import ed25519.Ed25519
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Tip.ENCRYPTED_MNEMONIC
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
@@ -21,11 +18,11 @@ import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
-import one.mixin.android.crypto.getMnemonicFromEncryptedPreferences
+import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
-import one.mixin.android.crypto.storeMnemonicInEncryptedPreferences
+import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.event.TipEvent
@@ -34,6 +31,7 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceString
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.remove
@@ -172,7 +170,7 @@ class Tip
             }
 
         fun getMasterKeyFromMnemonic(context: Context): DeterministicKey {
-            var entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+            var entropy = getMnemonicFromEncryptedPreferences(context)
             if (entropy == null) { // Register safe must generate mnemonic
                 entropy = generateEntropyAndStore(context)
             }
@@ -180,11 +178,17 @@ class Tip
             return createMasterPrivateKey(seed)
         }
 
-        fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, force: Boolean = false): String {
+        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, force: Boolean = false): String {
             val salt = if (Session.hasPhone() || force) {
-                getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+                var local = getMnemonicFromEncryptedPreferences(context)
+                if (local == null) {
+                    val saltAESKey = generateSaltAESKey(pin, tipPriv)
+                    val encryptedSalt = this@Tip.getEncryptedSalt(context)
+                    local = aesDecrypt(saltAESKey, encryptedSalt)
+                }
+                local
             } else {
-                byteArrayOf(0x00)
+                ByteArray(16)
             }
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
             val encryptedSalt = aesEncrypt(saltAESKey, salt)
@@ -195,26 +199,37 @@ class Tip
         // Each user can only generate once
         fun generateEntropyAndStore(context: Context): ByteArray {
             val entropy = generateRandomBytes(16)
-            storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
+            storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
             return entropy
         }
 
+        suspend fun getMnemonicEdKey(context: Context, pin: String, tipPriv: ByteArray): EdKeyPair {
+            var entropy = getMnemonicFromEncryptedPreferences(context)
+            if (entropy == null) {
+                val saltAESKey = generateSaltAESKey(pin, tipPriv)
+                val encryptedSalt = getEncryptedSalt(context)
+                entropy = aesDecrypt(saltAESKey, encryptedSalt)
+            }
+            val edKey = newKeyPairFromMnemonic(toMnemonic(entropy))
+            return edKey
+        }
+
         fun getMnemonicEdKey(context: Context): EdKeyPair {
-            val entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC) ?: throw NullPointerException()
+            val entropy = getMnemonicFromEncryptedPreferences(context) ?: throw NullPointerException()
             val edKey = newKeyPairFromMnemonic(toMnemonic(entropy))
             return edKey
         }
 
         suspend fun getMnemonicOrFetchFromSafe(context: Context, pin: String): List<String>? {
-            val entropy = getMnemonicFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+            val entropy = getMnemonicFromEncryptedPreferences(context)
             if (entropy != null) {
                 return toMnemonic(entropy).split(" ")
             } else {
                 val tipPrivateKey = getOrRecoverTipPriv(context, pin).getOrThrow()
                 val safeEntropy = getSalt(getEncryptedSalt(context), pin, tipPrivateKey)
-                if (safeEntropy.contentEquals(byteArrayOf(0x00)))return null
+                if (safeEntropy.contentEquals(ByteArray(16))) return null
                 val mn = toMnemonic(safeEntropy) // legacy user salt 32 bytes
-                storeMnemonicInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
+                storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
                 return mn.split(" ")
             }
         }
@@ -650,6 +665,10 @@ class Tip
         private fun clearTipPriv(context: Context) {
             context.defaultSharedPreferences.remove(Constants.Tip.TIP_PRIV)
             deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
+        }
+
+        private fun getMnemonicFromEncryptedPreferences(context: Context): ByteArray? {
+            return getValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
         }
 
         fun addObserver(observer: Observer) {

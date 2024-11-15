@@ -45,7 +45,7 @@ import leakcanary.ReachabilityWatcher
 import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
-import one.mixin.android.crypto.clearMnemonic
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
@@ -271,7 +271,7 @@ open class MixinApplication :
             WebStorage.getInstance().deleteAllData()
             releaseAll()
             PipVideoView.release()
-            clearMnemonic(this@MixinApplication, Constants.Tip.MNEMONIC)
+            removeValueFromEncryptedPreferences(this@MixinApplication, Constants.Tip.MNEMONIC)
             applicationScope.launch {
                 clearData(sessionId)
                 withContext(Dispatchers.Main) {
@@ -294,7 +294,7 @@ open class MixinApplication :
         clearPrivacyPreferences(this)
         MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
         SignalDatabase.getDatabase(this).clearAllTables()
-        clearMnemonic(this, Constants.Tip.MNEMONIC)
+        removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
     }
 
     var activityInForeground = true

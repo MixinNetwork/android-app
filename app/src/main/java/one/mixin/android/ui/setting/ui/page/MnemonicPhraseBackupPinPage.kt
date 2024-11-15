@@ -50,14 +50,19 @@ import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.WalletViewModel
 
 @Composable
-fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
+fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var isLoading by remember { mutableStateOf(false) }
@@ -126,7 +131,21 @@ fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
                         isLoading = true
                         coroutineScope.launch {
                             runCatching {
-                                viewModel.verifyPin(pinCode)
+                                if (Session.hasPhone() && !Session.saltExported()) {
+                                    val selfId = Session.getAccountId()!!
+                                    val seed = tip.getOrRecoverTipPriv(context, pinCode).getOrThrow()
+                                    val edKey = tip.getMnemonicEdKey(context, pinCode, seed)
+                                    viewModel
+                                        .saltExport(
+                                            ExportRequest(
+                                                publicKey = edKey.publicKey.toHex(),
+                                                signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
+                                                pinBase64 = viewModel.getEncryptedTipBody(selfId, pinCode),
+                                            )
+                                        )
+                                } else {
+                                    viewModel.verifyPin(pinCode)
+                                }
                             }.onSuccess { response ->
                                 if (response.isSuccess) {
                                     next(pinCode)
@@ -224,9 +243,6 @@ fun MnemonicPhraseBackupPinPage(pop: () -> Unit, next: (String) -> Unit) {
                                                     }
                                                 } else if (pinCode.length < 6) {
                                                     pinCode += list[index]
-                                                    if (pinCode.length == 6) {
-                                                        // Todo
-                                                    }
                                                 }
                                             }
                                         },

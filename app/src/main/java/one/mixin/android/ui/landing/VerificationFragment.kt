@@ -28,7 +28,7 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.crypto.clearMnemonic
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
@@ -214,7 +214,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                                 requireArguments().getString(ARGS_PHONE_NUM)
                                     ?: return@withContext
                             viewModel.updatePhone(a.userId, phone)
-                            clearMnemonic(requireContext(), Constants.Tip.MNEMONIC)
+                            removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             a.phone = phone
                             Session.storeAccount(a)
                         }
@@ -253,9 +253,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             val accountRequest =
                 AccountRequest(
                     binding.pinVerificationView.code(),
-                    registration_id = registrationId,
+                    registrationId = registrationId,
                     purpose = VerificationPurpose.SESSION.name,
-                    session_secret = sessionSecret,
+                    sessionSecret = sessionSecret,
                 )
 
             handleMixinResponse(

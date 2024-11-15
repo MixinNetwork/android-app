@@ -10,6 +10,8 @@ import kotlin.random.Random
 class AnonymousMessage(
     @SerializedName("random")
     var random: String = "",
+    @SerializedName("master_public_hex")
+    val masterPublicHex: String,
     @SerializedName("created_at")
     val createdAt: String
 )

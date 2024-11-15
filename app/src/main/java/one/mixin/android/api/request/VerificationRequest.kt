@@ -10,10 +10,14 @@ data class VerificationRequest(
     var gRecaptchaResponse: String? = null,
     @SerializedName("hcaptcha_response")
     var hCaptchaResponse: String? = null,
-    val package_name: String = BuildConfig.APPLICATION_ID,
-    val public_key_hex: String? = null,
-    val message_hex: String? = null,
-    val signature_hex: String? = null
+    @SerializedName("package_name")
+    val packageName: String = BuildConfig.APPLICATION_ID,
+    @SerializedName("master_public_hex")
+    val masterPublicHex: String? = null,
+    @SerializedName("master_message_hex")
+    val masterMessageHex: String? = null,
+    @SerializedName("master_signature_hex")
+    val masterSignatureHex: String? = null,
 )
 
 enum class VerificationPurpose {

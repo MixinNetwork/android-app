@@ -6,17 +6,27 @@ import one.mixin.android.BuildConfig
 
 data class AccountRequest(
     val code: String? = null,
-    val notification_token: String? = null,
-    val registration_id: Int? = null,
+    @SerializedName("notification_token")
+    val notificationToken: String? = null,
+    @SerializedName("registration_id")
+    val registrationId: Int? = null,
     val platform: String = "Android",
-    val platform_version: String = Build.VERSION.RELEASE,
-    val app_version: String = BuildConfig.VERSION_NAME,
-    val package_name: String = BuildConfig.APPLICATION_ID,
+    @SerializedName("platform_version")
+    val platformVersion: String = Build.VERSION.RELEASE,
+    @SerializedName("app_version")
+    val appVersion: String = BuildConfig.VERSION_NAME,
+    @SerializedName("package_name")
+    val packageName: String = BuildConfig.APPLICATION_ID,
     var purpose: String = VerificationPurpose.SESSION.name,
     val pin: String? = null,
-    val session_secret: String? = null,
-    val public_key_hex: String? = null,
-    val message_hex: String? = null,
-    val signature_hex: String? = null,
-    val salt_base64: String? = null,
+    @SerializedName("session_secret")
+    val sessionSecret: String? = null,
+    @SerializedName("master_public_hex")
+    val masterPublicHex: String? = null,
+    @SerializedName("master_message_hex")
+    val masterMessageHex: String? = null,
+    @SerializedName("master_signature_hex")
+    val masterSignatureHex: String? = null,
+    @SerializedName("salt_base64")
+    val saltBase64: String? = null,
 )

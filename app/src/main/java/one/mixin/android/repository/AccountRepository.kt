@@ -165,8 +165,6 @@ class AccountRepository
 
         fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 
-        suspend fun updatePinSuspend(request: PinRequest) = accountService.updatePinSuspend(request)
-
         suspend fun verifyPin(code: String): MixinResponse<Account> =
             withContext(Dispatchers.IO) {
                 val timestamp = nowInUtcNano()

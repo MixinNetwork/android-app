@@ -18,9 +18,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
-import com.google.protobuf.Mixin
 import one.mixin.android.Constants
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.MessageAdapter

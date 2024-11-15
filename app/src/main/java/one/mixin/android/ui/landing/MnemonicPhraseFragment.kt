@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -26,7 +29,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
-import one.mixin.android.crypto.storeMnemonicInEncryptedPreferences
+import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
@@ -42,12 +45,12 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.session.Session.getEd25519KeyPair
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.database.clearDatabase
@@ -78,7 +81,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
-    private var errorInfo: String? = null
+    private var errorInfo by mutableStateOf<String?>(null)
 
     @Inject
     lateinit var tip: Tip
@@ -126,7 +129,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 val mnemonic = w.joinToString(" ")
-                storeMnemonicInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, toEntropy(w))
+                storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, toEntropy(w))
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val mnemonic = toMnemonic(tip.generateEntropyAndStore(requireContext()))
@@ -134,7 +137,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             }
             Timber.e("PublicKey:${edKey.publicKey.hexString()}")
             val message = withContext(Dispatchers.IO) {
-                AnonymousMessage(createdAt = nowInUtc()).doAnonymousPOW()
+                AnonymousMessage(createdAt = nowInUtc(), masterPublicHex = edKey.publicKey.hexString()).doAnonymousPOW()
             }
             val messageHex = GsonHelper.customGson.toJson(message).toHex()
             val signature = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), GsonHelper.customGson.toJson(message).toByteArray())
@@ -167,6 +170,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
             if (r?.isSuccess == true) {
                 createAccount(sessionKey, edKey, r.data!!.id)
+            } else if (r != null) {
+                errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
             }
         }
     }
@@ -223,6 +228,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             if (r?.isSuccess == true) {
                 createAccount(sessionKey, edKey, r.data!!.id)
             } else {
+                if (r != null) {
+                    errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                }
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Initial)
             }
         }
@@ -239,9 +247,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         verificationId,
                         AccountRequest(
                             purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
-                            session_secret = sessionSecret,
-                            signature_hex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), verificationId.toByteArray()).toHex(),
-                            registration_id = registrationId,
+                            sessionSecret = sessionSecret,
+                            masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), verificationId.toByteArray()).toHex(),
+                            registrationId = registrationId,
                         )
                     )
                 },
@@ -294,6 +302,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
                 activity?.finish()
             } else {
+                if (r != null) {
+                    errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                }
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Initial)
             }
         }

@@ -60,7 +60,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
