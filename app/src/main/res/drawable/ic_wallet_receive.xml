@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <path
+      android:pathData="M0,24C0,10.745 10.745,0 24,0C37.255,0 48,10.745 48,24C48,37.255 37.255,48 24,48C10.745,48 0,37.255 0,24Z"
+      android:fillColor="#50BD5C"
+      android:fillAlpha="0.2"/>
+  <path
+      android:pathData="M24.707,28.707C24.317,29.098 23.683,29.098 23.293,28.707L18.293,23.707C17.902,23.317 17.902,22.683 18.293,22.293C18.683,21.902 19.317,21.902 19.707,22.293L23,25.586V17C23,16.448 23.448,16 24,16C24.552,16 25,16.448 25,17V25.586L28.293,22.293C28.683,21.902 29.317,21.902 29.707,22.293C30.098,22.683 30.098,23.317 29.707,23.707L24.707,28.707Z"
+      android:fillColor="?attr/music_played"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M18,31L30,31"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/music_played"
+      android:strokeLineCap="round"/>
+</vector>

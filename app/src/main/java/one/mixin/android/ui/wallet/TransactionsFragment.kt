@@ -124,7 +124,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
         binding.apply {
-            sendReceiveView.enableSwap()
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
                     val assets = walletViewModel.allAssetItems()
