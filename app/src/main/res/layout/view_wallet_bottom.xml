@@ -28,4 +28,15 @@
         android:textColor="?attr/text_primary"
         android:text="@string/All_Transactions" />
 
+    <TextView
+        android:id="@+id/migrate"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Legacy_Network" />
 </LinearLayout>

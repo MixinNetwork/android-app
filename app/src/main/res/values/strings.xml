@@ -1372,7 +1372,7 @@
     <string name="insufficient_balance">Insufficient balance</string>
     <string name="utxo_count_exceeded">This transaction consumes too many UTXOs, please try to combine UTXOs or split the transaction.</string>
     <string name="Combine_utxo">Combine UTXOs</string>
-    <string name="asset_migration_hint">You have assets in the legacy network, please view here.</string>
+    <string name="Legacy_Network">Legacy Network</string>
     <string name="deposit_hash">Deposit hash</string>
     <string name="withdrawal_hash">Withdrawal hash</string>
     <string name="Anonymous">Anonymous</string>
