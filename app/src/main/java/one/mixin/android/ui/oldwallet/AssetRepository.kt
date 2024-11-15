@@ -56,9 +56,7 @@ class AssetRepository
     ) {
         fun assets() = assetService.assets()
 
-        suspend fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
-
-        fun assetsWithBalance() = assetDao.assetsWithBalance()
+        fun hasAssetsWithValue() = assetDao.hasAssetsWithValue()
 
         fun insert(asset: Asset) {
             assetDao.insert(asset)
