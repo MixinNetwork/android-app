@@ -277,6 +277,8 @@
     <string name="default_time">00:00</string>
     <string name="Delete">削除</string>
     <string name="delete_account_hint">アカウント情報とプロフィール画像を削除します</string>
+    <string name="delete_account_hint_2">ローカルメッセージとiCloudにバックアップされた内容は自動的に削除されません</string>
+    <string name="delete_account_hint_3">トランザクション履歴を削除することはできません</string>
     <string name="Delete_address">アドレスを削除</string>
     <string name="Delete_emergency_contact">緊急連絡先を削除</string>
     <string name="Delete_for_everyone">全員のチャットから削除</string>
@@ -805,7 +807,6 @@
     <string name="setting_data_mobile">モバイル回線使用時</string>
     <string name="setting_data_title">メディア自動ダウンロード設定</string>
     <string name="setting_data_wifi">Wi-Fiに接続時</string>
-    <string name="setting_delete_account_content_2">ローカルメッセージとiCloudにバックアップされた内容は自動的に削除されません</string>
     <string name="setting_delete_account_pin_content">%1$sと紐付けられたプロフィールとアカウント情報が削除されます。詳細はこちらをご覧ください。</string>
     <string name="setting_delete_account_send">%1$sへ4桁のコードを送信します</string>
     <string name="setting_delete_account_tip">警告：Mixinウォレット内に他のウォレットや取引所に送金可能な仮想通貨が残っています。アカウントを削除すると、仮想通貨を永遠に引き出すことができませんが、よろしいでしょうか？</string>
@@ -905,7 +906,6 @@
     <string name="Transaction_Id">トランザクションID</string>
     <string name="Transaction_Type">トランザクションタイプ</string>
     <string name="Transactions">もらった・あげたコイン💰</string>
-    <string name="Transactions_CANNOT_be_deleted">トランザクション履歴を削除することはできません</string>
     <string name="Transcript">メッセージ履歴</string>
     <string name="Transfer">送金</string>
     <string name="Transfer_Amount">送金数量</string>

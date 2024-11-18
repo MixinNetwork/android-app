@@ -298,6 +298,8 @@
     <string name="default_time">00:00</string>
     <string name="Delete">Borrar</string>
     <string name="delete_account_hint">Eliminar la información de tu cuenta y la foto de perfil</string>
+    <string name="delete_account_hint_2">Los mensajes locales y las copias de seguridad no se eliminarán automáticamente</string>
+    <string name="delete_account_hint_3">Las transacciones NO se pueden eliminar</string>
     <string name="Delete_address">Eliminar dirección</string>
     <string name="Delete_emergency_contact">Eliminar contacto de emergencia</string>
     <string name="Delete_for_everyone">Eliminar para todos</string>
@@ -857,7 +859,6 @@
     <string name="setting_data_mobile">Al usar datos móviles</string>
     <string name="setting_data_title">Descarga automática de medios</string>
     <string name="setting_data_wifi">Cuando está conectado en Wi-Fi</string>
-    <string name="setting_delete_account_content_2">Los mensajes locales y las copias de seguridad no se eliminarán automáticamente</string>
     <string name="setting_delete_account_pin_content">Si continúas, tu perfil y los detalles de tu cuenta se eliminarán el %1$s. le nuestro documento para **aprender más**.</string>
     <string name="setting_delete_account_send">Enviaremos un código de 4 dígitos a %1$s</string>
     <string name="setting_delete_account_tip">Tu cartera Mixin todavía tiene algunos activos que se pueden retirar a otras carteras o intercambios. Una vez que se cancele la cuenta, estos activos serán abandonados junto con la cartera y no podrán recuperarse.</string>
@@ -962,7 +963,6 @@
     <string name="Transaction_Id">ID de transacción</string>
     <string name="Transaction_Type">Tipo de transacción</string>
     <string name="Transactions">Transacciones</string>
-    <string name="Transactions_CANNOT_be_deleted">Las transacciones NO se pueden eliminar</string>
     <string name="Transcript">Transcripción</string>
     <string name="Transfer">Transferir</string>
     <string name="Transfer_Amount">Importe de la transferencia</string>

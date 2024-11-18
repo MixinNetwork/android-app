@@ -308,6 +308,9 @@
     <string name="deep_cleaning_deleted">正在清理，已删除 %1$s</string>
     <string name="Delete">删除</string>
     <string name="delete_account_hint">删除你的账户和个人照片</string>
+    <string name="delete_account_hint_2">本地信息和备份不会被自动删除</string>
+    <string name="delete_account_hint_3">转账记录不会被删除</string>
+    <string name="delete_account_hint_4">所有资产将无法取回</string>
     <string name="Delete_address">删除地址</string>
     <string name="Delete_emergency_contact">删除恢复联系人</string>
     <string name="Delete_for_everyone">撤回</string>
@@ -919,7 +922,6 @@
     <string name="setting_data_mobile">当使用移动数据时</string>
     <string name="setting_data_title">自动下载文件</string>
     <string name="setting_data_wifi">当连接到 Wi-Fi 时</string>
-    <string name="setting_delete_account_content_2">本地信息和备份不会被自动删除</string>
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文档以**了解更多**。</string>
     <string name="setting_delete_anonymous_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。</string>
     <string name="setting_delete_account_send">我们将发送 4 位验证码到手机 %1$s</string>
@@ -1029,7 +1031,6 @@
     <string name="Transaction_Id">交易编号</string>
     <string name="Transaction_Type">交易类型</string>
     <string name="Transactions">转账记录</string>
-    <string name="Transactions_CANNOT_be_deleted">转账记录不会被删除</string>
     <string name="Transcript">聊天记录</string>
     <string name="Transfer">转账</string>
     <string name="Transfer_Amount">转账金额</string>
@@ -1343,7 +1344,7 @@
     <string name="insufficient_balance">余额不足</string>
     <string name="utxo_count_exceeded">该交易使用的 UTXO 数量过多，请尝试首先归集 UTXO 或者分批转账。</string>
     <string name="Combine_utxo">归集 UTXO</string>
-    <string name="asset_migration_hint">您还有资产在旧的 Mixin 网络，点击查看。</string>
+    <string name="Legacy_Network">旧网络</string>
     <string name="deposit_hash">充值哈希</string>
     <string name="withdrawal_hash">提现哈希</string>
     <string name="Anonymous">匿名</string>
@@ -1776,5 +1777,6 @@
     <string name="add_recovery_contact_before_instruction_2">您要添加的恢复联系人将使Mixin Messenger保持在线状态或与您面对面。</string>
     <string name="Check_Backup">检查备份</string>
     <string name="Send_Collectible">发送藏品</string>
+
 </resources>
 

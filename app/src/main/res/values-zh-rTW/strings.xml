@@ -272,6 +272,8 @@
     <string name="deep_cleaning_deleted">正在清理，已刪除 %1$s</string>
     <string name="Delete">刪除</string>
     <string name="delete_account_hint">刪除你的賬戶和個人照片</string>
+    <string name="delete_account_hint_2">本地資訊和備份不會被自動刪除</string>
+    <string name="delete_account_hint_3">轉賬記錄不會被刪除</string>
     <string name="Delete_address">刪除地址</string>
     <string name="Delete_emergency_contact">刪除緊急聯絡人</string>
     <string name="Delete_for_everyone">撤回</string>
@@ -791,7 +793,6 @@
     <string name="setting_data_mobile">當使用移動資料時</string>
     <string name="setting_data_title">自動下載檔案</string>
     <string name="setting_data_wifi">當連線到 Wi-Fi 時</string>
-    <string name="setting_delete_account_content_2">本地資訊和備份不會被自動刪除</string>
     <string name="setting_delete_account_pin_content">如果您繼續，您的個人資料和賬戶資訊將在%1$s被刪除。閱讀我們的檔案以**瞭解更多**。</string>
     <string name="setting_delete_account_send">我們將傳送 4 位驗證碼到手機 %1$s</string>
     <string name="setting_delete_account_tip">你的 Mixin 錢包還有一些資產，可以提現至其他錢包或交易所，賬戶一旦登出，這些資產將和錢包一起被棄用無法找回。</string>
@@ -889,7 +890,6 @@
     <string name="Transaction_Id">交易編號</string>
     <string name="Transaction_Type">交易型別</string>
     <string name="Transactions">轉賬記錄</string>
-    <string name="Transactions_CANNOT_be_deleted">轉賬記錄不會被刪除</string>
     <string name="Transcript">聊天記錄</string>
     <string name="Transfer">轉賬</string>
     <string name="Transfer_Amount">轉賬金額</string>
