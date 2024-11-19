@@ -75,7 +75,7 @@ class WalletViewModel
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
-    fun assetsWithBalance() = assetRepository.assetsWithBalance()
+    fun hasAssetsWithValue() = assetRepository.hasAssetsWithValue()
 
     @ExperimentalPagingApi
     fun snapshots(

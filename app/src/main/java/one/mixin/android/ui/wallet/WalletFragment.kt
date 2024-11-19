@@ -410,8 +410,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
             }
         }
-        walletViewModel.assetsWithBalance().observe(viewLifecycleOwner) {
-            migrateEnable = it.isNotEmpty()
+        walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
+            migrateEnable = it
         }
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
