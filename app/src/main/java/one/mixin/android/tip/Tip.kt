@@ -178,6 +178,17 @@ class Tip
             return createMasterPrivateKey(seed)
         }
 
+        suspend fun checkSalt(context: Context, pin: String, tipPriv: ByteArray) {
+            if (!Session.hasPhone()){
+                val saltAESKey = generateSaltAESKey(pin, tipPriv)
+                val encryptedSalt = this@Tip.getEncryptedSalt(context)
+                val salt = aesDecrypt(saltAESKey, encryptedSalt)
+                if (!salt.contentEquals(ByteArray(16))) {
+                    throw TipNullException("Salt not matched")
+                }
+            }
+        }
+
         suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, force: Boolean = false): String {
             val salt = if (Session.hasPhone() || force) {
                 var local = getMnemonicFromEncryptedPreferences(context)

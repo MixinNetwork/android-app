@@ -34,6 +34,7 @@ import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
@@ -200,6 +201,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 invokeNetwork = {
                     if (pin != null) {
                         val seed = tip.getOrRecoverTipPriv(requireContext(), pin!!).getOrThrow()
+                        tip.checkSalt(requireContext(), pin!!, seed)
                         val saltBase64 = tip.getEncryptSalt(requireContext(), pin!!, seed, force = true)
                         viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!, saltBase64)
                     } else {
