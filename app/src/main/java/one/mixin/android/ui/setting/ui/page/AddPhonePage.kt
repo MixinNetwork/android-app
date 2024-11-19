@@ -45,9 +45,9 @@ fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
                 Spacer(modifier = Modifier.height(36.dp))
                 if (hasPhone) {
                     HighlightedTextWithClick(
-                        stringResource(R.string.Change_Phone_desc, Session.getAccount()?.phone ?: "", stringResource(R.string.Set_up_Pin_more)),
+                        stringResource(R.string.Change_Phone_desc, Session.getAccount()?.phone ?: "", stringResource(R.string.More_Information)),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        stringResource(R.string.Set_up_Pin_more),
+                        stringResource(R.string.More_Information),
                         color = MixinAppTheme.colors.textAssist,
                         fontSize = 14.sp,
                         lineHeight = 21.sp
@@ -56,9 +56,9 @@ fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
                     }
                 } else {
                     HighlightedTextWithClick(
-                        stringResource(R.string.Add_Phone_desc, stringResource(R.string.Set_up_Pin_more)),
+                        stringResource(R.string.Add_Phone_desc, stringResource(R.string.More_Information)),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        stringResource(R.string.Set_up_Pin_more),
+                        stringResource(R.string.More_Information),
                         color = MixinAppTheme.colors.textAssist,
                         fontSize = 14.sp,
                         lineHeight = 21.sp

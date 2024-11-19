@@ -851,7 +851,7 @@
     <string name="Sign_in">ログイン</string>
     <string name="Sign_in_desktop_app">デスクトップにログイン</string>
     <string name="Sign_with_emergency_contact">緊急連絡先でログイン</string>
-    <string name="Sign_with_phone_number">電話番号でログイン</string>
+    <string name="Sign_with_mobile_number">電話番号でログイン</string>
     <string name="Silence_Notification">サイレント通知</string>
     <string name="Size">サイズ</string>
     <string name="Skip">スキップ</string>

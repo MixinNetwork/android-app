@@ -874,7 +874,7 @@
     <string name="Sign_in">Войти</string>
     <string name="Sign_in_desktop_app">Войти в настольное приложение</string>
     <string name="Sign_with_emergency_contact">Войти через контакт для экстренных случаев</string>
-    <string name="Sign_with_phone_number">Войти через номер телефона</string>
+    <string name="Sign_with_mobile_number">Войти через номер телефона</string>
     <string name="Silence_Notification">Беззвучное уведомление</string>
     <string name="Size">Размер</string>
     <string name="Skip">Пропустить</string>

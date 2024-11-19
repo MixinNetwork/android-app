@@ -599,7 +599,7 @@
     <string name="Sign_in">Masuk</string>
     <string name="Sign_in_desktop_app">Masuk aplikasi desktop</string>
     <string name="Sign_with_emergency_contact">Masuk dengan kontak darurat</string>
-    <string name="Sign_with_phone_number">Masuk dengan nomor telepon</string>
+    <string name="Sign_with_mobile_number">Masuk dengan nomor telepon</string>
     <string name="Skip">LEWATI</string>
     <string name="Slide_to_cancel">Geser untuk Membatalkan</string>
     <string name="Sort">Urutkan</string>

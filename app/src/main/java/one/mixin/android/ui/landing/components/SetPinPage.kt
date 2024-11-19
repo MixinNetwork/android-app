@@ -19,7 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -60,9 +59,9 @@ fun SetPinPage(next: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 HighlightedTextWithClick(
-                    stringResource(R.string.Set_up_Pin_desc, stringResource(R.string.Set_up_Pin_more)),
+                    stringResource(R.string.Set_up_Pin_desc, stringResource(R.string.More_Information)),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    stringResource(R.string.Set_up_Pin_more),
+                    stringResource(R.string.More_Information),
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
                     lineHeight = 21.sp

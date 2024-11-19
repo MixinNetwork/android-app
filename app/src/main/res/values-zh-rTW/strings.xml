@@ -836,7 +836,7 @@
     <string name="Sign_in">登入</string>
     <string name="Sign_in_desktop_app">登入桌面端</string>
     <string name="Sign_with_emergency_contact">透過緊急聯絡人登入</string>
-    <string name="Sign_with_phone_number">透過手機號登入</string>
+    <string name="Sign_with_mobile_number">透過手機號登入</string>
     <string name="Silence_Notification">靜音通知</string>
     <string name="Size">大小</string>
     <string name="Skip">跳過</string>

@@ -86,7 +86,7 @@ fun CreateAccountPage(
             ) {
 
                 Text(
-                    text = stringResource(R.string.landing_have_account),
+                    text = stringResource(R.string.sign_up_have_account),
                     color = MixinAppTheme.colors.textBlue
                 )
             }

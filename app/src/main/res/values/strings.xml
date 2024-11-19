@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="a_card">a card</string>
     <string name="a_contact">a contact</string>
@@ -993,7 +994,7 @@
     <string name="Sign_in">Sign in</string>
     <string name="Sign_in_desktop_app">Sign in desktop app</string>
     <string name="Sign_with_emergency_contact">Sign in with recovery contact</string>
-    <string name="Sign_with_phone_number">Sign in with phone number</string>
+    <string name="Sign_with_mobile_number">Sign in with mobile number</string>
     <string name="Silence_Notification">Silence Notification</string>
     <string name="Size">Size</string>
     <string name="Skip">Skip</string>
@@ -1747,23 +1748,24 @@
     <string name="Paste">Paste</string>
     <string name="or">or</string>
     <string name="Sign_in_with_Mnemonic_Phrase">Sign in with Mnemonic Phrase</string>
-    <string name="landing_have_account">I already have an account</string>
-    <string name="landing_create">Create account</string>
-    <string name="Create_Account">Create Acount</string>
+    <string name="sign_in_no_account">Don’t have an account yet?</string>
+    <string name="sign_up_have_account">Already have an account?</string>
+    <string name="Create_Account">Create Account</string>
     <string name="Mobile_Phone">Mobile Phone</string>
     <string name="Mnemonic_Phrase">Mnemonic Phrase</string>
     <string name="create_introduction">MPC Wallet, %1$s, Self-custody, Social Recovery</string>
     <string name="Convenience">Convenience</string>
     <string name="Create_Mnemonic_Phrase">Create Mnemonic Phrase</string>
-    <string name="mnemonic_phrase_instruction_1">The 13 Mnemonic Phrase generated for the account are only for Mixin Network related products.</string>
-    <string name="mnemonic_phrase_instruction_2">The Mnemonic Phrase will be associated with a key shard of the MPC wallet that you manage.</string>
+    <string name="mnemonic_phrase_instruction_1">The 13 mnemonic phrases generated when creating an account are intended only for Mixin Network-related products.</string>
+    <string name="mnemonic_phrase_instruction_2">The mnemonic phrase will be associated with a key shard for your MPC wallet under your management.</string>
     <string name="Creating_your_account">Creating your account…</string>
+    <string name="Signing_in_to_your_account">Signing in to your account…</string>
     <string name="Set_up_Pin">Set up PIN</string>
-    <string name="Set_up_Pin_desc">The MPC wallet of Mixin Messenger is built on the decentralized key protocol TIP, where the PIN is one of the key shards. The complete key of the wallet only exists in the TEE secure environment of the current device. Read the documentation to learn more about %1$s.</string>
-    <string name="Set_up_Pin_more">More information</string>
-    <string name="set_up_pin_instruction_1">Please complete the operation under a stable network environment.</string>
+    <string name="Set_up_Pin_desc">The MPC Wallet in Mixin Messenger is built on a decentralized key protocol (TIP). The PIN is one of the key shards. The full wallet key exists only in the TEE security environment on the current device. Read the documentation to learn %1$s.</string>
+    <string name="More_Information">More information</string>
+    <string name="set_up_pin_instruction_1">Please complete the process in a stable network environment.</string>
     <string name="set_up_pin_instruction_2">Please keep the app in the foreground and do not force quit it during the setup process.</string>
-    <string name="set_up_pin_instruction_3">The process cannot be canceled when it begins. Please remember the 6-digit PIN and reenter it if the process is aborted unexpectedly.</string>
+    <string name="set_up_pin_instruction_3">The process cannot be canceled once it begins. Please remember the 6-digit PIN and reenter it if the process is aborted unexpectedly.</string>
     <string name="Set_up_pin_desc_1">Set a 6-digit PIN for your wallet</string>
     <string name="Set_up_pin_desc_2">Please confirm \nyour 6 digit PIN again</string>
     <string name="Set_up_pin_tip_1">If lost, there is no way to recover your wallet.</string>

@@ -47,10 +47,10 @@ fun RecoveryKitPage(phoneClick: () -> Unit, mnemonicPhraseClick: () -> Unit, rec
                 HighlightedTextWithClick(
                     stringResource(
                         R.string.Recovery_Kit_instruction,
-                        stringResource(R.string.Set_up_Pin_more)
+                        stringResource(R.string.More_Information)
                     ),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    stringResource(R.string.Set_up_Pin_more)
+                    stringResource(R.string.More_Information)
                 ) {
                     context.openUrl(Constants.HelpLink.TIP)
                 }

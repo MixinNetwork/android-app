@@ -46,10 +46,10 @@ fun MnemonicPhraseBackupPage(pop: () -> Unit, next: () -> Unit) {
                 HighlightedTextWithClick(
                     stringResource(
                         R.string.Mnemonic_Phrase_instruction,
-                        stringResource(R.string.Set_up_Pin_more)
+                        stringResource(R.string.More_Information)
                     ),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
-                    stringResource(R.string.Set_up_Pin_more)
+                    stringResource(R.string.More_Information)
                 ) {
                     context.openUrl(Constants.HelpLink.TIP)
                 }

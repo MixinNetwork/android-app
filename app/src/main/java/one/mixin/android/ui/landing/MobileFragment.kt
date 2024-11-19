@@ -123,6 +123,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             )
             binding.orLl.isVisible = from == FROM_LANDING
             binding.mnemonicPhrase.isVisible = from == FROM_LANDING
+            binding.noAccount.isVisible = from == FROM_LANDING
 
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
@@ -160,6 +161,13 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     this@MobileFragment,
                     LandingMnemonicPhraseFragment.newInstance(),
                     LandingMnemonicPhraseFragment.TAG
+                )
+            }
+            noAccount.setOnClickListener {
+                activity?.addFragment(
+                    this@MobileFragment,
+                    CreateAccountFragment.newInstance(),
+                    CreateAccountFragment.TAG
                 )
             }
         }

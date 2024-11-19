@@ -903,7 +903,7 @@
     <string name="Sign_in">Iniciar sesión</string>
     <string name="Sign_in_desktop_app">Iniciar sesión en la aplicación de escritorio</string>
     <string name="Sign_with_emergency_contact">Iniciar sesión con contacto de emergencia</string>
-    <string name="Sign_with_phone_number">Iniciar sesión con número de teléfono</string>
+    <string name="Sign_with_mobile_number">Iniciar sesión con número de teléfono</string>
     <string name="Silence_Notification">Notificación de silencio</string>
     <string name="Size">Tamaño</string>
     <string name="Skip">Saltar</string>
