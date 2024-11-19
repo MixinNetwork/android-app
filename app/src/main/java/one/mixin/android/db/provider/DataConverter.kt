@@ -1550,6 +1550,7 @@ fun callableMarket(
                     atlDate = cursor.getString(cursor.getColumnIndexOrThrow("atl_date")),
                     assetIds = OptionalListConverter.fromString(cursor.getString(cursor.getColumnIndexOrThrow("asset_ids"))),
                     sparklineIn7d = cursor.getString(cursor.getColumnIndexOrThrow("sparkline_in_7d")),
+                    sparklineIn24h = cursor.getString(cursor.getColumnIndexOrThrow("sparkline_in_24h")),
                     updatedAt = cursor.getString(cursor.getColumnIndexOrThrow("updated_at"))
                 )
                 result.add(item)
