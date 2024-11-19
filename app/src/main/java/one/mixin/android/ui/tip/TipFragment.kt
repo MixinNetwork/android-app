@@ -539,18 +539,18 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val spendSeed = tip.getSpendPriv(seed, salt)
             val keyPair = newKeyPairFromSeed(spendSeed)
             val pkHex = keyPair.publicKey.toHex()
-            val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val edKey = tip.getMnemonicEdKey(requireContext())
             val registerResp =
                 viewModel.registerPublicKey(
                     registerRequest =
                         RegisterRequest(
                             publicKey = pkHex,
-                            signature = Session.getRegisterSignature(selfId, spendSeed),
-                            pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                            signature = Session.getRegisterSignature(selfAccountId, spendSeed),
+                            pin = viewModel.getEncryptedTipBody(selfAccountId, pkHex, pin),
                             salt = saltBase64,
                             saltPublicHex = edKey.publicKey.hexString(),
-                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfId.toByteArray()).hexString()
+                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString()
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {
