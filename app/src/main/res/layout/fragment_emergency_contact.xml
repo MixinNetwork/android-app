@@ -60,8 +60,7 @@
                 android:layout_height="@dimen/item_contact_height"
                 android:background="@drawable/ripple_round_window"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:visibility="visible">
+                android:layout_marginEnd="20dp">
 
                 <TextView
                     android:id="@+id/enable_tv"
@@ -103,8 +102,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/margin16"
-                    android:theme="@style/AppTheme.BlueAccent"
-                    android:visibility="visible" />
+                    android:theme="@style/AppTheme.BlueAccent" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -156,8 +154,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/margin16"
-                    android:theme="@style/AppTheme.BlueAccent"
-                    android:visibility="visible" />
+                    android:theme="@style/AppTheme.BlueAccent" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>

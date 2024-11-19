@@ -57,9 +57,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 
@@ -90,7 +92,9 @@ fun SetupPinPage(pop: () -> Unit, next: () -> Unit) {
         title = "",
         verticalScrollable = false,
         actions = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                context.openUrl(Constants.HelpLink.TIP)
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
                     contentDescription = null,

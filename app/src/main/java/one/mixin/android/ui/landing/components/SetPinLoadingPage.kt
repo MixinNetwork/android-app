@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,8 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.ui.landing.vo.SetupState
 
@@ -39,12 +42,14 @@ fun SetPinLoadingPage(next: () -> Unit) {
     val viewModel = hiltViewModel<MobileViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
-
+    val context = LocalContext.current
     PageScaffold(
         title = "",
         verticalScrollable = false,
         actions = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                context.openUrl(Constants.HelpLink.TIP)
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
                     contentDescription = null,

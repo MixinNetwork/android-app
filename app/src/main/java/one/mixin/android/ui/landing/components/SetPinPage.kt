@@ -36,7 +36,9 @@ fun SetPinPage(next: () -> Unit) {
             MixinTopAppBar(
                 title = {},
                 actions = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {
+                        context.openUrl(Constants.HelpLink.TIP)
+                    }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_support),
                             contentDescription = null,
