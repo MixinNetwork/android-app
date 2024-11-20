@@ -32,13 +32,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
-fun RecoveryKitPage(phoneClick: () -> Unit, mnemonicPhraseClick: () -> Unit, recoveryClick: () -> Unit) {
+fun RecoveryKitPage(pop:()->Unit, phoneClick: () -> Unit, mnemonicPhraseClick: () -> Unit, recoveryClick: () -> Unit) {
     val context = LocalContext.current
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Recovery_Kit),
             verticalScrollable = false,
-            pop = {},
+            pop = pop,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(20.dp))

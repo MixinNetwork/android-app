@@ -31,15 +31,15 @@ class RecoveryFragment : BaseFragment(R.layout.fragment_compose) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.compose.setContent {
-            RecoveryKitPage({
-                navTo(AddPhoneFragment.newInstance(), AddPhoneFragment.TAG)
-            }, {
-                navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
-            }, {
-                navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
-            })
+            RecoveryKitPage({ activity?.onBackPressedDispatcher?.onBackPressed() },
+                {
+                    navTo(AddPhoneFragment.newInstance(), AddPhoneFragment.TAG)
+                }, {
+                    navTo(MnemonicPhraseBackupFragment.newInstance(), MnemonicPhraseBackupFragment.TAG)
+                }, {
+                    navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+                })
         }
     }
 }

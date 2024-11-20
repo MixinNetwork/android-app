@@ -95,15 +95,16 @@ fun MnemonicPhrasePage(
                 MnemonicPhraseState.Success -> {
                 }
             }
-            if (!errorInfo.isNullOrBlank()) {
+
+            Spacer(modifier = Modifier.weight(1f))
+            if (!errorInfo.isNullOrBlank() && MnemonicPhraseState.Creating != mnemonicPhraseState) {
                 Text(
                     errorInfo,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     fontSize = 14.sp, color = MixinAppTheme.colors.red
                 )
             }
-
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
             if (mnemonicPhraseState == MnemonicPhraseState.Creating) {
                 Box(
                     modifier = Modifier

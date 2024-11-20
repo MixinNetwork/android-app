@@ -139,9 +139,17 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name) {
                         MnemonicPhraseBackupShownPage(mnemonic, {
-                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                            if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
+                                requireActivity().finish()
+                            } else {
+                                requireActivity().supportFragmentManager.popBackStack()
+                            }
                         }, {
-                            requireActivity().finish()
+                            if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
+                                requireActivity().finish()
+                            } else {
+                                requireActivity().supportFragmentManager.popBackStack()
+                            }
                         })
                     }
 
@@ -158,7 +166,11 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
                             toast(R.string.Backup_success)
-                            requireActivity().finish()
+                            if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
+                                requireActivity().finish()
+                            } else {
+                                requireActivity().supportFragmentManager.popBackStack()
+                            }
                         }, tip, pin)
                     }
                 }
