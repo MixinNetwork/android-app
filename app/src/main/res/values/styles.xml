@@ -353,7 +353,7 @@
 
     <style name="AppTheme.MaterialOutlineButton">
         <item name="android:background">@drawable/bg_round_blue_outline_btn</item>
-        <item name="android:textColor">@color/selector_blue_tv</item>
+        <item name="android:textColor">@color/colorBlue</item>
         <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:elevation">0dp</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>

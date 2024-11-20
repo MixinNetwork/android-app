@@ -257,7 +257,7 @@ fun MnemonicPhraseInput(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                stringResource(R.string.Delete), fontSize = 12.sp,
+                                stringResource(R.string.Clear), fontSize = 12.sp,
                                 fontWeight = W500,
                                 color = MixinAppTheme.colors.textPrimary,
                             )
@@ -302,7 +302,7 @@ fun MnemonicPhraseInput(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(if (legacy) 20.dp else 8.dp))
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 modifier = Modifier
