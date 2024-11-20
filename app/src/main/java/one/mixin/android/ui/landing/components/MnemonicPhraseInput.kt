@@ -4,7 +4,6 @@ import android.content.ClipData
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -217,7 +215,7 @@ fun MnemonicPhraseInput(
                                         } else if (words.size == 13 && isMnemonicValid(words.subList(0, 12))) {
                                             inputs = words
                                         } else {
-                                            errorInfo = context.getString(R.string.Invalid_mnemonic)
+                                            errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                         }
                                     }
                                 }
@@ -319,7 +317,7 @@ fun MnemonicPhraseInput(
                                 runCatching {
                                     loading = true
                                     if (mnemonicList != inputs) {
-                                        errorInfo = context.getString(R.string.Invalid_mnemonic)
+                                        errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                     } else {
                                         val selfId = Session.getAccountId()!!
                                         val edKey = tip!!.getMnemonicEdKey(context)

@@ -44,7 +44,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 } else if (list.size == 13 && list[mnemonicChecksumIndex(list.subList(0, 12))] == list[12]) {
                     navTo(MnemonicPhraseFragment.newInstance(list), MnemonicPhraseFragment.TAG)
                 } else {
-                    toast(R.string.Invalid_mnemonic)
+                    toast(R.string.invalid_mnemonic_phrase)
                 }
             }
             )

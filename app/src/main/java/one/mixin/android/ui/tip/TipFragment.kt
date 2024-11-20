@@ -21,9 +21,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute

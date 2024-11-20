@@ -132,7 +132,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 val mnemonic = w.joinToString(" ")
-                val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.Invalid_mnemonic) }.getOrNull() ?: return@launch
+                val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
                 storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
                 newKeyPairFromMnemonic(mnemonic)
             } else {

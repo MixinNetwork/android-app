@@ -1734,7 +1734,7 @@
     <string name="Backup_Mnemonic_Phrase_desc">立即通过备份您的助记词来保护您的资产。</string>
     <string name="Backup_Mnemonic_Phrase_Warning">请立即备份您的助记词！该助记词为 MPC 钱包密钥分片之一，一旦设备遗失或应用被卸载，若您没有备份，将无法重新登录当前 Mixin 账号 (%1$s)。</string>
     <string name="add_recovery_contact_before_instruction_3">您要添加的恢复联系人已将当前账号（%1$s）添加为联系人，否则对方可能无法收到验证码。</string>
-    <string name="Invalid_mnemonic">无效助记词</string>
+    <string name="invalid_mnemonic_phrase">无效助记词</string>
     <string name="Set_up_pin_warning">在验证碎片密钥并同步到TIP网络时，请将应用程序保留在前台;在设置过程中不要强制退出应用程序。</string>
     <string name="Set_up_Pin_question">如果我丢失了 PIN 会发生什么？</string>
     <string name="Set_up_Pin_answer_1">我可以稍后恢复我的帐户。</string>

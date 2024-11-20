@@ -29,7 +29,6 @@ import one.mixin.android.tip.exception.TipException
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding

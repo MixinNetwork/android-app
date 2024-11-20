@@ -1819,7 +1819,7 @@
     <string name="add_recovery_contact_before_instruction_1">The recovery contact you want to add has been downloaded and logged in Mixin Messenger.</string>
     <string name="add_recovery_contact_before_instruction_2">The recovery contacts you want to add keep Mixin Messenger online or are facing you face-to-face.</string>
     <string name="add_recovery_contact_before_instruction_3">The recovery contact you want to add has already added the current account number (%1$s) as a contact, otherwise the other party may not receive the Captcha.</string>
-    <string name="Invalid_mnemonic">Invalid mnemonic</string>
+    <string name="invalid_mnemonic_phrase">Invalid mnemonic phrase</string>
     <string name="Check_Backup">Check Backup</string>
     <string name="Send_Collectible">Send Collectible</string>
 </resources>

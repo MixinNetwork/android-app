@@ -5,8 +5,6 @@ import android.app.Dialog
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupMnemonicPhraseWarningBottomBinding
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
