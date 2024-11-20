@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -111,7 +112,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private fun anonymousRequest(words: List<String>? = null) {
-        lifecycleScope.launch {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, e ->
+            errorInfo = e.message
+        }) {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (words != null) {
@@ -129,7 +132,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 val mnemonic = w.joinToString(" ")
-                storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, toEntropy(w))
+                val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.Invalid_mnemonic) }.getOrNull() ?: return@launch
+                storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val mnemonic = toMnemonic(tip.generateEntropyAndStore(requireContext()))
