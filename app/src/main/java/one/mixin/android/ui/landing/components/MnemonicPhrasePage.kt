@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,6 +34,7 @@ import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 
 @Composable
 fun MnemonicPhrasePage(
+    isSign: Boolean,
     errorInfo: String?,
     requestCaptcha: () -> Unit
 ) {
@@ -58,7 +60,9 @@ fun MnemonicPhrasePage(
                 stringResource(
                     if (mnemonicPhraseState == MnemonicPhraseState.Initial) {
                         R.string.Create_Mnemonic_Phrase
-                    } else {
+                    } else if (isSign){
+                        R.string.Signing_in_to_your_account
+                    }else{
                         R.string.Creating_your_account
                     }
                 ),
@@ -90,6 +94,13 @@ fun MnemonicPhrasePage(
                 }
 
                 MnemonicPhraseState.Failure -> {
+                    if (!errorInfo.isNullOrBlank()) {
+                        Text(
+                            errorInfo,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            fontSize = 14.sp, color = MixinAppTheme.colors.red
+                        )
+                    }
                 }
 
                 MnemonicPhraseState.Success -> {
@@ -97,14 +108,6 @@ fun MnemonicPhrasePage(
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            if (!errorInfo.isNullOrBlank() && MnemonicPhraseState.Creating != mnemonicPhraseState) {
-                Text(
-                    errorInfo,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    fontSize = 14.sp, color = MixinAppTheme.colors.red
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
             if (mnemonicPhraseState == MnemonicPhraseState.Creating) {
                 Box(
                     modifier = Modifier

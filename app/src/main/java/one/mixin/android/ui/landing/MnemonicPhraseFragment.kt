@@ -51,7 +51,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.database.clearDatabase
@@ -100,10 +99,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.compose.setContent {
-            MnemonicPhrasePage(errorInfo) {
-                if (words.isNullOrEmpty()) {
-                    anonymousRequest()
-                }
+            MnemonicPhrasePage(!words.isNullOrEmpty(), errorInfo) {
+                anonymousRequest(words)
             }
         }
         if (!words.isNullOrEmpty()) {
@@ -117,7 +114,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }) {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
-            val edKey = if (words != null) {
+            val edKey = if (!words.isNullOrEmpty()) {
                 val w = words.let {
                     when (words.size) {
                         13 -> {
@@ -128,7 +125,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                             words.subList(0, 24)
                         }
 
-                        else -> throw IllegalArgumentException("Invalid mnemonic")
+                        else -> {
+                            errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                            throw IllegalArgumentException("Invalid mnemonic")
+                        }
                     }
                 }
                 val mnemonic = w.joinToString(" ")
@@ -235,7 +235,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Initial)
+                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }
@@ -309,7 +309,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Initial)
+                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }

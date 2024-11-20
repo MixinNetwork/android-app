@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +28,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.widget.components.MaterialWindowButton
 
 @Composable
 fun CreateAccountPage(
@@ -64,32 +63,7 @@ fun CreateAccountPage(
                     }
                 })
             Spacer(modifier = Modifier.weight(1f))
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                onClick = {
-                    toMobile.invoke()
-                },
-                colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.backgroundWindow
-                ),
-                shape = RoundedCornerShape(32.dp),
-                elevation =
-                ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
-            ) {
-
-                Text(
-                    text = stringResource(R.string.sign_up_have_account),
-                    color = MixinAppTheme.colors.textBlue
-                )
-            }
+            MaterialWindowButton(onClick = { toMobile.invoke() }, title = stringResource(R.string.sign_up_have_account))
             Spacer(modifier = Modifier.height(30.dp))
         }
     }
