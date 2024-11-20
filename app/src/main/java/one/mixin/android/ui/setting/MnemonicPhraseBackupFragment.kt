@@ -44,7 +44,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     enum class MnemonicPhraseBackupStep {
-        Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify, MnemonicPhraseDisplay
+        Initial, Before, Pin, MnemonicPhrase, MnemonicPhraseVerify
     }
 
     private var pin = ""
@@ -123,24 +123,8 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                                 }
                                 mnemonic = list
                                     .let { l -> l + l[mnemonicChecksumIndex(l)] }
-                                if (Session.saltExported()) {
-                                    navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name)
-                                } else {
-                                    navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
-                                }
+                                navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
                             }
-                        })
-                    }
-
-                    composable(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name) {
-                        BackHandler(true) {
-                            handleBack()
-                        }
-                        MnemonicPhraseBackupShownPage(mnemonic, {
-                            handleBack()
-
-                        }, {
-                            handleBack()
                         })
                     }
 

@@ -131,21 +131,17 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                         isLoading = true
                         coroutineScope.launch {
                             runCatching {
-                                if (Session.hasPhone() && !Session.saltExported()) {
-                                    val selfId = Session.getAccountId()!!
-                                    val seed = tip.getOrRecoverTipPriv(context, pinCode).getOrThrow()
-                                    val edKey = tip.getMnemonicEdKey(context, pinCode, seed)
-                                    viewModel
-                                        .saltExport(
-                                            ExportRequest(
-                                                publicKey = edKey.publicKey.toHex(),
-                                                signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                pinBase64 = viewModel.getEncryptedTipBody(selfId, pinCode),
-                                            )
+                                val selfId = Session.getAccountId()!!
+                                val seed = tip.getOrRecoverTipPriv(context, pinCode).getOrThrow()
+                                val edKey = tip.getMnemonicEdKey(context, pinCode, seed)
+                                viewModel
+                                    .saltExport(
+                                        ExportRequest(
+                                            publicKey = edKey.publicKey.toHex(),
+                                            signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
+                                            pinBase64 = viewModel.getEncryptedTipBody(selfId, pinCode),
                                         )
-                                } else {
-                                    viewModel.verifyPin(pinCode)
-                                }
+                                    )
                             }.onSuccess { response ->
                                 if (response.isSuccess) {
                                     next(pinCode)

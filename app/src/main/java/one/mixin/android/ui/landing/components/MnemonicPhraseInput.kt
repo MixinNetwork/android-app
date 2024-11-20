@@ -381,7 +381,7 @@ fun MnemonicPhraseInput(
                     Text(
                         stringResource(
                             when (state) {
-                                MnemonicState.Display -> if (Session.saltExported()) R.string.Done else R.string.Check_Backup
+                                MnemonicState.Display -> R.string.Check_Backup
                                 MnemonicState.Input -> R.string.Confirm
                                 MnemonicState.Verify -> R.string.Complete
                             }
