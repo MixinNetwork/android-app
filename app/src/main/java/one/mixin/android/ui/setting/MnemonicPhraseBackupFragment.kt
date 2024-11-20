@@ -2,27 +2,25 @@ package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.mnemonicChecksumIndex
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.crypto.mnemonicChecksumIndex
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
@@ -36,11 +34,8 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
 
-        fun newInstance(
-        ): MnemonicPhraseBackupFragment =
-            MnemonicPhraseBackupFragment().apply {
-
-            }
+        fun newInstance(): MnemonicPhraseBackupFragment =
+            MnemonicPhraseBackupFragment().apply {}
     }
 
     @Inject
@@ -138,43 +133,49 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                     }
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhraseDisplay.name) {
+                        BackHandler(true) {
+                            handleBack()
+                        }
                         MnemonicPhraseBackupShownPage(mnemonic, {
-                            if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
-                                requireActivity().finish()
-                            } else {
-                                requireActivity().supportFragmentManager.popBackStack()
-                            }
+                            handleBack()
+
                         }, {
-                            if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
-                                requireActivity().finish()
-                            } else {
-                                requireActivity().supportFragmentManager.popBackStack()
-                            }
+                            handleBack()
                         })
                     }
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhrase.name) {
+                        BackHandler(true) {
+                            handleBack()
+                        }
                         MnemonicPhraseBackupShownPage(mnemonic, {
-                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                            handleBack()
                         }, {
                             navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name)
                         })
                     }
 
                     composable(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name) {
+                        BackHandler(true) {
+                            handleBack()
+                        }
                         MnemonicPhraseBackupVerifyPage(mnemonic, {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         }, {
                             toast(R.string.Backup_success)
-                            if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
-                                requireActivity().finish()
-                            } else {
-                                requireActivity().supportFragmentManager.popBackStack()
-                            }
+                            handleBack()
                         }, tip, pin)
                     }
                 }
             }
+        }
+    }
+
+    private fun handleBack() {
+        if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
+            requireActivity().finish()
+        } else {
+            requireActivity().supportFragmentManager.popBackStack()
         }
     }
 }
