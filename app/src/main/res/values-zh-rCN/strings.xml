@@ -1734,8 +1734,8 @@
     <string name="Backup_Mnemonic_Phrase_desc">立即通过备份您的助记词来保护您的资产。</string>
     <string name="Backup_Mnemonic_Phrase_Warning">请立即备份您的助记词！该助记词为 MPC 钱包密钥分片之一，一旦设备遗失或应用被卸载，若您没有备份，将无法重新登录当前 Mixin 账号 (%1$s)。</string>
     <string name="add_recovery_contact_before_instruction_3">您要添加的恢复联系人已将当前账号（%1$s）添加为联系人，否则对方可能无法收到验证码。</string>
-    <string name="invalid_mnemonic_phrase">无效助记词</string>
-    <string name="Set_up_pin_warning">在验证碎片密钥并同步到TIP网络时，请将应用程序保留在前台;在设置过程中不要强制退出应用程序。</string>
+    <string name="invalid_mnemonic_phrase">助记词无效</string>
+    <string name="Set_up_pin_warning">在验证碎片密钥并同步到 TIP 网络时，请将应用程序保留在前台；在设置过程中不要强制退出应用程序。</string>
     <string name="Set_up_Pin_question">如果我丢失了 PIN 会发生什么？</string>
     <string name="Set_up_Pin_answer_1">我可以稍后恢复我的帐户。</string>
     <string name="Set_up_Pin_answer_2">我将无法访问我的帐户和资金。</string>
@@ -1762,8 +1762,8 @@
     <string name="mnemonic_phrase_tip_2">·不要与网络共享。</string>
     <string name="mnemonic_phrase_take_long">这应该不会花太长时间。</string>
     <string name="Backup_Now">开始备份</string>
-    <string name="Add_Phone_desc">您可以通过手机号码登录您的帐户。手机号码将与您MPC钱包的密钥片段关联。完整的密钥仅存在于当前设备的TEK安全环境中。阅读文档以了解%1$s。</string>
-    <string name="Change_Phone_desc">您可以通过手机号码登录您的帐户。当前手机号码（%1$s）已与MPC钱包的密钥片段关联。完整的密钥仅存在于当前设备的TEK安全环境中。阅读文档以了解%2$s。</string>
+    <string name="Add_Phone_desc">您可以通过手机号码登录您的帐户。手机号码将与您 MPC 钱包的密钥片段关联。完整的密钥仅存在于当前设备的 TEE 安全环境中。阅读文档以了解%1$s。</string>
+    <string name="Change_Phone_desc">您可以通过手机号码登录您的帐户。当前手机号码（%1$s）已与MPC钱包的密钥片段关联。完整的密钥仅存在于当前设备的TEE 安全环境中。阅读文档以了解%2$s。</string>
     <string name="Add_Mobile_Number">添加手机号码</string>
     <string name="add_phone_instruction_1">手机号码和助记词将链接到同一个密钥片段。</string>
     <string name="add_phone_instruction_2">手机号码和助记词登录到同一帐户。</string>
