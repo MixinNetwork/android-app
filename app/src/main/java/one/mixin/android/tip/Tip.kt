@@ -31,7 +31,6 @@ import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceString
-import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.remove
