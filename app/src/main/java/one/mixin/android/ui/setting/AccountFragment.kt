@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAccountBinding
 import one.mixin.android.extension.alert
@@ -25,7 +26,6 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
         fun newInstance() = AccountFragment()
     }
 
-    private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentAccountBinding::bind)
 
     override fun onViewCreated(
@@ -43,12 +43,16 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
             securityRl.setOnClickListener {
                 navTo(SecurityFragment.newInstance(), SecurityFragment.TAG)
             }
+            logOutRl.setOnClickListener {
+                MixinApplication.get().closeAndClear()
+            }
             deleteRl.setOnClickListener {
                 navTo(DeleteAccountFragment.newInstance(), DeleteAccountFragment.TAG)
             }
             changeRl.setOnClickListener {
                 changeNumber()
             }
+
         }
     }
 

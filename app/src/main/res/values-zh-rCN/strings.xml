@@ -967,6 +967,7 @@
     <string name="Shown">显示</string>
     <string name="snapshot_Hash">快照哈希</string>
     <string name="Sign_in">登录</string>
+    <string name="Sign_out">退出登录</string>
     <string name="Sign_in_desktop_app">登录桌面端</string>
     <string name="Sign_with_emergency_contact">通过恢复联系人登录</string>
     <string name="Sign_with_mobile_number">通过手机号登录</string>
