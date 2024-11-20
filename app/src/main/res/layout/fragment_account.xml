@@ -95,7 +95,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/Sign_out"
+                    android:text="@string/Log_out"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

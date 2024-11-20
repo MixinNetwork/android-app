@@ -992,7 +992,7 @@
     <string name="Shown">Shown</string>
     <string name="snapshot_Hash">Snapshot Hash</string>
     <string name="Sign_in">Sign in</string>
-    <string name="Sign_out">Sign out</string>
+    <string name="Log_out">Log out</string>
     <string name="Sign_in_desktop_app">Sign in desktop app</string>
     <string name="Sign_with_emergency_contact">Sign in with recovery contact</string>
     <string name="Sign_with_mobile_number">Sign in with mobile number</string>

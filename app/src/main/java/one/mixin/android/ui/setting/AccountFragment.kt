@@ -2,7 +2,6 @@ package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -12,6 +11,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.tip.TipActivity
@@ -44,7 +44,11 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
                 navTo(SecurityFragment.newInstance(), SecurityFragment.TAG)
             }
             logOutRl.setOnClickListener {
-                MixinApplication.get().closeAndClear()
+                VerifyBottomSheetDialogFragment.newInstance(title = getString(R.string.Log_out) ,disableBiometric = true)
+                    .setOnPinSuccess {
+                        MixinApplication.get().closeAndClear()
+                    }
+                    .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
             }
             deleteRl.setOnClickListener {
                 navTo(DeleteAccountFragment.newInstance(), DeleteAccountFragment.TAG)
