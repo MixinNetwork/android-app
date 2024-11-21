@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.openUrl
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING_CREATE
 import one.mixin.android.ui.landing.components.CreateAccountPage
 import one.mixin.android.util.viewBinding
@@ -36,7 +37,7 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
             CreateAccountPage({
                 activity?.addFragment(
                     this@CreateAccountFragment,
-                    MobileFragment.newInstance(from = FROM_LANDING_CREATE),
+                    MobileFragment.newInstance(from = FROM_LANDING),
                     MobileFragment.TAG,
                 )
             },{

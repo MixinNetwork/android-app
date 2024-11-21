@@ -157,7 +157,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private fun handleBack() {
-        if (requireActivity().supportFragmentManager.backStackEntryCount == 1) {
+        if (requireActivity().supportFragmentManager.backStackEntryCount <= 1) {
             requireActivity().finish()
         } else {
             requireActivity().supportFragmentManager.popBackStack()
