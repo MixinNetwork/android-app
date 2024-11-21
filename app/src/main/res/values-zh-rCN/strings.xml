@@ -535,7 +535,7 @@
     <string name="days_count_short">%1$d天</string>
     <string name="weeks_count_short">%1$d周</string>
     <string name="months_count_short">%1$d月</string>
-    <string name="ytd">年初至今</string>
+    <string name="ytd">今年</string>
     <string name="how_are_you">嗨，你好吗？</string>
     <string name="i_am_good">我很好。</string>
     <string name="I_know">我知道了</string>
@@ -562,7 +562,7 @@
     <string name="landing_delete_content">您的账户将于 %1$s 被删除，如果您继续登录，删除您账户的请求将被取消。</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="landing_introduction">点击 "同意并继续" 接受 Mixin %1$s和%2$s</string>
-    <string name="landing_desc">具有Signal消息传递功能的开源加密钱包。</string>
+    <string name="landing_desc">带有端对端加密消息功能的开源加密钱包。</string>
     <string name="landing_invitation_dialog_content">我们将发送4位验证码到手机 %1$s, 请在下一个页面输入</string>
     <string name="landing_anonymous_dialog_content">我们将发送4位验证码到匿名号码 %1$s, 请在下一个页面输入</string>
     <string name="landing_validation_title">请输入发送至以下号码的 4 位验证码：%1$s</string>
