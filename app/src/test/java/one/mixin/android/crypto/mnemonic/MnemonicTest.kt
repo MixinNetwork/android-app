@@ -24,17 +24,19 @@ class MnemonicTest {
 
         var mnemonic = "ought darted yawning apricot hold odds goblet logic loyal drying tucks atom".split(" ")
         var index = mnemonicChecksumIndex(mnemonic, 3)
-        assertEquals("suspect", mnemonic[index])
+        assertEquals("suspect", MnemonicCode.INSTANCE.wordList[index])
         println(mnemonic[index])
         mnemonic = "vogue juggled dyslexic hounded revamp zapped ambush hunter hire duets potato noted".split(" ")
         index = mnemonicChecksumIndex(mnemonic, 3)
         println(mnemonic[index])
-        assertEquals("wheel", mnemonic[index])
+        assertEquals("wheel", MnemonicCode.INSTANCE.wordList[index])
 
         // from 32 byte salt
-        val legacyMn = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail"
-        val legacySeed = toSeed(legacyMn.split(" "), "")
+        val legacyMn = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail".split(" ")
+        val legacySeed = toSeed(legacyMn, "")
         val legacyKey = Bip32ECKeyPair.generateKeyPair(legacySeed)
+        assertEquals("defy", MnemonicCode.INSTANCE.wordList[mnemonicChecksumIndex(legacyMn, 3)])
+
         println(legacyKey.privateKey.toByteArray().hexString())
         println(legacyKey.publicKey.toByteArray().hexString())
         assertEquals(legacyKey.privateKey.toByteArray().hexString(), "140d51ebe0eecba895236984b59144c0c98f60cd21d470ff55910985611031f6")
