@@ -1,6 +1,10 @@
 package one.mixin.android.crypto
 
 import blockchain.Blockchain
+import one.mixin.android.R
+import one.mixin.android.extension.navTo
+import one.mixin.android.extension.toast
+import one.mixin.android.ui.landing.MnemonicPhraseFragment
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
 import org.bitcoinj.crypto.MnemonicCode
@@ -18,6 +22,17 @@ fun toMnemonic(entropy: ByteArray): String {
     return MnemonicCode.INSTANCE.toMnemonic(entropy).joinToString(" ").also {
         require(Blockchain.newMnemonic(entropy) == it)
     }
+}
+
+fun toCompleteMnemonic(mnemonic: String): List<String> {
+    val words = mnemonic.split(" ")
+    val checksum = MnemonicCode.INSTANCE.wordList[mnemonicChecksumIndex(words)]
+    return words + checksum
+}
+
+fun toCompleteMnemonic(words: List<String>): List<String> {
+    val checksum = MnemonicCode.INSTANCE.wordList[mnemonicChecksumIndex(words)]
+    return words + checksum
 }
 
 fun newMasterPrivateKeyFromMnemonic(mnemonic: String): DeterministicKey {
@@ -43,6 +58,20 @@ fun toEntropy(words: List<String>): ByteArray = MnemonicCode.INSTANCE.toEntropy(
 
 fun toSeed(words: List<String>, passphrase: String): ByteArray = MnemonicCode.toSeed(words, passphrase)
 
+fun mnemonicChecksum(list: List<String>): Boolean {
+    return when (list.size) {
+        25 -> {
+            MnemonicCode.INSTANCE.wordList[mnemonicChecksumIndex(list.subList(0, 24))] == list.last()
+        }
+        13 -> {
+            list.distinct().size == list.size && MnemonicCode.INSTANCE.wordList[mnemonicChecksumIndex(list.subList(0, 12))] == list.last()
+        }
+        else -> {
+            false
+        }
+    }
+}
+
 fun mnemonicChecksumIndex(words: List<String>, prefixLen: Int = 3): Int {
     val trimmedWords = StringBuilder()
     for (word in words) {
@@ -57,5 +86,5 @@ fun mnemonicChecksumIndex(words: List<String>, prefixLen: Int = 3): Int {
     crc32.update(trimmedWords.toString().toByteArray())
     val checksum = crc32.value
 
-    return (checksum % words.size).toInt()
+    return (checksum % MnemonicCode.INSTANCE.wordList.size).toInt()
 }

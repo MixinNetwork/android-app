@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.mnemonicChecksumIndex
+import one.mixin.android.crypto.toCompleteMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
@@ -27,6 +28,7 @@ import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupShownPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupVerifyPage
 import one.mixin.android.util.viewBinding
+import org.bitcoinj.crypto.MnemonicCode
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -121,8 +123,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                                     requireActivity().finish()
                                     return@launch
                                 }
-                                mnemonic = list
-                                    .let { l -> l + l[mnemonicChecksumIndex(l)] }
+                                mnemonic = toCompleteMnemonic(list)
                                 navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
                             }
                         })

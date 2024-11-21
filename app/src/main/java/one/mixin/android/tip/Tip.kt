@@ -23,6 +23,7 @@ import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
+import one.mixin.android.crypto.toCompleteMnemonic
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.event.TipEvent
@@ -208,7 +209,12 @@ class Tip
 
         // Each user can only generate once
         fun generateEntropyAndStore(context: Context): ByteArray {
-            val entropy = generateRandomBytes(16)
+            var entropy: ByteArray
+            var mnemonicPhrase: List<String>
+            do {
+                entropy = generateRandomBytes(16)
+                mnemonicPhrase = toCompleteMnemonic(toMnemonic(entropy))
+            } while (mnemonicPhrase.distinct().size != mnemonicPhrase.size)
             storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, entropy)
             return entropy
         }

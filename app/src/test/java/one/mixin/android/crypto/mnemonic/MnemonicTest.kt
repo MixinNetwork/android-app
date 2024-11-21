@@ -24,12 +24,12 @@ class MnemonicTest {
 
         var mnemonic = "ought darted yawning apricot hold odds goblet logic loyal drying tucks atom".split(" ")
         var index = mnemonicChecksumIndex(mnemonic, 3)
-        assertEquals("goblet", mnemonic[index])
+        assertEquals("suspect", mnemonic[index])
         println(mnemonic[index])
         mnemonic = "vogue juggled dyslexic hounded revamp zapped ambush hunter hire duets potato noted".split(" ")
         index = mnemonicChecksumIndex(mnemonic, 3)
         println(mnemonic[index])
-        assertEquals("vogue", mnemonic[index])
+        assertEquals("wheel", mnemonic[index])
 
         // from 32 byte salt
         val legacyMn = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail"
