@@ -163,7 +163,6 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_below="@id/delete_rl"
-        android:layout_marginBottom="24dp"
         android:background="?attr/bg_white"
         android:foreground="?android:attr/selectableItemBackground">
 
@@ -175,6 +174,26 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:text="@string/Change_Number_Instead"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/log_out_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_below="@id/change_rl"
+        android:layout_marginBottom="24dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/log_out_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/Log_out_instead"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 

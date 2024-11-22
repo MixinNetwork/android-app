@@ -485,7 +485,6 @@
     <string name="Label">標題</string>
     <string name="landing_delete_content">您的賬戶將於 %1$s 被刪除，如果您繼續登入，刪除您賬戶的請求將被取消。</string>
     <string name="landing_enter_mobile_tip">我們不會公開你的手機號碼</string>
-    <string name="landing_introduction">點選 \"同意並繼續\" 接受 Mixin %1$s和%2$s</string>
     <string name="landing_invitation_dialog_content">我們將傳送4位驗證碼到手機 %1$s, 請在下一個頁面輸入</string>
     <string name="landing_validation_title">請輸入傳送至以下號碼的 4 位驗證碼：%1$s</string>
     <string name="Language">語言</string>
@@ -801,7 +800,6 @@
     <string name="setting_desktop_logout_failed">退出桌面端失敗</string>
     <string name="setting_duplicate_transfer_desc">當你在 6 個小時內給相同的人轉相同的金額時顯示確認彈窗。</string>
     <string name="setting_emergency_change_mobile">立即修改手機號？</string>
-    <string name="setting_emergency_content">緊急聯絡人旨在幫助你在丟失且無法找回手機號的情況下登入你的賬號。</string>
     <string name="setting_emergency_create_success">新增緊急聯絡人成功</string>
     <string name="setting_emergency_desc">請放心，即使您的手機號丟失無法找回錢包資產也很安全，請牢記您的 PIN，閱讀檔案**瞭解更多**。</string>
     <string name="setting_emergency_pin_tip">緊急聯絡人受 PIN 加密保護</string>
@@ -838,7 +836,7 @@
     <string name="Sign_in">登入</string>
     <string name="Sign_in_desktop_app">登入桌面端</string>
     <string name="Sign_with_emergency_contact">透過緊急聯絡人登入</string>
-    <string name="Sign_with_phone_number">透過手機號登入</string>
+    <string name="Sign_with_mobile_number">透過手機號登入</string>
     <string name="Silence_Notification">靜音通知</string>
     <string name="Size">大小</string>
     <string name="Skip">跳過</string>

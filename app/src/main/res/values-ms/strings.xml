@@ -361,7 +361,6 @@
     <string name="Label">Label</string>
     <string name="Landing_back">Landing back</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan memaparkan nombor telefon bimbit anda secara terbuka.</string>
-    <string name="landing_introduction">Ketuk \"Setuju &amp; Teruskan\" untuk terima %1$s dan %2$s</string>
     <string name="landing_invitation_dialog_content">Kami akan menghantar kod 4 digit ke nombor telefon anda %1$s, sila masukkan kod di skrin seterusnya.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
@@ -619,7 +618,6 @@
     <string name="setting_desktop_logout_failed">Log keluar desktop gagal.</string>
     <string name="setting_duplicate_transfer_desc">Paparkan dialog pengesahan apabila anda memindahkan jumlah yang sama kepada orang yang sama dalam masa 6 jam</string>
     <string name="setting_emergency_change_mobile">Adakah anda mahu menukar nombor telefon bimbit anda sekarang?</string>
-    <string name="setting_emergency_content">Kenalan kecemasan direka untuk membantu anda log masuk ke akaun anda sekiranya anda tersesat dan tidak dapat semula nombor telefon bimbit anda.</string>
     <string name="setting_emergency_create_success">Buat kenalan kecemasan berjaya</string>
     <string name="setting_emergency_desc">Apabila anda kehilangan nombor telefon bimbit, sila hubungi kenalan kecemasan anda melalui telefon atau cara lain untuk mendapatkan ID Mixin dan kod pengesahan. Baca Kenalan Kecemasan kami untuk **mengetahui lebih lanjut**.</string>
     <string name="setting_emergency_pin_tip">Kenalan kecemasan anda dilindungi oleh PIN</string>
@@ -650,7 +648,7 @@
     <string name="Sign_in">Log masuk</string>
     <string name="Sign_in_desktop_app">Log masuk aplikasi desktop</string>
     <string name="Sign_with_emergency_contact">Log masuk dengan kenalan kecemasan</string>
-    <string name="Sign_with_phone_number">Log masuk dengan nombor telefon</string>
+    <string name="Sign_with_mobile_number">Log masuk dengan nombor telefon</string>
     <string name="Skip">LANGKAU</string>
     <string name="Slide_to_cancel">Slaid untuk Batal</string>
     <string name="Sort">Susun</string>

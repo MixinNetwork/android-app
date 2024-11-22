@@ -18,7 +18,6 @@ import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxTotalAlerts
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
-import one.mixin.android.ui.wallet.alert.vo.AlertStatus
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import javax.inject.Inject
 

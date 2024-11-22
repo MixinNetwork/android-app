@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical">
@@ -33,20 +33,19 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="92dp"
-                    android:layout_height="83dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="36dp"
-                    android:layout_marginBottom="20dp"
                     android:contentDescription="@null"
-                    android:src="?attr/icon_emergency" />
+                    android:src="@drawable/ic_set_up_pin" />
 
                 <TextView
                     android:id="@+id/tip_tv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="20dp"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_marginBottom="24dp"
                     android:gravity="center"
@@ -54,6 +53,7 @@
                     android:text="@string/setting_emergency_content"
                     android:textColor="?attr/text_assist"
                     android:textSize="12sp" />
+
             </LinearLayout>
 
             <RelativeLayout
@@ -61,8 +61,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:layout_marginTop="@dimen/item_divider"
-                android:background="?attr/bg_white"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
                 <TextView
                     style="@style/NormalTextStyle"
@@ -88,8 +89,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:layout_marginTop="@dimen/item_divider"
-                android:background="?attr/bg_white"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:background="@drawable/ripple_round_window_top"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
                 <TextView
                     style="@style/NormalTextStyle"
@@ -125,8 +127,9 @@
                 android:id="@+id/time_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:background="@drawable/ripple_round_window_bottom"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
                 <TextView
                     android:id="@+id/time_tv"
@@ -144,17 +147,27 @@
                     android:id="@+id/time_desc_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
+                    android:layout_toStartOf="@id/arrow"
                     android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginEnd="8dp"
                     android:textColor="?attr/text_assist"
                     tools:ignore="RelativeOverlap" />
+
+                <ImageView
+                    android:id="@+id/arrow"
+                    android:src="@drawable/ic_arrow_gray_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin" />
             </RelativeLayout>
 
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/bg_window">
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -168,17 +181,34 @@
                     android:textSize="12sp" />
             </FrameLayout>
 
-            <TextView
+            <RelativeLayout
                 android:id="@+id/change_tv"
-                style="@style/NormalTextStyle"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:gravity="center_vertical"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/Change_PIN" />
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
+            <TextView
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop=".5dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Change_PIN"  />
+
+                <ImageView
+                    android:id="@+id/change_arrow"
+                    android:src="@drawable/ic_arrow_gray_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin" />
+            </RelativeLayout>
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

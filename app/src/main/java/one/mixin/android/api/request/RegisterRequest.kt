@@ -11,4 +11,8 @@ data class RegisterRequest(
     val pin: String,
     @SerializedName("salt_base64")
     val salt: String,
+    @SerializedName("master_public_hex")
+    val saltPublicHex: String,
+    @SerializedName("master_signature_hex")
+    val saltSignatureHex: String,
 )

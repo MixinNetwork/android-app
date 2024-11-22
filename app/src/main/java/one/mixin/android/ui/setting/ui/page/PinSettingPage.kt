@@ -59,7 +59,7 @@ fun PinSettingPage() {
         ) {
             Box(modifier = Modifier.height(36.dp))
             Image(
-                painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
+                painter = painterResource(R.drawable.ic_emergency),
                 contentDescription = null,
                 modifier =
                     Modifier

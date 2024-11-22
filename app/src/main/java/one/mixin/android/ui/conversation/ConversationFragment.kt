@@ -286,7 +286,8 @@ import kotlin.math.abs
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class ConversationFragment() :
+class
+ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,

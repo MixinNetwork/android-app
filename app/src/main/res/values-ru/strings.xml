@@ -505,7 +505,6 @@
     <string name="Landing_back">Приземление назад</string>
     <string name="landing_delete_content">Ваш аккаунт будет удален %1$s. Если вы продолжите входить в систему, запрос на удаление вашего аккаунта будет отменен.</string>
     <string name="landing_enter_mobile_tip">Мы никогда не будем публично показывать ваш номер мобильного телефона.</string>
-    <string name="landing_introduction">Нажмите «Принять и продолжить», чтобы принять %1$s и %2$s.</string>
     <string name="landing_invitation_dialog_content">Мы отправим 4-значный код на ваш номер телефона %1$s. Введите код на следующем экране.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
@@ -837,7 +836,6 @@
     <string name="setting_desktop_logout_failed">Выход из рабочего стола не удался.</string>
     <string name="setting_duplicate_transfer_desc">Отображение диалогового окна подтверждения при переводе одной и той же суммы одному и тому же человеку в течение 6 часов.</string>
     <string name="setting_emergency_change_mobile">Вы хотите изменить свой номер мобильного телефона сейчас?</string>
-    <string name="setting_emergency_content">Экстренный контакт предназначен для того, чтобы помочь вам войти в свою учетную запись, если вы потерялись и не можете восстановить свой номер мобильного телефона.</string>
     <string name="setting_emergency_create_success">Создать экстренный контакт успешно</string>
     <string name="setting_emergency_desc">Если вы потеряли свой номер мобильного телефона, свяжитесь со своим экстренным контактом по телефону или другим способом, чтобы получить Mixin ID и код подтверждения. Прочтите нашу контактную информацию для экстренных случаев, чтобы **узнать больше**.</string>
     <string name="setting_emergency_pin_tip">Ваш экстренный контакт защищен PIN-кодом</string>
@@ -876,7 +874,7 @@
     <string name="Sign_in">Войти</string>
     <string name="Sign_in_desktop_app">Войти в настольное приложение</string>
     <string name="Sign_with_emergency_contact">Войти через контакт для экстренных случаев</string>
-    <string name="Sign_with_phone_number">Войти через номер телефона</string>
+    <string name="Sign_with_mobile_number">Войти через номер телефона</string>
     <string name="Silence_Notification">Беззвучное уведомление</string>
     <string name="Size">Размер</string>
     <string name="Skip">Пропустить</string>

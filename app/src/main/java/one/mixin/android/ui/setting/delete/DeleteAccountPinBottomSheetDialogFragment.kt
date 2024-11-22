@@ -6,10 +6,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.DeactivateRequest
 import one.mixin.android.databinding.FragmentDeleteAccountPinBottomSheetBinding
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.localDateString
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.BiometricInfo
 import one.mixin.android.util.viewBinding
@@ -21,7 +23,7 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         const val TAG = "DeleteAccountPinBottomSheetDialogFragment"
         private const val VERIFICATION_ID = "verification_id"
 
-        fun newInstance(verificationId: String) =
+        fun newInstance(verificationId: String?) =
             DeleteAccountPinBottomSheetDialogFragment().withArgs {
                 putString(VERIFICATION_ID, verificationId)
             }
@@ -29,8 +31,8 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
 
     private val binding by viewBinding(FragmentDeleteAccountPinBottomSheetBinding::inflate)
 
-    private val verificationId: String by lazy {
-        requireNotNull(requireArguments().getString(VERIFICATION_ID))
+    private val verificationId: String? by lazy {
+        requireArguments().getString(VERIFICATION_ID, null)
     }
 
     @SuppressLint("RestrictedApi")
@@ -52,7 +54,12 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        return bottomViewModel.deactivate(pin, verificationId)
+        val vid = verificationId
+        return if (vid == null) {
+            bottomViewModel.deactivate(DeactivateRequest(pin = bottomViewModel.getDeactivateTipBody(Session.getAccountId()!!, pin)))
+        } else {
+            bottomViewModel.deactivate(pin, vid)
+        }
     }
 
     override fun doWhenInvokeNetworkSuccess(

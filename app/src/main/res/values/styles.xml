@@ -86,8 +86,8 @@
         <item name="bg_market_gradient_end">@color/marketGradientEnd</item>
         <item name="icon_chain">@color/iconChain</item>
         <item name="bg_market_card">@drawable/bg_market_card</item>
+        <item name="ic_logo">@drawable/ic_logo_mixin</item>
 
-        <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>
@@ -331,12 +331,30 @@
         <item name="android:background">@drawable/bg_round_blue_btn</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
+    <style name="AppTheme.MaterialWindowButton">
+        <item name="android:background">@drawable/bg_round_window_btn</item>
+        <item name="android:textColor">@color/colorBlue</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
+        <item name="android:elevation">0dp</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
     <style name="AppTheme.MaterialGrayButton">
         <item name="android:background">@drawable/bg_round_gray_btn</item>
         <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
+    <style name="AppTheme.MaterialOutlineButton">
+        <item name="android:background">@drawable/bg_round_blue_outline_btn</item>
+        <item name="android:textColor">@color/colorBlue</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:elevation">0dp</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>

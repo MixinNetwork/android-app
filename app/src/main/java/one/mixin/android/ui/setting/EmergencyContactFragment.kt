@@ -46,8 +46,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
             }
             titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             enableRl.setOnClickListener {
-                EmergencyContactTipBottomSheetDialogFragment.newInstance()
-                    .showNow(parentFragmentManager, EmergencyContactTipBottomSheetDialogFragment.TAG)
+                navTo(AddRecoveryContactFragment.newInstance(), AddRecoveryContactFragment.TAG)
             }
             viewRl.setOnClickListener {
                 showEmergency = true

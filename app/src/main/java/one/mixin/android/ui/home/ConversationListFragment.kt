@@ -75,6 +75,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.util.BackupMnemonicPhraseBulletin
 import one.mixin.android.util.BulletinBoard
 import one.mixin.android.util.EmergencyContactBulletin
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -747,6 +748,7 @@ class ConversationListFragment : LinkFragment() {
             bulletinBoard.clear()
             val shown =
                 bulletinBoard
+                    .addBulletin(BackupMnemonicPhraseBulletin(bulletinView, account))
                     .addBulletin(NotificationBulletin(bulletinView, ::onClose))
                     .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
                     .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))

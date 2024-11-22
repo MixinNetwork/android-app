@@ -70,7 +70,6 @@
 
     <attr name="map_default" format="reference" />
 
-    <attr name="icon_emergency" format="reference" />
     <attr name="icon_emergency_contact" format="reference" />
 
     <attr name="code_border" format="color|reference" />
@@ -86,4 +85,5 @@
     <attr name="bg_market_gradient_end" format="color|reference" />
     <attr name="icon_chain" format="color|reference" />
     <attr name="bg_market_card" format="reference" />
+    <attr name="ic_logo" format="reference" />
 </resources>

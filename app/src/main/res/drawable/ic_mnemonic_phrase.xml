@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="76dp"
+    android:height="72dp"
+    android:viewportWidth="76"
+    android:viewportHeight="72">
+  <path
+      android:pathData="M12,12C12,7.582 15.582,4 20,4H43.461C45.519,4 47.497,4.793 48.985,6.213L61.524,18.183C63.105,19.693 64,21.784 64,23.97V60C64,64.418 60.418,68 56,68H20C15.582,68 12,64.418 12,60V12Z"
+      android:strokeWidth="4"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M63,21H50.778C48.139,21 46,18.818 46,16.127V4"
+      android:strokeWidth="4"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M55,30L40,30A2,2 0,0 0,38 32L38,32A2,2 0,0 0,40 34L55,34A2,2 0,0 0,57 32L57,32A2,2 0,0 0,55 30z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M27,46L21,46A2,2 0,0 0,19 48L19,48A2,2 0,0 0,21 50L27,50A2,2 0,0 0,29 48L29,48A2,2 0,0 0,27 46z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M55,46L34,46A2,2 0,0 0,32 48L32,48A2,2 0,0 0,34 50L55,50A2,2 0,0 0,57 48L57,48A2,2 0,0 0,55 46z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M40,54L21,54A2,2 0,0 0,19 56L19,56A2,2 0,0 0,21 58L40,58A2,2 0,0 0,42 56L42,56A2,2 0,0 0,40 54z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M55,54L46,54A2,2 0,0 0,44 56L44,56A2,2 0,0 0,46 58L55,58A2,2 0,0 0,57 56L57,56A2,2 0,0 0,55 54z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M55,38L48,38A2,2 0,0 0,46 40L46,40A2,2 0,0 0,48 42L55,42A2,2 0,0 0,57 40L57,40A2,2 0,0 0,55 38z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M33,30L21,30A2,2 0,0 0,19 32L19,32A2,2 0,0 0,21 34L33,34A2,2 0,0 0,35 32L35,32A2,2 0,0 0,33 30z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M41,38L21,38A2,2 0,0 0,19 40L19,40A2,2 0,0 0,21 42L41,42A2,2 0,0 0,43 40L43,40A2,2 0,0 0,41 38z"
+      android:fillColor="?attr/badger_mute"/>
+</vector>

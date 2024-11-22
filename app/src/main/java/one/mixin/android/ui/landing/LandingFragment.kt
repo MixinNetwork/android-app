@@ -3,11 +3,12 @@ package one.mixin.android.ui.landing
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DebugClickListener
@@ -27,23 +28,6 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
-        val policy: String = requireContext().getString(R.string.Privacy_Policy)
-        val termsService: String = requireContext().getString(R.string.Terms_of_Service)
-        val policyWrapper = requireContext().getString(R.string.landing_introduction, "**$policy**", "**$termsService**")
-        val policyUrl = getString(R.string.landing_privacy_policy_url)
-        val termsUrl = getString(R.string.landing_terms_url)
-        binding.introductionTv.highlightStarTag(
-            policyWrapper,
-            arrayOf(policyUrl, termsUrl),
-        )
-
-        binding.agreeTv.setOnClickListener {
-            activity?.addFragment(
-                this@LandingFragment,
-                MobileFragment.newInstance(),
-                MobileFragment.TAG,
-            )
-        }
         binding.imageView.setOnClickListener(
             object : DebugClickListener() {
                 override fun onDebugClick() {
@@ -54,5 +38,21 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 }
             },
         )
+
+        binding.version.text = getString(R.string.current_version, BuildConfig.VERSION_NAME)
+        binding.createTv.setOnClickListener {
+            activity?.addFragment(
+                this@LandingFragment,
+                CreateAccountFragment.newInstance(),
+                CreateAccountFragment.TAG,
+            )
+        }
+        binding.continueTv.setOnClickListener {
+            activity?.addFragment(
+                this@LandingFragment,
+                MobileFragment.newInstance(from = FROM_LANDING),
+                MobileFragment.TAG,
+            )
+        }
     }
 }

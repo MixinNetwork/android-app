@@ -520,7 +520,6 @@
     <string name="Landing_back">Aterrizando de vuelta</string>
     <string name="landing_delete_content">Tu cuenta se eliminará el %1$s; si continúas iniciando sesión, se cancelará la solicitud para eliminar tu cuenta.</string>
     <string name="landing_enter_mobile_tip">Nunca mostraremos tu número de móvil públicamente.</string>
-    <string name="landing_introduction">Toca Aceptar y continuar para aceptar %1$s y %2$s.</string>
     <string name="landing_invitation_dialog_content">Te enviaremos un código de 4 dígitos a tu número de teléfono %1$s. Introduce el código en la siguiente pantalla.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
@@ -868,7 +867,6 @@
     <string name="setting_desktop_logout_failed">El cierre de sesión del escritorio ha fallado.</string>
     <string name="setting_duplicate_transfer_desc">Muestra un cuadro de diálogo de confirmación cuando transfieres la misma cantidad a la misma persona dentro de las 6 horas.</string>
     <string name="setting_emergency_change_mobile">¿Quieres cambiar tu número de móvil ahora?</string>
-    <string name="setting_emergency_content">El contacto de emergencia está diseñado para ayudarte a iniciar sesión en tu cuenta si se pierde y no puede recuperar tu número de teléfono móvil.</string>
     <string name="setting_emergency_create_success">Crear contacto de emergencia con éxito</string>
     <string name="setting_emergency_desc">Cuando haya perdido tu número de teléfono móvil, comunícate con tu contacto de emergencia por teléfono u otros medios para obtener la ID de Mixin y el código de verificación. Lea nuestro contacto de emergencia para **aprender más**.</string>
     <string name="setting_emergency_pin_tip">Tu contacto de emergencia está protegido por PIN</string>
@@ -905,7 +903,7 @@
     <string name="Sign_in">Iniciar sesión</string>
     <string name="Sign_in_desktop_app">Iniciar sesión en la aplicación de escritorio</string>
     <string name="Sign_with_emergency_contact">Iniciar sesión con contacto de emergencia</string>
-    <string name="Sign_with_phone_number">Iniciar sesión con número de teléfono</string>
+    <string name="Sign_with_mobile_number">Iniciar sesión con número de teléfono</string>
     <string name="Silence_Notification">Notificación de silencio</string>
     <string name="Size">Tamaño</string>
     <string name="Skip">Saltar</string>

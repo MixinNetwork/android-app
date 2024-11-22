@@ -21,6 +21,7 @@ class SettingActivity : ThemeActivity() {
         const val FROM_NOTIFICATION = "notification"
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
         const val EXTRA_EMERGENCY_CONTACT = "extra_emergency_contact"
+        const val EXTRA_MNEMONIC_PHRASE = "extra_mnemonic_phrase"
         const val EXTRA_MIGRATE_RESTORE = "extra_migrate_restore"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
         const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
@@ -55,6 +56,14 @@ class SettingActivity : ThemeActivity() {
             )
         }
 
+        fun showMnemonicPhrase(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_MNEMONIC_PHRASE, true)
+                },
+            )
+        }
+
         fun showMigrateRestore(context: Context) {
             context.startActivity(
                 Intent(context, SettingActivity::class.java).apply {
@@ -71,6 +80,8 @@ class SettingActivity : ThemeActivity() {
         setContentView(binding.root)
         if (intent.getBooleanExtra(EXTRA_SHOW_PIN_SETTING, false)) {
             replaceFragment(PinSettingFragment.newInstance(), R.id.container, PinSettingFragment.TAG)
+        } else if (intent.getBooleanExtra(EXTRA_MNEMONIC_PHRASE, false)) {
+            replaceFragment(MnemonicPhraseBackupFragment.newInstance(), R.id.container, MnemonicPhraseBackupFragment.TAG)
         } else if (intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false)) {
             replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
         } else if (intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false)) {

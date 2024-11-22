@@ -28,9 +28,11 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
+import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
@@ -64,6 +66,15 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             changeRl.setOnClickListener {
                 changeNumber()
             }
+            logOutRl.setOnClickListener{
+                if (!Session.hasPhone() && !Session.saltExported()) {
+                    BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                        .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                } else {
+                    LogoutPinBottomSheetDialogFragment.newInstance()
+                        .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                }
+            }
         }
     }
 
@@ -76,9 +87,15 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
     }
 
     private fun verifyDeleteAccount() {
-        if (Session.getAccount()?.hasPin == true) {
-            VerifyBottomSheetDialogFragment.newInstance().setContinueCallback { dialog ->
-                showTip(dialog)
+        if (!Session.hasPhone()){
+            deleteAnonymousUser()
+        } else if (Session.getAccount()?.hasPin == true) {
+            VerifyBottomSheetDialogFragment.newInstance().apply {
+                if (Session.hasPhone()) {
+                    setContinueCallback { dialog ->
+                        showTip(dialog)
+                    }
+                }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         } else {
             if (Session.getAccount()?.hasPin == true) {
@@ -103,6 +120,24 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                         showDialog(phone) {
                             dialog.dismiss()
                         }
+                    }
+                    .showNow(
+                        parentFragmentManager,
+                        DeleteAccountTipBottomSheetDialogFragment.TAG,
+                    )
+            }
+        }
+    }
+
+    private fun deleteAnonymousUser() {
+        lifecycleScope.launch {
+            if (viewModel.findAllAssetIdSuspend().isEmpty()) {
+                DeleteAccountPinBottomSheetDialogFragment.newInstance(null).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
+            } else {
+                DeleteAccountTipBottomSheetDialogFragment.newInstance()
+                    .setContinueCallback { dialog ->
+                        dialog.dismiss()
+                        DeleteAccountPinBottomSheetDialogFragment.newInstance(null).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
                     }
                     .showNow(
                         parentFragmentManager,
@@ -223,9 +258,9 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         }
 
     private fun changeNumber() {
-        alert(getString(R.string.profile_modify_number))
+        alert(getString(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
+            .setPositiveButton(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {

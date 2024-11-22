@@ -44,7 +44,6 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
-import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.config
@@ -83,7 +82,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
@@ -321,7 +319,17 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
-                        showReceiveAssetList()
+                        if (!Session.saltExported() && !Session.hasPhone()) {
+                            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                                .apply {
+                                    laterCallback = {
+                                        showReceiveAssetList()
+                                    }
+                                }
+                                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                        } else {
+                            showReceiveAssetList()
+                        }
                     }
                     sendReceiveView.swap.setOnClickListener {
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)

@@ -41,8 +41,12 @@ object Constants {
         const val TIP_PRIV = "tip_priv"
         const val ALIAS_TIP_PRIV = "alias_tip_priv"
 
+        const val MNEMONIC = "mnemonic"
+
         const val SPEND_SALT = "spend_salt"
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
+
+        const val ENCRYPTED_MNEMONIC = "encrypted_mnemonic"
     }
 
     object Account {

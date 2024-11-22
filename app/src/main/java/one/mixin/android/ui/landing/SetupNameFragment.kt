@@ -19,7 +19,6 @@ import one.mixin.android.crypto.PrivacyPreference
 import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
-import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
