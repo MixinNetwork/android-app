@@ -59,6 +59,7 @@ class TransferContentReceiveItem : LinearLayout {
             } else {
                 title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
             }
+            userContainer.removeAllViews()
             users.forEach { user ->
                 val item = TransferReceiverItem(context)
                 item.setContent(user, signers)
