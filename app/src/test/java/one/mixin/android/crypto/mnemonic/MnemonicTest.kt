@@ -1,6 +1,6 @@
 package one.mixin.android.crypto.mnemonic
 
-import one.mixin.android.crypto.mnemonicChecksumIndex
+import one.mixin.android.crypto.mnemonicChecksumWord
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.extension.hexString
 import org.bitcoinj.crypto.MnemonicCode
@@ -23,19 +23,19 @@ class MnemonicTest {
         assertEquals(key.privateKey.toByteArray().hexString() ,"7e56ecf5943d79e1f5f87e11c768253d7f3fcf30ae71335611e366c578b4564e")
 
         var mnemonic = "ought darted yawning apricot hold odds goblet logic loyal drying tucks atom".split(" ")
-        var index = mnemonicChecksumIndex(mnemonic, 3)
-        assertEquals("suspect", MnemonicCode.INSTANCE.wordList[index])
-        println(mnemonic[index])
+        var w = mnemonicChecksumWord(mnemonic, 3)
+        assertEquals("suspect", w)
+        println(w)
         mnemonic = "vogue juggled dyslexic hounded revamp zapped ambush hunter hire duets potato noted".split(" ")
-        index = mnemonicChecksumIndex(mnemonic, 3)
-        println(mnemonic[index])
-        assertEquals("wheel", MnemonicCode.INSTANCE.wordList[index])
+        w = mnemonicChecksumWord(mnemonic, 3)
+        println(w)
+        assertEquals("wheel", w)
 
         // from 32 byte salt
         val legacyMn = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail".split(" ")
         val legacySeed = toSeed(legacyMn, "")
         val legacyKey = Bip32ECKeyPair.generateKeyPair(legacySeed)
-        assertEquals("defy", MnemonicCode.INSTANCE.wordList[mnemonicChecksumIndex(legacyMn, 3)])
+        assertEquals("defy", mnemonicChecksumWord(legacyMn, 3))
 
         println(legacyKey.privateKey.toByteArray().hexString())
         println(legacyKey.publicKey.toByteArray().hexString())

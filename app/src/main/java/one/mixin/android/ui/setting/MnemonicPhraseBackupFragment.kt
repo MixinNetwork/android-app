@@ -14,7 +14,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.mnemonicChecksumIndex
 import one.mixin.android.crypto.toCompleteMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
@@ -28,7 +27,6 @@ import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupShownPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupVerifyPage
 import one.mixin.android.util.viewBinding
-import org.bitcoinj.crypto.MnemonicCode
 import javax.inject.Inject
 
 @AndroidEntryPoint
