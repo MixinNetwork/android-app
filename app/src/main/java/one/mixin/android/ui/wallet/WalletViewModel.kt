@@ -272,14 +272,6 @@ class WalletViewModel
         }
     }
 
-    suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
-        tokenRepository.findSnapshotById(snapshotId)
-
-    suspend fun getFees(
-        assetId: String,
-        destination: String,
-    ) = tokenRepository.getFees(assetId, destination)
-
     suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
@@ -288,35 +280,6 @@ class WalletViewModel
         conversationId: String,
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
-
-    suspend fun saveSession(participantSession: ParticipantSession) {
-        userRepository.saveSession(participantSession)
-    }
-
-    suspend fun deleteSessionByUserId(
-        conversationId: String,
-        userId: String,
-    ) =
-        withContext(Dispatchers.IO) {
-            userRepository.deleteSessionByUserId(conversationId, userId)
-        }
-
-    fun insertDeposit(data: List<DepositEntry>) {
-        tokenRepository.insertDeposit(data)
-    }
-
-    suspend fun checkHasOldAsset(): Boolean {
-        return handleMixinResponse(
-            invokeNetwork = {
-                tokenRepository.findOldAssets()
-            },
-            successBlock = {
-                return@handleMixinResponse it.data?.any { asset ->
-                    BigDecimal(asset.balance) != BigDecimal.ZERO
-                } ?: false
-            },
-        ) ?: false
-    }
 
     suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
 

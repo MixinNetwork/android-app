@@ -624,8 +624,6 @@ class TokenRepository
 
         suspend fun findSnapshotById(snapshotId: String) = safeSnapshotDao.findSnapshotById(snapshotId)
 
-        suspend fun findSnapshotByTraceId(traceId: String) = safeSnapshotDao.findSnapshotByTraceId(traceId)
-
         suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
             var result: SnapshotItem? = null
             handleMixinResponse(
@@ -635,7 +633,20 @@ class TokenRepository
                 successBlock = { response ->
                     response.data?.let {
                         safeSnapshotDao.insert(it)
-                        result = safeSnapshotDao.findSnapshotById(snapshotId)
+                        result = safeSnapshotDao.findSnapshotById(snapshotId)?.let { s->
+                            if (!s.withdrawal?.receiver.isNullOrBlank()) {
+                                val receiver = s.withdrawal!!.receiver
+                                val index: Int = receiver.indexOf(":")
+                                if (index == -1) {
+                                    s.label = addressDao.findAddressByReceiver(receiver, "")
+                                } else {
+                                    val destination: String = receiver.substring(0, index)
+                                    val tag: String = receiver.substring(index + 1)
+                                    s.label = addressDao.findAddressByReceiver(destination, tag)
+                                }
+                            }
+                            s
+                        }
                     }
                 },
             )
