@@ -408,6 +408,7 @@
     <string name="Enter_your_PIN">Enter your PIN</string>
     <string name="Enter_your_PIN_to_continue">Enter your PIN to continue</string>
     <string name="Enter_your_PIN_to_verify">Enter your PIN to verify</string>
+    <string name="Enter_your_PIN_to_log_out">Enter your PIN to log out</string>
     <string name="EOS_contract_address">EOS contract address</string>
     <string name="error_address_exists">The address does not exist, please make sure that the address is added successfully</string>
     <string name="error_address_not_sync">Address refresh failed, please try again</string>
@@ -946,6 +947,7 @@
     <string name="setting_data_mobile">When using mobile data</string>
     <string name="setting_data_title">Media auto-download</string>
     <string name="setting_data_wifi">When connected on Wi-Fi</string>
+    <string name="setting_log_out_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to **learn more**.</string>
     <string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to **learn more**.</string>
     <string name="setting_delete_anonymous_account_pin_content">If you continue, your profile and account details will be delete on %1$s.</string>
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
@@ -993,6 +995,7 @@
     <string name="snapshot_Hash">Snapshot Hash</string>
     <string name="Sign_in">Sign in</string>
     <string name="Log_out">Log out</string>
+    <string name="Log_out_instead">Log out Instead</string>
     <string name="Sign_in_desktop_app">Sign in desktop app</string>
     <string name="Sign_with_emergency_contact">Sign in with recovery contact</string>
     <string name="Sign_with_mobile_number">Sign in with mobile number</string>

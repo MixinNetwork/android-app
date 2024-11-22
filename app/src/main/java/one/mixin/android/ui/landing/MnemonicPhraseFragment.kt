@@ -109,9 +109,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private fun anonymousRequest(words: List<String>? = null) {
-        lifecycleScope.launch(CoroutineExceptionHandler { _, e ->
-            errorInfo = e.message
-        }) {
+        lifecycleScope.launch {
             mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (!words.isNullOrEmpty()) {

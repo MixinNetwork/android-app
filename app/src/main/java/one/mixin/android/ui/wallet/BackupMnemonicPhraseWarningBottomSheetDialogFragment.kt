@@ -40,9 +40,17 @@ class BackupMnemonicPhraseWarningBottomSheetDialogFragment : MixinBottomSheetDia
             SettingActivity.showMnemonicPhrase(requireContext())
             dismissNow()
         }
-        binding.later.setOnClickListener {
-            laterCallback?.invoke()
-            dismissNow()
+        if (laterCallback == null) {
+            binding.later.text = getString(R.string.Cancel)
+            binding.later.setOnClickListener {
+                dismissNow()
+            }
+        } else {
+            binding.later.text = getString(R.string.Later)
+            binding.later.setOnClickListener {
+                laterCallback?.invoke()
+                dismissNow()
+            }
         }
     }
 

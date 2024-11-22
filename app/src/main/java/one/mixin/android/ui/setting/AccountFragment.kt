@@ -16,6 +16,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -44,11 +45,13 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
                 navTo(SecurityFragment.newInstance(), SecurityFragment.TAG)
             }
             logOutRl.setOnClickListener {
-                VerifyBottomSheetDialogFragment.newInstance(title = getString(R.string.Log_out) ,disableBiometric = true)
-                    .setOnPinSuccess {
-                        MixinApplication.get().closeAndClear()
-                    }
-                    .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                if (!Session.hasPhone() && !Session.saltExported()) {
+                    BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                        .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                } else {
+                    LogoutPinBottomSheetDialogFragment.newInstance()
+                        .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                }
             }
             deleteRl.setOnClickListener {
                 navTo(DeleteAccountFragment.newInstance(), DeleteAccountFragment.TAG)
@@ -56,7 +59,6 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
             changeRl.setOnClickListener {
                 changeNumber()
             }
-
         }
     }
 

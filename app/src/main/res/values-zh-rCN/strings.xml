@@ -395,6 +395,7 @@
     <string name="Enter_your_PIN">输入你的 PIN</string>
     <string name="Enter_your_PIN_to_continue">输入你的 PIN 以继续</string>
     <string name="Enter_your_PIN_to_verify">输入你的 PIN 来验证</string>
+    <string name="Enter_your_PIN_to_log_out">输入你的 PIN 以退出</string>
     <string name="EOS_contract_address">EOS 合约地址</string>
     <string name="error_address_exists">地址不存在，请确保地址是否添加成功</string>
     <string name="error_address_not_sync">地址刷新失败，请重试</string>
@@ -922,6 +923,7 @@
     <string name="setting_data_mobile">当使用移动数据时</string>
     <string name="setting_data_title">自动下载文件</string>
     <string name="setting_data_wifi">当连接到 Wi-Fi 时</string>
+    <string name="setting_log_out_account_pin_content">退出账号不会影响您 Mixin 钱包的资产安全，阅读文档**了解更多**。</string>
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文档以**了解更多**。</string>
     <string name="setting_delete_anonymous_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。</string>
     <string name="setting_delete_account_send">我们将发送 4 位验证码到手机 %1$s</string>
@@ -968,6 +970,7 @@
     <string name="snapshot_Hash">快照哈希</string>
     <string name="Sign_in">登录</string>
     <string name="Log_out">退出登录</string>
+    <string name="Log_out_instead">仅退出登录</string>
     <string name="Sign_in_desktop_app">登录桌面端</string>
     <string name="Sign_with_emergency_contact">通过恢复联系人登录</string>
     <string name="Sign_with_mobile_number">通过手机号登录</string>

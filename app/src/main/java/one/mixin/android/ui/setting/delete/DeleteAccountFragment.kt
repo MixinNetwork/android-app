@@ -28,9 +28,11 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
+import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
@@ -63,6 +65,15 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             }
             changeRl.setOnClickListener {
                 changeNumber()
+            }
+            logOutRl.setOnClickListener{
+                if (!Session.hasPhone() && !Session.saltExported()) {
+                    BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                        .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                } else {
+                    LogoutPinBottomSheetDialogFragment.newInstance()
+                        .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                }
             }
         }
     }
