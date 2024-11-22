@@ -679,6 +679,25 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             null
                         }
                     }.getOrNull()
+                    if (t is SafeMultisigsBiometricItem && t.safe == null) {
+                        runCatching {
+                            val data = response.data as? TransactionResponse
+                            data?.signers
+                        }.getOrNull()?.let {
+                            lifecycleScope.launch {
+                                val item = t
+                                t.signers = it
+                                val result = bottomViewModel.findMultiUsers(item.senders, emptyArray())
+                                if (result != null) {
+                                    val senders = result.first
+                                    binding.content.updateSenders(item, senders) { user ->
+                                        if (user.userId == Session.getAccountId()) return@updateSenders
+                                        showUserBottom(parentFragmentManager, user)
+                                    }
+                                }
+                            }
+                        }
+                    }
                     binding.content.displayHash(transactionHash)
                     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
                 } else {

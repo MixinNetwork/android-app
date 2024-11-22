@@ -260,6 +260,16 @@ class TransferContent : LinearLayout {
         }
     }
 
+    fun updateSenders(
+        safeMultisigsBiometricItem: SafeMultisigsBiometricItem,
+        senders: List<User>,
+        userClick: (User) -> Unit,
+    ) {
+        _binding.apply {
+            sender.setContent(R.plurals.Sender_title, senders, safeMultisigsBiometricItem.sendersThreshold, userClick, safeMultisigsBiometricItem.signers)
+        }
+    }
+
     private fun renderSafeMultisigsTransfer(
         safeMultisigsBiometricItem: SafeMultisigsBiometricItem,
         safeAccount: SafeAccount,
