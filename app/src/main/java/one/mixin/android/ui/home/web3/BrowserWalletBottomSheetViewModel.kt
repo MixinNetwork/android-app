@@ -36,7 +36,7 @@ class BrowserWalletBottomSheetViewModel
             chainId: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(context, tip.getEncryptedSalt(context), pin, result.getOrThrow())
             return tipPrivToPrivateKey(spendKey, chainId)
         }
 

@@ -76,7 +76,7 @@ class SafeDebugFragment : BaseFragment(R.layout.fragment_safe_debug) {
                     }
                 dialog.show()
                 val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-                val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+                val spendKey = tip.getSpendPrivFromEncryptedSalt(requireContext(), tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
                 val keyPair = newKeyPairFromSeed(spendKey)
                 val pkHex = keyPair.publicKey.toHex()
                 dialog.dismiss()
@@ -105,7 +105,7 @@ class SafeDebugFragment : BaseFragment(R.layout.fragment_safe_debug) {
                 dialog.show()
                 val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
                 val pks = readAllEncryptedSalts(MixinApplication.appContext).map {
-                    val spendKey = tip.getSpendPrivFromEncryptedSalt(it, pin, tipPriv)
+                    val spendKey = tip.getSpendPrivFromEncryptedSalt(requireContext(), it, pin, tipPriv)
                     val keyPair = newKeyPairFromSeed(spendKey)
                     keyPair.publicKey.toHex()
                 }.joinToString("\n")

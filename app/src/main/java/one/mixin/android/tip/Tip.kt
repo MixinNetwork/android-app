@@ -169,15 +169,6 @@ class Tip
                 }
             }
 
-        fun getMasterKeyFromMnemonic(context: Context): DeterministicKey {
-            var entropy = getMnemonicFromEncryptedPreferences(context)
-            if (entropy == null) { // Register safe must generate mnemonic
-                entropy = generateEntropyAndStore(context)
-            }
-            val seed = toSeed(toMnemonic(entropy).split(" "), "")
-            return createMasterPrivateKey(seed)
-        }
-
         suspend fun checkSalt(context: Context, pin: String, tipPriv: ByteArray) {
             if (!Session.hasPhone()){
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
@@ -264,14 +255,20 @@ class Tip
         }
 
         fun getSpendPrivFromEncryptedSalt(
+            context: Context,
             encryptedSalt: ByteArray,
             pin: String,
             tipPriv: ByteArray,
-            ): ByteArray {
+        ): ByteArray {
+            val entropy = getMnemonicFromEncryptedPreferences(context)
+            if (entropy == null) {
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
                 val salt = aesDecrypt(saltAESKey, encryptedSalt)
                 return getSpendPriv(tipPriv, salt)
+            } else {
+                return getSpendPriv(tipPriv, entropy)
             }
+        }
 
         private fun getSalt(
             encryptedSalt: ByteArray,
@@ -283,7 +280,15 @@ class Tip
             return salt
         }
 
-        fun getSpendPriv(
+        fun getSpendPriv(context: Context, seed: ByteArray): ByteArray {
+            var entropy = getMnemonicFromEncryptedPreferences(context)
+            if (entropy == null) { // Register safe must generate mnemonic, Only once
+                entropy = generateEntropyAndStore(context)
+            }
+            return getSpendPriv(seed, entropy)
+        }
+
+        private fun getSpendPriv(
             tipPriv: ByteArray,
             salt: ByteArray,
         ): ByteArray =

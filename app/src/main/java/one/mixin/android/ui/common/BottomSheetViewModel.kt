@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.protobuf.Mixin
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -203,7 +204,7 @@ class BottomSheetViewModel
                 }
 
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(MixinApplication.appContext, tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             Timber.e("Kernel Withdrawal($traceId): begin")
             Timber.e("Kernel Withdrawal($traceId): request ghost key")
             val ghostKeyResponse =
@@ -376,7 +377,7 @@ class BottomSheetViewModel
         ): MixinResponse<*> {
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(MixinApplication.appContext, tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount))
 
             Timber.e("Kernel Address Transaction($trace): begin")
@@ -458,7 +459,7 @@ class BottomSheetViewModel
             val isConsolidation = receiverIds.size == 1 && receiverIds.first() == Session.getAccountId()
             val asset = assetIdToAsset(assetId)
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(MixinApplication.appContext, tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
             val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, inscriptionHash))
             Timber.e("Kernel Transaction($trace): begin")
             val rawTransaction = tokenRepository.findRawTransaction(trace)
@@ -1308,7 +1309,7 @@ class BottomSheetViewModel
         ): MixinResponse<TransactionResponse> {
             val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
             return if (t.action == "sign") {
-                val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
+                val spendKey = tip.getSpendPrivFromEncryptedSalt(MixinApplication.appContext, tip.getEncryptedSalt(MixinApplication.appContext), pin, tipPriv)
                 val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
                 tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
             } else if (t.action == "unlock") {
