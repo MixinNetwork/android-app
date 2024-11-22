@@ -1,11 +1,17 @@
 package one.mixin.android.crypto.mnemonic
 
+import com.lambdapioneer.argon2kt.Argon2Kt
+import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.mnemonicChecksumWord
+import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.extension.hexString
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Test
 import org.web3j.crypto.Bip32ECKeyPair
+import timber.log.Timber
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -13,6 +19,8 @@ class MnemonicTest {
 
     @Test
     fun mnemonicTest() {
+        val argon = Argon2Kt()
+        val tipSeed = "c81698c1db5755b866b256689f83d8853a0414ceaf14feec1958a5bd176b0c6c".hexStringToByteArray()
         val mn = "legal winner thank year wave sausage worth useful legal winner thank yellow"
         val seed = toSeed(mn.split(" "), "")
         println(seed.hexString())
@@ -21,6 +29,9 @@ class MnemonicTest {
         println(key.privateKey.toByteArray().hexString())
         println(key.publicKey.toByteArray().hexString())
         assertEquals(key.privateKey.toByteArray().hexString() ,"7e56ecf5943d79e1f5f87e11c768253d7f3fcf30ae71335611e366c578b4564e")
+        val entropy = toEntropy(mn.split(" "))
+        val spendKey = argon.argon2IHash(tipSeed, entropy).rawHashAsByteArray()
+        assertEquals(spendKey.hexString(), "0f09874fa3dc875b9594cd956977decda74e12dea331cef4585649f27b200950")
 
         var mnemonic = "ought darted yawning apricot hold odds goblet logic loyal drying tucks atom".split(" ")
         var w = mnemonicChecksumWord(mnemonic, 3)
@@ -36,6 +47,9 @@ class MnemonicTest {
         val legacySeed = toSeed(legacyMn, "")
         val legacyKey = Bip32ECKeyPair.generateKeyPair(legacySeed)
         assertEquals("defy", mnemonicChecksumWord(legacyMn, 3))
+        val legacyEntropy = toEntropy(legacyMn)
+        val legacySpendKey = argon.argon2IHash(tipSeed, legacyEntropy).rawHashAsByteArray()
+        assertEquals(legacySpendKey.hexString(), "2f5b9cb89bb7151c5770c88dfcfeda8762b8246bec64437559cbc6d8339973f2")
 
         println(legacyKey.privateKey.toByteArray().hexString())
         println(legacyKey.publicKey.toByteArray().hexString())
