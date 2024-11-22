@@ -43,6 +43,9 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
                     return refreshSnapshots(it.createdAt)
                 }
             }
+            snapshots.map { it.userId }.distinct().let {
+                jobManager.addJobInBackground(RefreshUserJob(it))
+            }
             return snapshots
         }
         return null
