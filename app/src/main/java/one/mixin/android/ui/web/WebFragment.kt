@@ -1707,12 +1707,8 @@ class WebFragment : BaseFragment() {
                 reportException(Exception("$e ${view?.url}"))
             }
             fragment.alert(context.getString(R.string.ssl_cert_invalid))
-                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                .setNegativeButton(R.string.OK) { dialog, _ ->
                     handler?.cancel()
-                    dialog.dismiss()
-                }
-                .setPositiveButton(R.string.Approve) { dialog, _ ->
-                    handler?.proceed()
                     dialog.dismiss()
                 }.show()
         }

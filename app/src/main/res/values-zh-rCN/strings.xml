@@ -1783,5 +1783,5 @@
     <string name="add_recovery_contact_before_instruction_2">要添加的恢复联系人保持 Mixin Messenger 在线或者正在与您面对面。</string>
     <string name="Check_Backup">检查备份</string>
     <string name="Send_Collectible">发送藏品</string>
-    <string name="ssl_cert_invalid">无效的 SSL 证书。此站点可能不安全。是否继续？</string>
+    <string name="ssl_cert_invalid">无效的 SSL 证书，此站点可能不安全。</string>
 </resources>
