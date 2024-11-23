@@ -1825,4 +1825,5 @@
     <string name="invalid_mnemonic_phrase">Invalid mnemonic phrase</string>
     <string name="Check_Backup">Check Backup</string>
     <string name="Send_Collectible">Send Collectible</string>
+    <string name="ssl_cert_invalid">Invalid SSL Certificate. This site may be unsafe.</string>
 </resources>
