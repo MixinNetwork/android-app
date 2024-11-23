@@ -57,6 +57,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -86,6 +87,7 @@ import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copy
@@ -151,6 +153,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.isFollowSystem
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -513,6 +516,7 @@ class WebFragment : BaseFragment() {
                 },
                 conversationId,
                 MixinApplication.appContext,
+                this,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
                 lifecycleScope,
@@ -1638,6 +1642,7 @@ class WebFragment : BaseFragment() {
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
         private val context: Context,
+        private val fragment: Fragment,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
@@ -1692,13 +1697,24 @@ class WebFragment : BaseFragment() {
             loadingError = true
         }
 
+        @SuppressLint("WebViewClientOnReceivedSslError")
         override fun onReceivedSslError(
             view: WebView?,
             handler: SslErrorHandler?,
             error: SslError?,
         ) {
-            handler?.proceed()
-            Timber.e("${error?.toString()}")
+            error?.let { e ->
+                reportException(Exception("$e ${view?.url}"))
+            }
+            fragment.alert(context.getString(R.string.ssl_cert_invalid))
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    handler?.cancel()
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.Approve) { dialog, _ ->
+                    handler?.proceed()
+                    dialog.dismiss()
+                }.show()
         }
 
         override fun onPageCommitVisible(
