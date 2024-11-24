@@ -288,6 +288,7 @@ open class MixinApplication :
     }
 
     fun reject() {
+        MixinDatabase.destroy()
         val entryPoint =
             EntryPointAccessors.fromApplication(
                 this@MixinApplication,

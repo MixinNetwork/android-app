@@ -105,9 +105,9 @@ class ConversationRepository
 
         fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
             if (circleId == null) {
-                DataProvider.observeConversations(appDatabase)
+                DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext))
             } else {
-                DataProvider.observeConversationsByCircleId(circleId, appDatabase)
+                DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext))
             }
 
         suspend fun successConversationList(): List<ConversationMinimal> =

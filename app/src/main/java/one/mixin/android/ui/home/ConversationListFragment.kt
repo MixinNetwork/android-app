@@ -581,6 +581,8 @@ class ConversationListFragment : LinkFragment() {
         if (isAdded) {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
+        conversationLiveData?.removeObserver(observer)
+        dotLiveData?.removeObserver(dotObserver)
         super.onDestroyView()
         _binding = null
     }
