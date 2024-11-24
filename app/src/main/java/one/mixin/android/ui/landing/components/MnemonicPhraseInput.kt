@@ -310,13 +310,14 @@ fun MnemonicPhraseInput(
                     .height(48.dp),
                 enabled = state == MnemonicState.Display || inputs.all { it.isNotEmpty() },
                 onClick = {
+                    val words = inputs.map { it.trim() }
                     when (state) {
-                        MnemonicState.Input -> onComplete.invoke(inputs)
+                        MnemonicState.Input -> onComplete.invoke(words)
                         MnemonicState.Verify -> {
                             coroutineScope.launch {
                                 runCatching {
                                     loading = true
-                                    if (mnemonicList != inputs) {
+                                    if (mnemonicList != words) {
                                         errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                     } else {
                                         val selfId = Session.getAccountId()!!
@@ -340,7 +341,7 @@ fun MnemonicPhraseInput(
                                     }
                                 }.onSuccess {
                                     loading = false
-                                    if (errorInfo.isBlank()) onComplete.invoke(inputs)
+                                    if (errorInfo.isBlank()) onComplete.invoke(words)
                                 }.onFailure {
                                     errorInfo = it.message ?: ""
                                     loading = false
@@ -383,7 +384,8 @@ fun MnemonicPhraseInput(
                                 MnemonicState.Input -> R.string.Confirm
                                 MnemonicState.Verify -> R.string.Complete
                             }
-                        ), color = Color.White
+                        ), color = Color.White,
+                        fontWeight = W500,
                     )
                 }
             }

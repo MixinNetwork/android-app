@@ -289,8 +289,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
-                MixinApplication.get().isOnline.set(true)
-
                 when {
                     account.fullName.isNullOrBlank() -> {
                         mobileViewModel.upsertUser(account.toUser())
@@ -302,6 +300,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
+                MixinApplication.get().reject()
                 activity?.finish()
             } else {
                 if (r != null) {

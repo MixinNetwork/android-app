@@ -287,6 +287,15 @@ open class MixinApplication :
         }
     }
 
+    fun reject() {
+        val entryPoint =
+            EntryPointAccessors.fromApplication(
+                this@MixinApplication,
+                AppEntryPoint::class.java,
+            )
+        entryPoint.inject(this@MixinApplication)
+    }
+
     private fun clearData(sessionId: String?) {
         val jobManager = getJobManager()
         jobManager.cancelAllJob()

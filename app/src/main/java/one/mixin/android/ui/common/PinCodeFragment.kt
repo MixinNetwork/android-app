@@ -132,6 +132,7 @@ abstract class PinCodeFragment(
                 RestoreActivity.show(requireContext())
             }
         }
+        MixinApplication.get().reject()
         activity?.finish()
     }
 
