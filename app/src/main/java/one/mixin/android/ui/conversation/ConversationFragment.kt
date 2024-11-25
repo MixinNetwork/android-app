@@ -2044,21 +2044,26 @@ ConversationFragment() :
 
     private fun bindPinMessage() {
         binding.pinMessageLayout.conversationId = conversationId
-        chatViewModel.getLastPinMessages(conversationId)
-            .observe(viewLifecycleOwner) { messageItem ->
-                if (messageItem != null) {
-                    binding.pinMessageLayout.bind(messageItem) { messageId ->
-                        scrollToMessage(messageId)
+        chatViewModel.getLastPinMessageId(conversationId)
+            .observe(viewLifecycleOwner) { messageId ->
+                lifecycleScope.launch {
+                    if (messageId != null) {
+                        val pinMessageItem = chatViewModel.getPinMessageById(conversationId, messageId)
+                        binding.pinMessageLayout.isVisible = pinMessageItem != null
+                        pinMessageItem ?: return@launch
+                        binding.pinMessageLayout.bind(pinMessageItem) { messageId ->
+                            scrollToMessage(messageId)
+                        }
+                    } else {
+                        binding.pinMessageLayout.isVisible = true
                     }
-                    binding.pinMessageLayout.pin.setOnClickListener {
+                }
+                binding.pinMessageLayout.pin.setOnClickListener {
+                    lifecycleScope.launch {
+                        val pinCount = chatViewModel.countPinMessages(conversationId)
                         getChatHistoryResult.launch(Triple(conversationId, isGroup, pinCount))
                     }
                 }
-            }
-        chatViewModel.countPinMessages(conversationId)
-            .observe(viewLifecycleOwner) { count ->
-                pinCount = count
-                binding.pinMessageLayout.isVisible = count > 0
             }
     }
 
@@ -2075,7 +2080,6 @@ ConversationFragment() :
         }
     }
 
-    private var pinCount: Int = 0
     private var appList: List<AppItem>? = null
 
     private inline fun createConversation(crossinline action: () -> Unit) {
@@ -2501,7 +2505,7 @@ ConversationFragment() :
             return true
         } else {
             val msg = action.getSendText()
-            if (!msg.isNullOrEmpty()){
+            if (!msg.isNullOrEmpty()) {
                 sendTextMessage(msg)
                 return true
             }

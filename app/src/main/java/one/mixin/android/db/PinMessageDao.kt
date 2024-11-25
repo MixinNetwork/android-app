@@ -38,19 +38,25 @@ interface PinMessageDao : BaseDao<PinMessage> {
 
     @Query(
         """
-        SELECT u.user_id, m.content, mm.mentions, u.full_name FROM pin_messages pm
-        INNER JOIN users u ON m.user_id = u.user_id      
-        INNER JOIN messages m ON m.quote_message_id = pm.message_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id
-        WHERE m.conversation_id = :conversationId AND m.category = 'MESSAGE_PIN'
-        ORDER BY m.created_at DESC
+        SELECT pm.message_id FROM pin_messages pm
+        WHERE pm.conversation_id = :conversationId
+        ORDER BY pm.created_at DESC
         LIMIT 1
         """,
     )
-    fun getLastPinMessages(conversationId: String): LiveData<PinMessageItem?>
+    fun getLastPinMessageId(conversationId: String): LiveData<String?>
+
+    @Query("""
+        SELECT u.user_id, m.content, mm.mentions, u.full_name FROM pin_messages pm
+        INNER JOIN messages m ON m.quote_message_id = pm.message_id
+        INNER JOIN users u ON m.user_id = u.user_id
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id
+        WHERE pm.message_id = :messageId AND pm.conversation_id = :conversationId
+    """)
+    suspend fun getPinMessageById(conversationId: String, messageId: String): PinMessageItem?
 
     @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE pm.conversation_id = :conversationId")
-    fun countPinMessages(conversationId: String): LiveData<Int>
+    suspend fun countPinMessages(conversationId: String): Int
 
     @Query("SELECT pm.* FROM pin_messages pm WHERE pm.rowid > :rowId ORDER BY pm.rowid ASC LIMIT :limit")
     fun getPinMessageByLimitAndRowId(
