@@ -255,12 +255,11 @@ class Tip
         }
 
         fun getSpendPrivFromEncryptedSalt(
-            context: Context,
+            entropy: ByteArray?,
             encryptedSalt: ByteArray,
             pin: String,
             tipPriv: ByteArray,
         ): ByteArray {
-            val entropy = getMnemonicFromEncryptedPreferences(context)
             if (entropy == null) {
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
                 val salt = aesDecrypt(saltAESKey, encryptedSalt)
@@ -688,7 +687,7 @@ class Tip
             deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
         }
 
-        private fun getMnemonicFromEncryptedPreferences(context: Context): ByteArray? {
+        fun getMnemonicFromEncryptedPreferences(context: Context): ByteArray? {
             return getValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
         }
 
