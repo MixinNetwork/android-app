@@ -86,3 +86,10 @@ fun mnemonicChecksumWord(words: List<String>, prefixLen: Int = 3): String {
     require(word == Blockchain.mnemonicChecksumWord(words.joinToString(" "), 3))
     return word
 }
+
+fun getMatchingWords(input: String): List<String>? {
+    if (MnemonicCode.INSTANCE.wordList.contains(input)) {
+        return null
+    }
+    return MnemonicCode.INSTANCE.wordList.filter { it.startsWith(input) }
+}
