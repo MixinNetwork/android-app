@@ -34,6 +34,7 @@ import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.decodeBase64
@@ -49,6 +50,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
@@ -171,7 +173,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                createAccount(sessionKey, edKey, r.data!!.id)
+                if (!r.data?.deactivatedAt.isNullOrBlank() && !words.isNullOrEmpty()) {
+                    LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                        .setContinueCallback {
+                            createAccount(sessionKey, edKey, r.data!!.id)
+                        }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                } else {
+                    createAccount(sessionKey, edKey, r.data!!.id)
+                }
             } else if (r != null) {
                 errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
             }
@@ -228,7 +237,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                createAccount(sessionKey, edKey, r.data!!.id)
+                if (!r.data?.deactivatedAt.isNullOrBlank() && !words.isNullOrEmpty()) {
+                    LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                        .setContinueCallback {
+                            createAccount(sessionKey, edKey, r.data!!.id)
+                        }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                } else {
+                    createAccount(sessionKey, edKey, r.data!!.id)
+                }
             } else {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
