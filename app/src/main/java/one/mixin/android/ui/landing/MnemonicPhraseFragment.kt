@@ -52,9 +52,7 @@ import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
@@ -288,14 +286,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
-                val lastUserId = getLastUserId(requireContext())
-                val sameUser = lastUserId != null && lastUserId == account.userId
-                if (sameUser) {
-                    clearJobsAndRawTransaction(requireContext())
-                } else {
-                    clearDatabase(requireContext())
-                    defaultSharedPreferences.clear()
-                }
+
+                clearJobsAndRawTransaction(requireContext(),account.identityNumber)
+
                 val privateKey = sessionKey.privateKey
                 val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
                 Session.storeEd25519Seed(privateKey.base64Encode())

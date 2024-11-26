@@ -6,6 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
+import one.mixin.android.session.Session
+import java.io.File
 
 @Database(
     entities = [
@@ -25,11 +27,13 @@ abstract class FtsDatabase : RoomDatabase() {
         fun getDatabase(context: Context): FtsDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
+                    val dir = File(context.filesDir, Session.getAccount()?.identityNumber ?: "temp")
+                    if (!dir.exists()) dir.mkdirs()
                     val builder =
                         Room.databaseBuilder(
                             context,
                             FtsDatabase::class.java,
-                            FTS_DB_NAME,
+                            File(dir, FTS_DB_NAME).absolutePath,
                         ).addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {

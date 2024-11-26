@@ -27,9 +27,7 @@ import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -96,16 +94,9 @@ abstract class PinCodeFragment(
 
         val account = response.data as Account
 
-        val lastUserId = getLastUserId(requireContext())
-        val sameUser = lastUserId != null && lastUserId == account.userId
-        if (sameUser) {
-            showLoading()
-            clearJobsAndRawTransaction(requireContext())
-        } else {
-            showLoading()
-            clearDatabase(requireContext())
-            defaultSharedPreferences.clear()
-        }
+        showLoading()
+        clearJobsAndRawTransaction(requireContext(), account.identityNumber)
+
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
         Session.storeEd25519Seed(privateKey.base64Encode())

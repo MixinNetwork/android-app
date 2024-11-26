@@ -73,6 +73,7 @@ import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.TreasuryConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
@@ -126,6 +127,8 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokensExtra
+import timber.log.Timber
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -291,8 +294,10 @@ abstract class MixinDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
+                    val dir = File(context.filesDir, Session.getAccount()?.identityNumber ?: "temp")
+                    if (!dir.exists()) dir.mkdirs()
                     val builder =
-                        Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                        Room.databaseBuilder(context, MixinDatabase::class.java, File(dir, DB_NAME).absolutePath)
                             .openHelperFactory(
                                 MixinOpenHelperFactory(
                                     FrameworkSQLiteOpenHelperFactory(),

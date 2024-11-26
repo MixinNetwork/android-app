@@ -14,11 +14,13 @@ import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
+import java.io.File
 
 @Database(
     entities = [
@@ -47,11 +49,13 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         ): PendingDatabaseImp {
             synchronized(lock) {
                 if (INSTANCE == null) {
+                    val dir = File(context.filesDir, Session.getAccount()?.identityNumber ?: "temp")
+                    if (!dir.exists()) dir.mkdirs()
                     val builder =
                         Room.databaseBuilder(
                             context,
                             PendingDatabaseImp::class.java,
-                            PENDING_DB_NAME,
+                            File(dir, PENDING_DB_NAME).absolutePath
                         ).enableMultiInstanceInvalidation().addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {

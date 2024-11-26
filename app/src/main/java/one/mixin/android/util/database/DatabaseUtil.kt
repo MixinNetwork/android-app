@@ -2,103 +2,22 @@ package one.mixin.android.util.database
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.extension.moveTo
+import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
-import timber.log.Timber
 import java.io.File
 
-suspend fun getLastUserId(context: Context): String? =
-    withContext(Dispatchers.IO) {
-        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext null
-        }
-        var c: Cursor? = null
-        var db: SQLiteDatabase? = null
-
-        try {
-            db =
-                SQLiteDatabase.openDatabase(
-                    dbFile.absolutePath,
-                    null,
-                    SQLiteDatabase.OPEN_READONLY,
-                )
-            c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
-            var userId: String? = null
-            if (c.moveToFirst()) {
-                userId = c.getString(0)
-            }
-            return@withContext userId
-        } catch (e: Exception) {
-            return@withContext null
-        } finally {
-            c?.close()
-            db?.close()
-        }
-    }
-
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearDatabase(context: Context) =
+suspend fun clearJobsAndRawTransaction(context: Context, identityNumber: String) =
     withContext(Dispatchers.IO) {
-        try {
-            clearFts(context)
-            clearPending(context)
-            val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-            if (!dbFile.exists()) {
-                return@withContext
-            }
-            dbFile.parent?.let {
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
-            }
-            do {
-                dbFile.delete()
-            } while (dbFile.exists())
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-    }
-
-@SuppressLint("ObsoleteSdkInt")
-suspend fun clearPending(context: Context) =
-    withContext(Dispatchers.IO) {
-        val dbFile = context.getDatabasePath(Constants.DataBase.PENDING_DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext
-        }
-        dbFile.parent?.let {
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-shm").delete()
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-wal").delete()
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-journal").delete()
-        }
-        dbFile.delete()
-    }
-
-suspend fun clearFts(context: Context) =
-    withContext(Dispatchers.IO) {
-        val dbFile = context.getDatabasePath(Constants.DataBase.FTS_DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext
-        }
-        dbFile.parent?.let {
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-shm").delete()
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-wal").delete()
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-journal").delete()
-        }
-        dbFile.delete()
-    }
-
-@SuppressLint("ObsoleteSdkInt")
-suspend fun clearJobsAndRawTransaction(context: Context) =
-    withContext(Dispatchers.IO) {
+        val dir = File(context.filesDir, identityNumber)
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+        val dbFile = File(dir, Constants.DataBase.DB_NAME)
         if (!dbFile.exists()) {
             return@withContext
         }
@@ -131,3 +50,84 @@ suspend fun clearJobsAndRawTransaction(context: Context) =
             db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
         }
     }
+
+fun legacyDatabaseExists(context: Context): Boolean {
+    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    return dbFile.exists() && dbFile.length() > 0
+}
+
+fun migrationDbFile(context: Context) {
+    if (Session.getAccount() == null) {
+        return
+    }
+
+    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return
+    }
+    val dir = File(dbFile.parent, Session.getAccount()!!.identityNumber)
+    if (!dir.exists()) dir.mkdirs()
+    checkpoint(dbFile)
+    moveDbFile(dbFile, dir)
+    dbFile.parent?.let {
+        checkpoint(File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}"))
+        checkpoint(File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}"))
+
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-shm"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-wal"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-journal"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-shm"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-wal"), dir
+        )
+        moveDbFile(
+            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-journal"), dir
+        )
+    }
+}
+
+private fun checkpoint(dbFile: File){
+    if (!dbFile.exists()) return
+    var db: SQLiteDatabase? = null
+    try {
+        db =
+            SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READWRITE,
+            )
+        db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
+    } catch (e: Exception) {
+        reportException(e)
+    }
+}
+
+private fun moveDbFile(file: File, dir: File) {
+    if (!file.exists() || file.length() <= 0) {
+        return
+    }
+    file.moveTo(File(dir, file.name))
+}
