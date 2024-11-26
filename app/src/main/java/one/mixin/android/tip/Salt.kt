@@ -2,9 +2,11 @@ package one.mixin.android.tip
 
 import android.content.Context
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNullOrEmpty
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.toHex
 
 // legacy: hex
@@ -68,9 +70,14 @@ internal fun deleteLatestSalts(context: Context): Boolean {
     return edit.commit()
 }
 
+internal fun clearSalts(context: Context = MixinApplication.appContext) {
+    deleteKeyByAlias(Constants.Tip.ALIAS_SPEND_SALT)
+    context.defaultSharedPreferences.remove(Constants.Tip.SPEND_SALT)
+}
+
 private fun decryptSalt(salt: ByteArray): ByteArray {
     val iv = salt.slice(0..15).toByteArray()
     val ciphertext = salt.slice(16 until salt.size).toByteArray()
     val cipher = getDecryptCipher(Constants.Tip.ALIAS_SPEND_SALT, iv)
-    return cipher.doFinal(ciphertext)
+    return runCatching { cipher.doFinal(ciphertext) }.onFailure { clearSalts() }.getOrThrow()
 }
