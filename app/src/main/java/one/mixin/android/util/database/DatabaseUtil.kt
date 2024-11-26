@@ -131,3 +131,10 @@ private fun moveDbFile(file: File, dir: File) {
     }
     file.moveTo(File(dir, file.name))
 }
+
+fun localDbFile(context: Context): File? {
+    if (Session.getAccount() == null) {
+        return null
+    }
+    return File(context.filesDir, Session.getAccount()!!.identityNumber)
+}

@@ -24,6 +24,7 @@ import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
+import one.mixin.android.util.database.localDbFile
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -37,7 +38,7 @@ suspend fun backup(
     context: Context,
     callback: (Result) -> Unit,
 ) = coroutineScope {
-    val dbFile = context.getDatabasePath(DB_NAME)
+    val dbFile = context.getDatabasePath(DB_NAME) ?: localDbFile(context)
     if (dbFile == null) {
         withContext(Dispatchers.Main) {
             Timber.e("No database files found")
@@ -196,7 +197,7 @@ suspend fun backupApi29(
             }
             return@withContext
         }
-        val dbFile = context.getDatabasePath(DB_NAME)
+        val dbFile = context.getDatabasePath(DB_NAME) ?: localDbFile(context)
         if (dbFile == null) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
@@ -264,7 +265,10 @@ suspend fun restore(
     val target =
         internalFindBackup(context, coroutineContext)
             ?: return@withContext callback(Result.NOT_FOUND)
-    val file = context.getDatabasePath(DB_NAME)
+    var file = context.getDatabasePath(DB_NAME)
+    if (!file.exists()){
+        file = localDbFile(context)
+    }
     try {
         if (file.exists()) {
             file.delete()
@@ -314,7 +318,7 @@ suspend fun restoreApi29(
         }
         return@withContext
     }
-    val file = context.getDatabasePath(DB_NAME)
+    val file = localDbFile(context) ?: return@withContext
     try {
         val inputStream = context.contentResolver.openInputStream(backupDb.uri)
         if (inputStream == null) {
