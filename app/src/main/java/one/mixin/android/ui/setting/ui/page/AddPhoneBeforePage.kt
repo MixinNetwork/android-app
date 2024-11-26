@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.compose.MixinBackButton
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
@@ -30,7 +31,7 @@ import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 
 @Composable
-fun AddPhoneBeforePage(hasPhone: Boolean, next: () -> Unit) {
+fun AddPhoneBeforePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
     val context = LocalContext.current
     MixinAppTheme {
         Column {
@@ -48,6 +49,15 @@ fun AddPhoneBeforePage(hasPhone: Boolean, next: () -> Unit) {
                         )
                     }
                 },
+                navigationIcon = {
+                    IconButton(onClick = { pop() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                }
             )
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(50.dp))
@@ -117,7 +127,7 @@ fun AddPhoneBeforePage(hasPhone: Boolean, next: () -> Unit) {
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.Start),
+                        text = stringResource(R.string.Continue),
                         color = Color.White
                     )
                 }

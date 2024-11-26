@@ -170,21 +170,18 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             }
 
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-            val masterKey = tip.getMasterKeyFromMnemonic(this.requireContext())
-            val salt = masterKey.privKeyBytes
+            val spendSeed = tip.getSpendPriv(requireContext(), seed)
             val saltBase64 = tip.getEncryptSalt(requireContext(), pin, seed)
-            val spendSeed = tip.getSpendPriv(seed, salt)
-            val keyPair = newKeyPairFromSeed(spendSeed)
-            val pkHex = keyPair.publicKey.toHex()
-            val edKey = tip.getMnemonicEdKey(requireContext())
+            val spendKeyPair = newKeyPairFromSeed(spendSeed)
+            val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val resp =
                 bottomViewModel.registerPublicKey(
                     registerRequest =
                         RegisterRequest(
-                            publicKey = pkHex,
+                            publicKey = spendKeyPair.publicKey.toHex(),
                             signature = Session.getRegisterSignature(selfId, spendSeed),
-                            pin = bottomViewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                            pin = bottomViewModel.getEncryptedTipBody(selfId, spendKeyPair.publicKey.toHex(), pin),
                             salt = saltBase64,
                             saltPublicHex = edKey.publicKey.hexString(),
                             saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfId.toByteArray()).hexString()

@@ -91,10 +91,10 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
             nameEt.addTextChangedListener(mWatcher)
             nameCover.isClickable = true
 
-            nameEt.post {
+            nameEt.postDelayed({
                 nameEt.requestFocus()
                 nameEt.showKeyboard()
-            }
+            }, 200)
         }
     }
 

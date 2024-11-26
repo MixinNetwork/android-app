@@ -50,6 +50,7 @@
         android:layout_marginEnd="36dp"
         android:text="@string/Backup_Now"
         android:textColor="@color/white"
+        android:textFontWeight="500"
         android:textSize="16sp" />
 
     <TextView
@@ -59,6 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:textColor="@color/selector_blue_tv"
+        android:textFontWeight="500"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:paddingStart="20dp"

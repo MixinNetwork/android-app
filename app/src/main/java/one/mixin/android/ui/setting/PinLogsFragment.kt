@@ -77,6 +77,10 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_emergency_contact))
                 "ACTIVITY_LOGIN_FROM_DESKTOP" ->
                     return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_desktop_app))
+                "USER_EXPORT_PRIVATE" ->
+                    return Pair(context.getString(R.string.Export), context.getString(R.string.Export_mnemonic_phrase))
+                "UPGRADE_SAFE" ->
+                    return Pair(context.getString(R.string.Upgrade), context.getString(R.string.Upgrade_safe))
                 else ->
                     return Pair(code, code)
             }

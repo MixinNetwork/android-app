@@ -8,7 +8,7 @@ import java.util.zip.CRC32
 
 fun isMnemonicValid(words: List<String>): Boolean {
     val nativeResult = runCatching {
-        MnemonicCode.toSeed(words, "")
+        MnemonicCode.INSTANCE.check(words)
     }.getOrNull() != null
     require(Blockchain.isMnemonicValid(words.joinToString(" ")) == nativeResult)
     return nativeResult
@@ -85,4 +85,11 @@ fun mnemonicChecksumWord(words: List<String>, prefixLen: Int = 3): String {
     val word = MnemonicCode.INSTANCE.wordList[(checksum % MnemonicCode.INSTANCE.wordList.size).toInt()]
     require(word == Blockchain.mnemonicChecksumWord(words.joinToString(" "), 3))
     return word
+}
+
+fun getMatchingWords(input: String): List<String>? {
+    if (MnemonicCode.INSTANCE.wordList.contains(input)) {
+        return null
+    }
+    return MnemonicCode.INSTANCE.wordList.filter { it.startsWith(input) }
 }

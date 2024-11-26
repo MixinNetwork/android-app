@@ -923,7 +923,7 @@
     <string name="setting_data_mobile">当使用移动数据时</string>
     <string name="setting_data_title">自动下载文件</string>
     <string name="setting_data_wifi">当连接到 Wi-Fi 时</string>
-    <string name="setting_log_out_account_pin_content">退出账号不会影响您 Mixin 钱包的资产安全，阅读文档**了解更多**。</string>
+    <string name="logout_description">退出账号不会影响当前账号的资产安全，也不会删除当前账号的聊天记录。</string>
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文档以**了解更多**。</string>
     <string name="setting_delete_anonymous_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。</string>
     <string name="setting_delete_account_send">我们将发送 4 位验证码到手机 %1$s</string>
@@ -1728,8 +1728,8 @@
     <string name="Create_Mnemonic_Phrase">创建助记词</string>
     <string name="mnemonic_phrase_instruction_1">创建账号生成的 13 个助记词仅用于 Mixin Network 相关产品。</string>
     <string name="mnemonic_phrase_instruction_2">助记词将关联到由您管理的 MPC 钱包的一个密钥分片。</string>
-    <string name="Set_up_pin_desc_1">为您的钱包设置6位数的PIN</string>
-    <string name="Set_up_pin_desc_2">请再次确认您的6位密码</string>
+    <string name="Set_up_pin_desc_1">为您的钱包设置 6 位数的PIN</string>
+    <string name="Set_up_pin_desc_2">请再次确认您的 6 位数的 PIN</string>
     <string name="Set_up_pin_tip_1">如果丢失 PIN 则无法恢复您的钱包。</string>
     <string name="Set_up_pin_tip_2">很少在其他地方看到三次确认，因此请记住，如果丢失 PIN 将无法恢复钱包。</string>
     <string name="Set_up">设置</string>
@@ -1745,13 +1745,13 @@
     <string name="What_is_Pin">什么是 PIN ?</string>
     <string name="Recovery_Kit">账号恢复</string>
     <string name="Recovery_Kit_instruction">Mixin Messenger 的 MPC 钱包基于去中心化密钥协议 TIP 构建，您可以通过手机号、助记词或可信联系人登录恢复你的账号，钱包完整的密钥只存在当前设备的 TEE 安全环境中，阅读文档以了解%1$s。</string>
-    <string name="Recovery_Kit_Attention">注意：Recovery Kit 无法帮助您恢复密码</string>
+    <string name="Recovery_Kit_Attention">注意：账号恢复无法帮助您恢复 PIN</string>
     <string name="Mobile_Number">手机号码</string>
     <string name="Recovery_Contact">恢复联系人</string>
     <string name="Backup_Mnemonic_Phrase">备份助记词</string>
     <string name="Before_you_proceed">请在继续之前</string>
     <string name="Before_you_proceed_desc">阅读以下内容，然后安全保存助记词。</string>
-    <string name="Before_you_proceed_instruction_1">创建帐户生成的13个或25个助记词仅用于Mixin Network相关产品。</string>
+    <string name="Before_you_proceed_instruction_1">创建帐户生成的 13 个或 25 个助记词仅用于 Mixin Network 相关产品。</string>
     <string name="Before_you_proceed_instruction_2">助记词无法帮助您恢复您的 PIN。</string>
     <string name="Before_you_proceed_instruction_3">确保没有人或监控摄像头正在看您的屏幕。</string>
     <string name="Show_Mnemonic_Phrase">显示助记词</string>
@@ -1759,7 +1759,7 @@
     <string name="log_in_whit_mnemonic_phrase">助记词登录</string>
     <string name="write_down_mnemonic_phrase">写下您的助记词</string>
     <string name="check_mnemonic_phrase">检查您的助记词</string>
-    <string name="check_mnemonic_phrase_desc">按照呈现给您的顺序选择每个单词。</string>
+    <string name="check_mnemonic_phrase_desc">按照呈现给您的顺序输入每个单词。</string>
     <string name="write_down_mnemonic_phrase_desc">把它写在一张纸上并放在安全的地方。</string>
     <string name="mnemonic_phrase_tip_1">·存放在金库或安全地方</string>
     <string name="mnemonic_phrase_tip_2">·不要在网络上发送</string>
@@ -1784,4 +1784,7 @@
     <string name="Check_Backup">检查备份</string>
     <string name="Send_Collectible">发送藏品</string>
     <string name="ssl_cert_invalid">无效的 SSL 证书，此站点可能不安全。</string>
+    <string name="Export">导出</string>
+    <string name="Export_mnemonic_phrase">导出助记词</string>
+    <string name="Upgrade_safe">升级 Safe</string>
 </resources>

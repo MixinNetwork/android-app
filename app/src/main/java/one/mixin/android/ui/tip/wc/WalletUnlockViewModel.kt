@@ -43,7 +43,7 @@ class WalletUnlockViewModel
             chainId: String,
         ): String {
             val result = tip.getOrRecoverTipPriv(context, pin)
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
             return privateKeyToAddress(spendKey, chainId)
         }
     }

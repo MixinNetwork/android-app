@@ -132,7 +132,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoAnim"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.landing.InitializeActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

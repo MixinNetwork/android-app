@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,7 +28,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
-fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
+fun AddPhonePage(hasPhone: Boolean, pop: () -> Unit, next: () -> Unit) {
     val context = LocalContext.current
     MixinAppTheme {
         Column {
@@ -38,6 +39,15 @@ fun AddPhonePage(hasPhone: Boolean, next: () -> Unit) {
                 actions = {
 
                 },
+                navigationIcon = {
+                    IconButton(onClick = { pop() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                }
             )
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(50.dp))

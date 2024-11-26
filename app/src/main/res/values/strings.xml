@@ -947,7 +947,7 @@
     <string name="setting_data_mobile">When using mobile data</string>
     <string name="setting_data_title">Media auto-download</string>
     <string name="setting_data_wifi">When connected on Wi-Fi</string>
-    <string name="setting_log_out_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to **learn more**.</string>
+    <string name="logout_description">Logging out will not compromise asset security, nor will it delete chat history.</string>
     <string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to **learn more**.</string>
     <string name="setting_delete_anonymous_account_pin_content">If you continue, your profile and account details will be delete on %1$s.</string>
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
@@ -1797,7 +1797,7 @@
     <string name="log_in_whit_mnemonic_phrase">Log in with Mnemonic Phrase</string>
     <string name="write_down_mnemonic_phrase">Write down your mnemonic phrase</string>
     <string name="check_mnemonic_phrase">Check your mnemonic phrase</string>
-    <string name="check_mnemonic_phrase_desc">Select each word in the order it was presented to you.</string>
+    <string name="check_mnemonic_phrase_desc">Input each word in the order it was presented to you.</string>
     <string name="write_down_mnemonic_phrase_desc">Write it down on a piece of paper and keep it in a safe place.</string>
     <string name="mnemonic_phrase_tip_1">· Store it in a vault or secure location</string>
     <string name="mnemonic_phrase_tip_2">· Do not post it online</string>
@@ -1826,4 +1826,7 @@
     <string name="Check_Backup">Check Backup</string>
     <string name="Send_Collectible">Send Collectible</string>
     <string name="ssl_cert_invalid">Invalid SSL Certificate. This site may be unsafe.</string>
+    <string name="Export_mnemonic_phrase">Export mnemonic phrase</string>
+    <string name="Export">Export</string>
+    <string name="Upgrade_safe">Upgrade safe</string>
 </resources>

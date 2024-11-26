@@ -33,9 +33,11 @@ class AddPhoneFragment : BaseFragment(R.layout.fragment_compose) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
         binding.compose.setContent {
-            AddPhonePage(Session.hasPhone()) {
+            AddPhonePage(Session.hasPhone(), {
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }, {
                 navTo(AddPhoneBeforeFragment.newInstance(), AddPhoneBeforeFragment.TAG)
-            }
+            })
         }
     }
 }

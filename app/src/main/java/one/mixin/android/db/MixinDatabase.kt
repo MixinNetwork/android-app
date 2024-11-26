@@ -282,6 +282,10 @@ abstract class MixinDatabase : RoomDatabase() {
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
 
+        fun destroy() {
+            INSTANCE = null
+        }
+
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
         fun getDatabase(context: Context): MixinDatabase {

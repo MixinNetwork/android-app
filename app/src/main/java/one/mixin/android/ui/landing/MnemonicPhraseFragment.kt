@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -171,7 +170,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                createAccount(sessionKey, edKey, r.data!!.id)
+                if (!r.data?.deactivatedAt.isNullOrBlank() && !words.isNullOrEmpty()) {
+                    LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                        .setContinueCallback {
+                            createAccount(sessionKey, edKey, r.data!!.id)
+                        }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                } else {
+                    createAccount(sessionKey, edKey, r.data!!.id)
+                }
             } else if (r != null) {
                 errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
             }
@@ -228,7 +234,14 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                createAccount(sessionKey, edKey, r.data!!.id)
+                if (!r.data?.deactivatedAt.isNullOrBlank() && !words.isNullOrEmpty()) {
+                    LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                        .setContinueCallback {
+                            createAccount(sessionKey, edKey, r.data!!.id)
+                        }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                } else {
+                    createAccount(sessionKey, edKey, r.data!!.id)
+                }
             } else {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
@@ -289,8 +302,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
-                MixinApplication.get().isOnline.set(true)
-
                 when {
                     account.fullName.isNullOrBlank() -> {
                         mobileViewModel.upsertUser(account.toUser())
@@ -302,6 +313,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
+                MixinApplication.get().reject()
                 activity?.finish()
             } else {
                 if (r != null) {
