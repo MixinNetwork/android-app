@@ -8,7 +8,7 @@ import java.util.zip.CRC32
 
 fun isMnemonicValid(words: List<String>): Boolean {
     val nativeResult = runCatching {
-        MnemonicCode.toSeed(words, "")
+        MnemonicCode.INSTANCE.check(words)
     }.getOrNull() != null
     require(Blockchain.isMnemonicValid(words.joinToString(" ")) == nativeResult)
     return nativeResult
