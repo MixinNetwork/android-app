@@ -923,7 +923,7 @@
     <string name="setting_data_mobile">当使用移动数据时</string>
     <string name="setting_data_title">自动下载文件</string>
     <string name="setting_data_wifi">当连接到 Wi-Fi 时</string>
-    <string name="setting_log_out_account_pin_content">退出账号不会影响您 Mixin 钱包的资产安全，阅读文档**了解更多**。</string>
+    <string name="logout_description">退出账号不会影响当前账号的资产安全，也不会删除当前账号的聊天记录。</string>
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文档以**了解更多**。</string>
     <string name="setting_delete_anonymous_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。</string>
     <string name="setting_delete_account_send">我们将发送 4 位验证码到手机 %1$s</string>
@@ -1728,8 +1728,8 @@
     <string name="Create_Mnemonic_Phrase">创建助记词</string>
     <string name="mnemonic_phrase_instruction_1">创建账号生成的 13 个助记词仅用于 Mixin Network 相关产品。</string>
     <string name="mnemonic_phrase_instruction_2">助记词将关联到由您管理的 MPC 钱包的一个密钥分片。</string>
-    <string name="Set_up_pin_desc_1">为您的钱包设置6位数的PIN</string>
-    <string name="Set_up_pin_desc_2">请再次确认您的6位密码</string>
+    <string name="Set_up_pin_desc_1">为您的钱包设置 6 位数的PIN</string>
+    <string name="Set_up_pin_desc_2">请再次确认您的 6 位数的 PIN</string>
     <string name="Set_up_pin_tip_1">如果丢失 PIN 则无法恢复您的钱包。</string>
     <string name="Set_up_pin_tip_2">很少在其他地方看到三次确认，因此请记住，如果丢失 PIN 将无法恢复钱包。</string>
     <string name="Set_up">设置</string>

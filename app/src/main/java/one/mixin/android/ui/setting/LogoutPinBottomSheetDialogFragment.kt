@@ -38,9 +38,7 @@ class LogoutPinBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() 
         binding.biometricLayout.measureAllChildren = false
         binding.title.setText(R.string.Enter_your_PIN_to_log_out)
 
-        val info = MixinApplication.get().getString(R.string.setting_log_out_account_pin_content)
-        val learnUrl = MixinApplication.get().getString(R.string.setting_delete_account_url)
-        binding.content.highlightStarTag(info, arrayOf(learnUrl))
+        binding.content.setText(R.string.logout_description)
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {

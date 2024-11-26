@@ -212,17 +212,11 @@ class Tip
 
         suspend fun getMnemonicEdKey(context: Context, pin: String, tipPriv: ByteArray): EdKeyPair {
             var entropy = getMnemonicFromEncryptedPreferences(context)
-            if (entropy == null) {
+            if (entropy == null) { // If not exist, get it from safe and decrypt it
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
                 val encryptedSalt = getEncryptedSalt(context)
                 entropy = aesDecrypt(saltAESKey, encryptedSalt)
             }
-            val edKey = newKeyPairFromMnemonic(toMnemonic(entropy))
-            return edKey
-        }
-
-        fun getMnemonicEdKey(context: Context): EdKeyPair {
-            val entropy = getMnemonicFromEncryptedPreferences(context) ?: throw NullPointerException()
             val edKey = newKeyPairFromMnemonic(toMnemonic(entropy))
             return edKey
         }

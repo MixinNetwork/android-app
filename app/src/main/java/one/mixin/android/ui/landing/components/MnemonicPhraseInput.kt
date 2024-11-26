@@ -244,10 +244,11 @@ fun MnemonicPhraseInput(
                                                                 errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                                             } else {
                                                                 val selfId = Session.getAccountId()!!
-                                                                val edKey = tip!!.getMnemonicEdKey(context)
+                                                                val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
+                                                                val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
                                                                 val r = walletViewModel.saltExport(
                                                                     ExportRequest(
-                                                                        publicKey = edKey.publicKey.toHex(),
+                                                                        publicKey = edKey!!.publicKey.toHex(),
                                                                         signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
                                                                         pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
                                                                     )
@@ -416,10 +417,11 @@ fun MnemonicPhraseInput(
                                             errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                         } else {
                                             val selfId = Session.getAccountId()!!
-                                            val edKey = tip!!.getMnemonicEdKey(context)
+                                            val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
+                                            val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
                                             val r = walletViewModel.saltExport(
                                                 ExportRequest(
-                                                    publicKey = edKey.publicKey.toHex(),
+                                                    publicKey = edKey!!.publicKey.toHex(),
                                                     signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
                                                     pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
                                                 )

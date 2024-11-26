@@ -173,7 +173,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             val spendSeed = tip.getSpendPriv(requireContext(), seed)
             val saltBase64 = tip.getEncryptSalt(requireContext(), pin, seed)
             val spendKeyPair = newKeyPairFromSeed(spendSeed)
-            val edKey = tip.getMnemonicEdKey(requireContext())
+            val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val resp =
                 bottomViewModel.registerPublicKey(
