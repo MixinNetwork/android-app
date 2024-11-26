@@ -25,7 +25,6 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toCompleteMnemonic
 import one.mixin.android.crypto.toMnemonic
-import one.mixin.android.crypto.toSeed
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -49,8 +48,6 @@ import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.exception.TipNullException
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
-import org.bitcoinj.crypto.DeterministicKey
-import org.bitcoinj.crypto.HDKeyDerivation.createMasterPrivateKey
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
