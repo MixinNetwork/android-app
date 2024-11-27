@@ -76,7 +76,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 
 @Composable
@@ -93,7 +93,7 @@ fun MnemonicPhraseInput(
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val walletViewModel = hiltViewModel<WalletViewModel>()
+    val landingViewModel = hiltViewModel<LandingViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
@@ -240,11 +240,11 @@ fun MnemonicPhraseInput(
                                                                 val selfId = Session.getAccountId()!!
                                                                 val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                                 val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                                                val r = walletViewModel.saltExport(
+                                                                val r = landingViewModel.saltExport(
                                                                     ExportRequest(
                                                                         publicKey = edKey!!.publicKey.toHex(),
                                                                         signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                                        pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
+                                                                        pinBase64 = landingViewModel.getEncryptedTipBody(selfId, pin!!),
                                                                     )
                                                                 )
                                                                 r.data?.let {
@@ -413,11 +413,11 @@ fun MnemonicPhraseInput(
                                             val selfId = Session.getAccountId()!!
                                             val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                             val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
-                                            val r = walletViewModel.saltExport(
+                                            val r = landingViewModel.saltExport(
                                                 ExportRequest(
                                                     publicKey = edKey!!.publicKey.toHex(),
                                                     signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                                    pinBase64 = walletViewModel.getEncryptedTipBody(selfId, pin!!),
+                                                    pinBase64 = landingViewModel.getEncryptedTipBody(selfId, pin!!),
                                                 )
                                             )
                                             r.data?.let {

@@ -278,20 +278,18 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
+    override fun close() {
+        INSTANCE = null
+        super.close()
+    }
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
-
-        private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
-
-        fun destroy() {
-            INSTANCE = null
-        }
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
         fun getDatabase(context: Context): MixinDatabase {
-            synchronized(lock) {
                 if (INSTANCE == null) {
                     val dir = dbDir(context)
                     val builder =
@@ -385,7 +383,6 @@ abstract class MixinDatabase : RoomDatabase() {
                     INSTANCE = builder.build()
                 }
                 return INSTANCE as MixinDatabase
-            }
         }
 
         fun query(query: String): String? {

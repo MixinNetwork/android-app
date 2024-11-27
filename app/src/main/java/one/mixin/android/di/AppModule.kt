@@ -122,7 +122,7 @@ import javax.inject.Singleton
 import kotlin.math.abs
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [(BaseDbModule::class)])
+@Module(includes = [(DatabaseModule::class)])
 object AppModule {
     private const val xServerTime = "X-Server-Time"
     private const val xRequestId = "X-Request-Id"

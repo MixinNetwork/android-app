@@ -37,6 +37,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.isAnonymousNumber
@@ -75,7 +76,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
     }
 
-    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentMobileBinding::bind)
 
     private lateinit var countryPicker: CountryPicker
@@ -239,7 +240,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         binding.continueBn.displayedChild = 1
-        mobileViewModel.loginVerification(verificationRequest)
+        landingViewModel.loginVerification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {

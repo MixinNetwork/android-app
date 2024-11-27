@@ -53,4 +53,9 @@ abstract class FtsDatabase : RoomDatabase() {
     abstract fun messageMetaDao(): MessageMetaDao
 
     abstract fun messageFtsDao(): MessageFtsDao
+
+    override fun close() {
+        super.close()
+        INSTANCE = null
+    }
 }

@@ -18,6 +18,7 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -34,7 +35,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
+    private val viewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentUpgradeBinding::bind)
 
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }

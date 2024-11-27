@@ -44,6 +44,15 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
             securityRl.setOnClickListener {
                 navTo(SecurityFragment.newInstance(), SecurityFragment.TAG)
             }
+            logOutRl.setOnClickListener {
+                // if (!Session.hasPhone() && !Session.saltExported()) {
+                //     BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                //         .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                // } else {
+                    LogoutPinBottomSheetDialogFragment.newInstance()
+                        .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                // }
+            }
             deleteRl.setOnClickListener {
                 navTo(DeleteAccountFragment.newInstance(), DeleteAccountFragment.TAG)
             }

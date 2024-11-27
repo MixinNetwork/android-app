@@ -47,6 +47,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.di.ApplicationScope
@@ -91,6 +92,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
+@SuppressLint("UnsafeOptInUsageError")
 open class MixinApplication :
     Application(),
     Application.ActivityLifecycleCallbacks,
@@ -120,6 +122,9 @@ open class MixinApplication :
     interface AppEntryPoint {
         fun inject(app: MixinApplication)
     }
+
+    @Inject
+    lateinit var databaseProvider: DatabaseProvider
 
     private fun getWorkerFactory() = EntryPointAccessors.fromApplication(this, HiltWorkerFactoryEntryPoint::class.java).getHiltWorkerFactory()
 
@@ -285,10 +290,11 @@ open class MixinApplication :
                 }
             }
         }
+        reject()
     }
 
     fun reject() {
-        MixinDatabase.destroy()
+        databaseProvider.closeAllDatabases()
         val entryPoint =
             EntryPointAccessors.fromApplication(
                 this@MixinApplication,

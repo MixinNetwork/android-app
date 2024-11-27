@@ -38,6 +38,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.viewmodel.LoadingViewModel
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType

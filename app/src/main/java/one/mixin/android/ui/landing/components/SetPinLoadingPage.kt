@@ -33,12 +33,12 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.ui.landing.vo.SetupState
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 
 @Composable
 fun SetPinLoadingPage(next: () -> Unit) {
-    val viewModel = hiltViewModel<MobileViewModel>()
+    val viewModel = hiltViewModel<LandingViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
     val context = LocalContext.current

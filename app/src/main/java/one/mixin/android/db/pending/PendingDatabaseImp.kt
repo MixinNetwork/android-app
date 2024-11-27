@@ -37,6 +37,11 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     abstract override fun jobDao(): JobDao
 
+    override fun close() {
+        super.close()
+        INSTANCE = null
+    }
+
     companion object {
         private var INSTANCE: PendingDatabaseImp? = null
 

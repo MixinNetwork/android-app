@@ -26,6 +26,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.vo.Account
@@ -82,6 +83,7 @@ abstract class PinCodeFragment(
     }
 
     protected suspend fun handleAccount(
+        landingViewModel: LandingViewModel,
         response: MixinResponse<Account>,
         sessionKey: EdKeyPair,
         action: () -> Unit,
@@ -102,6 +104,7 @@ abstract class PinCodeFragment(
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
+        landingViewModel.initAllDatabases()
         if (Session.hasPhone()) {
             // Remove mnemonic if user has phone on sign in
             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
@@ -123,7 +126,6 @@ abstract class PinCodeFragment(
                 RestoreActivity.show(requireContext())
             }
         }
-        MixinApplication.get().reject()
         activity?.finish()
     }
 
