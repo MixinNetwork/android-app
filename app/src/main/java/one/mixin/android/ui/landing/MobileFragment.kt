@@ -291,6 +291,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             )
     }
 
+    private var captchaType: CaptchaView.CaptchaType = CaptchaView.CaptchaType.GCaptcha
+
     private fun initAndLoadCaptcha() =
         lifecycleScope.launch {
             if (captchaView == null) {
@@ -313,7 +315,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(captchaType)
+            captchaType = if (captchaType == CaptchaView.CaptchaType.HCaptcha) {
+                CaptchaView.CaptchaType.GCaptcha
+            } else {
+                CaptchaView.CaptchaType.HCaptcha
+            }
         }
 
     private fun hideLoading() {
