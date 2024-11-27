@@ -22,19 +22,19 @@ class CheckBalanceJob(
     override fun onRun() =
         runBlocking {
             Timber.d("$TAG start checkBalance assetId size: ${assets.size}")
-            val nonExistIds = assets.minus(tokenDao.findExistByKernelAssetId(assets).toSet())
+            val nonExistIds = assets.minus(tokenDao().findExistByKernelAssetId(assets).toSet())
             if (nonExistIds.isNotEmpty()) {
                 syncToken(nonExistIds)
             }
             for (asset in assets) {
-                val tokensExtra = tokensExtraDao.findByAsset(asset)
-                val token = tokenDao.findTokenByAsset(asset) ?: continue
-                database.withTransaction {
+                val tokensExtra = tokensExtraDao().findByAsset(asset)
+                val token = tokenDao().findTokenByAsset(asset) ?: continue
+                database().withTransaction {
                     val value = calcBalanceByAssetId(asset)
                     if (tokensExtra == null) {
-                        tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
+                        tokensExtraDao().insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
                     } else {
-                        tokensExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
+                        tokensExtraDao().updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
                     }
                 }
             }
@@ -46,7 +46,7 @@ class CheckBalanceJob(
             return
         }
         val tokens = requireNotNull(resp.data)
-        tokenDao.insertList(tokens)
+        tokenDao().insertList(tokens)
         return
     }
 
@@ -58,9 +58,9 @@ class CheckBalanceJob(
         var result = amount
         val outputs =
             if (offset == 0) {
-                outputDao.findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
+                outputDao().findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
             } else {
-                outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
+                outputDao().findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
             }
         if (outputs.isEmpty()) return amount
         result += outputs.map { BigDecimal(it.amount) }.sumOf { it }

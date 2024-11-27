@@ -29,7 +29,7 @@ class UpdateFavoriteJob(private val symbol: String, private val coinId: String, 
                 defaultErrorHandle = {},
                 defaultExceptionHandle = {},
                 successBlock = { _ ->
-                    marketFavoredDao.insert(
+                    marketFavoredDao().insert(
                         MarketFavored(
                             coinId = coinId,
                             isFavored = false,
@@ -47,7 +47,7 @@ class UpdateFavoriteJob(private val symbol: String, private val coinId: String, 
                 defaultErrorHandle = {},
                 defaultExceptionHandle = {},
                 successBlock = { _ ->
-                    marketFavoredDao.insert(
+                    marketFavoredDao().insert(
                         MarketFavored(
                             coinId = coinId,
                             isFavored = true,

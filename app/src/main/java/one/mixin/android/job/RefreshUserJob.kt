@@ -27,7 +27,7 @@ class RefreshUserJob(
                 refreshUsers(ids)
                 return@runBlocking
             }
-            val existUsers = userDao.findUserExist(ids)
+            val existUsers = userDao().findUserExist(ids)
             val queryUsers =
                 ids.filter {
                     !existUsers.contains(it)
@@ -44,7 +44,7 @@ class RefreshUserJob(
             val response = userService.getUserById(userIds[0]).execute().body()
             if (response != null && response.isSuccess) {
                 response.data?.let { data ->
-                    userDao.upsert(data)
+                    userDao().upsert(data)
                     refreshConversationAvatar()
                 }
             }
@@ -52,7 +52,7 @@ class RefreshUserJob(
             val response = userService.getUsers(userIds).execute().body()
             if (response != null && response.isSuccess) {
                 response.data?.let { data ->
-                    userDao.upsertList(data)
+                    userDao().upsertList(data)
                     refreshConversationAvatar()
                 }
             }

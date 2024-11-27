@@ -27,7 +27,7 @@ class RefreshAlertsJob : BaseJob(
             successBlock = { response ->
                 val list = response.data!!
                 list.map{it.coinId}.distinct().mapNotNull { coinId ->
-                    val m = marketDao.findMarketById(coinId)
+                    val m = marketDao().findMarketById(coinId)
                     if (m != null) null
                     else coinId
                 }.let { ids ->
@@ -36,8 +36,8 @@ class RefreshAlertsJob : BaseJob(
                     }
                 }
                 runInTransaction {
-                    alertDao.deleteAll()
-                    alertDao.insertList(list)
+                    alertDao().deleteAll()
+                    alertDao().insertList(list)
                 }
             },
             requestSession = {
@@ -65,8 +65,8 @@ class RefreshAlertsJob : BaseJob(
                         )
                     } ?: emptyList()
                 }
-                marketCoinDao.insertList(coins)
-                marketDao.insertList(list)
+                marketCoinDao().insertList(coins)
+                marketDao().insertList(list)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))

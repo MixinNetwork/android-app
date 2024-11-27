@@ -191,7 +191,6 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-
     @Inject
     lateinit var tip: Tip
 

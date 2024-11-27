@@ -23,7 +23,7 @@ class SyncOutputJob() : BaseJob(
         }
 
     private tailrec suspend fun syncOutputs() {
-        val latestOutputSequence = outputDao.findLatestOutputSequence()
+        val latestOutputSequence = outputDao().findLatestOutputSequence()
         Timber.d("$TAG sync outputs latestOutputCreatedAt: $latestOutputSequence")
         val userId = requireNotNull(Session.getAccountId())
         val members = buildHashMembers(listOf(userId))
@@ -34,7 +34,7 @@ class SyncOutputJob() : BaseJob(
         }
         val outputs = (requireNotNull(resp.data) { "outputs can not be null or empty at this step" })
         if (outputs.isNotEmpty()) {
-            outputDao.insertUnspentOutputs(outputs)
+            outputDao().insertUnspentOutputs(outputs)
             outputs.mapNotNull { it.inscriptionHash }.apply {
                 if (isNotEmpty()) {
                     jobManager.addJobInBackground(SyncInscriptionsJob(this))

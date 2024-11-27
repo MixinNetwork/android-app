@@ -32,7 +32,7 @@ class RefreshStickerAlbumJob : BaseJob(
                 val albums = (response.data as List<StickerAlbum>).sortedBy { it.createdAt }
 
                 val localLatestCreatedAt =
-                    stickerAlbumDao.findLatestCreatedAt()?.let { createdAt ->
+                    stickerAlbumDao().findLatestCreatedAt()?.let { createdAt ->
                         parseCreatedAt(createdAt)
                     }
                 var hasNewAlbum = false
@@ -40,18 +40,18 @@ class RefreshStickerAlbumJob : BaseJob(
                     hasNewAlbum = true
                 }
 
-                var maxOrder = stickerAlbumDao.findMaxOrder() ?: 0
+                var maxOrder = stickerAlbumDao().findMaxOrder() ?: 0
                 for (a in albums) {
-                    val localAlbum = stickerAlbumDao.findAlbumById(a.albumId)
+                    val localAlbum = stickerAlbumDao().findAlbumById(a.albumId)
                     if (localAlbum == null) {
                         maxOrder++
                         a.added = a.banner.isNullOrBlank().not()
                         a.orderedAt = maxOrder
-                        stickerAlbumDao.insertSuspend(a)
+                        stickerAlbumDao().insertSuspend(a)
                     } else {
                         a.added = localAlbum.added
                         a.orderedAt = localAlbum.orderedAt
-                        stickerAlbumDao.update(a)
+                        stickerAlbumDao().update(a)
                     }
 
                     if (!hasNewAlbum && localLatestCreatedAt != null) {
@@ -68,10 +68,10 @@ class RefreshStickerAlbumJob : BaseJob(
                         val stickers = r.data as List<Sticker>
                         val relationships = arrayListOf<StickerRelationship>()
                         for (s in stickers) {
-                            stickerDao.insertUpdate(s)
+                            stickerDao().insertUpdate(s)
                             relationships.add(StickerRelationship(a.albumId, s.stickerId))
                         }
-                        stickerRelationshipDao.insertList(relationships)
+                        stickerRelationshipDao().insertList(relationships)
                     }
                 }
 
@@ -82,7 +82,7 @@ class RefreshStickerAlbumJob : BaseJob(
 
                 val sp = applicationContext.defaultSharedPreferences
                 if (!sp.getBoolean("UpgradeMessageSticker", false)) {
-                    stickerRelationshipDao.updateMessageStickerId()
+                    stickerRelationshipDao().updateMessageStickerId()
                     sp.putBoolean("UpgradeMessageSticker", true)
                 }
             }

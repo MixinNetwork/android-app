@@ -20,28 +20,28 @@ class TranscriptAttachmentUpdateJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GRO
 
     override fun onRun() =
         runBlocking {
-            val lastId = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLong() ?: return@runBlocking
-            val list = transcriptMessageDao.findAttachmentMigration(lastId, EACH)
+            val lastId = propertyDao().findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLong() ?: return@runBlocking
+            val list = transcriptMessageDao().findAttachmentMigration(lastId, EACH)
             list.forEach { attachment ->
                 if (attachment.mediaUrl?.isFileUri() == true) {
                     val file = attachment.mediaUrl.toUri().toFile()
                     if (file.exists()) {
                         Timber.d("Transcript attachment update ${attachment.mediaUrl}")
-                        transcriptMessageDao.updateMediaUrl(file.name, attachment.messageId)
+                        transcriptMessageDao().updateMediaUrl(file.name, attachment.messageId)
                     } else {
                         val newFile = File("${MixinApplication.get().getTranscriptDirPath()}${File.separator}${file.name}")
                         if (newFile.exists()) {
                             Timber.d("Transcript attachment update ${newFile.absoluteFile}")
-                            transcriptMessageDao.updateMediaUrl(file.name, attachment.messageId)
+                            transcriptMessageDao().updateMediaUrl(file.name, attachment.messageId)
                         }
                     }
                 }
             }
             if (list.size < EACH) {
                 Timber.d("Transcript attachment update completed!!!")
-                propertyDao.deletePropertyByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)
+                propertyDao().deletePropertyByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)
             } else {
-                propertyDao.updateValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, list.last().rowid.toString())
+                propertyDao().updateValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, list.last().rowid.toString())
                 jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
             }
         }

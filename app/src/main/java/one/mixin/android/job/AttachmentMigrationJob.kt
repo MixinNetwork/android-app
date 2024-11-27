@@ -48,16 +48,16 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
     override fun onRun() =
         runBlocking {
             val startTime = System.currentTimeMillis()
-            var migrationLast = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_LAST)?.toLongOrNull() ?: -1
+            var migrationLast = propertyDao().findValueByKey(PREF_MIGRATION_ATTACHMENT_LAST)?.toLongOrNull() ?: -1
 
             if (migrationLast == -1L) {
-                migrationLast = messageDao.getLastMessageRowid()
-                propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_LAST, migrationLast.toString(), nowInUtc()))
+                migrationLast = messageDao().getLastMessageRowid()
+                propertyDao().insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_LAST, migrationLast.toString(), nowInUtc()))
             }
 
             if (!hasWritePermission()) return@runBlocking
-            val offset = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
-            val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
+            val offset = propertyDao().findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
+            val list = messageDao().findAttachmentMigration(migrationLast, EACH, offset)
             list.forEach { attachment ->
                 val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
                 if (!fromFile.exists()) {
@@ -141,22 +141,22 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 }
                 Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
                 if (attachment.mediaUrl != toFile.name) {
-                    messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
+                    messageDao().updateMediaMessageUrl(toFile.name, attachment.messageId)
                     MessageFlow.update(attachment.conversationId, attachment.messageId)
                 }
             }
-            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
+            propertyDao().insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
             Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
             if (list.size < EACH) {
                 Timber.d("Attachment start delete ancient media path")
                 MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
                 Timber.d("Attachment delete ancient media path completed!!!")
-                if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
+                if (propertyDao().findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
                     Timber.d("Attachment start delete media path")
                     MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
                     Timber.d("Attachment delete media path completed!!!")
                 }
-                propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
+                propertyDao().updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
                 Timber.d("Attachment migration completed!!!")
             } else {
                 jobManager.addJobInBackground(AttachmentMigrationJob())

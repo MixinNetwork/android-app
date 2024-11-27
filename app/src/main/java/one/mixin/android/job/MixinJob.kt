@@ -79,7 +79,7 @@ abstract class MixinJob(
             val preKeyBundle = createPreKeyBundle(keys[0])
             signalProtocol.processSession(recipientId, preKeyBundle)
         } else {
-            participantSessionDao.insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
+            participantSessionDao().insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
             return false
         }
 
@@ -93,7 +93,7 @@ abstract class MixinJob(
             return sendSenderKey(conversationId, recipientId, sessionId)
         }
         if (result.success) {
-            participantSessionDao.insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
+            participantSessionDao().insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
         }
         return result.success
     }
@@ -173,7 +173,7 @@ abstract class MixinJob(
     }
 
     protected fun checkConversation(conversationId: String) {
-        val conversation = conversationDao.findConversationById(conversationId) ?: return
+        val conversation = conversationDao().findConversationById(conversationId) ?: return
         if (conversation.isGroupConversation()) {
             jobSenderKey.syncConversation(conversation.conversationId)
         } else {
@@ -190,8 +190,8 @@ abstract class MixinJob(
             )
         val response = conversationApi.create(request).execute().body()
         if (response != null && response.isSuccess && response.data != null && !isCancelled) {
-            conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
-            conversationDao.updateConversationExpireInById(conversation.conversationId, response.data?.expireIn)
+            conversationDao().updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+            conversationDao().updateConversationExpireInById(conversation.conversationId, response.data?.expireIn)
 
             val sessionParticipants =
                 response.data!!.participantSessions.let { resp ->
@@ -200,7 +200,7 @@ abstract class MixinJob(
                     }
                 }
             sessionParticipants?.let {
-                participantSessionDao.replaceAll(conversation.conversationId, it)
+                participantSessionDao().replaceAll(conversation.conversationId, it)
             }
             return response.data?.expireIn
         } else {

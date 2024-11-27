@@ -74,7 +74,7 @@ class ConversationJob(
 
     private fun updateConversationStatusFailure() {
         request?.conversationId?.let {
-            conversationDao.updateConversationStatusById(it, ConversationStatus.FAILURE.ordinal)
+            conversationDao().updateConversationStatusById(it, ConversationStatus.FAILURE.ordinal)
         }
     }
 
@@ -141,16 +141,16 @@ class ConversationJob(
                 cr.participants.mapTo(participants) {
                     Participant(cr.conversationId, it.userId, it.role, cr.createdAt)
                 }
-                participantDao.insertList(participants)
+                participantDao().insertList(participants)
                 cr.participantSessions?.let {
                     jobSenderKey.syncParticipantSession(cr.conversationId, it)
                 }
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {
                 if (cr.category == ConversationCategory.CONTACT.name) {
-                    recipientId?.let { userDao.updateMuteUntil(it, cr.muteUntil) }
+                    recipientId?.let { userDao().updateMuteUntil(it, cr.muteUntil) }
                 } else {
-                    conversationId?.let { conversationDao.updateGroupMuteUntil(it, cr.muteUntil) }
+                    conversationId?.let { conversationDao().updateGroupMuteUntil(it, cr.muteUntil) }
                 }
             } else {
                 RxBus.publish(ConversationEvent(type, true))
@@ -161,7 +161,7 @@ class ConversationJob(
             }
             if (type == TYPE_CREATE) {
                 request?.let {
-                    conversationDao.updateConversationStatusById(
+                    conversationDao().updateConversationStatusById(
                         request.conversationId,
                         ConversationStatus.FAILURE.ordinal,
                     )
@@ -181,7 +181,7 @@ class ConversationJob(
         if (data.category == ConversationCategory.CONTACT.name) {
             ownerId = data.participants.find { it.userId != Session.getAccountId() }!!.userId
         }
-        var c = conversationDao.findConversationById(data.conversationId)
+        var c = conversationDao().findConversationById(data.conversationId)
         if (c == null) {
             val builder = ConversationBuilder(data.conversationId, data.createdAt, ConversationStatus.SUCCESS.ordinal)
             c =
@@ -194,7 +194,7 @@ class ConversationJob(
                     .setCodeUrl(data.codeUrl)
                     .setExpireIn(data.expireIn)
                     .build()
-            conversationDao.upsert(c)
+            conversationDao().upsert(c)
             if (!c.announcement.isNullOrBlank()) {
                 RxBus.publish(GroupEvent(data.conversationId))
                 MixinApplication.appContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
@@ -206,7 +206,7 @@ class ConversationJob(
                 } else {
                     ConversationStatus.QUIT.ordinal
                 }
-            conversationDao.updateConversation(
+            conversationDao().updateConversation(
                 data.conversationId,
                 ownerId,
                 data.category,

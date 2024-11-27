@@ -26,14 +26,14 @@ class RefreshPriceJob(private val assetId: String) : BaseJob(
         if (response.isSuccess && response.data != null) {
             response.data?.let {
                 if (it.data.isEmpty()) return@let
-                historyPriceDao.insert(it)
+                historyPriceDao().insert(it)
             }
         } else if (response.errorCode == ErrorHandler.AUTHENTICATION) {
             val resp = userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             if (resp.isSuccess) {
                 val sessionData = requireNotNull(resp.data)[0]
                 MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                participantSessionDao.insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
+                participantSessionDao().insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
             }
         }
     }

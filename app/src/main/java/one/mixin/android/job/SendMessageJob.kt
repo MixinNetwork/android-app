@@ -80,7 +80,7 @@ open class SendMessageJob(
         if (alreadyExistMessage) {
             return
         }
-        val conversation = conversationDao.findConversationById(message.conversationId)
+        val conversation = conversationDao().findConversationById(message.conversationId)
         if (conversation != null) {
             if (message.isRecall()) {
                 recallMessage(message.conversationId)
@@ -89,20 +89,20 @@ open class SendMessageJob(
                     message.content?.let { content ->
                         content.findLastUrl()?.let {
                             message.hyperlink = it
-                            parseHyperlink(it, hyperlinkDao)
+                            parseHyperlink(it, hyperlinkDao())
                         }
-                        parseMentionData(content, message.messageId, message.conversationId, userDao, messageMentionDao, message.userId)
+                        parseMentionData(content, message.messageId, message.conversationId, userDao(), messageMentionDao(), message.userId)
                     }
                 }
                 if (!message.isTranscript()) {
-                    database.insertMessage(message)
+                    database().insertMessage(message)
                     MessageFlow.insert(message.conversationId, message.messageId)
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                    ftsDatabase().insertOrReplaceMessageFts4(message)
                 }
 
                 conversation.expireIn?.let { e ->
                     if (e > 0) {
-                        expiredMessageDao.insert(
+                        expiredMessageDao().insert(
                             ExpiredMessage(
                                 message.messageId,
                                 e,
@@ -119,15 +119,15 @@ open class SendMessageJob(
 
     private fun recallMessage(conversationId: String) {
         recallMessageId ?: return
-        messageDao.findMessageById(recallMessageId)?.let { msg ->
+        messageDao().findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.messageId))
-            messageDao.recallFailedMessage(msg.messageId)
-            messageDao.recallMessage(msg.messageId)
-            messageDao.recallPinMessage(msg.messageId, msg.conversationId)
-            pinMessageDao.deleteByMessageId(msg.messageId)
-            messageMentionDao.deleteMessage(msg.messageId)
-            remoteMessageStatusDao.deleteByMessageId(recallMessageId)
-            remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
+            messageDao().recallFailedMessage(msg.messageId)
+            messageDao().recallMessage(msg.messageId)
+            messageDao().recallPinMessage(msg.messageId, msg.conversationId)
+            pinMessageDao().deleteByMessageId(msg.messageId)
+            messageMentionDao().deleteMessage(msg.messageId)
+            remoteMessageStatusDao().deleteByMessageId(recallMessageId)
+            remoteMessageStatusDao().updateConversationUnseen(msg.conversationId)
             msg.mediaUrl?.getFilePath()?.let {
                 File(it).let { file ->
                     if (file.exists() && file.isFile) {
@@ -136,24 +136,24 @@ open class SendMessageJob(
                 }
             }
 
-            messageDao.findQuoteMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
+            messageDao().findQuoteMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
                 quoteMsg.thumbImage =
                     if ((quoteMsg.thumbImage?.length ?: 0) > MAX_THUMB_IMAGE_LENGTH) {
                         DEFAULT_THUMB_IMAGE
                     } else {
                         quoteMsg.thumbImage
                     }
-                messageDao.updateQuoteContentByQuoteId(
+                messageDao().updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.messageId,
                     GsonHelper.customGson.toJson(quoteMsg),
                 )
             }
-            MessageFlow.update(conversationId, messageDao.findQuoteMessageIdByQuoteId(conversationId, recallMessageId))
+            MessageFlow.update(conversationId, messageDao().findQuoteMessageIdByQuoteId(conversationId, recallMessageId))
             jobManager.cancelJobByMixinJobId(msg.messageId)
         }
         MessageFlow.update(conversationId, recallMessageId)
-        ftsDatabase.deleteByMessageId(recallMessageId)
+        ftsDatabase().deleteByMessageId(recallMessageId)
     }
 
     override fun onCancel(
@@ -170,11 +170,11 @@ open class SendMessageJob(
             return
         }
         jobManager.saveJob(this)
-        val conversation = conversationDao.findConversationById(message.conversationId)
+        val conversation = conversationDao().findConversationById(message.conversationId)
         val expiredMessageCallback = fun(expireIn: Long?) {
             expireIn?.let { e -> // Update local expiration time after success
                 if (expireIn > 0) {
-                    expiredMessageDao.updateExpiredMessage(
+                    expiredMessageDao().updateExpiredMessage(
                         message.messageId,
                         currentTimeSeconds() + e,
                     )
@@ -256,13 +256,13 @@ open class SendMessageJob(
         // Workaround No session key, can't encrypt message, send PLAIN directly
         if (participantSessionKey?.publicKey == null) {
             message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
-            messageDao.updateCategoryById(message.messageId, message.category)
+            messageDao().updateCategoryById(message.messageId, message.category)
             sendPlainMessage(conversation, callback)
             return
         }
 
         val extensionSessionKey =
-            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, accountId, it) }, null)
+            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao().getParticipantSessionKeyBySessionId(message.conversationId, accountId, it) }, null)
 
         val keyPair = Session.getEd25519KeyPair() ?: return
         val plaintext =
@@ -300,12 +300,12 @@ open class SendMessageJob(
 
     private fun getBotSessionKey(accountId: String): ParticipantSessionKey? =
         if (recipientId != null) {
-            participantSessionDao.getParticipantSessionKeyByUserId(
+            participantSessionDao().getParticipantSessionKeyByUserId(
                 message.conversationId,
                 recipientId!!,
             )
         } else {
-            participantSessionDao.getParticipantSessionKeyWithoutSelf(
+            participantSessionDao().getParticipantSessionKeyWithoutSelf(
                 message.conversationId,
                 accountId,
             )
@@ -351,12 +351,12 @@ open class SendMessageJob(
     }
 
     private fun getMentionData(messageId: String): List<String>? {
-        return messageMentionDao.getMentionData(messageId)?.run {
+        return messageMentionDao().getMentionData(messageId)?.run {
             GsonHelper.customGson.fromJson(this, Array<MentionUser>::class.java).map {
                 it.identityNumber
             }.toSet()
         }?.run {
-            userDao.findMultiUserIdsByIdentityNumbers(this)
+            userDao().findMultiUserIdsByIdentityNumbers(this)
         }
     }
 }

@@ -21,30 +21,30 @@ class SyncInscriptionMessageJob(val conversationId: String, val messageId: Strin
         }
 
     private suspend fun syncInscription() {
-        val inscriptionHash = hash ?: snapshotId?.let { safeSnapshotDao.findHashBySnapshotId(snapshotId) } ?: return
-        var inscription = inscriptionDao.findInscriptionByHash(inscriptionHash)
+        val inscriptionHash = hash ?: snapshotId?.let { safeSnapshotDao().findHashBySnapshotId(snapshotId) } ?: return
+        var inscription = inscriptionDao().findInscriptionByHash(inscriptionHash)
         if (inscription == null) {
             val response = tokenService.getInscriptionItem(inscriptionHash)
             if (response.isSuccess) {
                 inscription = response.data ?: return
-                inscriptionDao.insert(inscription)
+                inscriptionDao().insert(inscription)
             } else {
                 Timber.e(response.errorDescription)
             }
         }
         inscription ?: return
-        var inscriptionCollection = inscriptionCollectionDao.findInscriptionCollectionByHash(inscription.collectionHash)
+        var inscriptionCollection = inscriptionCollectionDao().findInscriptionCollectionByHash(inscription.collectionHash)
         if (inscriptionCollection == null) {
             val collectionResponse = tokenService.getInscriptionCollection(inscription.collectionHash)
             if (collectionResponse.isSuccess) {
                 inscriptionCollection = collectionResponse.data ?: return
-                inscriptionCollectionDao.insert(inscriptionCollection)
+                inscriptionCollectionDao().insert(inscriptionCollection)
             } else {
                 Timber.e(collectionResponse.errorDescription)
             }
         }
         inscriptionCollection ?: return
-        messageDao.updateMessageContent(
+        messageDao().updateMessageContent(
             GsonHelper.customGson.toJson(
                 SafeCollectible(
                     inscriptionCollection.collectionHash,

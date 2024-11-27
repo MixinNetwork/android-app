@@ -15,7 +15,7 @@ class RefreshAddressJob(private val assetId: String) : BaseJob(
         val response = addressService.addresses(assetId).execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             response.data?.let {
-                addressDao.insertList(it)
+                addressDao().insertList(it)
             }
         }
     }

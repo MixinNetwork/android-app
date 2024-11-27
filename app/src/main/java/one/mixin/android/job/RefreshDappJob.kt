@@ -72,13 +72,13 @@ class RefreshDappJob : BaseJob(
         conversationId: String,
         botId: String,
     ): String? {
-        return participantSessionDao.findBotPublicKey(conversationId, botId)
+        return participantSessionDao().findBotPublicKey(conversationId, botId)
     }
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userService.fetchSessionsSuspend(ids)
 
     suspend fun saveSession(participantSession: ParticipantSession) {
-        participantSessionDao.insertSuspend(participantSession)
+        participantSessionDao().insertSuspend(participantSession)
     }
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) {

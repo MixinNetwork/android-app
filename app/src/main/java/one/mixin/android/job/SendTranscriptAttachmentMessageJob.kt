@@ -60,13 +60,13 @@ class SendTranscriptAttachmentMessageJob(
             }
         }
         removeJob()
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+        transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
     override fun onRun() {
         if (transcriptMessage.isPlain() == encryptCategory.isPlain()) {
             if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
+                transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
                 sendMessage()
                 return
             }
@@ -82,9 +82,9 @@ class SendTranscriptAttachmentMessageJob(
                     null
                 }
             if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
-                val m = messageDao.findMessageById(transcriptMessage.messageId)
+                val m = messageDao().findMessageById(transcriptMessage.messageId)
                 if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
-                    transcriptMessageDao.updateTranscript(
+                    transcriptMessageDao().updateTranscript(
                         transcriptMessage.transcriptId,
                         transcriptMessage.messageId,
                         attachmentExtra.attachmentId,
@@ -98,7 +98,7 @@ class SendTranscriptAttachmentMessageJob(
                 }
             }
         }
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
+        transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
         disposable =
             conversationApi.requestAttachment().map {
                 val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
@@ -115,14 +115,14 @@ class SendTranscriptAttachmentMessageJob(
                         removeJob()
                     } else {
                         removeJob()
-                        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+                        transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
                     }
                 },
                 {
                     Timber.e("upload attachment error, ${it.getStackTraceString()}")
                     reportException(it)
                     removeJob()
-                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+                    transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
                 },
             )
     }
@@ -189,7 +189,7 @@ class SendTranscriptAttachmentMessageJob(
             removeJob()
             return true
         }
-        transcriptMessageDao.updateTranscript(
+        transcriptMessageDao().updateTranscript(
             transcriptMessage.transcriptId,
             transcriptMessage.messageId,
             attachResponse.attachment_id,
@@ -202,12 +202,12 @@ class SendTranscriptAttachmentMessageJob(
     }
 
     private fun sendMessage() {
-        if (transcriptMessageDao.hasUploadedAttachment(parentId ?: transcriptMessage.transcriptId) == 0) {
-            messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let { msg ->
+        if (transcriptMessageDao().hasUploadedAttachment(parentId ?: transcriptMessage.transcriptId) == 0) {
+            messageDao().findMessageById(parentId ?: transcriptMessage.transcriptId)?.let { msg ->
                 val transcripts = mutableSetOf<TranscriptMessage>()
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
                 msg.content = GsonHelper.customGson.toJson(transcripts)
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
+                messageDao().updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
                 MessageFlow.update(msg.conversationId, msg.messageId)
                 jobManager.addJob(SendMessageJob(msg))
             }
@@ -218,7 +218,7 @@ class SendTranscriptAttachmentMessageJob(
         transcriptId: String,
         list: MutableSet<TranscriptMessage>,
     ) {
-        val transcripts = transcriptMessageDao.getTranscript(transcriptId)
+        val transcripts = transcriptMessageDao().getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().apply {
             forEach { t ->

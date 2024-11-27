@@ -46,7 +46,7 @@ class SendAttachmentMessageJob(
 
     override fun cancel() {
         isCancelled = true
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         disposable?.let {
@@ -60,25 +60,25 @@ class SendAttachmentMessageJob(
     override fun onAdded() {
         super.onAdded()
         if (message.isVideo()) {
-            val mId = messageDao.findMessageIdById(message.messageId)
+            val mId = messageDao().findMessageIdById(message.messageId)
             if (mId != null) {
-                messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
+                messageDao().updateMediaSize(message.mediaSize ?: 0, mId)
                 MessageFlow.update(message.conversationId, message.messageId)
             } else {
-                database.insertMessage(message)
+                database().insertMessage(message)
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         } else {
-            val mId = messageDao.findMessageIdById(message.messageId)
+            val mId = messageDao().findMessageIdById(message.messageId)
             if (mId == null) {
-                database.insertMessage(message)
+                database().insertMessage(message)
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }
-        val conversation = conversationDao.findConversationById(message.conversationId)
+        val conversation = conversationDao().findConversationById(message.conversationId)
         conversation?.expireIn?.let { e ->
             if (e > 0) {
-                expiredMessageDao.insert(
+                expiredMessageDao().insert(
                     ExpiredMessage(
                         message.messageId,
                         e,
@@ -94,7 +94,7 @@ class SendAttachmentMessageJob(
         throwable: Throwable?,
     ) {
         super.onCancel(cancelReason, throwable)
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
@@ -122,12 +122,12 @@ class SendAttachmentMessageJob(
             }.subscribe(
                 {
                     if (it) {
-                        messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                        messageDao().updateMediaStatus(MediaStatus.DONE.name, message.messageId)
                         MessageFlow.update(message.conversationId, message.messageId)
                         attachmentProcess.remove(message.messageId)
                         removeJob()
                     } else {
-                        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
                         MessageFlow.update(message.conversationId, message.messageId)
                         attachmentProcess.remove(message.messageId)
                         removeJob()
@@ -136,7 +136,7 @@ class SendAttachmentMessageJob(
                 {
                     Timber.e("upload attachment error, ${it.getStackTraceString()}")
                     reportException(it)
-                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                    messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
                     MessageFlow.update(message.conversationId, message.messageId)
                     attachmentProcess.remove(message.messageId)
                     removeJob()
@@ -206,7 +206,7 @@ class SendAttachmentMessageJob(
                         toast(R.string.Upload_timeout)
                     }
                 }
-                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
                 MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
                 removeJob()
@@ -251,7 +251,7 @@ class SendAttachmentMessageJob(
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
-        messageDao.updateAttachmentMessage(
+        messageDao().updateAttachmentMessage(
             messageId = message.messageId,
             content = GsonHelper.customGson.toJson(AttachmentExtra(attachmentId = attachmentId, messageId = message.messageId, createdAt = attachResponse.created_at)),
             mediaMimeType = mimeType,
