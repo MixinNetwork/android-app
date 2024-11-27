@@ -15,7 +15,7 @@ import java.io.File
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearJobsAndRawTransaction(context: Context, identityNumber: String) =
     withContext(Dispatchers.IO) {
-        val dir = File(context.filesDir, identityNumber)
+        val dir = dbDir(context)
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
         val dbFile = File(dir, Constants.DataBase.DB_NAME)
         if (!dbFile.exists()) {
@@ -50,11 +50,6 @@ suspend fun clearJobsAndRawTransaction(context: Context, identityNumber: String)
             db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
         }
     }
-
-fun legacyDatabaseExists(context: Context): Boolean {
-    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-    return dbFile.exists() && dbFile.length() > 0
-}
 
 fun migrationDbFile(context: Context) {
     if (Session.getAccount() == null) {
@@ -109,7 +104,7 @@ fun migrationDbFile(context: Context) {
     }
 }
 
-private fun checkpoint(dbFile: File){
+private fun checkpoint(dbFile: File) {
     if (!dbFile.exists()) return
     var db: SQLiteDatabase? = null
     try {
@@ -132,9 +127,16 @@ private fun moveDbFile(file: File, dir: File) {
     file.moveTo(File(dir, file.name))
 }
 
-fun localDbFile(context: Context): File? {
-    if (Session.getAccount() == null) {
-        return null
+fun dbDir(context: Context): File {
+    val baseDir = File(context.filesDir.parent, "database")
+    val dir = File(baseDir, Session.getAccount()?.identityNumber ?: "temp")
+    if (!dir.exists()) {
+        dir.mkdirs()
     }
-    return File(context.filesDir, Session.getAccount()!!.identityNumber)
+    return dir
+}
+
+fun legacyDatabaseExists(context: Context): Boolean {
+    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    return dbFile.exists() && dbFile.length() > 0
 }

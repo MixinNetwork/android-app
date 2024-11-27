@@ -26,7 +26,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.transfer.TransferActivity
-import one.mixin.android.util.database.localDbFile
+import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 
@@ -104,7 +104,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
             if (!dbFile.exists()) {
                 return@withContext null
             }
-            dbFile = localDbFile(requireContext())
+            dbFile = dbDir(requireContext())
             if (!dbFile.exists()) {
                 return@withContext null
             }

@@ -14,8 +14,8 @@ import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.insertNoReplace
-import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
@@ -49,8 +49,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         ): PendingDatabaseImp {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val dir = File(context.filesDir, Session.getAccount()?.identityNumber ?: "temp")
-                    if (!dir.exists()) dir.mkdirs()
+                    val dir = dbDir(context)
                     val builder =
                         Room.databaseBuilder(
                             context,

@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.session.Session
+import one.mixin.android.util.database.dbDir
 import java.io.File
 
 @Database(
@@ -27,8 +28,7 @@ abstract class FtsDatabase : RoomDatabase() {
         fun getDatabase(context: Context): FtsDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    val dir = File(context.filesDir, Session.getAccount()?.identityNumber ?: "temp")
-                    if (!dir.exists()) dir.mkdirs()
+                    val dir = dbDir(context)
                     val builder =
                         Room.databaseBuilder(
                             context,
