@@ -44,7 +44,7 @@ class RefreshUserJob(
             val response = userService.getUserById(userIds[0]).execute().body()
             if (response != null && response.isSuccess) {
                 response.data?.let { data ->
-                    userRepo.upsert(data)
+                    userDao.upsert(data)
                     refreshConversationAvatar()
                 }
             }
@@ -52,7 +52,7 @@ class RefreshUserJob(
             val response = userService.getUsers(userIds).execute().body()
             if (response != null && response.isSuccess) {
                 response.data?.let { data ->
-                    userRepo.upsertList(data)
+                    userDao.upsertList(data)
                     refreshConversationAvatar()
                 }
             }

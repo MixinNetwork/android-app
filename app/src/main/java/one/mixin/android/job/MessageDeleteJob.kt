@@ -32,7 +32,7 @@ class MessageDeleteJob(
                         DB_DELETE_LIMIT,
                     )
                 ftsDatabase.deleteByMessageIds(ids)
-                appDatabase.deleteMessageByIds(ids)
+                database.deleteMessageByIds(ids)
                 MessageFlow.delete(conversationId, ids)
             }
             val currentRowId = messageDao.findLastMessageRowId(conversationId)

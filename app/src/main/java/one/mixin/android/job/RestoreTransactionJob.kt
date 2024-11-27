@@ -133,7 +133,7 @@ class RestoreTransactionJob : BaseJob(
                     MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
                 }
             val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
-            appDatabase.insertMessage(message)
+            database.insertMessage(message)
             if (inscriptionHash != null) {
                 jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, data.getSnapshotId))
             }
@@ -161,7 +161,7 @@ class RestoreTransactionJob : BaseJob(
                 Participant(conversationId, senderId, "", createdAt),
                 Participant(conversationId, recipientId, "", createdAt),
             )
-        appDatabase.runInTransaction {
+        database.runInTransaction {
             conversationDao.upsert(conversation)
             participantDao.insertList(participants)
         }

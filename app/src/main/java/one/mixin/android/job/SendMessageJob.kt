@@ -95,7 +95,7 @@ open class SendMessageJob(
                     }
                 }
                 if (!message.isTranscript()) {
-                    mixinDatabase.insertMessage(message)
+                    database.insertMessage(message)
                     MessageFlow.insert(message.conversationId, message.messageId)
                     ftsDatabase.insertOrReplaceMessageFts4(message)
                 }

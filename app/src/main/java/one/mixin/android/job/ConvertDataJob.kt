@@ -24,7 +24,7 @@ class ConvertDataJob(
     }
 
     override fun onAdded() {
-        appDatabase.insertMessage(message)
+        database.insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
 

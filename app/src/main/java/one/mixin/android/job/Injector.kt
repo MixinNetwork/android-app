@@ -20,6 +20,7 @@ import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
@@ -63,55 +64,7 @@ open class Injector {
     lateinit var jobManager: MixinJobManager
 
     @Inject
-    lateinit var ftsDatabase: FtsDatabase
-
-    @Inject
-    lateinit var messageDao: MessageDao
-
-    @Inject
-    lateinit var pendingMessagesDao: PendingMessageDao
-
-    @Inject
-    lateinit var messageHistoryDao: MessageHistoryDao
-
-    @Inject
-    lateinit var userDao: UserDao
-
-    @Inject
-    lateinit var appDao: AppDao
-
-    @Inject
-    lateinit var jobDao: JobDao
-
-    @Inject
-    lateinit var conversationDao: ConversationDao
-
-    @Inject
-    lateinit var conversationExtDao: ConversationExtDao
-
-    @Inject
-    lateinit var participantDao: ParticipantDao
-
-    @Inject
-    lateinit var participantSessionDao: ParticipantSessionDao
-
-    @Inject
-    lateinit var snapshotDao: SnapshotDao
-
-    @Inject
-    lateinit var safeSnapshotDao: SafeSnapshotDao
-
-    @Inject
-    lateinit var tokenDao: TokenDao
-
-    @Inject
-    lateinit var circleDao: CircleDao
-
-    @Inject
-    lateinit var circleConversationDao: CircleConversationDao
-
-    @Inject
-    lateinit var traceDao: TraceDao
+    lateinit var databaseProvider: DatabaseProvider
 
     @Inject
     lateinit var circleService: CircleService
@@ -120,16 +73,16 @@ open class Injector {
     lateinit var chatWebSocket: ChatWebSocket
 
     @Inject
-    lateinit var stickerDao: StickerDao
-
-    @Inject
-    lateinit var messageMentionDao: MessageMentionDao
-
-    @Inject
     lateinit var signalProtocol: SignalProtocol
 
     @Inject
     lateinit var encryptedProtocol: EncryptedProtocol
+
+    @Inject
+    lateinit var conversationService: ConversationService
+
+    @Inject
+    lateinit var userService: UserService
 
     @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
@@ -137,34 +90,37 @@ open class Injector {
     @Inject
     lateinit var resendMessageDao: ResendSessionMessageDao
 
-    @Inject
-    lateinit var hyperlinkDao: HyperlinkDao
-
-    @Inject
-    lateinit var userApi: UserService
-
-    @Inject
-    lateinit var conversationService: ConversationService
-
-    @Inject
-    lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    lateinit var pinMessageDao: PinMessageDao
-
-    @Inject
-    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
-
-    @Inject
-    lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    lateinit var database: MixinDatabase
-
     @ApplicationScope
     @Transient
     @Inject
     lateinit var applicationScope: CoroutineScope
+
+    val database: MixinDatabase by lazy { databaseProvider.getMixinDatabase() }
+    val ftsDatabase: FtsDatabase by lazy { databaseProvider.getFtsDatabase() }
+
+    val messageDao: MessageDao by lazy { databaseProvider.getMixinDatabase().messageDao() }
+    val pendingMessagesDao: PendingMessageDao by lazy { databaseProvider.getPendingDatabase().pendingMessageDao() }
+    val messageHistoryDao: MessageHistoryDao by lazy { databaseProvider.getMixinDatabase().messageHistoryDao() }
+    val userDao: UserDao by lazy { databaseProvider.getMixinDatabase().userDao() }
+    val appDao: AppDao by lazy { databaseProvider.getMixinDatabase().appDao() }
+    val jobDao: JobDao by lazy { databaseProvider.getMixinDatabase().jobDao() }
+    val conversationDao: ConversationDao by lazy { databaseProvider.getMixinDatabase().conversationDao() }
+    val conversationExtDao: ConversationExtDao by lazy { databaseProvider.getMixinDatabase().conversationExtDao() }
+    val participantDao: ParticipantDao by lazy { databaseProvider.getMixinDatabase().participantDao() }
+    val participantSessionDao: ParticipantSessionDao by lazy { databaseProvider.getMixinDatabase().participantSessionDao() }
+    val snapshotDao: SnapshotDao by lazy { databaseProvider.getMixinDatabase().snapshotDao() }
+    val safeSnapshotDao: SafeSnapshotDao by lazy { databaseProvider.getMixinDatabase().safeSnapshotDao() }
+    val tokenDao: TokenDao by lazy { databaseProvider.getMixinDatabase().tokenDao() }
+    val circleDao: CircleDao by lazy { databaseProvider.getMixinDatabase().circleDao() }
+    val circleConversationDao: CircleConversationDao by lazy { databaseProvider.getMixinDatabase().circleConversationDao() }
+    val traceDao: TraceDao by lazy { databaseProvider.getMixinDatabase().traceDao() }
+    val stickerDao: StickerDao by lazy { databaseProvider.getMixinDatabase().stickerDao() }
+    val messageMentionDao: MessageMentionDao by lazy { databaseProvider.getMixinDatabase().messageMentionDao() }
+    val hyperlinkDao: HyperlinkDao by lazy { databaseProvider.getMixinDatabase().hyperlinkDao() }
+    val transcriptMessageDao: TranscriptMessageDao by lazy { databaseProvider.getMixinDatabase().transcriptDao() }
+    val pinMessageDao: PinMessageDao by lazy { databaseProvider.getMixinDatabase().pinMessageDao() }
+    val remoteMessageStatusDao: RemoteMessageStatusDao by lazy { databaseProvider.getMixinDatabase().remoteMessageStatusDao() }
+    val expiredMessageDao: ExpiredMessageDao by lazy { databaseProvider.getMixinDatabase().expiredMessageDao() }
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint
@@ -201,7 +157,7 @@ open class Injector {
         var user = userDao.findUser(userId)
         if (user == null && forceSync) {
             try {
-                val call = userApi.getUserById(userId).execute()
+                val call = userService.getUserById(userId).execute()
                 val response = call.body()
                 if (response != null && response.isSuccess && response.data != null) {
                     response.data?.let { u ->

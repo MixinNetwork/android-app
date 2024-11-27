@@ -26,7 +26,7 @@ class RefreshTokensJob(
                 val response = tokenService.getAssetByIdSuspend(assetId)
                 if (response.isSuccess && response.data != null) {
                     response.data?.let {
-                        assetRepo.insert(it)
+                        tokenDao.insert(it)
                         refreshChainById(it.chainId)
                     }
                     if (conversationId != null && messageId != null) {
@@ -39,7 +39,7 @@ class RefreshTokensJob(
                 val response = tokenService.fetchTokenSuspend(tokenIds)
                 if (response.isSuccess && response.data != null) {
                     val list = response.data as List<Token>
-                    assetRepo.insertList(list)
+                    tokenDao.insertList(list)
                 }
                 refreshChains()
                 refreshFiats()
@@ -50,7 +50,7 @@ class RefreshTokensJob(
         val response = tokenService.fetchAllTokenSuspend()
         if (response.isSuccess && response.data != null) {
             val list = response.data as List<Token>
-            assetRepo.insertList(list)
+            tokenDao.insertList(list)
         }
     }
 

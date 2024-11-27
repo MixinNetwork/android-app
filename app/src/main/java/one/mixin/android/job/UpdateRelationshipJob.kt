@@ -72,11 +72,11 @@ class UpdateRelationshipJob(
         }
     }
 
-    private suspend fun updateUser(u: User) {
+    private fun updateUser(u: User) {
         if (u.app != null) {
             u.appId = u.app!!.appId
-            userRepo.insertApp(u.app!!)
+            appDao.insert(u.app!!)
         }
-        userRepo.upsert(u)
+        userDao.upsert(u)
     }
 }

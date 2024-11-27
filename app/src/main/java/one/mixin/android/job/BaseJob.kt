@@ -8,6 +8,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -40,6 +41,7 @@ import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HistoryPriceDao
@@ -76,9 +78,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
-import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.repository.TokenRepository
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
@@ -100,15 +99,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var ftsDatabase: FtsDatabase
-
-    @Inject
-    @Transient
-    lateinit var mixinDatabase: MixinDatabase
-
-    @Inject
-    @Transient
-    lateinit var pendingDatabase: PendingDatabase
+    lateinit var databaseProvider: DatabaseProvider
 
     @Inject
     @Transient
@@ -160,183 +151,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var messageDao: MessageDao
-
-    @Inject
-    @Transient
-    lateinit var messageHistoryDao: MessageHistoryDao
-
-    @Inject
-    @Transient
-    lateinit var userDao: UserDao
-
-    @Inject
-    @Transient
-    lateinit var conversationDao: ConversationDao
-
-    @Inject
-    @Transient
-    lateinit var conversationExtDao: ConversationExtDao
-
-    @Inject
-    @Transient
-    lateinit var participantDao: ParticipantDao
-
-    @Inject
-    @Transient
-    lateinit var participantSessionDao: ParticipantSessionDao
-
-    @Inject
-    @Transient
-    lateinit var offsetDao: OffsetDao
-
-    @Inject
-    @Transient
-    lateinit var assetDao: AssetDao
-
-    @Inject
-    @Transient
-    lateinit var tokenDao: TokenDao
-
-    @Inject
-    @Transient
-    lateinit var tokensExtraDao: TokensExtraDao
-
-    @Inject
-    @Transient
-    lateinit var snapshotDao: SnapshotDao
-
-    @Inject
-    @Transient
-    lateinit var chainDao: ChainDao
-
-    @Inject
-    @Transient
     lateinit var chatWebSocket: ChatWebSocket
-
-    @Inject
-    @Transient
-    lateinit var conversationRepo: ConversationRepository
-
-    @Inject
-    @Transient
-    lateinit var userRepo: UserRepository
-
-    @Inject
-    @Transient
-    lateinit var assetRepo: TokenRepository
-
-    @Inject
-    @Transient
-    lateinit var stickerDao: StickerDao
-
-    @Inject
-    @Transient
-    lateinit var hyperlinkDao: HyperlinkDao
-
-    @Inject
-    @Transient
-    lateinit var stickerAlbumDao: StickerAlbumDao
-
-    @Inject
-    @Transient
-    lateinit var stickerRelationshipDao: StickerRelationshipDao
-
-    @Inject
-    @Transient
-    lateinit var addressDao: AddressDao
-
-    @Inject
-    @Transient
-    lateinit var topAssetDao: TopAssetDao
-
-    @Inject
-    @Transient
-    lateinit var jobDao: JobDao
-
-    @Inject
-    @Transient
-    lateinit var favoriteAppDao: FavoriteAppDao
-
-    @Inject
-    @Transient
-    lateinit var messageMentionDao: MessageMentionDao
-
-    @Inject
-    @Transient
-    lateinit var appDao: AppDao
-
-    @Inject
-    @Transient
-    lateinit var circleDao: CircleDao
-
-    @Inject
-    @Transient
-    lateinit var circleConversationDao: CircleConversationDao
-
-    @Inject
-    @Transient
-    lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    @Transient
-    lateinit var pinMessageDao: PinMessageDao
-
-    @Inject
-    @Transient
-    lateinit var propertyDao: PropertyDao
-
-    @Inject
-    @Transient
-    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
-
-    @Inject
-    @Transient
-    lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    @Transient
-    lateinit var outputDao: OutputDao
-
-    @Inject
-    @Transient
-    lateinit var rawTransactionDao: RawTransactionDao
-
-    @Inject
-    @Transient
-    lateinit var safeSnapshotDao: SafeSnapshotDao
-
-    @Inject
-    @Transient
-    lateinit var inscriptionDao: InscriptionDao
-
-    @Inject
-    @Transient
-    lateinit var marketDao: MarketDao
-
-    @Inject
-    @Transient
-    lateinit var marketFavoredDao: MarketFavoredDao
-
-    @Inject
-    @Transient
-    lateinit var alertDao: AlertDao
-
-    @Inject
-    @Transient
-    lateinit var marketCapRankDao: MarketCapRankDao
-
-    @Inject
-    @Transient
-    lateinit var marketCoinDao: MarketCoinDao
-
-    @Inject
-    @Transient
-    lateinit var historyPriceDao: HistoryPriceDao
-
-    @Inject
-    @Transient
-    lateinit var inscriptionCollectionDao: InscriptionCollectionDao
 
     @Inject
     @Transient
@@ -345,10 +160,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var encryptedProtocol: EncryptedProtocol
-
-    @Transient
-    @Inject
-    lateinit var appDatabase: MixinDatabase
 
     @Transient
     @Inject
@@ -378,6 +189,141 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     @Inject
     lateinit var jobSenderKey: JobSenderKey
+
+    @delegate:Transient
+    val database: MixinDatabase by lazy {
+        requireNotNull(databaseProvider) { "DatabaseProvider not initialized" }
+        databaseProvider.getMixinDatabase() 
+    }
+
+    @delegate:Transient
+    val ftsDatabase: FtsDatabase by lazy { databaseProvider.getFtsDatabase() }
+
+    @delegate:Transient
+    val pendingDatabase: PendingDatabase by lazy { databaseProvider.getPendingDatabase() }
+
+    @delegate:Transient
+    val messageDao: MessageDao by lazy { databaseProvider.getMixinDatabase().messageDao() }
+
+    @delegate:Transient
+    val messageHistoryDao: MessageHistoryDao by lazy { databaseProvider.getMixinDatabase().messageHistoryDao() }
+
+    @delegate:Transient
+    val userDao: UserDao by lazy { databaseProvider.getMixinDatabase().userDao() }
+
+    @delegate:Transient
+    val conversationDao: ConversationDao by lazy { databaseProvider.getMixinDatabase().conversationDao() }
+
+    @delegate:Transient
+    val conversationExtDao: ConversationExtDao by lazy { databaseProvider.getMixinDatabase().conversationExtDao() }
+
+    @delegate:Transient
+    val participantDao: ParticipantDao by lazy { databaseProvider.getMixinDatabase().participantDao() }
+
+    @delegate:Transient
+    val participantSessionDao: ParticipantSessionDao by lazy { databaseProvider.getMixinDatabase().participantSessionDao() }
+
+    @delegate:Transient
+    val offsetDao: OffsetDao by lazy { databaseProvider.getMixinDatabase().offsetDao() }
+
+    @delegate:Transient
+    val assetDao: AssetDao by lazy { databaseProvider.getMixinDatabase().assetDao() }
+
+    @delegate:Transient
+    val tokenDao: TokenDao by lazy { databaseProvider.getMixinDatabase().tokenDao() }
+
+    @delegate:Transient
+    val tokensExtraDao: TokensExtraDao by lazy { databaseProvider.getMixinDatabase().tokensExtraDao() }
+
+    @delegate:Transient
+    val snapshotDao: SnapshotDao by lazy { databaseProvider.getMixinDatabase().snapshotDao() }
+
+    @delegate:Transient
+    val chainDao: ChainDao by lazy { databaseProvider.getMixinDatabase().chainDao() }
+
+    @delegate:Transient
+    val stickerDao: StickerDao by lazy { databaseProvider.getMixinDatabase().stickerDao() }
+
+    @delegate:Transient
+    val hyperlinkDao: HyperlinkDao by lazy { databaseProvider.getMixinDatabase().hyperlinkDao() }
+
+    @delegate:Transient
+    val stickerAlbumDao: StickerAlbumDao by lazy { databaseProvider.getMixinDatabase().stickerAlbumDao() }
+
+    @delegate:Transient
+    val stickerRelationshipDao: StickerRelationshipDao by lazy { databaseProvider.getMixinDatabase().stickerRelationshipDao() }
+
+    @delegate:Transient
+    val addressDao: AddressDao by lazy { databaseProvider.getMixinDatabase().addressDao() }
+
+    @delegate:Transient
+    val topAssetDao: TopAssetDao by lazy { databaseProvider.getMixinDatabase().topAssetDao() }
+
+    @delegate:Transient
+    val jobDao: JobDao by lazy { databaseProvider.getMixinDatabase().jobDao() }
+
+    @delegate:Transient
+    val favoriteAppDao: FavoriteAppDao by lazy { databaseProvider.getMixinDatabase().favoriteAppDao() }
+
+    @delegate:Transient
+    val messageMentionDao: MessageMentionDao by lazy { databaseProvider.getMixinDatabase().messageMentionDao() }
+
+    @delegate:Transient
+    val appDao: AppDao by lazy { databaseProvider.getMixinDatabase().appDao() }
+
+    @delegate:Transient
+    val circleDao: CircleDao by lazy { databaseProvider.getMixinDatabase().circleDao() }
+
+    @delegate:Transient
+    val circleConversationDao: CircleConversationDao by lazy { databaseProvider.getMixinDatabase().circleConversationDao() }
+
+    @delegate:Transient
+    val transcriptMessageDao: TranscriptMessageDao by lazy { databaseProvider.getMixinDatabase().transcriptDao() }
+
+    @delegate:Transient
+    val pinMessageDao: PinMessageDao by lazy { databaseProvider.getMixinDatabase().pinMessageDao() }
+
+    @delegate:Transient
+    val propertyDao: PropertyDao by lazy { databaseProvider.getMixinDatabase().propertyDao() }
+
+    @delegate:Transient
+    val remoteMessageStatusDao: RemoteMessageStatusDao by lazy { databaseProvider.getMixinDatabase().remoteMessageStatusDao() }
+
+    @delegate:Transient
+    val expiredMessageDao: ExpiredMessageDao by lazy { databaseProvider.getMixinDatabase().expiredMessageDao() }
+
+    @delegate:Transient
+    val outputDao: OutputDao by lazy { databaseProvider.getMixinDatabase().outputDao() }
+
+    @delegate:Transient
+    val rawTransactionDao: RawTransactionDao by lazy { databaseProvider.getMixinDatabase().rawTransactionDao() }
+
+    @delegate:Transient
+    val safeSnapshotDao: SafeSnapshotDao by lazy { databaseProvider.getMixinDatabase().safeSnapshotDao() }
+
+    @delegate:Transient
+    val inscriptionDao: InscriptionDao by lazy { databaseProvider.getMixinDatabase().inscriptionDao() }
+
+    @delegate:Transient
+    val marketDao: MarketDao by lazy { databaseProvider.getMixinDatabase().marketDao() }
+
+    @delegate:Transient
+    val marketFavoredDao: MarketFavoredDao by lazy { databaseProvider.getMixinDatabase().marketFavoredDao() }
+
+    @delegate:Transient
+    val alertDao: AlertDao by lazy { databaseProvider.getMixinDatabase().alertDao() }
+
+    @delegate:Transient
+    val marketCapRankDao: MarketCapRankDao by lazy { databaseProvider.getMixinDatabase().marketCapRankDao() }
+
+    @delegate:Transient
+    val marketCoinDao: MarketCoinDao by lazy { databaseProvider.getMixinDatabase().marketCoinDao() }
+
+    @delegate:Transient
+    val historyPriceDao: HistoryPriceDao by lazy { databaseProvider.getMixinDatabase().historyPriceDao() }
+
+    @delegate:Transient
+    val inscriptionCollectionDao: InscriptionCollectionDao by lazy { databaseProvider.getMixinDatabase().inscriptionCollectionDao() }
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

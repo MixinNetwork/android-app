@@ -30,7 +30,7 @@ class SendProcessSignalKeyJob(
             }
         } else if (action == ProcessSignalKeyAction.REMOVE_PARTICIPANT) {
             Session.getAccountId()?.let {
-                appDatabase.clearParticipant(data.conversationId, participantId!!)
+                database.clearParticipant(data.conversationId, participantId!!)
                 signalProtocol.clearSenderKey(data.conversationId, it)
                 RxBus.publish(SenderKeyChange(data.conversationId))
             }

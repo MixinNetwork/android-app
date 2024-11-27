@@ -280,7 +280,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     app =
                         handleMixinResponse(
                             invokeNetwork = {
-                                userApi.getUserByIdSuspend(id)
+                                userService.getUserByIdSuspend(id)
                             },
                             defaultErrorHandle = {},
                             defaultExceptionHandle = {},

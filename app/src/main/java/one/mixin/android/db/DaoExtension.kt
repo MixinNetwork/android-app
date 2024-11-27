@@ -194,7 +194,7 @@ suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
-        mentionMessageDao().deleteMessage(messageId)
+        messageMentionDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
         expiredMessageDao().deleteByMessageId(messageId)
@@ -207,7 +207,7 @@ fun MixinDatabase.deleteMessageById(
 ) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
-        mentionMessageDao().deleteMessage(messageId)
+        messageMentionDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         conversationExtDao().decrement(conversationId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
@@ -219,7 +219,7 @@ fun MixinDatabase.deleteMessageById(
 fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     runInTransaction {
         pinMessageDao().deleteByIds(messageIds)
-        mentionMessageDao().deleteMessage(messageIds)
+        messageMentionDao().deleteMessage(messageIds)
         messageDao().deleteMessageById(messageIds)
         remoteMessageStatusDao().deleteByMessageIds(messageIds)
         expiredMessageDao().deleteByMessageId(messageIds)

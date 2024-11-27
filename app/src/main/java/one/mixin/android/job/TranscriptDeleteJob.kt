@@ -22,7 +22,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
     override fun onRun() {
         val cIds = messageDao.findConversationsByMessages(messageIds)
         messageIds.forEach { messageId ->
-            mixinDatabase.deleteMessageById(messageId)
+            database.deleteMessageById(messageId)
             ftsDatabase.deleteByMessageId(messageId)
             transcriptMessageDao.getTranscript(messageId).forEach { transcriptMessage ->
                 if (transcriptMessage.isAttachment()) {

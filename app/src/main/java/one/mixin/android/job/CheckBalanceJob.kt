@@ -29,7 +29,7 @@ class CheckBalanceJob(
             for (asset in assets) {
                 val tokensExtra = tokensExtraDao.findByAsset(asset)
                 val token = tokenDao.findTokenByAsset(asset) ?: continue
-                mixinDatabase.withTransaction {
+                database.withTransaction {
                     val value = calcBalanceByAssetId(asset)
                     if (tokensExtra == null) {
                         tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))

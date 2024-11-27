@@ -25,7 +25,9 @@ internal object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideDatbaseProvider(app: Application) = DatabaseProvider(app)
+    fun provideDatabaseProvider(app: Application): DatabaseProvider {
+        return DatabaseProvider(app)
+    }
 
     @Provides
     fun provideAppDatabase(
@@ -122,7 +124,7 @@ internal object DatabaseModule {
     fun providesFavoriteAppDao(db: MixinDatabase) = db.favoriteAppDao()
 
     @Provides
-    fun providesMentionMessageDao(db: MixinDatabase) = db.mentionMessageDao()
+    fun providesMentionMessageDao(db: MixinDatabase) = db.messageMentionDao()
 
     @Provides
     fun providesCircleDao(db: MixinDatabase) = db.circleDao()

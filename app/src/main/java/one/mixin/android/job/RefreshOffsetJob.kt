@@ -57,7 +57,7 @@ class RefreshOffsetJob : MixinJob(
                         }
                     }
                     pendingDatabase.makeMessageStatus(m.status, m.messageId, callback)
-                    mixinDatabase.makeMessageStatus(m.status, m.messageId, callback)
+                    database.makeMessageStatus(m.status, m.messageId, callback)
                     offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
                 if (blazeMessages.isNotEmpty() && blazeMessages.last().updatedAt.getEpochNano() == status) {

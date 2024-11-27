@@ -65,13 +65,13 @@ class SendAttachmentMessageJob(
                 messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
                 MessageFlow.update(message.conversationId, message.messageId)
             } else {
-                mixinDatabase.insertMessage(message)
+                database.insertMessage(message)
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         } else {
             val mId = messageDao.findMessageIdById(message.messageId)
             if (mId == null) {
-                mixinDatabase.insertMessage(message)
+                database.insertMessage(message)
                 MessageFlow.insert(message.conversationId, message.messageId)
             }
         }

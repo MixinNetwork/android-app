@@ -59,7 +59,7 @@ class SendTranscriptJob(
                 }
             }
             ftsDatabase.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
-            appDatabase.insertMessage(message)
+            database.insertMessage(message)
             MessageFlow.insert(message.conversationId, message.messageId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
