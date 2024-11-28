@@ -95,32 +95,32 @@ open class Injector {
     @Inject
     lateinit var applicationScope: CoroutineScope
 
-    val database: MixinDatabase by lazy { databaseProvider.getMixinDatabase() }
-    val ftsDatabase: FtsDatabase by lazy { databaseProvider.getFtsDatabase() }
+    fun database(): MixinDatabase =  databaseProvider.getMixinDatabase()
+    fun ftsDatabase(): FtsDatabase =  databaseProvider.getFtsDatabase()
 
-    val messageDao: MessageDao by lazy { databaseProvider.getMixinDatabase().messageDao() }
-    val pendingMessagesDao: PendingMessageDao by lazy { databaseProvider.getPendingDatabase().pendingMessageDao() }
-    val messageHistoryDao: MessageHistoryDao by lazy { databaseProvider.getMixinDatabase().messageHistoryDao() }
-    val userDao: UserDao by lazy { databaseProvider.getMixinDatabase().userDao() }
-    val appDao: AppDao by lazy { databaseProvider.getMixinDatabase().appDao() }
-    val jobDao: JobDao by lazy { databaseProvider.getMixinDatabase().jobDao() }
-    val conversationDao: ConversationDao by lazy { databaseProvider.getMixinDatabase().conversationDao() }
-    val conversationExtDao: ConversationExtDao by lazy { databaseProvider.getMixinDatabase().conversationExtDao() }
-    val participantDao: ParticipantDao by lazy { databaseProvider.getMixinDatabase().participantDao() }
-    val participantSessionDao: ParticipantSessionDao by lazy { databaseProvider.getMixinDatabase().participantSessionDao() }
-    val snapshotDao: SnapshotDao by lazy { databaseProvider.getMixinDatabase().snapshotDao() }
-    val safeSnapshotDao: SafeSnapshotDao by lazy { databaseProvider.getMixinDatabase().safeSnapshotDao() }
-    val tokenDao: TokenDao by lazy { databaseProvider.getMixinDatabase().tokenDao() }
-    val circleDao: CircleDao by lazy { databaseProvider.getMixinDatabase().circleDao() }
-    val circleConversationDao: CircleConversationDao by lazy { databaseProvider.getMixinDatabase().circleConversationDao() }
-    val traceDao: TraceDao by lazy { databaseProvider.getMixinDatabase().traceDao() }
-    val stickerDao: StickerDao by lazy { databaseProvider.getMixinDatabase().stickerDao() }
-    val messageMentionDao: MessageMentionDao by lazy { databaseProvider.getMixinDatabase().messageMentionDao() }
-    val hyperlinkDao: HyperlinkDao by lazy { databaseProvider.getMixinDatabase().hyperlinkDao() }
-    val transcriptMessageDao: TranscriptMessageDao by lazy { databaseProvider.getMixinDatabase().transcriptDao() }
-    val pinMessageDao: PinMessageDao by lazy { databaseProvider.getMixinDatabase().pinMessageDao() }
-    val remoteMessageStatusDao: RemoteMessageStatusDao by lazy { databaseProvider.getMixinDatabase().remoteMessageStatusDao() }
-    val expiredMessageDao: ExpiredMessageDao by lazy { databaseProvider.getMixinDatabase().expiredMessageDao() }
+    fun messageDao(): MessageDao = databaseProvider.getMixinDatabase().messageDao()
+    fun pendingMessagesDao(): PendingMessageDao = databaseProvider.getPendingDatabase().pendingMessageDao()
+    fun messageHistoryDao(): MessageHistoryDao = databaseProvider.getMixinDatabase().messageHistoryDao()
+    fun userDao(): UserDao = databaseProvider.getMixinDatabase().userDao()
+    fun appDao(): AppDao = databaseProvider.getMixinDatabase().appDao()
+    fun jobDao(): JobDao = databaseProvider.getMixinDatabase().jobDao()
+    fun conversationDao(): ConversationDao = databaseProvider.getMixinDatabase().conversationDao()
+    fun conversationExtDao(): ConversationExtDao = databaseProvider.getMixinDatabase().conversationExtDao()
+    fun participantDao(): ParticipantDao = databaseProvider.getMixinDatabase().participantDao()
+    fun participantSessionDao(): ParticipantSessionDao = databaseProvider.getMixinDatabase().participantSessionDao()
+    fun snapshotDao(): SnapshotDao = databaseProvider.getMixinDatabase().snapshotDao()
+    fun safeSnapshotDao(): SafeSnapshotDao = databaseProvider.getMixinDatabase().safeSnapshotDao()
+    fun tokenDao(): TokenDao = databaseProvider.getMixinDatabase().tokenDao()
+    fun circleDao(): CircleDao = databaseProvider.getMixinDatabase().circleDao()
+    fun circleConversationDao(): CircleConversationDao = databaseProvider.getMixinDatabase().circleConversationDao()
+    fun traceDao(): TraceDao = databaseProvider.getMixinDatabase().traceDao()
+    fun stickerDao(): StickerDao = databaseProvider.getMixinDatabase().stickerDao()
+    fun messageMentionDao(): MessageMentionDao = databaseProvider.getMixinDatabase().messageMentionDao()
+    fun hyperlinkDao(): HyperlinkDao = databaseProvider.getMixinDatabase().hyperlinkDao()
+    fun transcriptMessageDao(): TranscriptMessageDao = databaseProvider.getMixinDatabase().transcriptDao()
+    fun pinMessageDao(): PinMessageDao = databaseProvider.getMixinDatabase().pinMessageDao()
+    fun remoteMessageStatusDao(): RemoteMessageStatusDao = databaseProvider.getMixinDatabase().remoteMessageStatusDao()
+    fun expiredMessageDao(): ExpiredMessageDao = databaseProvider.getMixinDatabase().expiredMessageDao()
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint
@@ -154,14 +154,14 @@ open class Injector {
         conversationId: String? = null,
         forceSync: Boolean = true,
     ): User? {
-        var user = userDao.findUser(userId)
+        var user = userDao().findUser(userId)
         if (user == null && forceSync) {
             try {
                 val call = userService.getUserById(userId).execute()
                 val response = call.body()
                 if (response != null && response.isSuccess && response.data != null) {
                     response.data?.let { u ->
-                        userDao.insertUpdate(u, appDao)
+                        userDao().insertUpdate(u, appDao())
                         user = u
                     }
                 }
@@ -178,11 +178,11 @@ open class Injector {
         if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
             return
         }
-        var conversation = conversationDao.findConversationById(data.conversationId)
+        var conversation = conversationDao().findConversationById(data.conversationId)
         var status = conversation?.status ?: ConversationStatus.START.ordinal
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-            conversationDao.upsert(conversation)
+            conversationDao().upsert(conversation)
             status = refreshConversation(data.conversationId)
         }
         if (status == ConversationStatus.START.ordinal) {
@@ -191,7 +191,7 @@ open class Injector {
     }
 
     protected open fun isExistMessage(messageId: String): Boolean =
-        messageDao.findMessageIdById(messageId) != null || messageHistoryDao.findMessageHistoryById(messageId) != null
+        messageDao().findMessageIdById(messageId) != null || messageHistoryDao().findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {
         try {
@@ -211,7 +211,7 @@ open class Injector {
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         syncUser(conversationData.creatorId)
                     }
-                    conversationDao.updateConversation(
+                    conversationDao().updateConversation(
                         conversationData.conversationId,
                         ownerId,
                         conversationData.category,
@@ -228,7 +228,7 @@ open class Injector {
                         remote.add(Participant(conversationId, p.userId, p.role, p.createdAt!!))
                         conversationUserIds.add(p.userId)
                     }
-                    participantDao.replaceAll(conversationId, remote)
+                    participantDao().replaceAll(conversationId, remote)
 
                     if (conversationUserIds.isNotEmpty()) {
                         jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
@@ -239,21 +239,21 @@ open class Injector {
                             ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
                         }
                     sessionParticipants?.let {
-                        participantSessionDao.replaceAll(conversationId, it)
+                        participantSessionDao().replaceAll(conversationId, it)
                     }
 
                     conversationData.circles?.let { circles ->
                         circles.forEach {
-                            val circle = circleDao.findCircleById(it.circleId)
+                            val circle = circleDao().findCircleById(it.circleId)
                             if (circle == null) {
                                 val circleResponse = circleService.getCircle(it.circleId).execute().body()
                                 if (circleResponse?.isSuccess == true) {
                                     circleResponse.data?.let { item ->
-                                        circleDao.insert(item)
+                                        circleDao().insert(item)
                                     }
                                 }
                             }
-                            circleConversationDao.insertUpdate(it)
+                            circleConversationDao().insertUpdate(it)
                         }
                     }
                     return status

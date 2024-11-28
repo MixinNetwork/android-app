@@ -87,7 +87,7 @@ object NotificationGenerator : Injector() {
         if (user.relationship == UserRelationship.BLOCKING.name) {
             return@launch
         }
-        val conversation = conversationDao.getConversationItem(message.conversationId) ?: return@launch
+        val conversation = conversationDao().getConversationItem(message.conversationId) ?: return@launch
         if (conversation.category == null) {
             return@launch
         }
@@ -135,13 +135,13 @@ object NotificationGenerator : Injector() {
             var app: App? = null
             var isBot = user.isBot()
             if (user.isBot()) {
-                app = appDao.findAppById(requireNotNull(user.appId) { "Required userId was null." })
+                app = appDao().findAppById(requireNotNull(user.appId) { "Required userId was null." })
             } else if (message.isRepresentativeMessage(conversation)) {
                 val representativeUser = syncUser(conversation.ownerId)
                 if (representativeUser == null) {
                     isBot = false
                 } else if (representativeUser.appId != null) {
-                    app = appDao.findAppById(requireNotNull(representativeUser.appId) { "Required appId was null." })
+                    app = appDao().findAppById(requireNotNull(representativeUser.appId) { "Required appId was null." })
                     isBot = representativeUser.isBot()
                 } else {
                     isBot = false

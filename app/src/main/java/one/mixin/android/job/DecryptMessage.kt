@@ -175,7 +175,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     override fun isExistMessage(messageId: String): Boolean {
-        return pendingMessagesDao.findMessageIdById(messageId) != null || super.isExistMessage(messageId)
+        return pendingMessagesDao().findMessageIdById(messageId) != null || super.isExistMessage(messageId)
     }
 
     private fun processMessage(data: BlazeMessageData) {
@@ -231,9 +231,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (data.conversationId == SYSTEM_USER || data.conversationId == accountId || data.userId == SYSTEM_USER) {
             return
         }
-        val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
+        val p = participantSessionDao().getParticipantSession(data.conversationId, data.userId, data.sessionId)
         if (p == null) {
-            participantSessionDao.insert(ParticipantSession(data.conversationId, data.userId, data.sessionId))
+            participantSessionDao().insert(ParticipantSession(data.conversationId, data.userId, data.sessionId))
         }
     }
 
@@ -275,7 +275,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
         appCardData.appId?.let { id ->
             runBlocking {
-                var app = appDao.findAppById(id)
+                var app = appDao().findAppById(id)
                 if (app?.updatedAt != appCardData.updatedAt) {
                     app =
                         handleMixinResponse(
@@ -286,7 +286,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             defaultExceptionHandle = {},
                             successBlock = {
                                 it.data?.let { u ->
-                                    userDao.insertUpdate(u, appDao)
+                                    userDao().insertUpdate(u, appDao())
                                     u.app?.let { app -> replaceApp(app) }
                                     return@handleMixinResponse u.app
                                 }
@@ -299,7 +299,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         }
         insertMessage(message, data)
-        ftsDatabase.insertOrReplaceMessageFts4(message)
+        ftsDatabase().insertOrReplaceMessageFts4(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
     }
@@ -359,8 +359,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             UUID.randomUUID().toString()
                         }
                     if (message != null) {
-                        pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
-                        database.insertMessage(
+                        pinMessageDao().insert(PinMessage(messageId, message.conversationId, data.createdAt))
+                        database().insertMessage(
                             createPinMessage(
                                 mid,
                                 data.conversationId,
@@ -383,8 +383,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         // Notify pin message
                         MessageFlow.update(message.conversationId, message.messageId)
                         if (message.category.endsWith("_TEXT")) {
-                            messageMentionDao.findMessageMentionById(message.messageId)?.let { mention ->
-                                messageMentionDao.insert(
+                            messageMentionDao().findMessageMentionById(message.messageId)?.let { mention ->
+                                messageMentionDao().insert(
                                     MessageMention(
                                         mid,
                                         message.conversationId,
@@ -406,18 +406,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name,
                             )
                         // Locally generated messages are inserted directly
-                        pendingMessagesDao.insert(PendingMessage(m))
+                        pendingMessagesDao().insert(PendingMessage(m))
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, messageId))
                     }
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {
-                pinMessageDao.deleteByIds(transferPinData.messageIds)
+                pinMessageDao().deleteByIds(transferPinData.messageIds)
                 MessageFlow.update(data.conversationId, transferPinData.messageIds)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            messageHistoryDao().insert(MessageHistory(data.messageId))
         }
     }
 
@@ -426,17 +426,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             // If the message is still in the cache but is called, insert the message table in advance
-            pendingMessagesDao.findMessageById(transferRecallData.messageId)?.let {
-                messageDao.insert(it)
+            pendingMessagesDao().findMessageById(transferRecallData.messageId)?.let {
+                messageDao().insert(it)
             }
-            messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
+            messageDao().findMessageById(transferRecallData.messageId)?.let { msg ->
                 RxBus.publish(RecallEvent(msg.messageId))
-                messageDao.recallFailedMessage(msg.messageId)
-                messageDao.recallMessage(msg.messageId)
-                ftsDatabase.deleteByMessageId(msg.messageId)
-                messageDao.recallPinMessage(msg.messageId, msg.conversationId)
-                pinMessageDao.deleteByMessageId(msg.messageId)
-                messageMentionDao.deleteMessage(msg.messageId)
+                messageDao().recallFailedMessage(msg.messageId)
+                messageDao().recallMessage(msg.messageId)
+                ftsDatabase().deleteByMessageId(msg.messageId)
+                messageDao().recallPinMessage(msg.messageId, msg.conversationId)
+                pinMessageDao().deleteByMessageId(msg.messageId)
+                messageMentionDao().deleteMessage(msg.messageId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -446,29 +446,29 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     }
                 }
-                messageDao.findQuoteMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
+                messageDao().findQuoteMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
                     quoteMsg.thumbImage =
                         if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
                             Constants.DEFAULT_THUMB_IMAGE
                         } else {
                             quoteMsg.thumbImage
                         }
-                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.messageId, gson.toJson(quoteMsg))
+                    messageDao().updateQuoteContentByQuoteId(data.conversationId, msg.messageId, gson.toJson(quoteMsg))
                 }
 
                 jobManager.cancelJobByMixinJobId(msg.messageId)
-                if (messageDao.findLastMessageId(msg.conversationId) == msg.messageId) {
+                if (messageDao().findLastMessageId(msg.conversationId) == msg.messageId) {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 MessageFlow.update(msg.conversationId, msg.messageId)
-                conversationDao.updateLastMessageId(
+                conversationDao().updateLastMessageId(
                     msg.messageId,
                     msg.createdAt,
                     msg.conversationId,
                 )
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            messageHistoryDao().insert(MessageHistory(data.messageId))
         }
     }
 
@@ -504,19 +504,19 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         if (m.status == MessageStatus.READ.name) {
                             updateExpiredMessageList.add(Pair(m.messageId, m.expireAt))
                         } else if (m.status == MessageMentionStatus.MENTION_READ.name) {
-                            messageMentionDao.markMentionRead(m.messageId)
+                            messageMentionDao().markMentionRead(m.messageId)
                         }
                     }
 
                     if (updateExpiredMessageList.isNotEmpty()) {
                         val updateMessageIds = updateExpiredMessageList.map { it.first }
                         lifecycleScope.launch(PENDING_DB_THREAD) {
-                            remoteMessageStatusDao.deleteByMessageIds(updateMessageIds)
-                            pendingMessagesDao.markReadIds(updateMessageIds)
+                            remoteMessageStatusDao().deleteByMessageIds(updateMessageIds)
+                            pendingMessagesDao().markReadIds(updateMessageIds)
                             // Data that does not enter the message table will not enter the remote status table, do not consider
-                            val updateConversationList = messageDao.findConversationsByMessages(updateMessageIds)
+                            val updateConversationList = messageDao().findConversationsByMessages(updateMessageIds)
                             updateConversationList.forEach { cId ->
-                                remoteMessageStatusDao.updateConversationUnseen(cId)
+                                remoteMessageStatusDao().updateConversationUnseen(cId)
                                 MessageFlow.update(cId, updateMessageIds)
                                 notificationManager.cancel(cId.hashCode())
                             }
@@ -530,13 +530,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             map[true]?.forEach {
                                 val messageId = it.first
                                 val expireAt = it.second!!
-                                expiredMessageDao.updateExpiredMessage(messageId, expireAt)
+                                expiredMessageDao().updateExpiredMessage(messageId, expireAt)
                                 RxBus.publish(ExpiredEvent(messageId, null, expireAt))
                             }
                             map[false]?.map { it.first }?.let {
-                                expiredMessageDao.getExpiredMessageByIds(it)
+                                expiredMessageDao().getExpiredMessageByIds(it)
                             }?.forEach { localExpiredMessage -> // The old version mark read
-                                expiredMessageDao.markRead(localExpiredMessage.messageId, currentTimeSeconds())
+                                expiredMessageDao().markRead(localExpiredMessage.messageId, currentTimeSeconds())
                                 RxBus.publish(ExpiredEvent(localExpiredMessage.messageId, null, currentTimeSeconds() + localExpiredMessage.expireIn))
                             }
                         }
@@ -545,7 +545,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
 
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            messageHistoryDao().insert(MessageHistory(data.messageId))
         } else if (data.category == MessageCategory.PLAIN_TEXT.name ||
             data.category == MessageCategory.PLAIN_IMAGE.name ||
             data.category == MessageCategory.PLAIN_VIDEO.name ||
@@ -575,7 +575,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         plainData: PlainJsonMessagePayload,
     ) {
         val messages = plainData.messages ?: return
-        val p = participantDao.findParticipantById(data.conversationId, data.userId) ?: return
+        val p = participantDao().findParticipantById(data.conversationId, data.userId) ?: return
         for (id in messages) {
             val resendMessage = resendMessageDao.findResendMessage(data.userId, data.sessionId, id)
             if (resendMessage != null) {
@@ -583,7 +583,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             val accountId = accountId ?: return
             // The messages that need to be resent are local data and do not exist in the cache database
-            val needResendMessage = messageDao.findMessageById(id, accountId)
+            val needResendMessage = messageDao().findMessageById(id, accountId)
             if (needResendMessage == null || needResendMessage.category == MessageCategory.MESSAGE_RECALL.name) {
                 resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
                 continue
@@ -625,10 +625,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         quoteMessageId: String,
     ): QuoteMessageItem? {
         // If the message is still in the cache but is quoted, insert the message table in advance
-        pendingMessagesDao.findMessageById(quoteMessageId)?.let {
-            messageDao.insert(it)
+        pendingMessagesDao().findMessageById(quoteMessageId)?.let {
+            messageDao().insert(it)
         }
-        val quoteMsg = messageDao.findQuoteMessageItemById(conversationId, quoteMessageId) ?: return null
+        val quoteMsg = messageDao().findQuoteMessageItemById(conversationId, quoteMessageId) ?: return null
         quoteMsg.thumbImage =
             if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
                 Constants.DEFAULT_THUMB_IMAGE
@@ -662,13 +662,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             ).apply {
                                 this.content?.findLastUrl()?.let {
                                     this.hyperlink = it
-                                    parseHyperlink(it, hyperlinkDao)
+                                    parseHyperlink(it, hyperlinkDao())
                                 }
                             }
                         } else {
                             if (quoteMessageItem.userId == accountId && data.userId != accountId) {
                                 quoteMe = true
-                                messageMentionDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
+                                messageMentionDao().insert(MessageMention(data.messageId, data.conversationId, "", false))
                             }
                             createReplyTextMessage(
                                 data.messageId,
@@ -683,9 +683,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             )
                         }
                     }
-                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
+                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao(), messageMentionDao(), data.userId)
                 insertMessage(message, data)
-                ftsDatabase.insertOrReplaceMessageFts4(message)
+                ftsDatabase().insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.associate { it.identityNumber to it.fullName }
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
@@ -703,7 +703,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         data.status,
                     )
                 insertMessage(message, data)
-                ftsDatabase.insertOrReplaceMessageFts4(message)
+                ftsDatabase().insertOrReplaceMessageFts4(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
@@ -830,7 +830,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         )
                     }
                 insertMessage(message, data)
-                ftsDatabase.insertOrReplaceMessageFts4(message)
+                ftsDatabase().insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -877,7 +877,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         String(Base64.decode(plainText))
                     }
                 val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
-                val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
+                val sticker = stickerDao().getStickerByUnique(mediaData.stickerId)
                 if (sticker == null || sticker.albumId.isNullOrBlank()) {
                     jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                 }
@@ -923,7 +923,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 insertMessage(message, data)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
-                    ftsDatabase.insertOrReplaceMessageFts4(message)
+                    ftsDatabase().insertOrReplaceMessageFts4(message)
                 }
                 generateNotification(message, data)
             }
@@ -983,10 +983,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (transcripts.isEmpty()) {
             data.expireIn?.let { expireIn ->
                 if (expireIn > 0) {
-                    expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
+                    expiredMessageDao().insert(ExpiredMessage(data.messageId, expireIn, null))
                 }
             }
-            database.insertMessage(
+            database().insertMessage(
                 createTranscriptMessage(
                     data.messageId,
                     data.conversationId,
@@ -1008,7 +1008,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     transcript.mediaName
                 } else {
                     if (transcript.isContact()) {
-                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                        transcript.sharedUserId?.let { userId -> userDao().findUser(userId) }?.fullName
                     } else {
                         transcript.content
                     }?.joinWhiteSpace()?.let {
@@ -1016,11 +1016,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
             }
-        ftsDatabase.insertFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.category, data.userId, data.createdAt)
+        ftsDatabase().insertFts4(stringBuilder.toString(), data.conversationId, data.messageId, data.category, data.userId, data.createdAt)
 
         transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
             transcript.stickerId?.let { stickerId ->
-                val sticker = stickerDao.getStickerByUnique(stickerId)
+                val sticker = stickerDao().getStickerByUnique(stickerId)
                 if (sticker == null) {
                     jobManager.addJobInBackground(RefreshStickerJob(stickerId))
                 }
@@ -1095,9 +1095,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.createdAt,
                 data.status,
             )
-        transcriptMessageDao.insertList(
+        transcriptMessageDao().insertList(
             transcripts.filter { t ->
-                transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
+                transcriptMessageDao().getTranscriptByIdSync(t.transcriptId, t.messageId) == null
             },
         )
         if (!transcripts.any { t -> t.isAttachment() }) {
@@ -1113,7 +1113,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (systemSession.action == SystemSessionMessageAction.PROVISION.name) {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
-            val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
+            val conversations = conversationDao().getConversationsByUserId(systemSession.userId)
             val ps =
                 conversations.filter {
                     it.appId == null || it.capabilities?.contains(AppCap.ENCRYPTED.name) == true
@@ -1121,7 +1121,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     ParticipantSession(it.conversationId, systemSession.userId, systemSession.sessionId, publicKey = systemSession.publicKey)
                 }
             if (ps.isNotEmpty()) {
-                participantSessionDao.insertList(ps)
+                participantSessionDao().insertList(ps)
             }
             RxBus.publish(SessionEvent(SystemSessionMessageAction.PROVISION))
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
@@ -1130,7 +1130,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(systemSession.userId)
-            participantSessionDao.deleteByUserIdAndSessionId(systemSession.userId, systemSession.sessionId)
+            participantSessionDao().deleteByUserIdAndSessionId(systemSession.userId, systemSession.sessionId)
             RxBus.publish(SessionEvent(SystemSessionMessageAction.DESTROY))
         }
     }
@@ -1153,9 +1153,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 snapshot.snapshotId,
             )
         snapshot.transactionHash?.let {
-            snapshotDao.deletePendingSnapshotByHash(it)
+            snapshotDao().deletePendingSnapshotByHash(it)
         }
-        snapshotDao.insert(snapshot)
+        snapshotDao().insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
@@ -1182,10 +1182,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 snapshot.snapshotId,
             )
         if (!snapshot.depositHash.isNullOrEmpty()) {
-            safeSnapshotDao.deletePendingSnapshotByHash(snapshot.depositHash)
-            safeSnapshotDao.insert(snapshot.copy(type = SafeSnapshotType.snapshot.name, deposit = SafeDeposit(snapshot.depositHash, "")))
+            safeSnapshotDao().deletePendingSnapshotByHash(snapshot.depositHash)
+            safeSnapshotDao().insert(snapshot.copy(type = SafeSnapshotType.snapshot.name, deposit = SafeDeposit(snapshot.depositHash, "")))
         } else {
-            safeSnapshotDao.insert(snapshot.copy(type = SafeSnapshotType.snapshot.name))
+            safeSnapshotDao().insert(snapshot.copy(type = SafeSnapshotType.snapshot.name))
         }
 
         insertMessage(message, data)
@@ -1214,7 +1214,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             )
 
         insertMessage(message, data)
-        safeSnapshotDao.insert(snapshot)
+        safeSnapshotDao().insert(snapshot)
         jobManager.addJobInBackground(SyncInscriptionMessageJob(data.conversationId, data.messageId, snapshot.inscriptionHash, snapshot.snapshotId))
         jobManager.addJobInBackground(SyncOutputJob())
         if (snapshot.amount.toFloat() > 0) {
@@ -1230,8 +1230,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (systemMessage.userId != null) {
             userId = systemMessage.userId
         }
-        if (userId == SYSTEM_USER && userDao.findUser(userId) == null) {
-            userDao.insert(createSystemUser())
+        if (userId == SYSTEM_USER && userDao().findUser(userId) == null) {
+            userDao().insert(createSystemUser())
         }
         val content =
             if (systemMessage.action == SystemConversationAction.EXPIRE.name) {
@@ -1254,7 +1254,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
         val accountId = accountId ?: return
         if (systemMessage.action == SystemConversationAction.ADD.name || systemMessage.action == SystemConversationAction.JOIN.name) {
-            participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
+            participantDao().insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else {
@@ -1267,7 +1267,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
             if (systemMessage.participantId == accountId) {
-                conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
+                conversationDao().updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             }
             syncUser(systemMessage.participantId!!)
             jobManager.addJobInBackground(GenerateAvatarJob(data.conversationId))
@@ -1281,7 +1281,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
-            participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role ?: "")
+            participantDao().updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role ?: "")
             if (message.participantId != accountId || systemMessage.role.isNullOrEmpty()) {
                 return
             }
@@ -1309,24 +1309,24 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             SystemCircleMessageAction.ADD.name -> {
                 val accountId = accountId ?: return
                 val conversationId = systemMessage.conversationId ?: generateConversationId(accountId, systemMessage.userId ?: return)
-                if (circleDao.findCircleById(systemMessage.circleId) == null) {
+                if (circleDao().findCircleById(systemMessage.circleId) == null) {
                     jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
                 }
                 val circleConversation = CircleConversation(conversationId, systemMessage.circleId, systemMessage.userId, data.updatedAt, null)
                 systemMessage.userId?.let { userId ->
                     syncUser(userId)
                 }
-                circleConversationDao.insertUpdate(circleConversation)
+                circleConversationDao().insertUpdate(circleConversation)
             }
             SystemCircleMessageAction.REMOVE.name -> {
                 val accountId = accountId ?: return
                 val conversationId = systemMessage.conversationId ?: generateConversationId(accountId, systemMessage.userId ?: return)
-                circleConversationDao.deleteByIds(conversationId, systemMessage.circleId)
+                circleConversationDao().deleteByIds(conversationId, systemMessage.circleId)
             }
             SystemCircleMessageAction.DELETE.name -> {
                 runInTransaction {
-                    circleDao.deleteCircleById(systemMessage.circleId)
-                    circleConversationDao.deleteByCircleId(systemMessage.circleId)
+                    circleDao().deleteCircleById(systemMessage.circleId)
+                    circleConversationDao().deleteByCircleId(systemMessage.circleId)
                 }
                 RxBus.publish(CircleDeleteEvent(systemMessage.circleId))
                 if (systemMessage.circleId == MixinApplication.appContext.defaultSharedPreferences.getString(Constants.CIRCLE.CIRCLE_ID, null)) {
@@ -1361,7 +1361,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             pendingMessageStatusLruCache.remove(data.messageId)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            messageHistoryDao().insert(MessageHistory(data.messageId))
         } else {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
@@ -1384,7 +1384,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     if (resendMessageId != null) {
                         processRedecryptMessage(data, resendMessageId, plaintext)
                         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                        messageHistoryDao.insert(MessageHistory(data.messageId))
+                        messageHistoryDao().insert(MessageHistory(data.messageId))
                     } else {
                         try {
                             processDecryptSuccess(data, plaintext)
@@ -1442,7 +1442,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun insertInvalidMessage(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
-        database.insertMessage(message)
+        database().insertMessage(message)
         MessageFlow.insert(data.conversationId, data.messageId)
     }
 
@@ -1490,18 +1490,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         plainText: String,
     ) {
         if (data.category == MessageCategory.SIGNAL_TEXT.name) {
-            parseMentionData(plainText, messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-            pendingMessagesDao.updateMessageContentAndStatus(plainText, data.status, messageId)
-            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            parseMentionData(plainText, messageId, data.conversationId, userDao(), messageMentionDao(), data.userId)
+            pendingMessagesDao().updateMessageContentAndStatus(plainText, data.status, messageId)
+            messageDao().updateMessageContentAndStatus(plainText, data.status, messageId)
             MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
-            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
-            pendingMessagesDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            messageDao().updateMessageContentAndStatus(plainText, data.status, messageId)
+            pendingMessagesDao().updateMessageContentAndStatus(plainText, data.status, messageId)
             MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
             if (checkLocationData(plainText)) {
-                messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
-                pendingMessagesDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+                messageDao().updateMessageContentAndStatus(plainText, data.status, messageId)
+                pendingMessagesDao().updateMessageContentAndStatus(plainText, data.status, messageId)
                 MessageFlow.update(data.conversationId, data.messageId)
             }
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
@@ -1512,7 +1512,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(plainText)
             val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
             val duration = mediaData.duration?.toString()
-            pendingMessagesDao.updateAttachmentMessage(
+            pendingMessagesDao().updateAttachmentMessage(
                 messageId,
                 gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)),
                 mediaData.mimeType,
@@ -1528,7 +1528,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 MediaStatus.CANCELED.name,
                 data.status,
             )
-            messageDao.updateAttachmentMessage(
+            messageDao().updateAttachmentMessage(
                 messageId,
                 gson.toJson(AttachmentExtra(attachmentId = mediaData.attachmentId, messageId = data.messageId, shareable = mediaData.shareable)),
                 mediaData.mimeType,
@@ -1546,7 +1546,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             )
             MessageFlow.update(data.conversationId, data.messageId)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
-                val message = messageDao.findMessageById(messageId)
+                val message = messageDao().findMessageById(messageId)
                 if (message != null) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
@@ -1554,41 +1554,41 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
             val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
-            val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
+            val sticker = stickerDao().getStickerByUnique(stickerData.stickerId)
             if (sticker == null || sticker.albumId.isNullOrBlank()) {
                 jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
             }
-            pendingMessagesDao.updateStickerMessage(stickerData.stickerId, data.status, messageId)
-            messageDao.updateStickerMessage(stickerData.stickerId, data.status, messageId)
+            pendingMessagesDao().updateStickerMessage(stickerData.stickerId, data.status, messageId)
+            messageDao().updateStickerMessage(stickerData.stickerId, data.status, messageId)
             MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
-            pendingMessagesDao.updateContactMessage(contactData.userId, data.status, messageId)
-            messageDao.updateContactMessage(contactData.userId, data.status, messageId)
+            pendingMessagesDao().updateContactMessage(contactData.userId, data.status, messageId)
+            messageDao().updateContactMessage(contactData.userId, data.status, messageId)
             syncUser(contactData.userId)
             MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
             val decoded = Base64.decode(plainText)
             val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
-            pendingMessagesDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
-            messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
+            pendingMessagesDao().updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
+            messageDao().updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
             MessageFlow.update(data.conversationId, data.messageId)
         } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
             val decoded = Base64.decode(plainText)
             processTranscriptMessage(data, String(decoded))?.let { message ->
-                pendingMessagesDao.updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
-                messageDao.updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
+                pendingMessagesDao().updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
+                messageDao().updateTranscriptMessage(message.content, message.mediaSize, message.mediaStatus, message.status, messageId)
                 MessageFlow.update(data.conversationId, data.messageId)
             }
         }
-        if (pendingMessagesDao.countMessageByQuoteId(data.conversationId, messageId) > 0 || messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
+        if (pendingMessagesDao().countMessageByQuoteId(data.conversationId, messageId) > 0 || messageDao().countMessageByQuoteId(data.conversationId, messageId) > 0) {
             findQuoteMessageItemById(data.conversationId, messageId)?.let {
                 val quoteContent = gson.toJson(it)
-                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
-                pendingMessagesDao.updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
+                messageDao().updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
+                pendingMessagesDao().updateQuoteContentByQuoteId(data.conversationId, messageId, quoteContent)
                 MessageFlow.update(data.conversationId, data.messageId)
-                MessageFlow.update(data.conversationId, messageDao.findQuoteMessageIdByQuoteId(data.conversationId, messageId))
+                MessageFlow.update(data.conversationId, messageDao().findQuoteMessageIdByQuoteId(data.conversationId, messageId))
             }
         }
     }
@@ -1598,7 +1598,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         userId: String,
         sessionId: String?,
     ) {
-        val messages = pendingMessagesDao.findFailedMessages(conversationId, userId) + messageDao.findFailedMessages(conversationId, userId)
+        val messages = pendingMessagesDao().findFailedMessages(conversationId, userId) + messageDao().findFailedMessages(conversationId, userId)
         if (messages.isEmpty()) {
             return
         }
@@ -1612,7 +1612,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         messageId: String,
         status: MessageStatus = MessageStatus.DELIVERED,
     ) {
-        jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
+        jobDao().insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
     private fun refreshSignalKeys(conversationId: String) {
@@ -1694,26 +1694,26 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     // No need to insert message
                     return
                 } else {
-                    expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, expiredAt))
+                    expiredMessageDao().insert(ExpiredMessage(data.messageId, expireIn, expiredAt))
                     RxBus.publish(ExpiredEvent(data.messageId, null, expiredAt))
                 }
             } else {
-                expiredMessageDao.insert(ExpiredMessage(data.messageId, expireIn, null))
+                expiredMessageDao().insert(ExpiredMessage(data.messageId, expireIn, null))
             }
         }
         pendingMessageStatusLruCache.remove(message.messageId)?.let { status ->
             message.status = status
         }
 
-        pendingMessagesDao.insert(PendingMessage(message))
+        pendingMessagesDao().insert(PendingMessage(message))
     }
 
     private fun findMessage(messageId: String): Message? {
-        pendingMessagesDao.findMessageById(messageId).let { msg ->
+        pendingMessagesDao().findMessageById(messageId).let { msg ->
             if (msg != null) {
                 return msg
             } else {
-                return messageDao.findMessageById(messageId)
+                return messageDao().findMessageById(messageId)
             }
         }
     }
