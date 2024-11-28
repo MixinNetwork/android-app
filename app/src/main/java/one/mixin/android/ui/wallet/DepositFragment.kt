@@ -51,6 +51,16 @@ class DepositFragment : BaseFragment() {
 
     private val notSupportDepositAssets = arrayOf(OMNI_USDT_ASSET_ID, BYTOM_CLASSIC_ASSET_ID, MGD_ASSET_ID)
 
+    private val usdcAssets =
+        mapOf(
+            "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
+            "fe26b981-29e9-3032-a0e9-b24d619e987e" to "TRC-20",
+            "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
+            "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
+            "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
+            "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
+        )
+
     private val usdtAssets =
         mapOf(
             "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
@@ -111,6 +121,10 @@ class DepositFragment : BaseFragment() {
                     networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initUsdtChips(asset)
+                } else if (usdcAssets.contains(asset.assetId)){
+                    networkTitle.isVisible = true
+                    networkChipGroup.isVisible = true
+                    initUsdcChips(asset)
                 } else {
                     networkTitle.isVisible = false
                     networkChipGroup.isVisible = false
@@ -150,10 +164,18 @@ class DepositFragment : BaseFragment() {
     private val localMap = mutableMapOf<String, DepositEntry>()
 
     private fun initUsdtChips(asset: TokenItem) {
+        initChips(asset, usdtAssets)
+    }
+
+    private fun initUsdcChips(asset: TokenItem) {
+        initChips(asset, usdcAssets)
+    }
+
+    private fun initChips(asset: TokenItem, uAssets: Map<String, String>) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
-            usdtAssets.entries.forEach { entry ->
+            uAssets.entries.forEach { entry ->
                 val chip =
                     Chip(requireContext()).apply {
                         text = entry.value
@@ -177,7 +199,7 @@ class DepositFragment : BaseFragment() {
                                     if (newAsset == null) {
                                         toast(R.string.Not_found)
                                     } else {
-                                        initUsdtChips(newAsset)
+                                        initChips(newAsset, usdcAssets)
                                         val localDepositEntry = localMap[newAsset.assetId]
                                         if (localDepositEntry == null) {
                                             refreshDeposit(newAsset)
