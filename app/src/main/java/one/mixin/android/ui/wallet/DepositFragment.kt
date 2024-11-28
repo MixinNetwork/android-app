@@ -58,7 +58,7 @@ class DepositFragment : BaseFragment() {
             "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
             "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
             "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon (PoS)",
-            "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BNB Smart Chain"
+            "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
         )
 
     private val usdtAssets =
