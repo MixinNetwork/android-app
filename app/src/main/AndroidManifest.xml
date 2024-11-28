@@ -496,9 +496,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAP_KEY}" />
-        <meta-data
-            android:name="google_analytics_adid_collection_enabled"
-            android:value="false" />
 <!--        <meta-data-->
 <!--            android:name="com.google.android.gms.car.application"-->
 <!--            android:resource="@xml/automotive_app_desc" />-->
