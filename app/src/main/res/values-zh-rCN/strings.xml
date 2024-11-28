@@ -1446,7 +1446,7 @@
     <string name="continue_with_pin">输入 PIN 继续</string>
     <string name="web3_account_network">%1$s 账户</string>
     <string name="web3_account">账户</string>
-    <string name="access_dapps_defi_projects">访问 dApps 或 DeFi 项目</string>
+    <string name="access_dapps_defi_projects">访问 apps 或 DeFi 项目</string>
     <string name="unlock_web3_account">解锁 %1$s 账户</string>
     <string name="Unlock">解锁</string>
     <string name="unlock_web3_account_description">您的 %1$s 账户基于 Mixin Messenger 的 MPC 钱包并根据 BIP44 协议派生而来。</string>
