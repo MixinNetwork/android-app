@@ -71,7 +71,7 @@ buildscript {
         ext.indicatorseekbarVersion = '2.1.2'
         ext.emojiVerison = '1.5.0'
         ext.cronetOkhttpVersion = '0.1.0'
-        ext.diffUtilsVersion = '4.12'
+        ext.diffUtilsVersion = '4.15'
         ext.argon2ktVersion = '0.0.1'
         ext.keccakVersion = '1.1.3'
 
