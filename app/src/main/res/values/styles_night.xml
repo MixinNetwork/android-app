@@ -62,6 +62,7 @@
         <item name="icon_chain">@color/iconChainNight</item>
         <item name="bg_market_card">@drawable/bg_market_card_night</item>
         <item name="ic_logo">@drawable/ic_logo_mixin_night</item>
+        <item name="badge_red">@color/badgeRedNight</item>
 
         <item name="ic_wallet_receive">#82D28B</item>
         <item name="ic_wallet_send">#75B6FF</item>
