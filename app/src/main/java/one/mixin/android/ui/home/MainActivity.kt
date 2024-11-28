@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -692,8 +693,10 @@ class MainActivity : BlazeBaseActivity() {
     private fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
 
-        WalletConnectV2
-        lifecycleScope.launch { JsSigner.init() }
+        lifecycleScope.launch {
+            WalletConnectV2
+            JsSigner.init()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

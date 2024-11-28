@@ -1,7 +1,7 @@
 package one.mixin.android.tip.wc
 
 import android.util.LruCache
-import com.walletconnect.web3.wallet.client.Wallet
+import com.reown.walletkit.client.Wallet
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
