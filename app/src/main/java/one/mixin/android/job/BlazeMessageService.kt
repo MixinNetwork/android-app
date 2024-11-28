@@ -240,10 +240,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onDestroy() {
         super.onDestroy()
-        hedwig.land()
-        stopObserveAck()
-        stopObserveStatus()
-        stopObserveExpired()
+        Session.getAccount()?.let{
+            hedwig.land()
+            stopObserveAck()
+            stopObserveStatus()
+            stopObserveExpired()
+        }
         ackJob?.cancel()
         ackJob = null
         statusJob?.cancel()
