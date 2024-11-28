@@ -957,13 +957,13 @@ class MainActivity : BlazeBaseActivity() {
                 }
         }
         lifecycleScope.launch {
-            val swap = PropertyHelper.findValueByKey(Account.PREF_HAS_USED_SWAP, true)
+            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
                 isVisible = swap
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
             }
 
-            val market = PropertyHelper.findValueByKey(Account.PREF_HAS_USED_MARKET, true)
+            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
                 isVisible = market
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)

@@ -59,6 +59,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
@@ -337,9 +338,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.swap.setOnClickListener {
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
-                        lifecycleScope.launch {
-                            PropertyHelper.updateKeyValue(Account.PREF_HAS_USED_SWAP, false)
-                        }
+                        defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
                     }
                 }
@@ -429,10 +428,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         checkPin()
 
-        lifecycleScope.launch {
-            val swap = PropertyHelper.findValueByKey(Account.PREF_HAS_USED_SWAP, true)
-            _headBinding?.sendReceiveView?.badge?.isVisible = swap
-        }
+        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
+        _headBinding?.sendReceiveView?.badge?.isVisible = swap
     }
 
     private var migrateEnable = false

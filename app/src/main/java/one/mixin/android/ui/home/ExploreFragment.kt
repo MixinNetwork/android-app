@@ -33,6 +33,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -174,7 +175,7 @@ class ExploreFragment : BaseFragment() {
                         navigate(marketFragment, MarketFragment.TAG)
                         radioMarket.setBackgroundResource(R.drawable.selector_radio)
                         lifecycleScope.launch {
-                            PropertyHelper.updateKeyValue(Account.PREF_HAS_USED_MARKET, false)
+                            defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_MARKET, false)
                         }
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_MARKET))
                     }
@@ -209,7 +210,7 @@ class ExploreFragment : BaseFragment() {
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
         }
         lifecycleScope.launch {
-            val market = PropertyHelper.findValueByKey(Account.PREF_HAS_USED_MARKET, true)
+            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             if (market) {
                 binding.radioMarket.setBackgroundResource(R.drawable.selector_radio_badge)
             } else {
