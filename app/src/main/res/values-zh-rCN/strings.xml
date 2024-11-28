@@ -800,8 +800,8 @@
     <string name="Read_your_snapshots">读取你的转账记录</string>
     <string name="Rebate">退款</string>
     <string name="Recaptcha_timeout">验证超时</string>
-    <string name="Receive">转入</string>
-    <string name="RECEIVE">转入</string>
+    <string name="Receive">充值</string>
+    <string name="RECEIVE">充值</string>
     <string name="Receive_Money">我的收款码</string>
     <string name="Receiver">至</string>
     <string name="Receivers">交易接收人</string>
