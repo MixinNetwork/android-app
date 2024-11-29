@@ -229,7 +229,11 @@ class Connection @JvmOverloads constructor(
             val (result) = jsonParser.decodeFromString<RpcResponse<T>>(responseBody)
             return result
         } catch (e: SerializationException) {
-            val (error) = jsonParser.decodeFromString<RpcErrorResponse>(responseBody)
+            val (error) = try {
+                jsonParser.decodeFromString<RpcErrorResponse>(responseBody)
+            } catch (_: SerializationException) {
+                throw RpcException(0, "no rpc error message", responseBody)
+            }
             if (error != null) {
                 throw RpcException(error.code, error.message, responseBody)
             } else {
