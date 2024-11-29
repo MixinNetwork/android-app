@@ -409,7 +409,12 @@ abstract class MixinDatabase : RoomDatabase() {
         }
 
         fun checkPoint() {
-            supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
+            supportSQLiteDatabase?.let { db ->
+                db.beginTransaction()
+                db.query("PRAGMA wal_checkpoint(FULL)")?.close()
+                db.setTransactionSuccessful()
+                db.endTransaction()
+            }
         }
 
         fun getWritableDatabase(): SupportSQLiteDatabase? {
@@ -429,12 +434,4 @@ abstract class MixinDatabase : RoomDatabase() {
                 }
             }
     }
-}
-
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
-}
-
-suspend fun withTransaction(block: suspend () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }

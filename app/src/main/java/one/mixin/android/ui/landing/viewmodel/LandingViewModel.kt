@@ -39,7 +39,7 @@ import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.insertUpdate
+
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.repository.AccountRepository
@@ -63,6 +63,10 @@ internal constructor(
     private val pinCipher: PinCipher,
 ) : ViewModel() {
     fun initAllDatabases() = databaseProvider.initAllDatabases()
+
+    fun lockAndUpgradeDatabase() = databaseProvider.getMixinDatabase().runInTransaction {
+        // do nothing
+    }
 
     fun pingServer(
         callback: () -> Unit,

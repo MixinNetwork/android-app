@@ -1,7 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.db.insertUpdate
+
 import one.mixin.android.vo.Sticker
 
 class RefreshStickerJob(private val stickerId: String) : BaseJob(

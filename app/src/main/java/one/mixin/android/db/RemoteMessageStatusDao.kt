@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.StatusMessage
@@ -34,4 +35,10 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
 
     @Query("SELECT message_id FROM remote_messages_status WHERE conversation_id = :conversationId AND status != 'READ' LIMIT 50")
     suspend fun getUnreadMessageIds(conversationId: String): List<String>
+
+    @Transaction
+    fun markReadAndUnseen(conversationId: String){
+        markReadByConversationId(conversationId)
+        updateConversationUnseen(conversationId)
+    }
 }

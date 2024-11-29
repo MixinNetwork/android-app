@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCoin
@@ -35,10 +34,7 @@ class RefreshAlertsJob : BaseJob(
                         refreshMark(ids)
                     }
                 }
-                runInTransaction {
-                    alertDao().deleteAll()
-                    alertDao().insertList(list)
-                }
+                alertDao().deleteAndInsertList(list)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))

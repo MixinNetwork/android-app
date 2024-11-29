@@ -40,7 +40,7 @@ import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
+
 import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase

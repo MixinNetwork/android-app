@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.db.insertUpdate
+
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences

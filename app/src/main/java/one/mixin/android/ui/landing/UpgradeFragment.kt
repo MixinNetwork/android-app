@@ -14,7 +14,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
@@ -53,7 +52,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             binding.pb.isIndeterminate = true
             withContext(Dispatchers.IO) {
                 PropertyHelper.checkMigrated()
-                runInTransaction { }
+                viewModel.lockAndUpgradeDatabase()
             }
             MainActivity.show(requireContext())
             activity?.finish()

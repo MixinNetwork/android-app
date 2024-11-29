@@ -68,7 +68,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
@@ -77,14 +76,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
-import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
-import one.mixin.android.ui.wallet.alert.vo.AlertStatus
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
@@ -101,7 +98,6 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
-import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
@@ -244,10 +240,7 @@ class TokenRepository
                             val signature = it.signature.hexStringToByteArray()
                             verifyCurve25519Signature(message, signature, pub)
                         }?.let { list ->
-                            runInTransaction {
-                                depositDao.deleteByChainId(chainId)
-                                depositDao.insertList(list)
-                            }
+                            depositDao.deleteAndInsert(chainId, list)
                             list.find { it.isPrimary }
                         }
                     },

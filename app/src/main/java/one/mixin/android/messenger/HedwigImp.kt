@@ -10,7 +10,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertNoReplace
-import one.mixin.android.db.insertUpdate
+
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage
