@@ -74,11 +74,10 @@ import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MessageHistoryDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getStringDeviceId
@@ -433,15 +432,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideChatWebSocket(
+        databaseProvider: DatabaseProvider,
         @ApplicationScope applicationScope: CoroutineScope,
         okHttp: OkHttpClient,
         accountService: AccountService,
-        mixinDatabase: MixinDatabase,
-        pendingDatabase: PendingDatabase,
         jobManager: MixinJobManager,
         linkState: LinkState,
     ): ChatWebSocket =
-        ChatWebSocket(applicationScope, okHttp, accountService, mixinDatabase, pendingDatabase, jobManager, linkState)
+        ChatWebSocket(databaseProvider, applicationScope, okHttp, accountService, jobManager, linkState)
 
     @Provides
     @Singleton

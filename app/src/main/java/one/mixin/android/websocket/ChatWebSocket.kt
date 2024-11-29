@@ -18,6 +18,7 @@ import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.insertNoReplace
@@ -49,11 +50,10 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
+    private var databaseProvider: DatabaseProvider,
     private var applicationScope: CoroutineScope,
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
-    private val mixinDatabase: MixinDatabase,
-    private val pendingDatabase: PendingDatabase,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
@@ -102,6 +102,12 @@ class ChatWebSocket(
             connected = false
         }
     }
+
+    val pendingDatabase: PendingDatabase
+        get () = databaseProvider.getPendingDatabase()
+
+    val mixinDatabase: MixinDatabase
+        get () = databaseProvider.getMixinDatabase()
 
     @Synchronized
     fun sendMessage(
