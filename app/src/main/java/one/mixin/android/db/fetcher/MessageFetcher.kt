@@ -1,7 +1,9 @@
 package one.mixin.android.db.fetcher
 
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.provider.convertToMessageItems
 import one.mixin.android.util.SINGLE_FETCHER_THREAD
 import one.mixin.android.vo.MessageItem
@@ -10,7 +12,7 @@ import javax.inject.Inject
 class MessageFetcher
     @Inject
     constructor(
-        val db: MixinDatabase,
+        val dataProvider: DatabaseProvider,
     ) {
         companion object {
             private const val SQL = """
@@ -51,6 +53,9 @@ class MessageFetcher
         private val loadedIds = mutableSetOf<String>()
         private var canLoadAbove = true
         private var canLoadBelow = true
+
+        private val db : MixinDatabase
+            get() =  dataProvider.getMixinDatabase()
 
         suspend fun initMessages(
             conversationId: String,

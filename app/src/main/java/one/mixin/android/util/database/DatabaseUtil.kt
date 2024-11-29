@@ -133,7 +133,7 @@ private fun moveDbFile(file: File, dir: File) {
 }
 
 fun dbDir(context: Context): File {
-    val baseDir = File(context.filesDir.parent, "database")
+    val baseDir = File(context.filesDir.parent, "databases")
     val dir = File(baseDir, Session.getAccount()?.identityNumber ?: "temp")
     if (!dir.exists()) {
         dir.mkdirs()

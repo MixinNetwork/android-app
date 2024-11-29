@@ -26,6 +26,7 @@ import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -79,7 +80,7 @@ import javax.inject.Singleton
 class ConversationRepository
     @Inject
     internal constructor(
-        private val appDatabase: MixinDatabase,
+        private val databaseProvider: DatabaseProvider,
         private val messageDao: MessageDao,
         private val conversationDao: ConversationDao,
         private val conversationExtDao: ConversationExtDao,
@@ -105,9 +106,9 @@ class ConversationRepository
 
         fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
             if (circleId == null) {
-                DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext))
+                DataProvider.observeConversations(databaseProvider.getMixinDatabase())
             } else {
-                DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext))
+                DataProvider.observeConversationsByCircleId(circleId, databaseProvider.getMixinDatabase())
             }
 
         suspend fun successConversationList(): List<ConversationMinimal> =
@@ -118,7 +119,7 @@ class ConversationRepository
             participants: List<Participant>,
         ) =
             withContext(SINGLE_DB_THREAD) {
-                appDatabase.runInTransaction {
+                databaseProvider.getMixinDatabase().runInTransaction {
                     conversationDao.upsert(conversation)
                     participantDao.insertList(participants)
                 }
@@ -128,7 +129,7 @@ class ConversationRepository
             conversation: Conversation,
             participants: List<Participant>,
         ) {
-            appDatabase.runInTransaction {
+            databaseProvider.getMixinDatabase().runInTransaction {
                 conversationDao.upsert(conversation)
                 participantDao.insertList(participants)
             }
@@ -167,7 +168,7 @@ class ConversationRepository
                 emptyList<SearchMessageItem>()
             } else {
                 val queryString = query.joinStar().replaceQuotationMark()
-                DataProvider.fuzzySearchMessage(ftsDbHelper, queryString, appDatabase, cancellationSignal)
+                DataProvider.fuzzySearchMessage(ftsDbHelper, queryString, databaseProvider.getMixinDatabase(), cancellationSignal)
             }
 
         fun fuzzySearchMessageDetail(
@@ -176,14 +177,14 @@ class ConversationRepository
             cancellationSignal: CancellationSignal,
         ): DataSource.Factory<Int, SearchMessageDetailItem> {
             val queryString = query.joinStar().replaceQuotationMark()
-            return DataProvider.fuzzySearchMessageDetail(ftsDbHelper, queryString, conversationId, appDatabase, cancellationSignal)
+            return DataProvider.fuzzySearchMessageDetail(ftsDbHelper, queryString, conversationId, databaseProvider.getMixinDatabase(), cancellationSignal)
         }
 
         suspend fun fuzzySearchChat(
             query: String,
             cancellationSignal: CancellationSignal,
         ): List<ChatMinimal> =
-            DataProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
+            DataProvider.fuzzySearchChat(query, databaseProvider.getMixinDatabase(), cancellationSignal)
 
         suspend fun indexUnread(conversationId: String) =
             conversationDao.indexUnread(conversationId)
@@ -537,7 +538,7 @@ class ConversationRepository
         fun getPinMessages(
             conversationId: String,
             count: Int,
-        ) = DataProvider.getPinMessages(appDatabase, conversationId, count)
+        ) = DataProvider.getPinMessages(databaseProvider.getMixinDatabase(), conversationId, count)
 
         suspend fun findTranscriptMessageIndex(
             transcriptId: String,
@@ -677,7 +678,7 @@ class ConversationRepository
         }
 
         fun insertMessage(message: Message) {
-            appDatabase.insertMessage(message)
+            databaseProvider.getMixinDatabase().insertMessage(message)
             MessageFlow.insert(message.conversationId, message.messageId)
         }
 

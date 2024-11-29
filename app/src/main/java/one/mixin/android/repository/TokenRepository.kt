@@ -49,6 +49,7 @@ import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AlertDao
 import one.mixin.android.db.ChainDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.DepositDao
 import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
@@ -56,7 +57,6 @@ import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -132,7 +132,7 @@ import javax.inject.Singleton
 class TokenRepository
     @Inject
     constructor(
-        private val appDatabase: MixinDatabase,
+        private val databaseProvider: DatabaseProvider,
         private val tokenService: TokenService,
         private val assetService: AssetService,
         private val utxoService: UtxoService,
@@ -415,7 +415,7 @@ class TokenRepository
             id: String,
             hidden: Boolean,
         ) {
-            appDatabase.withTransaction {
+            databaseProvider.getMixinDatabase().withTransaction {
                 val tokensExtra = tokensExtraDao.findByAssetId(id)
                 if (tokensExtra != null) {
                     tokensExtraDao.updateHiddenByAssetId(id, hidden)
@@ -462,7 +462,7 @@ class TokenRepository
             query: String,
             cancellationSignal: CancellationSignal,
         ) =
-            DataProvider.fuzzySearchToken(query, query, appDatabase, cancellationSignal)
+            DataProvider.fuzzySearchToken(query, query, databaseProvider.getMixinDatabase(), cancellationSignal)
 
         suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
             tokenDao.fuzzySearchAssetIgnoreAmount(query, query)
@@ -859,7 +859,7 @@ class TokenRepository
                         MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
                     }
                 val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, snapshotId)
-                appDatabase.insertMessage(message)
+                databaseProvider.getMixinDatabase().insertMessage(message)
                 if (inscriptionHash != null) {
                     jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, snapshotId))
                 }
@@ -971,7 +971,7 @@ class TokenRepository
             escapedQuery: String,
             cancellationSignal: CancellationSignal,
         ): List<SafeCollectible> {
-            return DataProvider.fuzzyInscription(escapedQuery, appDatabase, cancellationSignal)
+            return DataProvider.fuzzyInscription(escapedQuery, databaseProvider.getMixinDatabase(), cancellationSignal)
         }
 
         fun inscriptionStateByHash(hash: String) = outputDao.inscriptionStateByHash(hash)
@@ -1231,7 +1231,7 @@ class TokenRepository
         query: String,
         cancellationSignal: CancellationSignal,
     ): List<Market> =
-        DataProvider.fuzzyMarkets(query, appDatabase, cancellationSignal)
+        DataProvider.fuzzyMarkets(query, databaseProvider.getMixinDatabase(), cancellationSignal)
 
     suspend fun searchMarket(query: String) = withContext(Dispatchers.IO){
         val response = routeService.searchMarket(query)
