@@ -60,7 +60,7 @@ fun migrationDbFile(context: Context) {
     if (!dbFile.exists() || dbFile.length() <= 0) {
         return
     }
-    val dir = File(dbFile.parent, Session.getAccount()!!.identityNumber)
+    val dir = dbDir(context)
     if (!dir.exists()) dir.mkdirs()
     checkpoint(dbFile)
     moveDbFile(dbFile, dir)
