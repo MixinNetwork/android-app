@@ -24,6 +24,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.viewmodel.LandingViewModel
+import one.mixin.android.util.database.moveLegacyDatabaseFile
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -66,6 +67,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             }
                             r.data?.let { data ->
                                 Session.storeAccount(data)
+                                moveLegacyDatabaseFile(requireContext(), data)
                                 landingViewModel.insertUser(data.toUser())
                             }
 

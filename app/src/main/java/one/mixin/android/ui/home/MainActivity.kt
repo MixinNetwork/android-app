@@ -45,8 +45,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -60,7 +58,6 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
@@ -69,15 +66,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.SessionRequest
-import one.mixin.android.api.service.ConversationService
-import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -85,7 +77,6 @@ import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -117,12 +108,9 @@ import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
-import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCErrorEvent
@@ -171,16 +159,11 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
-import one.mixin.android.util.database.databseFile
+import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.database.legacyDatabaseExists
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
-import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
 import timber.log.Timber
@@ -496,7 +479,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkNeedGo2MigrationPage(): Boolean {
         val currentVersion =
             try {
-                readVersion(databseFile(this))
+                readVersion(databaseFile(this))
             } catch (e: Exception) {
                 0
             }

@@ -29,6 +29,7 @@ import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.database.clearJobsAndRawTransaction
+import one.mixin.android.util.database.moveLegacyDatabaseFile
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -104,6 +105,7 @@ abstract class PinCodeFragment(
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
+        moveLegacyDatabaseFile(requireContext(), account)
         landingViewModel.initAllDatabases()
         if (Session.hasPhone()) {
             // Remove mnemonic if user has phone on sign in

@@ -2,17 +2,19 @@ package one.mixin.android.util.database
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.extension.moveTo
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Account
+import timber.log.Timber
 import java.io.File
 
 @SuppressLint("ObsoleteSdkInt")
@@ -148,6 +150,42 @@ fun legacyDatabaseFile(context: Context): File {
     return context.getDatabasePath(DB_NAME)
 }
 
-fun databseFile(context: Context): File {
+fun databaseFile(context: Context): File {
     return File(dbDir(context), DB_NAME)
+}
+
+fun moveLegacyDatabaseFile(context: Context, account: Account) {
+    val dbFile = legacyDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return
+    }
+    var c: Cursor? = null
+    var db: SQLiteDatabase? = null
+    try {
+        db =
+            SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY,
+            )
+        c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
+        var userId: String? = null
+        if (c.moveToFirst()) {
+            userId = c.getString(0)
+        }
+        if (account.userId == userId){
+            val dir = dbDir(context)
+            if (!dir.exists()) dir.mkdirs()
+            c?.close()
+            c = null
+            db?.close()
+            db = null
+            dbFile.moveTo(databaseFile(context))
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+    } finally {
+        c?.close()
+        db?.close()
+    }
 }
