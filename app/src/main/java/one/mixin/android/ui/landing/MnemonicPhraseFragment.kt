@@ -287,7 +287,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             if (r?.isSuccess == true) {
                 val account = r.data!!
 
-                clearJobsAndRawTransaction(requireContext(),account.identityNumber)
+                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
 
                 val privateKey = sessionKey.privateKey
                 val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)

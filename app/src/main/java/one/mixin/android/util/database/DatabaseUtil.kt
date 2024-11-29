@@ -20,7 +20,7 @@ import java.io.File
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearJobsAndRawTransaction(context: Context, identityNumber: String) =
     withContext(Dispatchers.IO) {
-        val dir = dbDir(context)
+        val dir = dbDir(context, identityNumber)
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
         val dbFile = File(dir, DB_NAME)
         if (!dbFile.exists()) {
@@ -132,9 +132,9 @@ private fun moveDbFile(file: File, dir: File) {
     file.moveTo(File(dir, file.name))
 }
 
-fun dbDir(context: Context): File {
+fun dbDir(context: Context, identityNumber: String? = null): File {
     val baseDir = File(context.filesDir.parent, "databases")
-    val dir = File(baseDir, Session.getAccount()?.identityNumber ?: "temp")
+    val dir = File(baseDir, identityNumber ?: Session.getAccount()?.identityNumber ?: "temp")
     if (!dir.exists()) {
         dir.mkdirs()
     }
