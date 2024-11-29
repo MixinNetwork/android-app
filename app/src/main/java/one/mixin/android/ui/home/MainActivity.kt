@@ -9,12 +9,14 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
+import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -49,6 +51,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
+import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -78,6 +81,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
@@ -317,6 +321,27 @@ class MainActivity : BlazeBaseActivity() {
             .autoDispose(destroyScope)
             .subscribe { e ->
                 handleTipEvent(e, deviceId)
+            }
+        RxBus.listen(BadgeEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch{
+                    when (e.badge) {
+                        Account.PREF_HAS_USED_SWAP -> {
+                            binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
+                                isVisible = false
+                                backgroundColor = Color.RED
+                            }
+                        }
+
+                        Account.PREF_HAS_USED_MARKET -> {
+                            binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
+                                isVisible = false
+                                backgroundColor = Color.RED
+                            }
+                        }
+                    }
+                }
             }
         RxBus.listen(WCEvent::class.java)
             .autoDispose(destroyScope)
@@ -931,7 +956,21 @@ class MainActivity : BlazeBaseActivity() {
                     handleNavigationItemSelected(itemId)
                 }
         }
+        lifecycleScope.launch {
+            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
+            binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
+                isVisible = swap
+                backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
+            }
+
+            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
+                isVisible = market
+                backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
+            }
+        }
     }
+
 
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {

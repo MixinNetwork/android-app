@@ -135,6 +135,8 @@
 
     <color name="call_voice">#50BD5C</color>
 
+    <color name="badgeRed">#DB454F</color>
+
     <array name="name_colors">
         <item>#8C8DFF</item>
         <item>#7983C2</item>

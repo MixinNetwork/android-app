@@ -24,17 +24,15 @@ fun UserDao.insertUpdate(
     user: User,
     appDao: AppDao,
 ) {
-    runInTransaction {
-        if (user.app != null) {
-            user.appId = user.app!!.appId
-            appDao.insert(user.app!!)
-        }
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            update(user)
-        }
+    val u = findUser(user.userId)
+    if (u == null) {
+        insert(user)
+    } else {
+        update(user)
+    }
+    if (user.app != null) {
+        user.appId = user.app!!.appId
+        appDao.insert(user.app!!)
     }
 }
 

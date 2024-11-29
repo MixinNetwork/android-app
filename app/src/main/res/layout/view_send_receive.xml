@@ -62,11 +62,27 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <ImageView
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple_24"
-            android:src="@drawable/ic_wallet_swap" />
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/mixin_ripple_24"
+                android:src="@drawable/ic_wallet_swap" />
+
+            <View
+                android:id="@+id/badge"
+                android:layout_marginTop="3dp"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="end|top"
+                android:background="@drawable/bg_red_dot"
+                android:visibility="gone"/>
+
+        </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -77,4 +93,5 @@
             android:textFontWeight="500"
             android:textSize="12sp"/>
     </LinearLayout>
+
 </merge>

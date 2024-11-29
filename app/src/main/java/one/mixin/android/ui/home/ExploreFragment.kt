@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -16,12 +17,15 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.databinding.ItemFavoriteTitleBinding
+import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.event.SessionEvent
@@ -29,6 +33,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -168,6 +173,11 @@ class ExploreFragment : BaseFragment() {
                         defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 1)
                         exploreVa.displayedChild = 1
                         navigate(marketFragment, MarketFragment.TAG)
+                        radioMarket.setBackgroundResource(R.drawable.selector_radio)
+                        lifecycleScope.launch {
+                            defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_MARKET, false)
+                        }
+                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_MARKET))
                     }
 
                     R.id.radio_eth -> {
@@ -198,6 +208,14 @@ class ExploreFragment : BaseFragment() {
         }
         RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
+        }
+        lifecycleScope.launch {
+            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            if (market) {
+                binding.radioMarket.setBackgroundResource(R.drawable.selector_radio_badge)
+            } else {
+                binding.radioMarket.setBackgroundResource(R.drawable.selector_radio)
+            }
         }
     }
 

@@ -1248,7 +1248,7 @@
     <string name="transfer_syncing_des">Transferring chat history, do you want to cancel ?</string>
     <string name="Unable_connect_desktop">Unable to connect to the desktop，please try again later</string>
     <string name="Make_sure_WiFi">Make sure the WiFi is connected</string>
-    <string name="connected_dapps">Connected dApps</string>
+    <string name="connected_dapps">Connected apps</string>
     <string name="search_placeholder_address">Label, Address</string>
     <string name="search_placeholder_dapp">Name, URL</string>
     <string name="search_placeholder_app">Search ID or name</string>
@@ -1485,11 +1485,11 @@
     <string name="Tron">Tron</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
-    <string name="access_dapps_defi_projects">Access dApps and DeFi projects.</string>
+    <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>
     <string name="unlock_web3_account">Unlock %1$s Account</string>
     <string name="Unlock">Unlock</string>
     <string name="unlock_web3_account_description">Your %1$s account is based on your Mixin Messenger MPC wallet and derived according to the BIP44 protocol.</string>
-    <string name="unlock_web3_account_agreement">It is recommended to transfer assets back to more secured Mixin wallet as soon as interactions with dApps are completed.</string>
+    <string name="unlock_web3_account_agreement">It is recommended to transfer assets back to more secured Mixin wallet as soon as interactions with apps are completed.</string>
     <string name="unlock_web3_account_agreement_1">Your assets in %1$s account and Mixin wallet are isolated but managed using the same PIN.</string>
     <string name="unlock_web3_account_agreement_2">Asset transfers between your %1$s account and Mixin wallet incur network fees.</string>
     <string name="unlock_web3_account_agreement_3">Unlocking your %1$s account will also automatically unlock EVM accounts such as %2$s, %3$s and others.</string>
@@ -1505,7 +1505,7 @@
     <string name="unlimited_authorization_warning">This application can access all %3$s in your %1$s account (%2$s).</string>
     <string name="withdraw_all_of_token_warning">This app can withdraw all your %1$s.</string>
     <string name="Unlocking">Unlocking</string>
-    <string name="decode_transaction_failed">Transaction decoding failed, making it impossible to estimate asset changes. Be cautious and only sign transactions for dApps you trust.</string>
+    <string name="decode_transaction_failed">Transaction decoding failed, making it impossible to estimate asset changes. Be cautious and only sign transactions for apps you trust.</string>
     <string name="web3_ensure_trust">Please ensure you trust this app before proceeding with the request.</string>
     <string name="web3_transaction_request">Transaction Request</string>
     <string name="web3_message_request">Message Request</string>
