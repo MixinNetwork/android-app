@@ -7,6 +7,9 @@ import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.DataBase.DB_NAME
+import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
+import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.extension.moveTo
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
@@ -17,7 +20,7 @@ suspend fun clearJobsAndRawTransaction(context: Context, identityNumber: String)
     withContext(Dispatchers.IO) {
         val dir = dbDir(context)
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-        val dbFile = File(dir, Constants.DataBase.DB_NAME)
+        val dbFile = File(dir, DB_NAME)
         if (!dbFile.exists()) {
             return@withContext
         }
@@ -56,7 +59,7 @@ fun migrationDbFile(context: Context) {
         return
     }
 
-    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    val dbFile = legacyDatabaseFile(context)
     if (!dbFile.exists() || dbFile.length() <= 0) {
         return
     }
@@ -65,41 +68,41 @@ fun migrationDbFile(context: Context) {
     checkpoint(dbFile)
     moveDbFile(dbFile, dir)
     dbFile.parent?.let {
-        checkpoint(File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}"))
-        checkpoint(File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}"))
+        checkpoint(File("$it${File.separator}${FTS_DB_NAME}"))
+        checkpoint(File("$it${File.separator}${PENDING_DB_NAME}"))
 
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm"), dir
+            File("$it${File.separator}${DB_NAME}-shm"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal"), dir
+            File("$it${File.separator}${DB_NAME}-wal"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal"), dir
+            File("$it${File.separator}${DB_NAME}-journal"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}"), dir
+            File("$it${File.separator}${FTS_DB_NAME}"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-shm"), dir
+            File("$it${File.separator}${FTS_DB_NAME}-shm"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-wal"), dir
+            File("$it${File.separator}${FTS_DB_NAME}-wal"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-journal"), dir
+            File("$it${File.separator}${FTS_DB_NAME}-journal"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}"), dir
+            File("$it${File.separator}${PENDING_DB_NAME}"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-shm"), dir
+            File("$it${File.separator}${PENDING_DB_NAME}-shm"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-wal"), dir
+            File("$it${File.separator}${PENDING_DB_NAME}-wal"), dir
         )
         moveDbFile(
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-journal"), dir
+            File("$it${File.separator}${PENDING_DB_NAME}-journal"), dir
         )
     }
 }
@@ -137,6 +140,14 @@ fun dbDir(context: Context): File {
 }
 
 fun legacyDatabaseExists(context: Context): Boolean {
-    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    val dbFile = legacyDatabaseFile(context)
     return dbFile.exists() && dbFile.length() > 0
+}
+
+fun legacyDatabaseFile(context: Context): File {
+    return context.getDatabasePath(DB_NAME)
+}
+
+fun databseFile(context: Context): File {
+    return File(dbDir(context), DB_NAME)
 }

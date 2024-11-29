@@ -171,6 +171,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.database.databseFile
 import one.mixin.android.util.database.legacyDatabaseExists
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -495,7 +496,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkNeedGo2MigrationPage(): Boolean {
         val currentVersion =
             try {
-                readVersion(getDatabasePath(DB_NAME))
+                readVersion(databseFile(this))
             } catch (e: Exception) {
                 0
             }
