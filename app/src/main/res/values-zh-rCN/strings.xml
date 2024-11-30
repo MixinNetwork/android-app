@@ -885,7 +885,7 @@
     <string name="Security">安全</string>
     <string name="Select">选择</string>
     <string name="Select_Emergency_Contact">选择恢复联系人</string>
-    <string name="Send">转出</string>
+    <string name="Send">发送</string>
     <string name="Sending">正在发送</string>
     <string name="Send_as_file">按文件发送</string>
     <string name="send_file_group">将 "%1$s" 发送给 "%2$s"？</string>
