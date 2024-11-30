@@ -102,7 +102,7 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
-    <string name="DAPPS">DAPPS</string>
+    <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
     <string name="Audios">Audios</string>
     <string name="auth_assets_more">%1$s and more</string>
@@ -1748,7 +1748,7 @@
     <string name="error_decrease_too_low">The decrease percentage must be at least -0.01%.</string>
     <string name="Alert_Not_Support">Not Support</string>
     <string name="All_Alert">All Alert</string>
-    <string name="Trending_Dapps">Trending Dapps</string>
+    <string name="Trending_Dapps">Trending Apps</string>
     <string name="Paste">Paste</string>
     <string name="or">or</string>
     <string name="Sign_in_with_Mnemonic_Phrase">Sign in with Mnemonic Phrase</string>
