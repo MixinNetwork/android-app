@@ -15,7 +15,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.supportDepositFromMixin
@@ -39,6 +41,7 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.InputFragment
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
 import org.web3j.crypto.WalletUtils
 
@@ -208,7 +211,9 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                     binding.addrVa.displayedChild = 1
                     binding.walletLl.isVisible = false
                 }
-                updateSaveButton()
+                lifecycleScope.launch {
+                    updateSaveButton()
+                }
             }
         }
 
@@ -216,7 +221,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         token.supportDepositFromMixin()
     }
 
-    private fun updateSaveButton() {
+    private suspend fun updateSaveButton() {
         if (binding.addrEt.text.isNotEmpty() && isValidAddress(binding.addrEt.text.toString())) {
             binding.continueTv.isEnabled = true
             binding.continueTv.textColor = requireContext().getColor(R.color.white)
@@ -226,12 +231,24 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
     }
 
-    private fun isValidAddress(address: String): Boolean {
+    private suspend fun isValidAddress(address: String): Boolean {
         return if (token.chainName.equals("solana", true)) {
-            try {
+            val onCurve = try {
                 PublicKey(address).isOnCurve()
             } catch (e: Exception) {
                 false
+            }
+            if (onCurve) {
+                return true
+            }
+            try {
+                val rpc = getSolanaRpc()
+                val acc = withContext(Dispatchers.IO) {
+                    rpc.getAccountInfo(PublicKey(address))
+                }
+                return acc != null
+            } catch (e: Exception) {
+                return false
             }
         } else {
             WalletUtils.isValidAddress(address)
