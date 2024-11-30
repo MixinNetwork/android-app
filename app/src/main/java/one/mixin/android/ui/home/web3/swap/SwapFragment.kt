@@ -588,6 +588,8 @@ class SwapFragment : BaseFragment() {
 
         isLoading = true
         errorInfo = null
+        quoteResp = null // Clear quote
+
         val resp = handleMixinResponse(
             switchContext = scope.coroutineContext,
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage.toString(), getSource()) },
@@ -609,6 +611,9 @@ class SwapFragment : BaseFragment() {
         )
 
         quoteResp = resp // Save null quote, not allowed to continue order
+        if (quoteResp == null && errorInfo == null) {
+            errorInfo = "" // Empty error, disable swap button
+        }
         resp ?: return
         updateExchangeRate(resp.inAmount, resp.outAmount)
         slippage = resp.slippage
