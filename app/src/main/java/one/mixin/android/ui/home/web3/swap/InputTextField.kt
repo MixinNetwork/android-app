@@ -25,6 +25,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,11 +33,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -183,11 +186,22 @@ private fun Left(
     selectClick: () -> Unit,
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
-        CoilImage(
-            model = token?.icon ?: "",
-            placeholder = R.drawable.ic_avatar_place_holder,
-            modifier = Modifier.size(32.dp).clip(CircleShape),
-        )
+        if (token?.collectionHash != null) {
+            CoilImage(
+                model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
+                placeholder = R.drawable.ic_inscription_icon,
+                modifier = Modifier
+                    .size(32.dp),
+            )
+        } else {
+            CoilImage(
+                model = token?.icon ?: "",
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape),
+            )
+        }
         Box(modifier = Modifier.width(10.dp))
         Text(
             text = token?.symbol ?: "",
