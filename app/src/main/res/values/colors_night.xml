@@ -72,4 +72,6 @@
     <color name="musicPlayPauseBgNight">#E6FFFFFF</color>
 
     <color name="highlight_night">#33FFFFFF</color>
+
+    <color name="badgeRedNight">#F67070</color>
 </resources>

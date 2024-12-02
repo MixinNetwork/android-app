@@ -800,8 +800,8 @@
     <string name="Read_your_snapshots">读取你的转账记录</string>
     <string name="Rebate">退款</string>
     <string name="Recaptcha_timeout">验证超时</string>
-    <string name="Receive">转入</string>
-    <string name="RECEIVE">转入</string>
+    <string name="Receive">充值</string>
+    <string name="RECEIVE">充值</string>
     <string name="Receive_Money">我的收款码</string>
     <string name="Receiver">至</string>
     <string name="Receivers">交易接收人</string>
@@ -1446,7 +1446,7 @@
     <string name="continue_with_pin">输入 PIN 继续</string>
     <string name="web3_account_network">%1$s 账户</string>
     <string name="web3_account">账户</string>
-    <string name="access_dapps_defi_projects">访问 dApps 或 DeFi 项目</string>
+    <string name="access_dapps_defi_projects">访问 apps 或 DeFi 项目</string>
     <string name="unlock_web3_account">解锁 %1$s 账户</string>
     <string name="Unlock">解锁</string>
     <string name="unlock_web3_account_description">您的 %1$s 账户基于 Mixin Messenger 的 MPC 钱包并根据 BIP44 协议派生而来。</string>
@@ -1531,7 +1531,7 @@
     <string name="web3_deposit">存款</string>
     <string name="web3_execute">执行</string>
     <string name="web3_mint">铸造</string>
-    <string name="web3_receive">接收</string>
+    <string name="web3_receive">充值</string>
     <string name="web3_repay">还款</string>
     <string name="web3_send">发送</string>
     <string name="web3_stake">质押</string>

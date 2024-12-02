@@ -93,6 +93,9 @@ object Constants {
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
+        const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
+        const val PREF_HAS_USED_MARKET = "pref_has_used_market" 
+
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
             const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"

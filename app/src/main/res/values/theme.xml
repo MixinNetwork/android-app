@@ -86,4 +86,5 @@
     <attr name="icon_chain" format="color|reference" />
     <attr name="bg_market_card" format="reference" />
     <attr name="ic_logo" format="reference" />
+    <attr name="badge_red" format="color|reference" />
 </resources>
