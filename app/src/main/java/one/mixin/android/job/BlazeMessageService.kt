@@ -144,6 +144,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var circleService: CircleService
 
     fun database(): MixinDatabase = databaseProvider.getMixinDatabase()
+
     fun pendingDatabase(): PendingDatabase = databaseProvider.getPendingDatabase()
     fun ftsDatabase(): FtsDatabase = databaseProvider.getFtsDatabase()
 
@@ -164,7 +165,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val hedwig: Hedwig by lazy {
-        HedwigImp(database(), pendingDatabase(), conversationService, circleService, jobManager, callState, lifecycleScope)
+        HedwigImp(databaseProvider, conversationService, circleService, jobManager, callState, lifecycleScope)
     }
 
     override fun onBind(intent: Intent): IBinder? {
