@@ -143,7 +143,7 @@ class ConversationJob(
                 }
                 participantDao().insertList(participants)
                 cr.participantSessions?.let {
-                    jobSenderKey.syncParticipantSession(cr.conversationId, it)
+                    jobSenderKey().syncParticipantSession(cr.conversationId, it)
                 }
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {

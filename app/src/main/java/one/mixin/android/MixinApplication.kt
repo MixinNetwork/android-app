@@ -32,6 +32,7 @@ import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.internal.managers.ApplicationComponentManager
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.CoroutineScope
@@ -117,11 +118,6 @@ open class MixinApplication :
         fun getHiltWorkerFactory(): HiltWorkerFactory
     }
 
-    @InstallIn(SingletonComponent::class)
-    @EntryPoint
-    interface AppEntryPoint {
-        fun inject(app: MixinApplication)
-    }
 
     @Inject
     lateinit var databaseProvider: DatabaseProvider
@@ -280,27 +276,11 @@ open class MixinApplication :
             applicationScope.launch {
                 clearData(sessionId)
                 withContext(Dispatchers.Main) {
-                    val entryPoint =
-                        EntryPointAccessors.fromApplication(
-                            this@MixinApplication,
-                            AppEntryPoint::class.java,
-                        )
-                    entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)
                 }
             }
         }
-        reject()
-    }
-
-    fun reject() {
         databaseProvider.closeAllDatabases()
-        val entryPoint =
-            EntryPointAccessors.fromApplication(
-                this@MixinApplication,
-                AppEntryPoint::class.java,
-            )
-        entryPoint.inject(this@MixinApplication)
     }
 
     private fun clearData(sessionId: String?) {

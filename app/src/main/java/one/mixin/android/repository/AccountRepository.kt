@@ -56,7 +56,6 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class AccountRepository
     @Inject
     constructor(

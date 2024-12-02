@@ -55,7 +55,7 @@ class RefreshConversationJob(val conversationId: String, private val skipRefresh
 
                 participantDao().replaceAll(data.conversationId, participants)
                 data.participantSessions?.let {
-                    jobSenderKey.syncParticipantSession(conversationId, it)
+                    jobSenderKey().syncParticipantSession(conversationId, it)
                 }
 
                 if (conversationUserIds.isNotEmpty()) {

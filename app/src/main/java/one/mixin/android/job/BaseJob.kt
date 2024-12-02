@@ -186,9 +186,17 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     lateinit var applicationScope: CoroutineScope
 
-    @Transient
-    @Inject
-    lateinit var jobSenderKey: JobSenderKey
+    fun jobSenderKey(): JobSenderKey {
+        return JobSenderKey(
+            participantSessionDao(),
+            signalProtocol,
+            conversationApi,
+            participantDao(),
+            chatWebSocket,
+            linkState,
+            messageHistoryDao(),
+        )
+    }
 
     fun database(): MixinDatabase = databaseProvider.getMixinDatabase()
 

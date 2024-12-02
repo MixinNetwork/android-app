@@ -76,7 +76,6 @@ import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class ConversationRepository
     @Inject
     internal constructor(

@@ -49,9 +49,10 @@ class AccountFragment : BaseFragment(R.layout.fragment_account) {
                 //     BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
                 //         .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
                 // } else {
-                    LogoutPinBottomSheetDialogFragment.newInstance()
-                        .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+                //     LogoutPinBottomSheetDialogFragment.newInstance()
+                //         .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
                 // }
+                MixinApplication.get().closeAndClear()
             }
             deleteRl.setOnClickListener {
                 navTo(DeleteAccountFragment.newInstance(), DeleteAccountFragment.TAG)

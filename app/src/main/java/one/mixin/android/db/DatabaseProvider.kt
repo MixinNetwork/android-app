@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import android.content.Context
+import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
@@ -44,6 +45,7 @@ class DatabaseProvider @Inject constructor(
 
         pendingDatabase?.close()
         pendingDatabase = PendingDatabaseImp.getDatabase(context, db.floodMessageDao(), db.jobDao())
+
     }
 
     @Synchronized

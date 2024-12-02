@@ -128,7 +128,6 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class TokenRepository
     @Inject
     constructor(

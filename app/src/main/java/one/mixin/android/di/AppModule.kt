@@ -666,26 +666,6 @@ object AppModule {
             isLenient = true
         }
 
-    @Provides
-    @Singleton
-    fun provideJobSenderKey(
-        participantSessionDao: ParticipantSessionDao,
-        signalProtocol: SignalProtocol,
-        conversationApi: ConversationService,
-        participantDao: ParticipantDao,
-        chatWebSocket: ChatWebSocket,
-        linkState: LinkState,
-        messageHistoryDao: MessageHistoryDao,
-    ) = JobSenderKey(
-        participantSessionDao,
-        signalProtocol,
-        conversationApi,
-        participantDao,
-        chatWebSocket,
-        linkState,
-        messageHistoryDao,
-    )
-
     private const val DATA_STORE_FILE_NAME = "safe_box_%s.store"
 
     @Singleton
