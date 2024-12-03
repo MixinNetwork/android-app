@@ -20,6 +20,7 @@ data class SwapToken(
     @SerializedName("chain") val chain: SwapChain,
     var price: String? = null,
     var balance: String? = null,
+    var collectionHash: String? = null,
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =

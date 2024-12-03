@@ -1585,7 +1585,6 @@
     <string name="swap_failed">交易失败</string>
     <string name="swap_inner_desc">该签名请求来自 Mixin Messenger。</string>
     <string name="swap_message_success">您的交易已发送至网络，将很快被处理。</string>
-    <string name="swap_not_supported">不支持 %1$s 交易。</string>
     <string name="Price_data_unavailable">暂无价格数据</string>
     <string name="Balance">余额</string>
     <string name="Market">行情</string>
@@ -1761,7 +1760,7 @@
     <string name="check_mnemonic_phrase">检查您的助记词</string>
     <string name="check_mnemonic_phrase_desc">按照呈现给您的顺序输入每个单词。</string>
     <string name="write_down_mnemonic_phrase_desc">把它写在一张纸上并放在安全的地方。</string>
-    <string name="mnemonic_phrase_tip_1">·存放在金库或安全地方</string>
+    <string name="mnemonic_phrase_tip_1">·存放在保险箱或安全的地方</string>
     <string name="mnemonic_phrase_tip_2">·不要在网络上发送</string>
     <string name="mnemonic_phrase_take_long">这应该不会花太长时间。</string>
     <string name="Backup_Now">开始备份</string>
