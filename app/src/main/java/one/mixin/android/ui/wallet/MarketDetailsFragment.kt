@@ -116,7 +116,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } ?: emptyList()
                     }
                     if (nowTokens.isEmpty()) {
-                        toast(R.string.Data_error)
+                        toast(getString(R.string.swap_not_supported, marketItem.name))
                         return@launch
                     }
                     val assets = walletViewModel.allAssetItems()
