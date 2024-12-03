@@ -1585,6 +1585,7 @@
     <string name="swap_failed">交易失败</string>
     <string name="swap_inner_desc">该签名请求来自 Mixin Messenger。</string>
     <string name="swap_message_success">您的交易已发送至网络，将很快被处理。</string>
+    <string name="swap_not_supported">不支持 %1$s 交易</string>
     <string name="Price_data_unavailable">暂无价格数据</string>
     <string name="Balance">余额</string>
     <string name="Market">行情</string>
