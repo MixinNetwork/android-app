@@ -44,9 +44,9 @@ internal constructor(
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun upsertUser(u: User) =
+    fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
-            userRepository.upsert(u)
+            accountRepository.insertUserSuspend(user)
         }
 
     suspend fun create(
@@ -84,11 +84,6 @@ internal constructor(
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun insertUser(user: User) =
-        viewModelScope.launch(Dispatchers.IO) {
-            userRepository.upsert(user)
-        }
 
     fun updatePhone(
         id: String,

@@ -304,7 +304,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
                 when {
                     account.fullName.isNullOrBlank() -> {
-                        mobileViewModel.upsertUser(account.toUser())
+                        mobileViewModel.insertUser(account.toUser())
                         InitializeActivity.showSetupName(requireContext())
                     }
 
