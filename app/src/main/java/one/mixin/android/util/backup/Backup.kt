@@ -23,6 +23,7 @@ import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
+import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.database.dbDir
 import timber.log.Timber
 import java.io.File
@@ -37,7 +38,7 @@ suspend fun backup(
     context: Context,
     callback: (Result) -> Unit,
 ) = coroutineScope {
-    val dbFile = context.getDatabasePath(DB_NAME) ?: dbDir(context)
+    val dbFile = databaseFile(context)
     if (dbFile == null) {
         withContext(Dispatchers.Main) {
             Timber.e("No database files found")
@@ -194,8 +195,8 @@ suspend fun backupApi29(
             }
             return@withContext
         }
-        val dbFile = context.getDatabasePath(DB_NAME) ?: dbDir(context)
-        if (dbFile == null) {
+        val dbFile = databaseFile(context)
+        if (!dbFile.exists() && dbFile.length() <= 0) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)
@@ -203,6 +204,9 @@ suspend fun backupApi29(
             return@withContext
         }
         val tmpFile = File(context.getMediaPath(), DB_NAME)
+        if (tmpFile.parentFile?.exists() != true) {
+            tmpFile.parentFile?.mkdirs()
+        }
         try {
             val inputStream = dbFile.inputStream()
             MixinDatabase.checkPoint()
@@ -260,10 +264,7 @@ suspend fun restore(
     val target =
         internalFindBackup(context, coroutineContext)
             ?: return@withContext callback(Result.NOT_FOUND)
-    var file = context.getDatabasePath(DB_NAME)
-    if (!file.exists()){
-        file = dbDir(context)
-    }
+    var file =  dbDir(context)
     try {
         if (file.exists()) {
             file.delete()
@@ -313,7 +314,7 @@ suspend fun restoreApi29(
         }
         return@withContext
     }
-    val file = dbDir(context) ?: return@withContext
+    val file = databaseFile(context)
     try {
         val inputStream = context.contentResolver.openInputStream(backupDb.uri)
         if (inputStream == null) {
@@ -411,7 +412,7 @@ suspend fun findBackupApi29(
             return@withContext null
         }
         val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
-        val dbFile = backupChildDirectory?.findFile("mixin.db")
+        val dbFile = backupChildDirectory?.findFile(DB_NAME)
         if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0 || dbFile == null || !dbFile.exists() || dbFile.length() <= 0) {
             return@withContext null
         }
