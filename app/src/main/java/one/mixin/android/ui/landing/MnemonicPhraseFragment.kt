@@ -170,8 +170,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                if (!r.data?.deactivatedAt.isNullOrBlank() && !words.isNullOrEmpty()) {
-                    LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && !words.isNullOrEmpty()) {
+                    LandingDeleteAccountFragment.newInstance(r.data?.deactivationEffectiveAt)
                         .setContinueCallback {
                             createAccount(sessionKey, edKey, r.data!!.id)
                         }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
@@ -234,8 +234,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                if (!r.data?.deactivatedAt.isNullOrBlank() && !words.isNullOrEmpty()) {
-                    LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && !words.isNullOrEmpty()) {
+                    LandingDeleteAccountFragment.newInstance(r.data?.deactivationEffectiveAt)
                         .setContinueCallback {
                             createAccount(sessionKey, edKey, r.data!!.id)
                         }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
