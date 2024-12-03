@@ -242,7 +242,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     fun topAssetDao(): TopAssetDao = database().topAssetDao()
 
-    fun jobDao(): JobDao = database().jobDao()
+    fun jobDao(): JobDao = pendingDatabase().jobDao()
 
     fun favoriteAppDao(): FavoriteAppDao = database().favoriteAppDao()
 

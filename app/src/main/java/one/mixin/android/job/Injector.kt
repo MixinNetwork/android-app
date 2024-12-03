@@ -103,7 +103,7 @@ open class Injector {
     fun messageHistoryDao(): MessageHistoryDao = databaseProvider.getMixinDatabase().messageHistoryDao()
     fun userDao(): UserDao = databaseProvider.getMixinDatabase().userDao()
     fun appDao(): AppDao = databaseProvider.getMixinDatabase().appDao()
-    fun jobDao(): JobDao = databaseProvider.getMixinDatabase().jobDao()
+    fun jobDao(): JobDao = databaseProvider.getPendingDatabase().jobDao()
     fun conversationDao(): ConversationDao = databaseProvider.getMixinDatabase().conversationDao()
     fun conversationExtDao(): ConversationExtDao = databaseProvider.getMixinDatabase().conversationExtDao()
     fun participantDao(): ParticipantDao = databaseProvider.getMixinDatabase().participantDao()
