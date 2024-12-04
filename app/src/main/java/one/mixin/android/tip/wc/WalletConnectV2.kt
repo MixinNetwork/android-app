@@ -4,12 +4,12 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
-import com.walletconnect.android.Core
-import com.walletconnect.android.CoreClient
-import com.walletconnect.android.internal.common.exception.GenericException
-import com.walletconnect.android.relay.ConnectionType
-import com.walletconnect.web3.wallet.client.Wallet
-import com.walletconnect.web3.wallet.client.Web3Wallet
+import com.reown.android.Core
+import com.reown.android.CoreClient
+import com.reown.android.internal.common.exception.GenericException
+import com.reown.android.relay.ConnectionType
+import com.reown.walletkit.client.Wallet
+import com.reown.walletkit.client.WalletKit
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -85,34 +85,22 @@ object WalletConnectV2 : WalletConnect() {
             },
         )
         val initParams = Wallet.Params.Init(core = CoreClient)
-        Web3Wallet.initialize(initParams) { error ->
+        WalletKit.initialize(initParams) { error ->
             Timber.d("$TAG Web3Wallet init error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
 
         val coreDelegate =
             object : CoreClient.CoreDelegate {
-                override fun onPairingDelete(deletedPairing: Core.Model.DeletedPairing) {
-                    Timber.d("$TAG onPairingDelete $deletedPairing")
-                }
-
-                override fun onPairingExpired(expiredPairing: Core.Model.ExpiredPairing) {
-                    Timber.d("$TAG onPairingExpired $expiredPairing")
-                }
-
                 override fun onPairingState(pairingState: Core.Model.PairingState) {
                     Timber.d("$TAG onPairingState $pairingState")
                 }
             }
 
         val walletDelegate =
-            object : Web3Wallet.WalletDelegate {
-                override fun onAuthRequest(
-                    authRequest: Wallet.Model.AuthRequest,
-                    verifyContext: Wallet.Model.VerifyContext,
-                ) {
-                    Timber.d("$TAG onAuthRequest $authRequest")
-                }
+            object : WalletKit.WalletDelegate {
+                override val onSessionAuthenticate: ((Wallet.Model.SessionAuthenticate, Wallet.Model.VerifyContext) -> Unit)?
+                    get() = super.onSessionAuthenticate
 
                 override fun onConnectionStateChange(state: Wallet.Model.ConnectionState) {
                     Timber.d("$TAG onConnectionStateChange $state")
@@ -219,14 +207,14 @@ object WalletConnectV2 : WalletConnect() {
             }
 
         CoreClient.setDelegate(coreDelegate)
-        Web3Wallet.setWalletDelegate(walletDelegate)
+        WalletKit.setWalletDelegate(walletDelegate)
     }
 
     fun pair(uri: String) {
         RxBus.publish(WCEvent.V2(Version.V2, RequestType.Connect, ""))
 
         val pairParams = Wallet.Params.Pair(uri)
-        Web3Wallet.pair(pairParams, {
+        WalletKit.pair(pairParams, {
             Timber.d("$TAG pair success")
         }) { error ->
             Timber.d("$TAG pair $uri, error: $error")
@@ -290,7 +278,7 @@ object WalletConnectV2 : WalletConnect() {
 
         val supportedNamespaces = getSupportedNamespaces(chain, address)
         Timber.e("$TAG supportedNamespaces $supportedNamespaces")
-        val sessionNamespaces = Web3Wallet.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
+        val sessionNamespaces = WalletKit.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
         Timber.d("$TAG approveSession $sessionNamespaces")
         val approveParams: Wallet.Params.SessionApprove =
             Wallet.Params.SessionApprove(
@@ -300,7 +288,7 @@ object WalletConnectV2 : WalletConnect() {
 
         waitActionCheckError { latch ->
             var errMsg: String? = null
-            Web3Wallet.approveSession(approveParams, onSuccess = {
+            WalletKit.approveSession(approveParams, onSuccess = {
                 latch.countDown()
             }, onError = { error ->
                 errMsg = "$TAG approveSession error: $error"
@@ -326,7 +314,7 @@ object WalletConnectV2 : WalletConnect() {
                 sessionProposal.proposerPublicKey,
                 "Reject session",
             )
-        Web3Wallet.rejectSession(rejectParams) { error ->
+        WalletKit.rejectSession(rejectParams) { error ->
             Timber.d("$TAG rejectSession error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
@@ -476,7 +464,7 @@ object WalletConnectV2 : WalletConnect() {
                         message = message ?: "Mixin Wallet Error",
                     ),
             )
-        Web3Wallet.respondSessionRequest(result) { error ->
+        WalletKit.respondSessionRequest(result) { error ->
             Timber.d("$TAG rejectSessionRequest error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
@@ -484,7 +472,7 @@ object WalletConnectV2 : WalletConnect() {
 
     fun getListOfActiveSessions(): List<Wallet.Model.Session> {
         return try {
-            Web3Wallet.getListOfActiveSessions()
+            WalletKit.getListOfActiveSessions()
         } catch (e: IllegalStateException) {
             Timber.d("$TAG getListOfActiveSessions ${e.stackTraceToString()}")
             emptyList()
@@ -494,7 +482,7 @@ object WalletConnectV2 : WalletConnect() {
     fun getSessionProposal(topic: String): Wallet.Model.SessionProposal? {
         Timber.d("$TAG getSessionProposal topic: $topic")
         return try {
-            Web3Wallet.getSessionProposals().find { sp ->
+            WalletKit.getSessionProposals().find { sp ->
                 sp.pairingTopic == topic
             }
         } catch (e: IllegalStateException) {
@@ -505,7 +493,7 @@ object WalletConnectV2 : WalletConnect() {
 
     fun getSessionRequest(topic: String): Wallet.Model.SessionRequest? {
         return try {
-            Web3Wallet.getPendingListOfSessionRequests(topic).firstOrNull()
+            WalletKit.getPendingListOfSessionRequests(topic).firstOrNull()
         } catch (e: IllegalStateException) {
             Timber.d("$TAG getSessionRequest ${e.stackTraceToString()}")
             null
@@ -513,7 +501,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun disconnect(topic: String) {
-        Web3Wallet.disconnectSession(
+        WalletKit.disconnectSession(
             Wallet.Params.SessionDisconnect(topic),
             onSuccess = {
                 Timber.d("$TAG disconnect success")
@@ -541,7 +529,7 @@ object WalletConnectV2 : WalletConnect() {
 
         waitActionCheckError { latch ->
             var errMsg: String? = null
-            Web3Wallet.respondSessionRequest(response, {
+            WalletKit.respondSessionRequest(response, {
                 latch.countDown()
             }) { error ->
                 errMsg = "$TAG approveSessionRequest error: $error"

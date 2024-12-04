@@ -116,7 +116,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } ?: emptyList()
                     }
                     if (nowTokens.isEmpty()) {
-                        toast(R.string.Data_error)
+                        toast(getString(R.string.swap_not_supported, marketItem.name))
                         return@launch
                     }
                     val assets = walletViewModel.allAssetItems()
@@ -211,10 +211,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
 
             if (marketItem.coinId.isBlank()) {
-                rank.isVisible = false
                 assetRank.isVisible = false
                 titleView.rightExtraIb.isVisible = false
             }
+            assetSymbol.text = marketItem.symbol
             assetName.text = marketItem.name
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
@@ -297,11 +297,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             if (info != null) {
                 loadBalance(info)
                 binding.apply {
-                    rank.isVisible = true
                     assetRank.isVisible = true
                     titleView.rightExtraIb.isVisible = true
+                    assetSymbol.text = info.symbol
                     assetName.text = info.name
-                    rank.text = "#${info.marketCapRank}"
                     assetRank.text = "#${info.marketCapRank}"
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice

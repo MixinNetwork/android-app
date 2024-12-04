@@ -300,7 +300,7 @@ class EthereumFragment : Web3Fragment() {
         err: String,
     ) {
         binding.apply {
-            if (adapter.account != null) return
+            if (adapter.account != null || !adapter.isEmpty()) return
             empty.isVisible = true
             titleTv.text = err
             receiveTv.setText(R.string.Retry)

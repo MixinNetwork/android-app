@@ -34,12 +34,12 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
+import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
@@ -370,10 +370,23 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 sendBottomSheet.show(asset)
             }
             sendReceiveView.receive.setOnClickListener {
-                sendReceiveView.navigate(
-                    R.id.action_transactions_to_deposit,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                )
+                if (!Session.saltExported() && !Session.hasPhone()) {
+                    BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                        .apply {
+                            laterCallback = {
+                                sendReceiveView.navigate(
+                                    R.id.action_transactions_to_deposit,
+                                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                                )
+                            }
+                        }
+                        .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                } else {
+                    sendReceiveView.navigate(
+                        R.id.action_transactions_to_deposit,
+                        Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                    )
+                }
             }
             marketView.setContent {
                 Market(asset.assetId)

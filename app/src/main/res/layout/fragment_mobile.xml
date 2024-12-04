@@ -9,24 +9,15 @@
     android:focusable="true"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/back_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin12"
-        android:background="@drawable/mixin_ripple"
-        android:contentDescription="@string/Landing_back"
-        android:padding="@dimen/margin12"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.023"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_arrow_back" />
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/back_iv"
+        android:layout_below="@id/title_view"
         android:orientation="vertical">
 
         <TextSwitcher
@@ -105,48 +96,118 @@
             app:layout_constraintTop_toBottomOf="@+id/title_switcher" />
 
         <TextView
-            android:id="@+id/enter_tip"
-            android:layout_width="wrap_content"
+            android:id="@+id/introduction_tv"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="20dp"
-            android:layout_marginEnd="16dp"
-            android:text="@string/landing_enter_mobile_tip"
+            android:layout_marginEnd="32dp"
+            android:text="@string/landing_introduction"
             android:textColor="@color/colorGray"
             android:textSize="12sp"
+            android:gravity="start"
             app:layout_constraintHorizontal_bias="0.206"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <one.mixin.android.widget.fabprogresscircle.FABProgressCircle
-        android:id="@+id/mobile_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/keyboard"
-        android:layout_alignParentEnd="true"
-        android:visibility="invisible"
-        app:arcColor="@android:color/holo_blue_dark"
-        app:layout_constraintBottom_toTopOf="@+id/keyboard"
-        app:layout_constraintEnd_toEndOf="parent">
+        <ViewAnimator
+            style="@style/AppTheme.MaterialButton"
+            android:id="@+id/continue_bn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/Continue"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginTop="44dp"
+            android:textSize="14sp"
+            android:enabled="false"
+            app:layout_constraintTop_toBottomOf="@id/introduction_tv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" >
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/continue_tv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/Continue"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.WhiteAccent" />
+        </ViewAnimator>
+
+        <LinearLayout
+            android:id="@+id/or_ll"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue"
-            android:contentDescription="@string/Next" />
-    </one.mixin.android.widget.fabprogresscircle.FABProgressCircle>
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/continue_bn">
 
-    <TextView
-        android:id="@+id/version"
-        android:layout_above="@+id/keyboard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:textColor="?attr/text_remarks"
-        android:layout_marginBottom="20dp" />
+            <View
+                android:layout_weight="1"
+                android:background="?attr/text_remarks"
+                android:layout_width="0dp"
+                android:layout_height="1dp" />
+
+            <TextView
+                android:text="@string/or"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/text_remarks"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <View
+                android:layout_weight="1"
+                android:background="?attr/text_remarks"
+                android:layout_width="0dp"
+                android:layout_height="1dp" />
+
+        </LinearLayout>
+
+        <Button
+            style="@style/AppTheme.MaterialOutlineButton"
+            android:id="@+id/mnemonic_phrase"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/Sign_in_with_Mnemonic_Phrase"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginTop="20dp"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/or_ll"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            style="@style/AppTheme.MaterialWindowButton"
+            android:id="@+id/no_account"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/sign_in_no_account"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="36dp"
+            android:textSize="14sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

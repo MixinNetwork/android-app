@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -28,6 +29,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
@@ -37,6 +39,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
@@ -53,6 +56,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -81,6 +85,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     private val viewModel by viewModels<MobileViewModel>()
+
+    @Inject
+    lateinit var tip: Tip
 
     private var mCountDownTimer: CountDownTimer? = null
 
@@ -191,7 +198,14 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             showLoading()
             handleMixinResponse(
                 invokeNetwork = {
-                    viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
+                    if (pin != null) {
+                        val seed = tip.getOrRecoverTipPriv(requireContext(), pin!!).getOrThrow()
+                        tip.checkSalt(requireContext(), pin!!, seed)
+                        val saltBase64 = tip.getEncryptSalt(requireContext(), pin!!, seed, force = true)
+                        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!, saltBase64)
+                    } else {
+                        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
+                    }
                 },
                 successBlock = {
                     withContext(Dispatchers.IO) {
@@ -201,6 +215,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                                 requireArguments().getString(ARGS_PHONE_NUM)
                                     ?: return@withContext
                             viewModel.updatePhone(a.userId, phone)
+                            removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             a.phone = phone
                             Session.storeAccount(a)
                         }
@@ -239,9 +254,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             val accountRequest =
                 AccountRequest(
                     binding.pinVerificationView.code(),
-                    registration_id = registrationId,
+                    registrationId = registrationId,
                     purpose = VerificationPurpose.SESSION.name,
-                    session_secret = sessionSecret,
+                    sessionSecret = sessionSecret,
                 )
 
             handleMixinResponse(

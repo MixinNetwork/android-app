@@ -57,7 +57,9 @@ suspend fun clearDatabase(context: Context) =
                 File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
                 File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
             }
-            dbFile.delete()
+            do {
+                dbFile.delete()
+            } while (dbFile.exists())
         } catch (e: Exception) {
             Timber.e(e)
         }

@@ -132,7 +132,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoAnim"
-            android:windowSoftInputMode="stateAlwaysHidden" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.landing.InitializeActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -496,9 +496,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAP_KEY}" />
-        <meta-data
-            android:name="google_analytics_adid_collection_enabled"
-            android:value="false" />
 <!--        <meta-data-->
 <!--            android:name="com.google.android.gms.car.application"-->
 <!--            android:resource="@xml/automotive_app_desc" />-->

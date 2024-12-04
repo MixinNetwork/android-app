@@ -87,8 +87,8 @@
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
--keep public class com.walletconnect.android.** { *; }
--keep public class com.walletconnect.web3.** { *; }
+-keep public class com.reown.android.** { *; }
+-keep public class com.reown.walletkit.** { *; }
 
 -dontwarn groovy.lang.GroovyShell
 

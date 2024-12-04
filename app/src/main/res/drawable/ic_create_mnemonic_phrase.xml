@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+  <path
+      android:pathData="M4,5C4,2.791 5.791,1 8,1H18.379C19.419,1 20.417,1.405 21.164,2.128L26.784,7.578C27.561,8.331 28,9.367 28,10.45V27C28,29.209 26.209,31 24,31H8C5.791,31 4,29.209 4,27V5Z"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M27,10H22C20.343,10 19,8.657 19,7V1"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M24,13L17,13A1,1 0,0 0,16 14L16,14A1,1 0,0 0,17 15L24,15A1,1 0,0 0,25 14L25,14A1,1 0,0 0,24 13z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M12,21L8,21A1,1 0,0 0,7 22L7,22A1,1 0,0 0,8 23L12,23A1,1 0,0 0,13 22L13,22A1,1 0,0 0,12 21z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M24,21L15,21A1,1 0,0 0,14 22L14,22A1,1 0,0 0,15 23L24,23A1,1 0,0 0,25 22L25,22A1,1 0,0 0,24 21z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M17,25L8,25A1,1 0,0 0,7 26L7,26A1,1 0,0 0,8 27L17,27A1,1 0,0 0,18 26L18,26A1,1 0,0 0,17 25z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M24,25L20,25A1,1 0,0 0,19 26L19,26A1,1 0,0 0,20 27L24,27A1,1 0,0 0,25 26L25,26A1,1 0,0 0,24 25z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M24,17L20,17A1,1 0,0 0,19 18L19,18A1,1 0,0 0,20 19L24,19A1,1 0,0 0,25 18L25,18A1,1 0,0 0,24 17z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M14,13L8,13A1,1 0,0 0,7 14L7,14A1,1 0,0 0,8 15L14,15A1,1 0,0 0,15 14L15,14A1,1 0,0 0,14 13z"
+      android:fillColor="?attr/badger_mute"/>
+  <path
+      android:pathData="M17,17L8,17A1,1 0,0 0,7 18L7,18A1,1 0,0 0,8 19L17,19A1,1 0,0 0,18 18L18,18A1,1 0,0 0,17 17z"
+      android:fillColor="?attr/badger_mute"/>
+</vector>

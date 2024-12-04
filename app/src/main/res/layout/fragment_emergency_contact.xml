@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -37,7 +37,7 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="36dp"
                     android:layout_marginBottom="20dp"
-                    android:src="?attr/icon_emergency" />
+                    android:src="@drawable/ic_emergency" />
 
                 <TextView
                     android:id="@+id/tip_tv"
@@ -58,8 +58,9 @@
                 android:id="@+id/enable_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
 
                 <TextView
                     android:id="@+id/enable_tv"
@@ -78,8 +79,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:layout_marginBottom="24dp"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground"
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:visibility="gone">
 
                 <TextView
@@ -109,8 +111,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:layout_marginBottom="24dp"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground"
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:visibility="gone">
 
                 <TextView
@@ -128,8 +131,9 @@
                 android:id="@+id/delete_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground"
+                android:background="@drawable/ripple_round_window"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:visibility="gone">
 
                 <TextView

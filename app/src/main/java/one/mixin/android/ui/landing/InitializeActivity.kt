@@ -20,11 +20,13 @@ class InitializeActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val setName = intent.getBooleanExtra(SET_NAME, false)
+        val setPin = intent.getBooleanExtra(SET_PIN, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
         val oldVersion = intent.getBooleanExtra(OLD_VERSION, false)
         val dbUpgrade = intent.getBooleanExtra(DB_UPGRADE, false)
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
+            setPin -> replaceFragment(SetupPinFragment.newInstance(), R.id.container)
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
             oldVersion -> replaceFragment(OldVersionFragment.newInstance(), R.id.container)
             dbUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_DB), R.id.container)
@@ -42,6 +44,7 @@ class InitializeActivity : BaseActivity() {
 
     companion object {
         const val SET_NAME = "set_name"
+        const val SET_PIN = "set_pin"
         const val WRONG_TIME = "wrong_time"
         const val OLD_VERSION = "old_version"
         const val DB_UPGRADE = "db_upgrade"
@@ -49,12 +52,14 @@ class InitializeActivity : BaseActivity() {
         private fun getIntent(
             context: Context,
             setName: Boolean = false,
+            setPin: Boolean = false,
             wrongTime: Boolean = false,
             oldVersion: Boolean = false,
             dbUpgrade: Boolean = false,
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
+                this.putExtra(SET_PIN, setPin)
                 this.putExtra(WRONG_TIME, wrongTime)
                 this.putExtra(OLD_VERSION, oldVersion)
                 this.putExtra(DB_UPGRADE, dbUpgrade)
@@ -103,6 +108,10 @@ class InitializeActivity : BaseActivity() {
 
         fun showSetupName(context: Context) {
             context.startActivity(getIntent(context, setName = true))
+        }
+
+        fun showSetupPin(context: Context) {
+            context.startActivity(getIntent(context, setPin = true))
         }
 
         fun showDBUpgrade(context: Context) {

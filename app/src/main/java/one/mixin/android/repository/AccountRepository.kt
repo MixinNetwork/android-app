@@ -23,6 +23,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
@@ -81,6 +82,9 @@ class AccountRepository
             accountService.verificationObserver(request)
 
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
+            accountService.verification(request)
+
+        suspend fun verification(request: AccountRequest): MixinResponse<VerificationResponse> =
             accountService.verification(request)
 
         suspend fun create(
@@ -161,8 +165,6 @@ class AccountRepository
 
         fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 
-        suspend fun updatePinSuspend(request: PinRequest) = accountService.updatePinSuspend(request)
-
         suspend fun verifyPin(code: String): MixinResponse<Account> =
             withContext(Dispatchers.IO) {
                 val timestamp = nowInUtcNano()
@@ -185,6 +187,17 @@ class AccountRepository
                     ),
                 )
             }
+
+        suspend fun deactivate(
+            request: DeactivateRequest
+        ): MixinResponse<Account> =
+            withContext(Dispatchers.IO) {
+                accountService.deactivate(request)
+            }
+
+        suspend fun saltExport(
+            exportRequest: ExportRequest
+        ): MixinResponse<Account> = accountService.saltExport(exportRequest)
 
         suspend fun authorize(
             authorizationId: String,

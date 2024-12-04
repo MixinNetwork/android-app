@@ -14,9 +14,11 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentCheckRegisterBottomSheetBinding
 import one.mixin.android.event.TipEvent
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
@@ -168,19 +170,21 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             }
 
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
-            val spendSeed = tip.getSpendPriv(salt, seed)
-            val keyPair = newKeyPairFromSeed(spendSeed)
-            val pkHex = keyPair.publicKey.toHex()
+            val spendSeed = tip.getSpendPriv(requireContext(), seed)
+            val saltBase64 = tip.getEncryptSalt(requireContext(), pin, seed)
+            val spendKeyPair = newKeyPairFromSeed(spendSeed)
+            val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
             val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val resp =
                 bottomViewModel.registerPublicKey(
                     registerRequest =
                         RegisterRequest(
-                            publicKey = pkHex,
+                            publicKey = spendKeyPair.publicKey.toHex(),
                             signature = Session.getRegisterSignature(selfId, spendSeed),
-                            pin = bottomViewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                            pin = bottomViewModel.getEncryptedTipBody(selfId, spendKeyPair.publicKey.toHex(), pin),
                             salt = saltBase64,
+                            saltPublicHex = edKey.publicKey.hexString(),
+                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfId.toByteArray()).hexString()
                         ),
                 )
             if (resp.isSuccess) {

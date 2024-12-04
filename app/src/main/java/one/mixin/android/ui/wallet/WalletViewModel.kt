@@ -23,8 +23,11 @@ import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.crypto.PinCipher
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -34,6 +37,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -62,6 +66,7 @@ class WalletViewModel
         private val tokenRepository: TokenRepository,
         private val assetRepository: AssetRepository,
         private val jobManager: MixinJobManager,
+        private val pinCipher: PinCipher,
     ) : ViewModel() {
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
@@ -407,4 +412,12 @@ class WalletViewModel
         coinId: String, endBlock: () -> Unit, failureBlock: (suspend (MixinResponse<Market>) -> Boolean),
         exceptionBlock: (suspend (t: Throwable) -> Boolean)
     ) = tokenRepository.refreshMarket(coinId, endBlock, failureBlock, exceptionBlock)
+
+    suspend fun saltExport(exportRequest: ExportRequest) = accountRepository.saltExport(exportRequest)
+
+    suspend fun getEncryptedTipBody(
+        userId: String,
+        pin: String,
+    ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
+
 }

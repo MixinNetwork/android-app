@@ -15,7 +15,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.supportDepositFromMixin
@@ -34,11 +36,13 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.InputFragment
+import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
 import org.web3j.crypto.WalletUtils
 
@@ -228,8 +232,12 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
 
     private fun isValidAddress(address: String): Boolean {
         return if (token.chainName.equals("solana", true)) {
-            try {
-                PublicKey(address).isOnCurve()
+            // https://github.com/solana-labs/solana-web3.js/blob/afe5602674b2eb8f5e780097d98e1d60ec63606b/packages/addresses/src/address.ts#L36
+            if (address.length < 32 || address.length > 44) {
+                return false
+            }
+            return try {
+                address.decodeBase58().size == 32
             } catch (e: Exception) {
                 false
             }

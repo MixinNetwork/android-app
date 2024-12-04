@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
+import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.TEAM_BOT_ID
 import one.mixin.android.Constants.TEAM_BOT_NAME
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
@@ -28,6 +29,7 @@ import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.InitializeJob
@@ -36,6 +38,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.tip.TipBundle
+import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.reportException
@@ -103,8 +109,14 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
             if (Session.hasSafe()) {
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
+                MainActivity.show(requireContext())
+            } else {
+                var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+                if (deviceId == null) {
+                    deviceId = requireActivity().getStringDeviceId()
+                }
+                TipActivity.show(requireActivity(), TipBundle(TipType.Create, deviceId, TryConnecting, null))
             }
-            MainActivity.show(requireContext())
             activity?.finish()
         }
 

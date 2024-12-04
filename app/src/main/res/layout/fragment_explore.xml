@@ -89,8 +89,8 @@
                 android:button="@null"
                 android:checked="true"
                 android:text="@string/bots_title"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_market"
@@ -101,8 +101,8 @@
                 android:button="@null"
                 android:checked="true"
                 android:text="@string/Markets"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"
@@ -112,8 +112,8 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Ethereum"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_solana"
@@ -123,9 +123,8 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Solana"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
-
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
         </RadioGroup>
     </HorizontalScrollView>
 

@@ -2,7 +2,7 @@ package one.mixin.android.ui.tip.wc
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.walletconnect.web3.wallet.client.Wallet
+import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,7 +50,7 @@ class WalletConnectBottomSheetViewModel
             chainId: String,
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
             return tipPrivToPrivateKey(spendKey, chainId)
         }
 

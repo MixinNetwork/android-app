@@ -493,7 +493,6 @@
     <string name="Landing_back">ログイン</string>
     <string name="landing_delete_content">あなたのアカウントは(%1$s) 後に消去されます。ログインを継続する場合、あなたのアカウント消去はキャンセルされます。</string>
     <string name="landing_enter_mobile_tip">Mixin社はあなたの電話番号を決して公表しません</string>
-    <string name="landing_introduction">\"同意して続ける\"をタップして%1$sと%2$sを確認</string>
     <string name="landing_invitation_dialog_content">4桁のコードを電話番号%1$sに送信します、次の画面でコードを入力してください</string>
     <string name="landing_privacy_policy_url">プライバシーポリシー: https://mixin.one/pages/privacy </string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
@@ -816,7 +815,6 @@
     <string name="setting_desktop_logout_failed">デスクトップ版からのログアウトに失敗しました</string>
     <string name="setting_duplicate_transfer_desc">6時間以内に同じ人に同額の送金を実行する際、確認を行う。</string>
     <string name="setting_emergency_change_mobile">新しい電話番号の登録をしますか？</string>
-    <string name="setting_emergency_content">緊急連絡先は、紛失等の理由でデバイスへのアクセスが出来なくなった場合、ログインする方法となります。</string>
     <string name="setting_emergency_create_success">緊急連絡先を作成しました</string>
     <string name="setting_emergency_desc">登録した電話番号が使用できなくなった場合は、緊急連絡先として登録した友だちに連絡し、Mixin IDと認証コードを取得してください。詳しくは、こちらを確認してください。</string>
     <string name="setting_emergency_pin_tip">あなたの緊急連絡先はPINコードにより保護されています。</string>
@@ -853,7 +851,7 @@
     <string name="Sign_in">ログイン</string>
     <string name="Sign_in_desktop_app">デスクトップにログイン</string>
     <string name="Sign_with_emergency_contact">緊急連絡先でログイン</string>
-    <string name="Sign_with_phone_number">電話番号でログイン</string>
+    <string name="Sign_with_mobile_number">電話番号でログイン</string>
     <string name="Silence_Notification">サイレント通知</string>
     <string name="Size">サイズ</string>
     <string name="Skip">スキップ</string>

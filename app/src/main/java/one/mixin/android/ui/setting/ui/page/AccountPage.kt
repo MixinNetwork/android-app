@@ -83,9 +83,9 @@ private fun ChangeNumberButton() {
 
         MixinAlertDialog(
             text = {
-                Text(stringResource(R.string.profile_modify_number))
+                Text(stringResource(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
             },
-            confirmText = stringResource(R.string.Change_Phone_Number),
+            confirmText = stringResource(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number),
             onConfirmClick = {
                 openDialog.value = false
 

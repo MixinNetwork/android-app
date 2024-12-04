@@ -53,7 +53,7 @@ class FileHolder(itemView: View) : NormalHolder(itemView) {
         var type =
             item.mediaName
                 ?.substringAfterLast(".", "")
-                ?.toUpperCase(Locale.getDefault())
+                ?.uppercase(Locale.getDefault())
         if (type != null && type.length > 3) {
             type = type.substring(0, 3)
         }

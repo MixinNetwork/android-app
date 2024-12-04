@@ -15,7 +15,7 @@ class Argon2Test {
         val argon2Kt = Argon2Kt()
         val password = "123456"
 
-        val hashResult = argon2Kt.argon2IHash(password, "2e613adae4f0167255933a3ec1d97e0acdd38e46d319c348b7a3d709f23bae8f")
+        val hashResult = argon2Kt.argon2IHash(password.toByteArray(), "2e613adae4f0167255933a3ec1d97e0acdd38e46d319c348b7a3d709f23bae8f")
         println("Raw hash: ${hashResult.rawHashAsHexadecimal()}")
         println("Encoded string: ${hashResult.encodedOutputAsString()}")
 

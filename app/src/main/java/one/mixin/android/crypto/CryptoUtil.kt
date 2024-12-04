@@ -2,14 +2,20 @@
 
 package one.mixin.android.crypto
 
+import android.content.Context
 import android.os.Build
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.lambdapioneer.argon2kt.Argon2Kt
 import com.lambdapioneer.argon2kt.Argon2KtResult
 import com.lambdapioneer.argon2kt.Argon2Mode
 import ed25519.Ed25519
 import okhttp3.tls.HeldCertificate
 import okio.ByteString.Companion.toByteString
+import one.mixin.android.Constants.Tip.ENCRYPTED_MNEMONIC
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
@@ -79,11 +85,23 @@ fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
     }
 }
 
+fun newKeyPairFromMnemonic(mnemonic: String): EdKeyPair {
+    val masterKey = newMasterPrivateKeyFromMnemonic(mnemonic)
+    return newKeyPairFromSeed(masterKey.privKeyBytes)
+}
+
 fun calculateAgreement(
     publicKey: ByteArray,
     privateKey: ByteArray,
 ): ByteArray {
     return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
+}
+
+fun calculateSignature(
+    privateKey: ByteArray,
+    message: ByteArray,
+): ByteArray {
+    return Curve25519.getInstance(BEST).calculateSignature(privateKey, message)
 }
 
 fun initFromSeedAndSign(
@@ -153,25 +171,13 @@ fun ByteArray.sha3Sum256(): ByteArray {
 }
 
 fun Argon2Kt.argon2IHash(
-    pin: String,
-    seed: String,
-): Argon2KtResult =
-    argon2IHash(pin, seed.toByteArray())
-
-fun Argon2Kt.argon2IHash(
-    pin: String,
-    seed: ByteArray,
-): Argon2KtResult =
-    argon2IHash(pin.toByteArray(), seed)
-
-fun Argon2Kt.argon2IHash(
-    pin: ByteArray,
-    seed: ByteArray,
+    password: ByteArray,
+    salt: ByteArray,
 ): Argon2KtResult {
     return hash(
         mode = Argon2Mode.ARGON2_I,
-        password = pin,
-        salt = seed,
+        password = password,
+        salt = salt,
         tCostInIterations = 4,
         mCostInKibibyte = 1024,
         hashLengthInBytes = 32,
@@ -293,4 +299,42 @@ private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
     }
         .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
     return strippedKey.toString().trim { it <= ' ' }
+}
+
+fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
+    val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_MNEMONIC,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    val encodedKey = entropy.toHex()
+    encryptedPrefs.edit().putString(alias, encodedKey).apply()
+}
+
+fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
+    val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_MNEMONIC,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    encryptedPrefs.edit().remove(alias).apply()
+}
+
+fun getValueFromEncryptedPreferences(context: Context, alias: String): ByteArray? {
+    val encryptedPrefs = EncryptedSharedPreferences.create(
+        context,
+        ENCRYPTED_MNEMONIC,
+        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    val encodedText = encryptedPrefs.getString(alias, null) ?: return null
+    return encodedText.hexStringToByteArray()
 }

@@ -486,12 +486,6 @@ class SwapFragment : BaseFragment() {
                     toToken = swapTokens.getOrNull(1)
                 } else {
                     val found = swapTokens.firstOrNull { s -> s.assetId == fromToken?.assetId }
-                    if (found == null) {
-                        if (fromToken != null) {
-                            toast(getString(R.string.swap_not_supported, fromToken?.symbol))
-                        }
-                        fromToken = swapTokens[0]
-                    }
                     if (toToken != null) {
                         val toFound = swapTokens.firstOrNull { s -> s.assetId == toToken?.assetId }
                         if (toFound == null) {
@@ -588,6 +582,8 @@ class SwapFragment : BaseFragment() {
 
         isLoading = true
         errorInfo = null
+        quoteResp = null // Clear quote
+
         val resp = handleMixinResponse(
             switchContext = scope.coroutineContext,
             invokeNetwork = { swapViewModel.web3Quote(inputMint, outputMint, amount, slippage.toString(), getSource()) },
@@ -609,6 +605,9 @@ class SwapFragment : BaseFragment() {
         )
 
         quoteResp = resp // Save null quote, not allowed to continue order
+        if (quoteResp == null && errorInfo == null) {
+            errorInfo = "" // Empty error, disable swap button
+        }
         resp ?: return
         updateExchangeRate(resp.inAmount, resp.outAmount)
         slippage = resp.slippage

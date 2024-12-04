@@ -6,12 +6,14 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
@@ -109,6 +111,10 @@ abstract class PinCodeFragment(
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
+        if (Session.hasPhone()) {
+            // Remove mnemonic if user has phone on sign in
+            removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
+        }
         defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()
@@ -126,6 +132,7 @@ abstract class PinCodeFragment(
                 RestoreActivity.show(requireContext())
             }
         }
+        MixinApplication.get().reject()
         activity?.finish()
     }
 
