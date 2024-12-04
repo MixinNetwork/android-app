@@ -5,7 +5,6 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
-import one.mixin.android.vo.safe.SafeCollection
 
 @Dao
 interface InscriptionCollectionDao : BaseDao<InscriptionCollection> {

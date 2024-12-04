@@ -11,9 +11,9 @@ class RemoveStickersJob(private val stickerIds: List<String>) :
 
     override fun onRun() {
         if (stickerIds.isEmpty()) return
-        stickerRelationshipDao.getPersonalAlbumId()?.let { albumId ->
+        stickerRelationshipDao().getPersonalAlbumId()?.let { albumId ->
             for (i in stickerIds) {
-                stickerRelationshipDao.deleteByStickerId(i, albumId)
+                stickerRelationshipDao().deleteByStickerId(i, albumId)
             }
         }
 

@@ -16,7 +16,7 @@ class ClearFts4Job :
 
     override fun onRun() =
         runBlocking(SINGLE_DB_THREAD) {
-            val count = messageDao.deleteFts()
+            val count = messageDao().deleteFts()
             if (count > 0) {
                 jobManager.addJobInBackground(ClearFts4Job())
             } else {

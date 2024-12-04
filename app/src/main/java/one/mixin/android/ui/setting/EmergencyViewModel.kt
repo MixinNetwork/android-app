@@ -24,21 +24,7 @@ class EmergencyViewModel
                 accountRepository.createEmergency(request)
             }
 
-        suspend fun createVerifyEmergency(
-            id: String,
-            request: EmergencyRequest,
-        ) =
-            withContext(Dispatchers.IO) {
-                accountRepository.createVerifyEmergency(id, request)
-            }
 
-        suspend fun loginVerifyEmergency(
-            id: String,
-            request: EmergencyRequest,
-        ) =
-            withContext(Dispatchers.IO) {
-                accountRepository.loginVerifyEmergency(id, request)
-            }
 
         suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 
@@ -49,9 +35,9 @@ class EmergencyViewModel
                 accountRepository.showEmergency(pin)
             }
 
-        fun upsertUser(u: User) =
+        fun insertUser(u: User) =
             viewModelScope.launch(Dispatchers.IO) {
-                userRepository.upsert(u)
+                accountRepository.insertUserSuspend(u)
             }
 
         suspend fun deleteEmergency(pin: String) =

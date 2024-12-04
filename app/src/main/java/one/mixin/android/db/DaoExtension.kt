@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import androidx.room.Transaction
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.pending.PendingDatabase
@@ -20,86 +21,6 @@ import one.mixin.android.vo.isMine
 import one.mixin.android.vo.safe.Output
 import timber.log.Timber
 
-fun UserDao.insertUpdate(
-    user: User,
-    appDao: AppDao,
-) {
-    runInTransaction {
-        if (user.app != null) {
-            user.appId = user.app!!.appId
-            appDao.insert(user.app!!)
-        }
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            update(user)
-        }
-    }
-}
-
-fun UserDao.insertUpdateList(
-    users: List<User>,
-    appDao: AppDao,
-) {
-    runInTransaction {
-        val apps = arrayListOf<App>()
-        for (u in users) {
-            if (u.app != null) {
-                u.appId = u.app!!.appId
-                apps.add(u.app!!)
-            }
-        }
-        appDao.insertList(apps)
-        insertList(users)
-    }
-}
-
-fun UserDao.updateRelationship(
-    user: User,
-    relationship: String,
-) {
-    runInTransaction {
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            user.relationship = relationship
-            update(user)
-        }
-    }
-}
-
-fun StickerDao.insertUpdate(s: Sticker) {
-    runInTransaction {
-        val sticker = getStickerByUnique(s.stickerId)
-        if (sticker != null) {
-            s.lastUseAt = sticker.lastUseAt
-        }
-        if (s.createdAt == "") {
-            s.createdAt = System.currentTimeMillis().toString()
-        }
-        insert(s)
-    }
-}
-
-fun CircleConversationDao.insertUpdate(
-    circleConversation: CircleConversation,
-) {
-    runInTransaction {
-        val c =
-            findCircleConversationByCircleId(
-                circleConversation.circleId,
-                circleConversation.conversationId,
-            )
-        if (c == null) {
-            insert(circleConversation)
-        } else {
-            updateCheckPin(c, circleConversation)
-        }
-    }
-}
-
 fun CircleConversationDao.updateCheckPin(
     oldCircleConversation: CircleConversation,
     newCircleConversation: CircleConversation,
@@ -116,45 +37,6 @@ fun CircleConversationDao.updateCheckPin(
         )
     } else {
         update(newCircleConversation)
-    }
-}
-
-suspend fun CircleDao.insertUpdateSuspend(
-    circle: Circle,
-) {
-    withTransaction {
-        val c = findCircleById(circle.circleId)
-        if (c == null) {
-            insert(circle)
-        } else {
-            update(circle)
-        }
-    }
-}
-
-fun CircleDao.insertUpdate(
-    circle: Circle,
-) {
-    runInTransaction {
-        val c = findCircleById(circle.circleId)
-        if (c == null) {
-            insert(circle)
-        } else {
-            update(circle)
-        }
-    }
-}
-
-suspend fun StickerAlbumDao.insertUpdate(
-    album: StickerAlbum,
-) {
-    withTransaction {
-        val a = findAlbumById(album.albumId)
-        if (a == null) {
-            insert(album)
-        } else {
-            update(album)
-        }
     }
 }
 
@@ -175,18 +57,17 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
+@Transaction
 suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
     withContext(SINGLE_DB_THREAD) {
-        runInTransaction {
-            val signed = findSignedOutput(outputs.map { it.outputId })
-            if (signed.isEmpty()) {
-                insertList(outputs)
-            } else {
-                Timber.e("Insert filter ${signed.joinToString(", ") }")
-                // Exclude signed data
-                val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
-                insertList(unsignedData)
-            }
+        val signed = findSignedOutput(outputs.map { it.outputId })
+        if (signed.isEmpty()) {
+            insertList(outputs)
+        } else {
+            Timber.e("Insert filter ${signed.joinToString(", ")}")
+            // Exclude signed data
+            val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
+            insertList(unsignedData)
         }
     }
 
@@ -194,7 +75,7 @@ suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
-        mentionMessageDao().deleteMessage(messageId)
+        messageMentionDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
         expiredMessageDao().deleteByMessageId(messageId)
@@ -207,7 +88,7 @@ fun MixinDatabase.deleteMessageById(
 ) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
-        mentionMessageDao().deleteMessage(messageId)
+        messageMentionDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         conversationExtDao().decrement(conversationId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
@@ -219,7 +100,7 @@ fun MixinDatabase.deleteMessageById(
 fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
     runInTransaction {
         pinMessageDao().deleteByIds(messageIds)
-        mentionMessageDao().deleteMessage(messageIds)
+        messageMentionDao().deleteMessage(messageIds)
         messageDao().deleteMessageById(messageIds)
         remoteMessageStatusDao().deleteByMessageIds(messageIds)
         expiredMessageDao().deleteByMessageId(messageIds)

@@ -34,6 +34,11 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     @Update(entity = StickerAlbum::class)
     suspend fun updateOrderedAt(order: StickerAlbumOrder)
 
+    @Transaction
+    suspend fun updateOrderedAt(stickerAlbumOrders: List<StickerAlbumOrder>) {
+        stickerAlbumOrders.forEach { o -> updateOrderedAt(o) }
+    }
+
     @Update(entity = StickerAlbum::class)
     suspend fun updateAdded(added: StickerAlbumAdded)
 
@@ -48,4 +53,16 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
 
     @Query("SELECT max(ordered_at) FROM sticker_albums")
     suspend fun findMaxOrder(): Int?
+
+    @Transaction
+    suspend fun insertUpdate(
+        album: StickerAlbum,
+    ) {
+        val a = findAlbumById(album.albumId)
+        if (a == null) {
+            insert(album)
+        } else {
+            update(album)
+        }
+    }
 }

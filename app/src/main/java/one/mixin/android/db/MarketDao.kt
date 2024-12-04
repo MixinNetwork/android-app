@@ -9,7 +9,6 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.safe.TokenItem
 
 @Dao
 interface MarketDao : BaseDao<Market> {

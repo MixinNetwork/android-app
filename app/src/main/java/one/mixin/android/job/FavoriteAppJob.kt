@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.db.insertUpdateList
 
 class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -20,17 +19,17 @@ class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
                 userService.getUserFavoriteApps(userId).run {
                     if (isSuccess) {
                         data?.let { data ->
-                            favoriteAppDao.deleteByUserId(userId)
-                            favoriteAppDao.insertList(data)
+                            favoriteAppDao().deleteByUserId(userId)
+                            favoriteAppDao().insertList(data)
                             data.map { app -> app.appId }.filter { id ->
-                                appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
+                                appDao().findAppById(id) == null || userDao().suspendFindUserById(id) == null
                             }.let { ids ->
                                 if (ids.isEmpty()) return@forEach
 
                                 val response = userService.fetchUsers(ids)
                                 if (response.isSuccess) {
                                     response.data?.apply {
-                                        userDao.insertUpdateList(this, appDao)
+                                        userDao().insertUpdateList(this, appDao())
                                     }
                                 }
                             }
