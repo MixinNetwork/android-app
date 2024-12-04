@@ -54,19 +54,6 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 MobileFragment.TAG,
             )
         }
-        binding.userTv1.setOnClickListener { v ->
-            navTo(MnemonicPhraseFragment.newInstance(words = ArrayList<String>().apply {
-                addAll(testAccount[0].split(" "))
-            }), MnemonicPhraseFragment.TAG)
-        }
-        binding.userTv2.setOnClickListener { v ->
-            navTo(MnemonicPhraseFragment.newInstance(words = ArrayList<String>().apply {
-                addAll(testAccount[1].split(" "))
-            }), MnemonicPhraseFragment.TAG)
-        }
     }
 
-    private val testAccount = listOf(
-        "" , "" // Todo add test account
-    )
 }

@@ -57,38 +57,6 @@
 
     <Button
         style="@style/AppTheme.MaterialButton"
-        android:id="@+id/user_tv_1"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:text="user1"
-        android:textColor="@color/white"
-        android:layout_marginStart="36dp"
-        android:layout_marginEnd="18dp"
-        android:textSize="14sp"
-        android:textFontWeight="500"
-        app:layout_constraintBottom_toTopOf="@id/create_tv"
-        app:layout_constraintEnd_toStartOf="@id/user_tv_2"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        style="@style/AppTheme.MaterialButton"
-        android:id="@+id/user_tv_2"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:text="user2"
-        android:textColor="@color/white"
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="36dp"
-        android:textSize="14sp"
-        android:textFontWeight="500"
-        app:layout_constraintBottom_toTopOf="@id/create_tv"
-        app:layout_constraintStart_toEndOf="@id/user_tv_1"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <Button
-        style="@style/AppTheme.MaterialButton"
         android:id="@+id/create_tv"
         android:layout_width="0dp"
         android:layout_height="48dp"
