@@ -103,6 +103,8 @@ class AccountRepository
         fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
             accountService.update(request)
 
+        suspend fun insertUserSuspend(user: User) = userDao.insertSuspend(user)
+
         fun join(conversationId: String): Observable<MixinResponse<ConversationResponse>> {
             return conversationService.join(conversationId)
         }

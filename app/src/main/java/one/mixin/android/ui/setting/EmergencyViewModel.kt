@@ -35,9 +35,9 @@ class EmergencyViewModel
                 accountRepository.showEmergency(pin)
             }
 
-        fun upsertUser(u: User) =
+        fun insertUser(u: User) =
             viewModelScope.launch(Dispatchers.IO) {
-                userRepository.upsert(u)
+                accountRepository.insertUserSuspend(u)
             }
 
         suspend fun deleteEmergency(pin: String) =

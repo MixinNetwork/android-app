@@ -1626,7 +1626,7 @@
     <string name="swap_failed">Swap Failed</string>
     <string name="swap_inner_desc">The signature request from Mixin Messenger.</string>
     <string name="swap_message_success">Your transaction has been sent to network and will be processed within a few minutes.</string>
-    <string name="swap_not_supported">%1$s swapping is not supported.</string>
+    <string name="swap_not_supported">%1$s swapping is not supported</string>
     <string name="Price_data_unavailable">Price data unavailable</string>
     <string name="Balance">Balance</string>
     <string name="Market">Market</string>

@@ -52,12 +52,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import coil.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
 @Composable

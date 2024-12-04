@@ -255,8 +255,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     hideLoading()
 
                     val verificationResponse = r.data as VerificationResponse
-                    if (!r.data?.deactivatedAt.isNullOrBlank() && from == FROM_LANDING) {
-                        LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                    if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && from == FROM_LANDING) {
+                        LandingDeleteAccountFragment.newInstance(r.data?.deactivationEffectiveAt)
                             .setContinueCallback {
                                 activity?.addFragment(
                                     this@MobileFragment,

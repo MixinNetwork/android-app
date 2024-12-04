@@ -972,11 +972,8 @@ ConversationFragment() :
         if (cid.isNullOrBlank() && recipient != null) {
             isFirstMessage = true
             cid = generateConversationId(sender.userId, recipient!!.userId)
-        } else {
-            requireActivity().finish()
-            toast(R.string.Data_error)
         }
-        cid
+        requireNotNull(cid)
     }
 
     private var recipient: User? = null

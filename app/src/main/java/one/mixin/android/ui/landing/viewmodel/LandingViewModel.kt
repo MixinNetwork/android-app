@@ -39,7 +39,6 @@ import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MixinDatabase
-
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.repository.AccountRepository
@@ -99,12 +98,6 @@ internal constructor(
         accountService.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(
             AndroidSchedulers.mainThread())
 
-    fun upsertUser(u: User) =
-        viewModelScope.launch(Dispatchers.IO) {
-            initAllDatabases()
-            databaseProvider.getMixinDatabase().userDao().upsert(u)
-        }
-
     suspend fun create(
         id: String,
         request: AccountRequest,
@@ -144,7 +137,7 @@ internal constructor(
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
             initAllDatabases()
-            databaseProvider.getMixinDatabase().userDao().insertUpdate(user, databaseProvider.getMixinDatabase().appDao())
+            databaseProvider.getMixinDatabase().userDao().insertSuspend(user)
         }
 
     fun updatePhone(
