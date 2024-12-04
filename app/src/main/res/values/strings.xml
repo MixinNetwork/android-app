@@ -1829,4 +1829,6 @@
     <string name="Export_mnemonic_phrase">Export mnemonic phrase</string>
     <string name="Export">Export</string>
     <string name="Upgrade_safe">Upgrade safe</string>
+    <string name="mixin_support">Mixin Support</string>
+    <string name="ask_me_anything">Ask me anything</string>
 </resources>

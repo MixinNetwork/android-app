@@ -1787,4 +1787,6 @@
     <string name="Export">导出</string>
     <string name="Export_mnemonic_phrase">导出助记词</string>
     <string name="Upgrade_safe">升级 Safe</string>
+    <string name="mixin_support">Mixin 客服</string>
+    <string name="ask_me_anything">向我提问</string>
 </resources>

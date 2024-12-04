@@ -20,6 +20,7 @@ import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -33,10 +34,12 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.isAnonymousNumber
@@ -112,6 +115,13 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
+            binding.titleView.rightIb.setOnClickListener {
+                val bundle = Bundle().apply {
+                    putString(WebFragment.URL, Constants.HelpLink.CUSTOMER_SERVICE)
+                    putBoolean(WebFragment.ARGS_INJECTABLE, false)
+                }
+                navTo(WebFragment.newInstance(bundle), WebFragment.TAG)
+            }
             val policy: String = requireContext().getString(R.string.Privacy_Policy)
             val termsService: String = requireContext().getString(R.string.Terms_of_Service)
             val policyWrapper = requireContext().getString(R.string.landing_introduction, "**$policy**", "**$termsService**")
