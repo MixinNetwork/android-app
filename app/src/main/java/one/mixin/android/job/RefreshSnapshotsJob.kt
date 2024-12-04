@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.PREF_SNAPSHOT_OFFSET
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.isUUID
 import one.mixin.android.vo.safe.SafeSnapshot
 import org.threeten.bp.Instant
 
@@ -43,7 +44,7 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
                     return refreshSnapshots(it.createdAt)
                 }
             }
-            snapshots.map { it.userId }.distinct().let {
+            snapshots.map { it.opponentId }.distinct().let {
                 jobManager.addJobInBackground(RefreshUserJob(it))
             }
             return snapshots
