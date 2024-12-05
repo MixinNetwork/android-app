@@ -59,6 +59,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
@@ -296,7 +297,16 @@ private fun PriceInfo(
     quoteCountDown: Float,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    var isPriceReverse by remember { mutableStateOf(false) }
+    var isPriceReverse by remember {
+        mutableStateOf(
+            if (fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets) {
+                true
+            } else {
+                false
+            }
+        )
+    }
+
     Row(
         modifier =
         Modifier
