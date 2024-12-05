@@ -335,6 +335,8 @@ class NewSchemeParser(
         var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = linkViewModel.refreshAsset(assetId)
+        } else {
+            linkViewModel.syncAsset(assetId)
         }
         if (asset != null && asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
             linkViewModel.refreshAsset(asset.chainId)
