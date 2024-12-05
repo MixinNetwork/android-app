@@ -155,7 +155,7 @@ fun SwapPage(
                             }
                         }
                     } else {
-                        Column(
+                        Row(
                             modifier =
                             Modifier
                                 .fillMaxWidth()
@@ -164,6 +164,7 @@ fun SwapPage(
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
+                            Spacer(modifier = Modifier.height(24.dp))
                             Text(
                                 text = errorInfo,
                                 style =

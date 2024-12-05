@@ -32,6 +32,7 @@ object Constants {
         const val INSCRIPTION = "https://mixin.one/inscriptions/"
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
+        const val CUSTOMER_SERVICE = "https://go.crisp.chat/chat/embed/?website_id=52662bba-be49-4b06-9edc-7baa9a78f714"
     }
 
     object Tip {

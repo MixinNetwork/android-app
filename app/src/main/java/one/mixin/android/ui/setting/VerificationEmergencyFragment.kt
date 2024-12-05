@@ -92,7 +92,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
     }
 
     override fun insertUser(u: User) {
-        viewModel.upsertUser(u)
+        viewModel.insertUser(u)
     }
 
     private fun createVerify() =
