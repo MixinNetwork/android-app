@@ -20,6 +20,8 @@ import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
+import one.mixin.android.extension.startVibration
+import one.mixin.android.extension.stopVibration
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.MusicPlayer
 import timber.log.Timber
@@ -123,6 +125,7 @@ class CallAudioManager(
             mediaPlayer?.release()
             mediaPlayer = null
         }
+        context.stopVibration()
         vibrator?.cancel()
         audioSwitch.safeActivate()
     }
@@ -179,21 +182,26 @@ class CallAudioManager(
         }
         mediaPlayer?.isLooping = true
 
-        val sound =
-            if (isInitiator) {
-                R.raw.call_outgoing
-            } else {
-                R.raw.call_incoming
-            }
+        val sound = if (isInitiator) {
+            R.raw.call_outgoing
+        } else {
+            R.raw.call_incoming
+        }
+
         val uri = Uri.parse("android.resource://${context.packageName}/$sound")
         try {
             mediaPlayer?.setDataSource(context, uri)
             mediaPlayer?.prepare()
             mediaPlayer?.start()
+
+            if (!isInitiator) {
+                context.startVibration()
+            }
         } catch (e: Exception) {
             Timber.w("$TAG_AUDIO mediaPlayer start, $e")
         }
     }
+
 
     interface Callback {
         fun customAudioDeviceAvailable(available: Boolean)
