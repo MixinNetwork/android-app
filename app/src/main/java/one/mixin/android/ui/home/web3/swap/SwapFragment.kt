@@ -352,10 +352,8 @@ class SwapFragment : BaseFragment() {
             val lastFrom = lastQuote?.getOrNull(0)
             val lastTo = lastQuote?.getOrNull(1)
             if (tokens.isNotEmpty()) {
-                fromToken = input?.let { ((tokens.firstOrNull { t -> t.getUnique() == input }) ?: (tokens.firstOrNull { t -> t.getUnique() == lastFrom }))?.toSwapToken() } ?: tokens[0].toSwapToken()
-            }
-            if (tokens.size > 1) {
-                toToken = output?.let { ((tokens.firstOrNull { t -> t.getUnique() == output }) ?: (tokens.firstOrNull { t -> t.getUnique() == lastTo }))?.toSwapToken() } ?: tokens[1].toSwapToken()
+                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens[0].toSwapToken()
+                toToken = (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens[1].toSwapToken()
             }
         }
     }
