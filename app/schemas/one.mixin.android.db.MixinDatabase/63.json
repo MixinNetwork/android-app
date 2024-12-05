@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 63,
-    "identityHash": "d9afa45aee9973a4cffdcf6b401db523",
+    "identityHash": "ceda1faafc44c52d20ec8a503b3a3ad4",
     "entities": [
       {
         "tableName": "users",
@@ -2153,13 +2153,14 @@
         },
         "indices": [
           {
-            "name": "index_pin_messages_conversation_id",
+            "name": "index_pin_messages_conversation_id_created_at",
             "unique": false,
             "columnNames": [
-              "conversation_id"
+              "conversation_id",
+              "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id_created_at` ON `${TABLE_NAME}` (`conversation_id`, `created_at`)"
           }
         ],
         "foreignKeys": []
@@ -3438,7 +3439,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd9afa45aee9973a4cffdcf6b401db523')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ceda1faafc44c52d20ec8a503b3a3ad4')"
     ]
   }
 }

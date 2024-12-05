@@ -47,8 +47,8 @@ interface PinMessageDao : BaseDao<PinMessage> {
     fun getLastPinMessageId(conversationId: String): LiveData<String?>
 
     @Query("""
-        SELECT u.user_id, m.content, mm.mentions, u.full_name FROM pin_messages pm
-        INNER JOIN messages m ON m.quote_message_id = pm.message_id
+        SELECT u.user_id, m.id, m.content, m.category, mm.mentions, u.full_name FROM pin_messages pm
+        INNER JOIN messages m ON m.id = pm.message_id
         INNER JOIN users u ON m.user_id = u.user_id
         LEFT JOIN message_mentions mm ON m.id = mm.message_id
         WHERE pm.message_id = :messageId AND pm.conversation_id = :conversationId

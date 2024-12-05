@@ -540,6 +540,8 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(62, 63) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE `markets` ADD COLUMN `sparkline_in_24h` TEXT NOT NULL DEFAULT ''")
+                    db.execSQL("DROP INDEX IF EXISTS `index_pin_messages_conversation_id`")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id_created_at` ON `pin_messages` (`conversation_id`, `created_at`)")
                 }
             }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
