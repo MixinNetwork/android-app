@@ -85,7 +85,7 @@ object Constants {
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
-        const val PREF_SWAP_LAST_QUOTE = "pref_swap_last_quote"
+        const val PREF_SWAP_LAST_SELECTED_PAIR = "pref_swap_last_selected_pair"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_MARKET_ORDER = "pref_market_order"

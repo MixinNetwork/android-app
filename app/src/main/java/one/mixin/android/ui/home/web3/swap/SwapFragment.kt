@@ -29,8 +29,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Account.PREF_SWAP_LAST_QUOTE
+import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -217,6 +218,11 @@ class SwapFragment : BaseFragment() {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
+                                fromToken?.let { from ->
+                                    toToken?.let { to ->
+                                        defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
+                                    }
+                                }
                                 onTextChanged(currentText)
                             }, { index ->
                                 selectCallback(swapTokens, index)
@@ -330,7 +336,6 @@ class SwapFragment : BaseFragment() {
         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
             setOnDone {
-                defaultSharedPreferences.putString(PREF_SWAP_LAST_QUOTE, "${swapResult.quote.inputMint} ${swapResult.quote.outputMint}")
                 clearInputAndRefreshInMixinFromToToken()
             }
         }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
@@ -348,12 +353,19 @@ class SwapFragment : BaseFragment() {
         swappable.let { tokens ->
             val input = requireArguments().getString(ARGS_INPUT)
             val output = requireArguments().getString(ARGS_OUTPUT)
-            val lastQuote = defaultSharedPreferences.getString(PREF_SWAP_LAST_QUOTE, null)?.split(" ")
-            val lastFrom = lastQuote?.getOrNull(0)
-            val lastTo = lastQuote?.getOrNull(1)
+            val lastSelectedPair = defaultSharedPreferences.getString(PREF_SWAP_LAST_SELECTED_PAIR, null)?.split(" ")
+            val lastFrom = lastSelectedPair?.getOrNull(0)
+            val lastTo = lastSelectedPair?.getOrNull(1)
             if (tokens.isNotEmpty()) {
                 fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens[0].toSwapToken()
-                toToken = (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens[1].toSwapToken()
+                toToken = if (input != null) {
+                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens[1].toSwapToken()
+                } else {
+                    tokens.firstOrNull { t -> t.getUnique() == output }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens[1].toSwapToken()
+                }
+                if (toToken?.getUnique() == fromToken?.getUnique()) {
+                    toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
+                }
             }
         }
     }
@@ -379,6 +391,11 @@ class SwapFragment : BaseFragment() {
                             toToken = fromToken
                         }
                         fromToken = token
+                        fromToken?.let { from ->
+                            toToken?.let { to ->
+                                defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
+                            }
+                        }
                         scope.launch {
                             refreshTokensPrice(listOf(token))
                             onTextChanged(currentText)
@@ -426,6 +443,13 @@ class SwapFragment : BaseFragment() {
                         fromToken = toToken
                     }
                     toToken = token
+                    if (inMixin()) {
+                        fromToken?.let { from ->
+                            toToken?.let { to ->
+                                defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
+                            }
+                        }
+                    }
                     scope.launch {
                         refreshTokensPrice(listOf(token))
                         onTextChanged(currentText)
