@@ -218,6 +218,11 @@ class SwapFragment : BaseFragment() {
                                 val token = fromToken
                                 fromToken = toToken
                                 toToken = token
+                                fromToken?.let { from ->
+                                    toToken?.let { to ->
+                                        defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
+                                    }
+                                }
                                 onTextChanged(currentText)
                             }, { index ->
                                 selectCallback(swapTokens, index)
