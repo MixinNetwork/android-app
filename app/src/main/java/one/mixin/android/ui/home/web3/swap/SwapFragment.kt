@@ -358,6 +358,9 @@ class SwapFragment : BaseFragment() {
                 } else {
                     tokens.firstOrNull { t -> t.getUnique() == output }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens[1].toSwapToken()
                 }
+                if (toToken?.getUnique() == fromToken?.getUnique()) {
+                    toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
+                }
             }
         }
     }
