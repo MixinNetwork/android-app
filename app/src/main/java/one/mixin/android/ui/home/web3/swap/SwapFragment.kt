@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.PREF_SWAP_LAST_QUOTE
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
@@ -50,6 +51,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -327,7 +329,10 @@ class SwapFragment : BaseFragment() {
         val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
-            setOnDone { clearInputAndRefreshInMixinFromToToken() }
+            setOnDone {
+                defaultSharedPreferences.putString(PREF_SWAP_LAST_QUOTE, "${swapResult.quote.inputMint} ${swapResult.quote.outputMint}")
+                clearInputAndRefreshInMixinFromToToken()
+            }
         }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
     }
 
@@ -343,11 +348,12 @@ class SwapFragment : BaseFragment() {
         swappable.let { tokens ->
             val input = requireArguments().getString(ARGS_INPUT)
             val output = requireArguments().getString(ARGS_OUTPUT)
+            val lastQuote = defaultSharedPreferences.getString(PREF_SWAP_LAST_QUOTE, null)?.split(" ")
+            val lastFrom = lastQuote?.getOrNull(0)
+            val lastTo = lastQuote?.getOrNull(1)
             if (tokens.isNotEmpty()) {
-                fromToken = input?.let { tokens.firstOrNull { t -> t.getUnique() == input }?.toSwapToken() } ?: tokens[0].toSwapToken()
-            }
-            if (tokens.size > 1) {
-                toToken = output?.let { tokens.firstOrNull { t -> t.getUnique() == output }?.toSwapToken() } ?: tokens[1].toSwapToken()
+                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens[0].toSwapToken()
+                toToken = (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens[1].toSwapToken()
             }
         }
     }

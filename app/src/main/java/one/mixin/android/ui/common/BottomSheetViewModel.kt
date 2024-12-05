@@ -46,6 +46,7 @@ import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.SyncOutputJob
@@ -916,25 +917,6 @@ class BottomSheetViewModel
                 accountRepository.logout(sessionId)
             }
 
-        suspend fun findAddressById(
-            addressId: String,
-            assetId: String,
-        ): Pair<Address?, Boolean> =
-            withContext(Dispatchers.IO) {
-                val address =
-                    tokenRepository.findAddressById(addressId, assetId)
-                        ?: return@withContext tokenRepository.refreshAndGetAddress(addressId, assetId)
-                return@withContext Pair(address, false)
-            }
-
-        suspend fun refreshAndGetAddress(
-            addressId: String,
-            assetId: String,
-        ): Pair<Address?, Boolean> =
-            withContext(Dispatchers.IO) {
-                return@withContext tokenRepository.refreshAndGetAddress(addressId, assetId)
-            }
-
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
@@ -986,51 +968,10 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun getSnapshotAndAsset(snapshotId: String): Pair<SnapshotItem, TokenItem>? {
-            return withContext(Dispatchers.IO) {
-                var snapshotItem = findSnapshotById(snapshotId)
-                if (snapshotItem != null) {
-                    var assetItem = findAssetItemById(snapshotItem.assetId)
-                    if (assetItem != null) {
-                        return@withContext Pair(snapshotItem, assetItem)
-                    } else {
-                        assetItem = refreshAsset(snapshotItem.assetId)
-                        if (assetItem != null) {
-                            return@withContext Pair(snapshotItem, assetItem)
-                        } else {
-                            return@withContext null
-                        }
-                    }
-                } else {
-                    snapshotItem = refreshSnapshot(snapshotId)
-                    if (snapshotItem == null) {
-                        return@withContext null
-                    } else {
-                        var assetItem = findAssetItemById(snapshotItem.assetId)
-                        if (assetItem != null) {
-                            return@withContext Pair(snapshotItem, assetItem)
-                        } else {
-                            assetItem = refreshAsset(snapshotItem.assetId)
-                            if (assetItem != null) {
-                                return@withContext Pair(snapshotItem, assetItem)
-                            } else {
-                                return@withContext null
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         suspend fun preferences(request: AccountUpdateRequest) =
             withContext(Dispatchers.IO) {
                 accountRepository.preferences(request)
             }
-
-        suspend fun searchAppByHost(query: String): List<App> {
-            val escapedQuery = query.trim().escapeSql()
-            return userRepository.searchAppByHost(escapedQuery)
-        }
 
         suspend fun findMultiUsers(
             senders: Array<String>,
@@ -1168,7 +1109,7 @@ class BottomSheetViewModel
             }
         }
 
-        private suspend fun refreshAppNotExist(appIds: List<String>) =
+        private fun refreshAppNotExist(appIds: List<String>) =
             viewModelScope.launch(Dispatchers.IO) {
                 accountRepository.refreshAppNotExist(appIds)
             }
@@ -1201,8 +1142,6 @@ class BottomSheetViewModel
 
         suspend fun findCirclesNameByConversationId(conversationId: String) =
             userRepository.findCirclesNameByConversationId(conversationId)
-
-        suspend fun findMultiUsersByIds(userIds: Set<String>) = userRepository.findMultiUsersByIds(userIds)
 
         suspend fun getParticipantsWithoutBot(conversationId: String) =
             conversationRepo.getParticipantsWithoutBot(conversationId)
@@ -1347,4 +1286,8 @@ class BottomSheetViewModel
         fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
 
         suspend fun checkMarketById(id: String): MarketItem? = tokenRepository.checkMarketById(id)
-    }
+
+        fun syncAsset(assetId: String) {
+            jobManager.addJobInBackground(RefreshAssetsJob(assetId))
+        }
+}
