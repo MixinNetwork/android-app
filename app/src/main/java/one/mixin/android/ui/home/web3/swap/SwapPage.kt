@@ -58,18 +58,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.reown.android.internal.common.scope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.rate
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
+import timber.log.Timber
 import java.math.BigDecimal
 
 @FlowPreview
@@ -81,7 +88,7 @@ fun SwapPage(
     source: String,
     slippageBps: Int,
     onSelectToken: (SelectTokenType) -> Unit,
-    onSwap: (QuoteResponse) -> Unit,
+    onSwap: (QuoteResult) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
@@ -91,13 +98,11 @@ fun SwapPage(
 
     var isLoading by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
-    var outputText by remember { mutableStateOf("") }
-    var exchangeRate by remember { mutableFloatStateOf(0f) }
-    var quoteCountDown by remember { mutableFloatStateOf(0f) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
-    var quoteResp by remember { mutableStateOf<QuoteResponse?>(null) }
+    var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
 
     var isReverse by remember { mutableStateOf(false) }
+
     val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
     val inputFlow = remember {
@@ -108,17 +113,21 @@ fun SwapPage(
         inputFlow.emit(inputText)
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect("${fromToken?.getUnique()}${toToken?.getUnique()}") {
         inputFlow
             .debounce(300L)
             .collectLatest { debouncedValue ->
+                Timber.e("debouncedValue: $debouncedValue")
+                isLoading = true
                 viewModel.quote(context, fromToken?.getUnique(), toToken?.getUnique(), debouncedValue, slippageBps.toString(), source)
                     .onSuccess { value ->
-                        quoteResp = value
-                        outputText = value?.outAmount ?: ""
+                        quoteResult = value
+                        isLoading = false
                     }
                     .onFailure { exception ->
+                        quoteResult = null
                         errorInfo = exception.message
+                        isLoading = false
                     }
             }
     }
@@ -169,7 +178,7 @@ fun SwapPage(
                         }
                     },
                     bottomCompose = {
-                        InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { onSelectToken(SelectTokenType.To) })
+                        InputArea(token = toToken, text = quoteResult?.outAmount ?: "", title = stringResource(id = R.string.To), readOnly = true, { onSelectToken(SelectTokenType.To) })
                     },
                     margin = 6.dp,
                 )
@@ -181,15 +190,24 @@ fun SwapPage(
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .alpha(
-                                    if (exchangeRate == 0f) 0f else 1f,
+                                    if (quoteResult == null) 0f else 1f,
                                 )
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
-                            PriceInfo(fromToken, toToken, exchangeRate, quoteCountDown)
+                            PriceInfo(
+                                fromToken = fromToken,
+                                toToken = toToken,
+                                exchangeRate = quoteResult.rate(),
+                                onPriceExpired = {
+                                    scope.launch {
+                                        inputFlow.emit(inputText)
+                                    }
+                                }
+                            )
                             if (!fromToken.inMixin()) {
-                                SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
+                                SlippageInfo(slippageBps, quoteResult.rate() != BigDecimal.ZERO, onShowSlippage)
                             }
                         }
                     } else {
@@ -199,6 +217,7 @@ fun SwapPage(
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .clip(RoundedCornerShape(12.dp))
+                                .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
@@ -220,15 +239,15 @@ fun SwapPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        onClick = { 
-                            quoteResp?.let { onSwap(it) }
+                        onClick = {
+                            quoteResult?.let { onSwap(it) }
                             keyboardController?.hide()
                             focusManager.clearFocus()
                         },
-                        enabled = quoteResp != null && errorInfo == null && !isLoading,
+                        enabled = quoteResult != null && errorInfo == null && !isLoading,
                         colors =
                             ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (quoteResp == null || errorInfo != null) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
+                                backgroundColor = if (quoteResult != null && errorInfo == null) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
                         shape = RoundedCornerShape(32.dp),
                         elevation =
@@ -246,8 +265,8 @@ fun SwapPage(
                             )
                         } else {
                             Text(
-                                text = if (quoteResp == null) "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (quoteResp == null) MixinAppTheme.colors.textAssist else Color.White,
+                                text = if (quoteResult == null) "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                color = if (quoteResult == null) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
                     }
@@ -331,8 +350,8 @@ fun InputArea(
 private fun PriceInfo(
     fromToken: SwapToken,
     toToken: SwapToken?,
-    exchangeRate: Float,
-    quoteCountDown: Float,
+    exchangeRate: BigDecimal,
+    onPriceExpired: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var isPriceReverse by remember {
@@ -340,10 +359,22 @@ private fun PriceInfo(
             fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
         )
     }
+    var quoteCountDown by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            var startTime = System.currentTimeMillis()
+            quoteCountDown = 0f
+            while (isActive && quoteCountDown < 1f) {
+                delay(100)
+                quoteCountDown += 0.01f
+            }
+            onPriceExpired()
+        }
+    }
 
     Row(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -354,9 +385,9 @@ private fun PriceInfo(
         ) {
             Text(
                 text = if (isPriceReverse) {
-                    "1 ${toToken?.symbol} ≈ ${1f / exchangeRate} ${fromToken.symbol}"
+                    "1 ${toToken?.symbol} ≈ ${BigDecimal.ONE.divide(exchangeRate).numberFormat8()} ${fromToken.symbol}"
                 } else {
-                    "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}"
+                    "1 ${fromToken.symbol} ≈ ${exchangeRate.numberFormat8()} ${toToken?.symbol}"
                 },
                 maxLines = 1,
                 style =

@@ -13,7 +13,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.Web3Service
@@ -46,7 +46,7 @@ class SwapViewModel
             amount: String,
             slippage: String,
             source: String,
-        ): MixinResponse<QuoteResponse> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source)
+        ): MixinResponse<QuoteResult> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
@@ -62,7 +62,7 @@ class SwapViewModel
             amount: String,
             slippage: String,
             source: String,
-        ) : Result<QuoteResponse?> {
+        ) : Result<QuoteResult?> {
             return if (amount.isNotBlank() && inputMint != null && outputMint != null) {
                 runCatching {
                     val response = web3Quote(
