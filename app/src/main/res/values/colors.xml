@@ -77,7 +77,7 @@
     <color name="bgBlock">#F6F7FA</color>
     <color name="codeBorder">#EFEFEF</color>
 
-    <color name="nftBorder">#E5E8EE</color>
+    <color name="nftBorder">#F0F0F1</color>
     <color name="bgNft">#FFFFFF</color>
 
     <color name="divider">#E9E9E9</color>
