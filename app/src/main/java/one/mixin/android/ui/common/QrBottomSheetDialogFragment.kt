@@ -5,9 +5,11 @@ import android.app.Dialog
 import android.graphics.Bitmap
 import android.os.Build
 import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -134,6 +136,13 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         )
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.idTv.updateLayoutParams<MarginLayoutParams> {
+            width = MarginLayoutParams.MATCH_PARENT
         }
     }
 

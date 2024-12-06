@@ -503,7 +503,6 @@
     <string name="Joined_in">Присоединился к %1$s</string>
     <string name="Label">Этикетка</string>
     <string name="Landing_back">Приземление назад</string>
-    <string name="landing_delete_content">Ваш аккаунт будет удален %1$s. Если вы продолжите входить в систему, запрос на удаление вашего аккаунта будет отменен.</string>
     <string name="landing_enter_mobile_tip">Мы никогда не будем публично показывать ваш номер мобильного телефона.</string>
     <string name="landing_invitation_dialog_content">Мы отправим 4-значный код на ваш номер телефона %1$s. Введите код на следующем экране.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>

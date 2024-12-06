@@ -560,7 +560,7 @@
     <string name="Join_group">加入群组</string>
     <string name="Joined_in">%1$s 加入</string>
     <string name="Label">标题</string>
-    <string name="landing_delete_content">您的账户将于 %1$s 被删除，如果您继续登录，删除您账户的请求将被取消。</string>
+    <string name="landing_delete_content">您在 %1$s 申请了删除账号，账号将于 %2$s 被删除，如果您继续登录，删除您账户的请求将被取消。</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="landing_introduction">点击 "同意并继续" 接受 Mixin %1$s和%2$s</string>
     <string name="landing_desc">带有端对端加密消息功能的开源加密钱包。</string>
@@ -1787,4 +1787,6 @@
     <string name="Export">导出</string>
     <string name="Export_mnemonic_phrase">导出助记词</string>
     <string name="Upgrade_safe">升级 Safe</string>
+    <string name="mixin_support">Mixin 客服</string>
+    <string name="ask_me_anything">向我提问</string>
 </resources>

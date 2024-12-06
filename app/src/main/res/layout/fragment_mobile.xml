@@ -12,7 +12,8 @@
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:rightIcon="@drawable/ic_support" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
