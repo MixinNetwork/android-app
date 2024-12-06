@@ -39,6 +39,8 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
+import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -55,7 +57,7 @@ fun InputContent(
     if (readOnly) {
         val v =
             try {
-                if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING)
+                if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).multiply(BigDecimal(Fiats.getRate()))
             } catch (e: Exception) {
                 BigDecimal.ZERO
             }
@@ -84,7 +86,7 @@ fun InputContent(
             if (v != BigDecimal.ZERO) {
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "$${v.toPlainString()}",
+                        text = "${Fiats.getSymbol()}${v.priceFormat()}",
                         style =
                             TextStyle(
                                 fontSize = 12.sp,
@@ -110,7 +112,7 @@ fun InputContent(
                         } catch (e: Exception) {
                             BigDecimal.ZERO
                         }
-                    mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING))
+                    mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).multiply(BigDecimal(Fiats.getRate())))
                 } else {
                     mutableStateOf(BigDecimal.ZERO)
                 },
@@ -129,7 +131,7 @@ fun InputContent(
                             } catch (e: Exception) {
                                 return@BasicTextField
                             }
-                        valueText.value = v.multiply(BigDecimal(token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
+                        valueText.value = v.multiply(BigDecimal(token?.price ?: "0").multiply(BigDecimal(Fiats.getRate())))
                         onInputChanged?.invoke(it)
                     },
                     maxLines = 1,
@@ -164,7 +166,7 @@ fun InputContent(
             if (valueText.value != BigDecimal.ZERO) {
                 Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "$${valueText.value.toPlainString().numberFormat8()}",
+                        text = "${Fiats.getSymbol()}${valueText.value.priceFormat()}",
                         style =
                             TextStyle(
                                 fontSize = 12.sp,
