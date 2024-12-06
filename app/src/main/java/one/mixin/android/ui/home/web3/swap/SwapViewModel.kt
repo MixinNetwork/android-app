@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.swap
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -51,6 +53,34 @@ class SwapViewModel
         ): MixinResponse<SwapResponse> {
             addRouteBot()
             return assetRepository.web3Swap(swapRequest)
+        }
+
+        suspend fun quote(
+            context: Context,
+            inputMint: String?,
+            outputMint: String?,
+            amount: String,
+            slippage: String,
+            source: String,
+        ) : Result<QuoteResponse?> {
+            return if (amount.isNotBlank() && inputMint != null && outputMint != null) {
+                runCatching {
+                    val response = web3Quote(
+                        inputMint = inputMint,
+                        outputMint = outputMint,
+                        amount = amount,
+                        slippage = slippage,
+                        source = source,
+                    )
+                    return if (response.isSuccess) {
+                        Result.success(requireNotNull(response.data))
+                    } else {
+                        Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
+                    }
+                }
+            } else {
+                 Result.success(null)
+            }
         }
 
         suspend fun searchTokens(query: String) = assetRepository.searchTokens(query)

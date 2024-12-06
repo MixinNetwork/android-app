@@ -178,10 +178,9 @@ class SwapFragment : BaseFragment() {
                     ) {
                         composable(SwapDestination.Swap.name) {
                             SwapPage(
-                                viewModel = swapViewModel,
                                 fromToken = fromToken,
                                 toToken = toToken,
-                                initialAmount = initialAmount ?: "",
+                                initialAmount = initialAmount,
                                 slippageBps = slippage,
                                 onSelectToken = { type ->
                                     selectCallback(swapTokens, type)
@@ -191,6 +190,7 @@ class SwapFragment : BaseFragment() {
                                         handleSwap(quote)
                                     }
                                 },
+                                source = getSource(),
                                 onShowSlippage = {
                                     SwapSlippageBottomSheetDialogFragment.newInstance(slippage)
                                         .setOnSlippage { bps ->

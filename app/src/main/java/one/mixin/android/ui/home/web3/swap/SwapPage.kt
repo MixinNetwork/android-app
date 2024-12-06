@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
@@ -29,6 +31,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,9 +57,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.QuoteResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -67,97 +72,56 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
 import java.math.BigDecimal
 
+@FlowPreview
 @Composable
 fun SwapPage(
-    viewModel: SwapViewModel,
     fromToken: SwapToken?,
     toToken: SwapToken?,
-    initialAmount: String,
+    initialAmount: String?,
+    source: String,
     slippageBps: Int,
     onSelectToken: (SelectTokenType) -> Unit,
     onSwap: (QuoteResponse) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
+    rememberCoroutineScope()
+    val context = LocalContext.current
+    val viewModel = hiltViewModel<SwapViewModel>()
+
     var isLoading by remember { mutableStateOf(false) }
-    var inputText = remember { mutableStateOf(initialAmount) }
+    var inputText by remember { mutableStateOf(initialAmount ?: "") }
     var outputText by remember { mutableStateOf("") }
     var exchangeRate by remember { mutableFloatStateOf(0f) }
     var quoteCountDown by remember { mutableFloatStateOf(0f) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var quoteResp by remember { mutableStateOf<QuoteResponse?>(null) }
-    var quoteJob by remember { mutableStateOf<Job?>(null) }
 
-    val scope = rememberCoroutineScope()
+    var isReverse by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
-    // LaunchedEffect(fromToken, toToken, inputText.value) {
-    //     refreshQuote(inputText.value)
-    // }
+    val inputFlow = remember {
+        MutableStateFlow<String>(inputText)
+    }
 
-    // fun refreshQuote(text: String) {
-    //     quoteJob?.takeIf { it.isActive }?.cancel()
-    //
-    //     if (fromToken == null || toToken == null || text.isEmpty()) {
-    //         outputText = ""
-    //         exchangeRate = 0f
-    //         errorInfo = null
-    //         quoteResp = null
-    //         return
-    //     }
-    //
-    //     scope.launch {
-    //         quoteJob = scope.launch {
-    //             quote(text)
-    //             repeat(100) { t ->
-    //                 delay(100)
-    //                 quoteCountDown = t / 100f
-    //             }
-    //             refreshQuote(text)
-    //         }
-    //     }
-    // }
+    LaunchedEffect(inputText) {
+        inputFlow.emit(inputText)
+    }
 
-    // suspend fun quote(input: String) {
-    //     isLoading = true
-    //     errorInfo = null
-    //     quoteResp = null
-    //
-    //     if (fromToken == null || toToken == null) {
-    //         isLoading = false
-    //         return
-    //     }
-    //
-    //     val amount = input.toBigDecimalOrNull()
-    //     if (amount == null || amount <= BigDecimal.ZERO) {
-    //         outputText = ""
-    //         exchangeRate = 0f
-    //         isLoading = false
-    //         return
-    //     }
-    //
-    //     val resp = withContext(Dispatchers.IO) {
-    //         viewModel.web3Quote(
-    //             fromToken.assetId,
-    //             toToken.assetId,
-    //             amount.toString(),
-    //             slippageBps.toString(),
-    //             "jupiter_v6"
-    //         ).data
-    //     }
-    //
-    //     isLoading = false
-    //     quoteResp = resp
-    //
-    //     if (resp == null) {
-    //         outputText = ""
-    //         exchangeRate = 0f
-    //         errorInfo = null
-    //         return
-    //     }
-    //
-    //     outputText = resp.outAmount
-    //     exchangeRate = resp.price.toFloat()
-    // }
+    LaunchedEffect(Unit) {
+        inputFlow
+            .debounce(300L)
+            .collectLatest { debouncedValue ->
+                viewModel.quote(context, fromToken?.getUnique(), toToken?.getUnique(), debouncedValue, slippageBps.toString(), source)
+                    .onSuccess { value ->
+                        quoteResp = value
+                        outputText = value?.outAmount ?: ""
+                    }
+                    .onFailure { exception ->
+                        errorInfo = exception.message
+                    }
+            }
+    }
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
@@ -165,8 +129,6 @@ fun SwapPage(
         pop = pop,
     ) {
         val context = LocalContext.current
-        var isReverse by remember { mutableStateOf(false) }
-        val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
         if (fromToken == null) {
             Loading()
@@ -202,9 +164,8 @@ fun SwapPage(
                         }
                     },
                     headerCompose = {
-                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.Token_From), readOnly = false, { onSelectToken(SelectTokenType.From) }) {
-                            inputText.value = it
-                            // refreshQuote(it)
+                        InputArea(token = fromToken, text = inputText, title = stringResource(id = R.string.Token_From), readOnly = false, { onSelectToken(SelectTokenType.From) }) {
+                            inputText = it
                         }
                     },
                     bottomCompose = {
@@ -256,7 +217,9 @@ fun SwapPage(
                     val keyboardController = LocalSoftwareKeyboardController.current
                     val focusManager = LocalFocusManager.current
                     Button(
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
                         onClick = { 
                             quoteResp?.let { onSwap(it) }
                             keyboardController?.hide()
@@ -374,11 +337,7 @@ private fun PriceInfo(
     val interactionSource = remember { MutableInteractionSource() }
     var isPriceReverse by remember {
         mutableStateOf(
-            if (fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets) {
-                true
-            } else {
-                false
-            }
+            fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
         )
     }
 
@@ -658,14 +617,14 @@ fun checkBalance(
     val inputValue =
         try {
             BigDecimal(inputText)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } ?: return null
     if (inputValue <= BigDecimal.ZERO) return null
     val balanceValue =
         try {
             BigDecimal(balance)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } ?: return null
     return inputValue <= balanceValue
