@@ -189,7 +189,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     ((currentChain != null && it.chain.chainId == currentChain) || currentChain == null) && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
                 }.toMutableList() ?: mutableListOf()
 
-            val total = search(s, assetList, inMixin())
+            val total = search(s, assetList, currentChain, inMixin())
 
             adapter.tokens = ArrayList(total)
             if (!isAdded) {
@@ -207,6 +207,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private suspend fun search(
         s: String,
         localTokens: MutableList<SwapToken>,
+        currentChain: String?,
         inMixin: Boolean
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
@@ -222,7 +223,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         )?.let { remoteList ->
             localTokens.addAll(
                 remoteList.filter { ra ->
-                    !localTokens.any { a -> a.address.equals(ra.address, true) }
+                    !localTokens.any { a -> a.address.equals(ra.address, true) } && ((currentChain != null && ra.chain.chainId == currentChain) || currentChain == null)
                 },
             )
         }
