@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
@@ -29,6 +31,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,144 +57,127 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
+import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.rate
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
+import timber.log.Timber
 import java.math.BigDecimal
+import java.math.RoundingMode
 
+@FlowPreview
 @Composable
 fun SwapPage(
-    viewModel: SwapViewModel,
-    fromToken: SwapToken?,
-    toToken: SwapToken?,
-    initialAmount: String,
+    from: SwapToken?,
+    to: SwapToken?,
+    initialAmount: String?,
+    source: String,
     slippageBps: Int,
     onSelectToken: (SelectTokenType) -> Unit,
-    onSwap: (QuoteResponse) -> Unit,
+    onSwap: (QuoteResult) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
-    var isLoading by remember { mutableStateOf(false) }
-    var inputText = remember { mutableStateOf(initialAmount) }
-    var outputText by remember { mutableStateOf("") }
-    var exchangeRate by remember { mutableFloatStateOf(0f) }
-    var quoteCountDown by remember { mutableFloatStateOf(0f) }
+    rememberCoroutineScope()
+    val context = LocalContext.current
+    val viewModel = hiltViewModel<SwapViewModel>()
+
+    var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
-    var quoteResp by remember { mutableStateOf<QuoteResponse?>(null) }
-    var quoteJob by remember { mutableStateOf<Job?>(null) }
 
-    val scope = rememberCoroutineScope()
+    var inputText by remember { mutableStateOf(initialAmount ?: "") }
 
-    // LaunchedEffect(fromToken, toToken, inputText.value) {
-    //     refreshQuote(inputText.value)
-    // }
+    var isLoading by remember { mutableStateOf(false) }
+    var isReverse by remember { mutableStateOf(false) }
+    var invalidFlag by remember { mutableStateOf(false) } // trigger to refresh quote
 
-    // fun refreshQuote(text: String) {
-    //     quoteJob?.takeIf { it.isActive }?.cancel()
-    //
-    //     if (fromToken == null || toToken == null || text.isEmpty()) {
-    //         outputText = ""
-    //         exchangeRate = 0f
-    //         errorInfo = null
-    //         quoteResp = null
-    //         return
-    //     }
-    //
-    //     scope.launch {
-    //         quoteJob = scope.launch {
-    //             quote(text)
-    //             repeat(100) { t ->
-    //                 delay(100)
-    //                 quoteCountDown = t / 100f
-    //             }
-    //             refreshQuote(text)
-    //         }
-    //     }
-    // }
+    var fromToken by remember(from, to, isReverse) { 
+        mutableStateOf(if (isReverse) to else from)
+    }
+    var toToken by remember(from, to, isReverse) { 
+        mutableStateOf(if (isReverse) from else to)
+    }
 
-    // suspend fun quote(input: String) {
-    //     isLoading = true
-    //     errorInfo = null
-    //     quoteResp = null
-    //
-    //     if (fromToken == null || toToken == null) {
-    //         isLoading = false
-    //         return
-    //     }
-    //
-    //     val amount = input.toBigDecimalOrNull()
-    //     if (amount == null || amount <= BigDecimal.ZERO) {
-    //         outputText = ""
-    //         exchangeRate = 0f
-    //         isLoading = false
-    //         return
-    //     }
-    //
-    //     val resp = withContext(Dispatchers.IO) {
-    //         viewModel.web3Quote(
-    //             fromToken.assetId,
-    //             toToken.assetId,
-    //             amount.toString(),
-    //             slippageBps.toString(),
-    //             "jupiter_v6"
-    //         ).data
-    //     }
-    //
-    //     isLoading = false
-    //     quoteResp = resp
-    //
-    //     if (resp == null) {
-    //         outputText = ""
-    //         exchangeRate = 0f
-    //         errorInfo = null
-    //         return
-    //     }
-    //
-    //     outputText = resp.outAmount
-    //     exchangeRate = resp.price.toFloat()
-    // }
+    val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
+    
+    LaunchedEffect(inputText, invalidFlag, fromToken, toToken)  {
+        shouldRefreshQuote.emit(inputText)
+    }
+
+    LaunchedEffect(inputText, invalidFlag, fromToken, toToken) {
+        shouldRefreshQuote
+            .debounce(300L)
+            .collectLatest { text ->
+                fromToken?.let { from ->
+                    toToken?.let { to ->
+                        if (text.isNotBlank()) {
+                            Timber.e("Refreshing quote: inputText=$text, fromToken=${from.symbol}, toToken=${to.symbol}")
+                            isLoading = true
+                            errorInfo = null
+                            viewModel.quote(context, from.getUnique(), to.getUnique(), text, slippageBps.toString(), source)
+                                .onSuccess { value ->
+                                    quoteResult = value
+                                    isLoading = false
+                                }
+                                .onFailure { exception ->
+                                    quoteResult = null
+                                    errorInfo = exception.message
+                                    isLoading = false
+                                }
+                        }
+                    }
+                }
+            }
+    }
+
+    val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
         verticalScrollable = true,
         pop = pop,
     ) {
-        val context = LocalContext.current
-        var isReverse by remember { mutableStateOf(false) }
-        val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
-
-        if (fromToken == null) {
-            Loading()
-        } else {
+        fromToken?.let { from ->
             Column(
-                modifier =
-                    Modifier
-                        .verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState()),
             ) {
                 SwapLayout(
                     centerCompose = {
                         Box(
-                            modifier =
-                                Modifier
-                                    .width(40.dp)
-                                    .height(40.dp)
-                                    .clip(CircleShape)
-                                    .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                    .background(MixinAppTheme.colors.backgroundGrayLight)
-                                    .clickable {
-                                        isReverse = !isReverse
-                                        onSelectToken(SelectTokenType.From)
-                                        context.clickVibrate()
+                            modifier = Modifier
+                                .width(40.dp)
+                                .height(40.dp)
+                                .clip(CircleShape)
+                                .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
+                                .background(MixinAppTheme.colors.backgroundGrayLight)
+                                .clickable {
+                                    isReverse = !isReverse
+                                    invalidFlag = !invalidFlag
+                                    fromToken?.let { f ->
+                                        toToken?.let { t ->
+                                            context.defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${f.getUnique()} ${t.getUnique()}")
+                                        }
                                     }
-                                    .rotate(rotation),
+                                    context.clickVibrate()
+                                }
+                                .rotate(rotation),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
@@ -202,42 +188,67 @@ fun SwapPage(
                         }
                     },
                     headerCompose = {
-                        InputArea(token = fromToken, text = inputText.value, title = stringResource(id = R.string.Token_From), readOnly = false, { onSelectToken(SelectTokenType.From) }) {
-                            inputText.value = it
-                            // refreshQuote(it)
-                        }
+                        InputArea(
+                            token = fromToken,
+                            text = inputText,
+                            title = stringResource(id = R.string.Token_From),
+                            readOnly = false,
+                            selectClick = { onSelectToken(SelectTokenType.From) },
+                            onInputChanged = { inputText = it },
+                            onMax = {
+                                inputText = fromToken?.balance ?: "0"
+                            }
+                        )
                     },
                     bottomCompose = {
-                        InputArea(token = toToken, text = outputText, title = stringResource(id = R.string.To), readOnly = true, { onSelectToken(SelectTokenType.To) })
+                        InputArea(
+                            token = toToken,
+                            text = quoteResult?.outAmount ?: "",
+                            title = stringResource(id = R.string.To),
+                            readOnly = true,
+                            selectClick = { onSelectToken(SelectTokenType.To) }
+                        )
                     },
                     margin = 6.dp,
                 )
+
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     if (errorInfo.isNullOrBlank() && !isLoading) {
                         Column(
-                            modifier =
-                            Modifier
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .alpha(
-                                    if (exchangeRate == 0f) 0f else 1f,
-                                )
+                                .alpha(if (quoteResult == null) 0f else 1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
-                            PriceInfo(fromToken, toToken, exchangeRate, quoteCountDown)
-                            if (!fromToken.inMixin()) {
-                                SlippageInfo(slippageBps, exchangeRate != 0f, onShowSlippage)
+                            quoteResult?.let { quote ->
+                                val rate = quote.rate()
+                                if (rate != BigDecimal.ZERO) {
+                                    PriceInfo(
+                                        fromToken = from,
+                                        toToken = toToken,
+                                        exchangeRate = quote.rate(),
+                                        onPriceExpired = {
+                                            invalidFlag = !invalidFlag
+                                        }
+                                    )
+                                } else {
+
+                                }
+                                if (!from.inMixin()) {
+                                    SlippageInfo(slippageBps, quote.rate() != BigDecimal.ZERO, onShowSlippage)
+                                }
                             }
                         }
                     } else {
                         Row(
-                            modifier =
-                            Modifier
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .clip(RoundedCornerShape(12.dp))
+                                .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
@@ -256,16 +267,18 @@ fun SwapPage(
                     val keyboardController = LocalSoftwareKeyboardController.current
                     val focusManager = LocalFocusManager.current
                     Button(
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        onClick = { 
-                            quoteResp?.let { onSwap(it) }
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        onClick = {
+                            quoteResult?.let { onSwap(it) }
                             keyboardController?.hide()
                             focusManager.clearFocus()
                         },
-                        enabled = quoteResp != null && errorInfo == null && !isLoading,
+                        enabled = quoteResult != null && errorInfo == null && !isLoading,
                         colors =
                             ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (quoteResp == null || errorInfo != null) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
+                                backgroundColor = if (quoteResult != null && errorInfo == null) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
                         shape = RoundedCornerShape(32.dp),
                         elevation =
@@ -283,13 +296,15 @@ fun SwapPage(
                             )
                         } else {
                             Text(
-                                text = if (quoteResp == null) "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (quoteResp == null) MixinAppTheme.colors.textAssist else Color.White,
+                                text = if (quoteResult == null) "${fromToken!!.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                color = if (quoteResult == null) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
                     }
                 }
             }
+        } ?: run {
+            Loading()
         }
     }
 }
@@ -320,19 +335,21 @@ fun InputArea(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = title, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.width(4.dp))
-                CoilImage(
-                    model = token?.chain?.icon ?: "",
-                    modifier =
-                        Modifier
-                            .size(14.dp)
-                            .clip(CircleShape),
-                    placeholder = R.drawable.ic_avatar_place_holder,
-                )
+                token?.let { 
+                    CoilImage(
+                        model = it.chain.icon,
+                        modifier =
+                            Modifier
+                                .size(14.dp)
+                                .clip(CircleShape),
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                    )
+                }
                 Spacer(modifier = Modifier.width(4.dp))
-                if (token == null) {
+                token?.let { 
+                    Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                } ?: run {
                     Text(text = stringResource(id = R.string.select_token), fontSize = 12.sp, color = MixinAppTheme.colors.textMinor)
-                } else {
-                    Text(text = token.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -342,15 +359,27 @@ fun InputArea(
                     tint = MixinAppTheme.colors.textAssist,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = token?.balance ?: "0",
-                    style =
-                        TextStyle(
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                            textAlign = TextAlign.End,
-                        ),
-                )
+                token?.let { 
+                    Text(
+                        text = it.balance ?: "0",
+                        style =
+                            TextStyle(
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                textAlign = TextAlign.End,
+                            ),
+                    )
+                } ?: run {
+                    Text(
+                        text = "0",
+                        style =
+                            TextStyle(
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                textAlign = TextAlign.End,
+                            ),
+                    )
+                }
                 if (!readOnly) {
                     Spacer(modifier = Modifier.width(8.dp))
                     InputAction(text = stringResource(id = R.string.balance_max)) {
@@ -368,23 +397,30 @@ fun InputArea(
 private fun PriceInfo(
     fromToken: SwapToken,
     toToken: SwapToken?,
-    exchangeRate: Float,
-    quoteCountDown: Float,
+    exchangeRate: BigDecimal,
+    onPriceExpired: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     var isPriceReverse by remember {
         mutableStateOf(
-            if (fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets) {
-                true
-            } else {
-                false
-            }
+            fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
         )
+    }
+    var quoteCountDown by remember { mutableFloatStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            quoteCountDown = 0f
+            while (isActive && quoteCountDown < 1f) { // 10s
+                delay(100)
+                quoteCountDown += 0.01f
+            }
+            onPriceExpired()
+        }
     }
 
     Row(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -395,9 +431,9 @@ private fun PriceInfo(
         ) {
             Text(
                 text = if (isPriceReverse) {
-                    "1 ${toToken?.symbol} ≈ ${1f / exchangeRate} ${fromToken.symbol}"
+                    "1 ${toToken?.symbol} ≈ ${BigDecimal.ONE.divide(exchangeRate,  8, RoundingMode.HALF_UP).numberFormat8()} ${fromToken.symbol}"
                 } else {
-                    "1 ${fromToken.symbol} ≈ $exchangeRate ${toToken?.symbol}"
+                    "1 ${fromToken.symbol} ≈ ${exchangeRate.numberFormat8()} ${toToken?.symbol}"
                 },
                 maxLines = 1,
                 style =
@@ -658,14 +694,14 @@ fun checkBalance(
     val inputValue =
         try {
             BigDecimal(inputText)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } ?: return null
     if (inputValue <= BigDecimal.ZERO) return null
     val balanceValue =
         try {
             BigDecimal(balance)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } ?: return null
     return inputValue <= balanceValue

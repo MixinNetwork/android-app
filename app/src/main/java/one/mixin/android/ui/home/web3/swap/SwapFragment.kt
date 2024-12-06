@@ -29,7 +29,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
@@ -41,7 +41,6 @@ import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
@@ -178,10 +177,9 @@ class SwapFragment : BaseFragment() {
                     ) {
                         composable(SwapDestination.Swap.name) {
                             SwapPage(
-                                viewModel = swapViewModel,
-                                fromToken = fromToken,
-                                toToken = toToken,
-                                initialAmount = initialAmount ?: "",
+                                from = fromToken,
+                                to = toToken,
+                                initialAmount = initialAmount,
                                 slippageBps = slippage,
                                 onSelectToken = { type ->
                                     selectCallback(swapTokens, type)
@@ -191,6 +189,7 @@ class SwapFragment : BaseFragment() {
                                         handleSwap(quote)
                                     }
                                 },
+                                source = getSource(),
                                 onShowSlippage = {
                                     SwapSlippageBottomSheetDialogFragment.newInstance(slippage)
                                         .setOnSlippage { bps ->
@@ -280,7 +279,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResponse) {
+    private suspend fun handleSwap(quote: QuoteResult) {
         val inputMint = fromToken?.getUnique() ?: return
         val outputMint = toToken?.getUnique() ?: return
         val amount = if (inMixin()) {
