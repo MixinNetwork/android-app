@@ -73,6 +73,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageData
+import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
@@ -900,10 +901,13 @@ class ConversationViewModel
                 return@withContext transcripts
             }
 
-        fun getLastPinMessages(conversationId: String) =
-            conversationRepository.getLastPinMessages(conversationId)
+        fun getLastPinMessageId(conversationId: String): LiveData<String?> =
+            conversationRepository.getLastPinMessageId(conversationId)
 
-        fun countPinMessages(conversationId: String) =
+        suspend fun getPinMessageById(conversationId: String, messageId: String): PinMessageItem? =
+            conversationRepository.getPinMessageById(conversationId, messageId)
+
+        suspend fun countPinMessages(conversationId: String) =
             conversationRepository.countPinMessages(conversationId)
 
         suspend fun findPinMessageById(messageId: String) =

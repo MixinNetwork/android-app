@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
+import one.mixin.android.Constants.Account.PREF_MARKET_TOP_PERCENTAGE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -41,8 +42,11 @@ import one.mixin.android.job.RefreshMarketsJob
 import one.mixin.android.job.UpdateFavoriteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.Web3Fragment
+import one.mixin.android.ui.home.web3.market.PercentageMenuData
+import one.mixin.android.ui.home.web3.market.PercentageMenuType
 import one.mixin.android.ui.home.web3.market.TopMenuAdapter
 import one.mixin.android.ui.home.web3.market.TopMenuData
+import one.mixin.android.ui.home.web3.market.TopPercentageAdapter
 import one.mixin.android.ui.home.web3.market.Web3MarketAdapter
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.WalletActivity
@@ -86,12 +90,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 radioAll.isChecked = true
                 markets.isVisible = true
                 watchlist.isVisible = false
-                binding.dropSort.isVisible = true
+                binding.dropTopSort.isVisible = true
             } else {
                 radioFavorites.isChecked = true
                 markets.isVisible = false
                 watchlist.isVisible = true
-                binding.dropSort.isVisible = false
+                binding.dropTopSort.isVisible = false
             }
             val itemDecoration = object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
@@ -129,15 +133,24 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 }
             }
 
-            dropSort.setOnClickListener {
-                binding.sortArrow.animate().rotation(-180f).setDuration(200).start()
+            dropTopSort.setOnClickListener {
+                binding.sortTopArrow.animate().rotation(-180f).setDuration(200).start()
                 menuAdapter.checkPosition = top
                 menuAdapter.notifyDataSetChanged()
                 onMenuShow()
                 sortMenu.show()
             }
+
+            dropPercentageSort.setOnClickListener {
+                binding.sortPercentageArrow.animate().rotation(-180f).setDuration(200).start()
+                percentageMenuAdapter.checkPosition = topPercentage
+                percentageMenuAdapter.notifyDataSetChanged()
+                onPercentageMenuShow()
+                percentageSortMenu.show()
+            }
         }
         updateUI()
+        topPercentage = defaultSharedPreferences.getInt(PREF_MARKET_TOP_PERCENTAGE, 0)
         loadGlobalMarket()
         RxBus.listen(GlobalMarketEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -190,7 +203,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 defaultSharedPreferences.putInt(Constants.Account.PREF_MARKET_TYPE, value)
                 when (type) {
                     TYPE_ALL -> {
-                        binding.dropSort.isVisible = true
+                        binding.dropTopSort.isVisible = true
                         binding.titleLayout.setText(R.string.Market_Cap)
                         binding.markets.isVisible = true
                         binding.watchlist.isVisible = false
@@ -199,7 +212,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                     }
 
                     else -> {
-                        binding.dropSort.isVisible = false
+                        binding.dropTopSort.isVisible = false
                         binding.titleLayout.setText(R.string.Watchlist)
                         binding.markets.isVisible = false
                         if (watchlistAdapter.itemCount == 0) {
@@ -240,7 +253,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             else -> 100
         }
 
-        binding.dropTv.text = getString(
+        binding.dropTopTv.text = getString(
             R.string.top_count,
             when (top) {
                 1 -> 200
@@ -248,6 +261,12 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 else -> 100
             }
         )
+
+        binding.dropPercentageTv.text = if (topPercentage == 0) {
+            getString(R.string.change_percent_period_day, 7)
+        } else {
+            getString(R.string.change_percent_period_hour, 24)
+        }
 
         // Cancel previous job if it exists
         marketJob?.cancel()
@@ -319,13 +338,13 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     }
 
     private val onMenuShow = {
-        binding.dropSort.setBackgroundResource(R.drawable.bg_market_drop)
-        binding.dropTv.setTextColor(0xFF4B7CDD.toInt())
+        binding.dropTopSort.setBackgroundResource(R.drawable.bg_market_drop)
+        binding.dropTopTv.setTextColor(0xFF4B7CDD.toInt())
     }
 
     private val sortMenu by lazy {
         ListPopupWindow(requireContext()).apply {
-            anchorView = binding.dropSort
+            anchorView = binding.dropTopSort
             setAdapter(menuAdapter)
             setOnItemClickListener { _, _, position, _ ->
                 top = position
@@ -340,14 +359,14 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             verticalOffset = requireContext().dpToPx(10f)
             setOnDismissListener {
                 onMenuDismiss()
-                binding.sortArrow.animate().rotation(0f).setDuration(200).start()
+                binding.sortTopArrow.animate().rotation(0f).setDuration(200).start()
             }
         }
     }
 
     private val onMenuDismiss = {
-        binding.dropSort.setBackgroundResource(R.drawable.bg_market_radio)
-        binding.dropTv.setTextColor(requireContext().colorAttr(R.attr.text_primary))
+        binding.dropTopSort.setBackgroundResource(R.drawable.bg_market_radio)
+        binding.dropTopTv.setTextColor(requireContext().colorAttr(R.attr.text_primary))
     }
 
     private val menuAdapter: TopMenuAdapter by lazy {
@@ -358,4 +377,56 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
         )
         TopMenuAdapter(requireContext(), menuItems)
     }
+
+    private val onPercentageMenuShow = {
+        binding.dropPercentageSort.setBackgroundResource(R.drawable.bg_market_drop)
+        binding.dropPercentageTv.setTextColor(0xFF4B7CDD.toInt())
+    }
+
+    private val onPercentageMenuDismiss = {
+        binding.dropPercentageSort.setBackgroundResource(R.drawable.bg_market_radio)
+        binding.dropPercentageTv.setTextColor(requireContext().colorAttr(R.attr.text_primary))
+    }
+
+    private val percentageSortMenu by lazy {
+        ListPopupWindow(requireContext()).apply {
+            anchorView = binding.dropPercentageSort
+            setAdapter(percentageMenuAdapter)
+            setOnItemClickListener { _, _, position, _ ->
+                topPercentage = position
+                dismiss()
+            }
+            width = 130.dp
+            height = ListPopupWindow.WRAP_CONTENT
+            isModal = true
+            setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
+            setDropDownGravity(Gravity.END)
+            horizontalOffset = requireContext().dpToPx(2f)
+            verticalOffset = requireContext().dpToPx(10f)
+            setOnDismissListener {
+                onPercentageMenuDismiss()
+                binding.sortPercentageArrow.animate().rotation(0f).setDuration(200).start()
+            }
+        }
+    }
+
+    private val percentageMenuAdapter: TopPercentageAdapter by lazy {
+        val menuItems = listOf(
+            PercentageMenuData(PercentageMenuType.SEVEN_DAYS),
+            PercentageMenuData(PercentageMenuType.TWENTY_FOUR_HOURS),
+        )
+        TopPercentageAdapter(requireContext(), menuItems)
+    }
+
+    private var topPercentage = 0
+        set(value) {
+            if (field != value) {
+                field = value
+                marketsAdapter.dayType = value == 0
+                watchlistAdapter.dayType = value == 0
+                binding.titleLayout.updateSortType(topPercentage)
+                defaultSharedPreferences.putInt(PREF_MARKET_TOP_PERCENTAGE, value)
+                bindData()
+            }
+        }
 }

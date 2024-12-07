@@ -1134,17 +1134,6 @@ class MainActivity : BlazeBaseActivity() {
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
     }
 
-    override fun onResumeFragments() {
-        super.onResumeFragments()
-        val fragments = supportFragmentManager.fragments
-        if (fragments.size > 0) {
-            fragments.filter { it != null && it is Web3Fragment && it.isVisible }
-                .forEach {
-                    (it as Web3Fragment).updateUI()
-                }
-        }
-    }
-
     companion object {
         const val URL = "url"
         const val SCAN = "scan"
