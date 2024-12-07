@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
+import one.mixin.android.Constants.Account.PREF_MARKET_TOP_PERCENTAGE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -149,6 +150,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             }
         }
         updateUI()
+        topPercentage = defaultSharedPreferences.getInt(PREF_MARKET_TOP_PERCENTAGE, 0)
         loadGlobalMarket()
         RxBus.listen(GlobalMarketEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -423,6 +425,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
                 marketsAdapter.dayType = value == 0
                 watchlistAdapter.dayType = value == 0
                 binding.titleLayout.updateSortType(topPercentage)
+                defaultSharedPreferences.putInt(PREF_MARKET_TOP_PERCENTAGE, value)
                 bindData()
             }
         }

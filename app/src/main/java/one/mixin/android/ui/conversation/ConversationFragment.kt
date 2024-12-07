@@ -2055,7 +2055,7 @@ ConversationFragment() :
                             scrollToMessage(messageId)
                         }
                     } else {
-                        binding.pinMessageLayout.isVisible = true
+                        binding.pinMessageLayout.isVisible = false
                     }
                 }
                 binding.pinMessageLayout.pin.setOnClickListener {
