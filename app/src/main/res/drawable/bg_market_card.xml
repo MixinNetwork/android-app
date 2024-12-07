@@ -4,6 +4,9 @@
         android:width="0.8dp"
         android:color="@color/nftBorder" />
 
+    <solid
+        android:color="?attr/bg_white" />
+
     <padding
         android:bottom="1dp"
         android:left="1dp"
