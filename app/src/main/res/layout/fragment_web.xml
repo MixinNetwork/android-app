@@ -17,13 +17,13 @@
         <ViewAnimator
             android:id="@+id/title_va"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_white">
 
             <LinearLayout
                 android:id="@+id/title_ll"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:background="?attr/bg_white"
                 android:orientation="horizontal"
                 tools:ignore="UseCompoundDrawables,UselessParent">
 
@@ -53,7 +53,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:background="?attr/bg_white"
                 android:orientation="vertical"
                 tools:ignore="UseCompoundDrawables,UselessParent">
 
