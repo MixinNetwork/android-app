@@ -890,7 +890,7 @@ class WebFragment : BaseFragment() {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleLl.isGone = immersive
+            binding.titleVa.isGone = immersive
 
             webAppInterface =
                 WebAppInterface(
