@@ -890,7 +890,7 @@ class WebFragment : BaseFragment() {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleLl.isGone = immersive
+            binding.titleVa.isGone = immersive
 
             webAppInterface =
                 WebAppInterface(
@@ -1651,7 +1651,7 @@ class WebFragment : BaseFragment() {
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
-        binding.titleLl.setBackgroundColor(color)
+        binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
 
