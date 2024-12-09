@@ -31,6 +31,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
+import io.sentry.android.core.SentryAndroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -162,6 +163,14 @@ open class MixinApplication :
 
         applicationScope.launch {
             entityInitialize()
+        }
+
+        SentryAndroid.init(this) { options ->
+            options.dsn = BuildConfig.SENTRYDSN
+            options.isDebug = BuildConfig.DEBUG
+
+            options.experimental.sessionReplay.onErrorSampleRate = 1.0
+            options.experimental.sessionReplay.sessionSampleRate = 1.0
         }
     }
 

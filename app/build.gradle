@@ -146,13 +146,6 @@ android {
                 minifyEnabled true
                 proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                 signingConfig signingConfigs.release
-                manifestPlaceholders += [
-                        SENTRY_DSN                    : project.findProperty("SENTRY_DSN") ?: "",
-                        SENTRY_TRACES_SAMPLE_RATE     : project.findProperty("SENTRY.TRACES.RATE.RELEASE") ?: "0.1",
-                        SENTRY_ENABLE_USER_INTERACTION: "false",
-                        SENTRY_ATTACH_SCREENSHOT      : "false",
-                        SENTRY_ATTACH_VIEW_HIERARCHY  : "false"
-                ]
             }
         }
         debug {
@@ -161,13 +154,6 @@ android {
             ndk {
                 abiFilters "arm64-v8a", "x86_64"
             }
-            manifestPlaceholders += [
-                    SENTRY_DSN                    : project.findProperty("SENTRY_DSN") ?: "",
-                    SENTRY_TRACES_SAMPLE_RATE     : project.findProperty("SENTRY.TRACES.RATE.DEBUG") ?: "1.0",
-                    SENTRY_ENABLE_USER_INTERACTION: "false",
-                    SENTRY_ATTACH_SCREENSHOT      : "false",
-                    SENTRY_ATTACH_VIEW_HIERARCHY  : "false"
-            ]
         }
 
         staging {
