@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
@@ -22,6 +23,7 @@ import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
@@ -74,6 +76,23 @@ class SwapViewModel
                     )
                     return if (response.isSuccess) {
                         Result.success(requireNotNull(response.data))
+                    } else if (response.errorCode == INVALID_QUOTE_AMOUNT) {
+                        val builder = StringBuilder(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription))
+                        val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
+                        if (extra != null) {
+                            val min = extra.get("min").asString
+                            val max = extra.get("max").asString
+                            if (!min.isNullOrBlank() && !max.isNullOrBlank()) {
+                                builder.append(context.getString(R.string.single_transaction_should_be_between, min, max))
+                            } else if (!min.isNullOrBlank()) {
+                                builder.append(context.getString(R.string.single_transaction_should_be_greater_than, min))
+                            } else if (!max.isNullOrBlank()) {
+                                builder.append(context.getString(R.string.single_transaction_should_be_less_than, max))
+                            }
+                            @Suppress("UNUSED_VARIABLE")
+                            val source = extra.get("source").asString
+                        }
+                        Result.failure(Throwable(builder.toString()))
                     } else {
                         Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                     }

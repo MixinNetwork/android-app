@@ -137,10 +137,10 @@ class SwapFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        initAmount()
         lifecycleScope.launch {
             initFromTo()
             refreshTokens()
-            initAmount()
         }
         return ComposeView(inflater.context).apply {
             setContent {

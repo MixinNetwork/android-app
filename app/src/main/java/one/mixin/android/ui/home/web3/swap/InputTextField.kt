@@ -112,7 +112,9 @@ fun InputContent(
                         } catch (e: Exception) {
                             BigDecimal.ZERO
                         }
-                    mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).multiply(BigDecimal(Fiats.getRate())))
+                    mutableStateOf(v.multiply(runCatching {
+                        BigDecimal(token.price ?: "0")
+                    }.getOrDefault(BigDecimal.ZERO)).multiply(BigDecimal(Fiats.getRate())))
                 } else {
                     mutableStateOf(BigDecimal.ZERO)
                 },
