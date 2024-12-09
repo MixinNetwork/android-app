@@ -1756,7 +1756,7 @@
     <string name="Create_Account">Create Account</string>
     <string name="Mobile_Phone">Mobile Phone</string>
     <string name="Mnemonic_Phrase">Mnemonic Phrase</string>
-    <string name="create_introduction">MPC Wallet, %1$s, Self-custody, Social Recovery</string>
+    <string name="create_introduction">MPC Wallet, 2FA, %1$s, Self-custody, Social Recovery</string>
     <string name="Convenience">Convenience</string>
     <string name="Create_Mnemonic_Phrase">Create Mnemonic Phrase</string>
     <string name="mnemonic_phrase_instruction_1">The 13 mnemonic phrases generated when creating an account are intended only for Mixin Network-related products.</string>
