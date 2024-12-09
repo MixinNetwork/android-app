@@ -131,7 +131,7 @@ fun AboutPage() {
             AboutTile(
                 text = stringResource(id = R.string.Help_center),
                 onClick = {
-                    context.openUrl(Constants.HelpLink.CENTER)
+                    context.openUrl(context.getString(R.string.help_link))
                 },
             )
             AboutTile(
