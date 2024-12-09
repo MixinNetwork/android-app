@@ -271,11 +271,11 @@ class Tip
             return salt
         }
 
-        fun getSpendPriv(context: Context, seed: ByteArray): ByteArray? {
+        fun getSpendPriv(context: Context, seed: ByteArray): ByteArray {
             var entropy = getMnemonicFromEncryptedPreferences(context)
             if (entropy == null) { // Register safe must generate mnemonic, Only once
                 if (Session.getAccount() != null && !Session.hasPhone() && !Session.saltExported()) {
-                    return null
+                    throw IllegalStateException("Entropy lost")
                 }
                 entropy = generateEntropyAndStore(context)
             }
