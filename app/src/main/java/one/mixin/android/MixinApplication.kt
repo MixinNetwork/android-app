@@ -167,7 +167,6 @@ open class MixinApplication :
 
         SentryAndroid.init(this) { options ->
             options.dsn = BuildConfig.SENTRYDSN
-            options.isDebug = BuildConfig.DEBUG
             options.isEnableUserInteractionTracing = false
             options.isEnableUserInteractionBreadcrumbs = false
             options.experimental.sessionReplay.onErrorSampleRate = (if (BuildConfig.DEBUG)
