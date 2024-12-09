@@ -64,6 +64,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
@@ -626,7 +627,24 @@ class SwapFragment : BaseFragment() {
                 return@handleMixinResponse true
             },
             failureBlock = { r ->
-                errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                val builder = StringBuilder(requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription))
+                if (r.errorCode == INVALID_QUOTE_AMOUNT) {
+                    val extra = r.error?.extra?.asJsonObject?.get("data")?.asJsonObject
+                    if (extra != null) {
+                        val min = extra.get("min").asString
+                        val max = extra.get("max").asString
+                        if (!min.isNullOrBlank() && !max.isNullOrBlank()) {
+                            builder.append(getString(R.string.single_transaction_should_be_between, min, max))
+                        } else if (!min.isNullOrBlank()) {
+                            builder.append(getString(R.string.single_transaction_should_be_greater_than, min))
+                        } else if (!max.isNullOrBlank()) {
+                            builder.append(getString(R.string.single_transaction_should_be_less_than, max))
+                        }
+                        @Suppress("UNUSED_VARIABLE")
+                        val source = extra.get("source").asString
+                    }
+                }
+                errorInfo = builder.toString()
                 return@handleMixinResponse true
             },
             endBlock = {
