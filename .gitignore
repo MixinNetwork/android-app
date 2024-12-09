@@ -8,3 +8,4 @@ google-services.json
 .DS_Store
 /.kotlin
 .externalNativeBuild
+sentry.properties
