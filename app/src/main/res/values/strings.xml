@@ -192,7 +192,7 @@
         <item quantity="one">Delete %1$d message?</item>
         <item quantity="other">Delete %1$d messages?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
+    <string name="chat_delete_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8/</string>
     <string name="chat_group_add">%1$s added %2$s</string>
     <string name="chat_group_call_did_not_answer">%1$s did not answer group call</string>
     <string name="chat_group_call_self_did_not_answer">You did not answer group call</string>
@@ -208,7 +208,7 @@
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
     <string name="chat_list_empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
     <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
+    <string name="chat_not_support_url">https://support.mixin.one/en/article/how-to-do-when-you-receive-a-message-like-this-this-type-of-message-is-not-supported-please-upgrade-mixin-17j1t3p</string>
     <string name="chat_on_mixin_content">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search @%1$s to add me as a friend.</string>
     <string name="chat_pin_message">%1$s pinned %2$s</string>
     <string name="Chat_pinned">Chat pinned</string>
@@ -363,7 +363,7 @@
     <string name="Disabled">Disabled</string>
     <string name="disappearing_message">Disappearing Messages</string>
     <string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after they have been seen, read the document to **learn more**.</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
+    <string name="disappearing_message_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8</string>
     <string name="disappearing_option_1">30 seconds</string>
     <string name="disappearing_option_2">10 minutes</string>
     <string name="disappearing_option_3">2 hours</string>

@@ -201,6 +201,7 @@
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
     <string name="chat_list_empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
+    <string name="chat_not_support_url">https://support.mixin.one/zh/article/mixin-h92cxa</string>
     <string name="chat_on_mixin_content">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 @%1$s 加我好友。</string>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
     <string name="Chat_pinned">会话已置顶</string>
@@ -1715,8 +1716,8 @@
     <string name="Create_Account">创建帐户</string>
     <string name="Mobile_Phone">手机</string>
     <string name="Mnemonic_Phrase">助记词</string>
-    <string name="create_introduction">MPC 钱包，2FA，%1$s，自我保管，社交恢复</string>
     <string name="Convenience">便利</string>
+    <string name="create_introduction">MPC 钱包，2FA，%1$s，自我保管，社交恢复</string>
     <string name="Creating_your_account">正在创建账户…</string>
     <string name="Signing_in_to_your_account">正在登录账户…</string>
     <string name="Set_up_Pin">设置 PIN</string>
