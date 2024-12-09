@@ -26,9 +26,6 @@ import coil.util.DebugLogger
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.mapbox.maps.loader.MapboxMapsInitializer
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -150,13 +147,6 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
-        Analytics.setTransmissionInterval(60)
-        AppCenter.start(
-            this,
-            BuildConfig.APPCENTER_API_KEY,
-            Analytics::class.java,
-            Crashes::class.java,
-        )
         if (useMapbox()) {
             AppInitializer.getInstance(this)
                 .initializeComponent(MapboxMapsInitializer::class.java)
