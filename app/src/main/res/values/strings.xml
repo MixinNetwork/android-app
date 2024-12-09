@@ -576,7 +576,7 @@
     <string name="Joined_in">Joined on %1$s</string>
     <string name="Label">Label</string>
     <string name="Landing_back">Landing back</string>
-    <string name="landing_delete_content">Your account will be deleted on %1$s, if you continue to log in, the request to delete your account will be cancelled.</string>
+    <string name="landing_delete_content">You requested to delete your account on %1$s. The account will be deleted on %2$s. If you continue to login, your account deletion will be cancelled.</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="landing_introduction">By proceeding, you agree to the %1$s and %2$s.</string>
     <string name="landing_desc">An open source crypto wallet with Signal messaging.</string>
@@ -1687,7 +1687,6 @@
     <string name="watchlist_empty">Your watchlist is empty</string>
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
-    <string name="week_percentage">7d %</string>
     <string name="Watchlist">Watchlist</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
@@ -1829,4 +1828,6 @@
     <string name="Export_mnemonic_phrase">Export mnemonic phrase</string>
     <string name="Export">Export</string>
     <string name="Upgrade_safe">Upgrade safe</string>
+    <string name="mixin_support">Mixin Support</string>
+    <string name="ask_me_anything">Ask me anything</string>
 </resources>

@@ -59,6 +59,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
@@ -154,7 +155,7 @@ fun SwapPage(
                             }
                         }
                     } else {
-                        Column(
+                        Row(
                             modifier =
                             Modifier
                                 .fillMaxWidth()
@@ -163,6 +164,7 @@ fun SwapPage(
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
                         ) {
+                            Spacer(modifier = Modifier.height(24.dp))
                             Text(
                                 text = errorInfo,
                                 style =
@@ -188,7 +190,7 @@ fun SwapPage(
                             },
                             colors =
                                 ButtonDefaults.outlinedButtonColors(
-                                    backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
+                                    backgroundColor = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.backgroundGrayLight else MixinAppTheme.colors.accent,
                                 ),
                             shape = RoundedCornerShape(32.dp),
                             elevation =
@@ -296,7 +298,16 @@ private fun PriceInfo(
     quoteCountDown: Float,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    var isPriceReverse by remember { mutableStateOf(false) }
+    var isPriceReverse by remember {
+        mutableStateOf(
+            if (fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets) {
+                true
+            } else {
+                false
+            }
+        )
+    }
+
     Row(
         modifier =
         Modifier

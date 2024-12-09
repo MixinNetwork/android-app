@@ -114,7 +114,36 @@
             </RadioGroup>
 
             <LinearLayout
-                android:id="@+id/drop_sort"
+                android:id="@+id/drop_top_sort"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_market_radio"
+                android:layout_toStartOf="@id/drop_percentage_sort"
+                android:layout_marginEnd="10dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_alignTop="@id/radio_group_market"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/drop_top_tv"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:id="@+id/sort_top_arrow"
+                    android:src="@drawable/ic_sort_arrow_down"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/drop_percentage_sort"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
                 android:orientation="horizontal"
@@ -127,7 +156,7 @@
                 android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/drop_tv"
+                    android:id="@+id/drop_percentage_tv"
                     android:textColor="?attr/text_primary"
                     android:textSize="14sp"
                     android:layout_width="wrap_content"
@@ -135,7 +164,7 @@
                     android:layout_marginEnd="8dp" />
 
                 <ImageView
-                    android:id="@+id/sort_arrow"
+                    android:id="@+id/sort_percentage_arrow"
                     android:src="@drawable/ic_sort_arrow_down"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />

@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -71,10 +72,13 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 
 class ConversationRepository
     @Inject
@@ -660,10 +664,13 @@ class ConversationRepository
             }
         }
 
-        fun getLastPinMessages(conversationId: String) =
-            pinMessageDao.getLastPinMessages(conversationId)
+        fun getLastPinMessageId(conversationId: String): LiveData<String?> =
+            pinMessageDao.getLastPinMessageId(conversationId)
 
-        fun countPinMessages(conversationId: String) =
+        suspend fun getPinMessageById(conversationId: String, messageId: String): PinMessageItem? =
+            pinMessageDao.getPinMessageById(conversationId, messageId)
+
+        suspend fun countPinMessages(conversationId: String) =
             pinMessageDao.countPinMessages(conversationId)
 
         fun insertPinMessages(pinMessages: List<PinMessage>) {

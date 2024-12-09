@@ -90,6 +90,12 @@ internal constructor(
         }
     }
 
+    fun insertUser(user: User) =
+        viewModelScope.launch(Dispatchers.IO) {
+            initAllDatabases()
+            databaseProvider.getMixinDatabase().userDao().insertSuspend(user)
+        }
+
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
         accountService.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(
             AndroidSchedulers.mainThread())
@@ -133,12 +139,6 @@ internal constructor(
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountService.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun insertUser(user: User) =
-        viewModelScope.launch(Dispatchers.IO) {
-            initAllDatabases()
-            databaseProvider.getMixinDatabase().userDao().insertSuspend(user)
-        }
 
     fun updatePhone(
         id: String,
