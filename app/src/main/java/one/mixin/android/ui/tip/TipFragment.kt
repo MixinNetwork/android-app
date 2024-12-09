@@ -16,6 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
@@ -538,6 +539,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     return@runCatching false
                 }
             val spendSeed = tip.getSpendPriv(requireContext(), seed)
+            if (spendSeed == null) {
+                MixinApplication.get().closeAndClear()
+                return@runCatching false
+            }
             val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed)
             val spendKeyPair = newKeyPairFromSeed(spendSeed)
             val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }

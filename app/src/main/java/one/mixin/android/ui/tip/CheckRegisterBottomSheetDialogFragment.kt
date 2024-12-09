@@ -8,6 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -171,6 +172,10 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
             val seed = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
             val spendSeed = tip.getSpendPriv(requireContext(), seed)
+            if (spendSeed == null) {
+                MixinApplication.get().closeAndClear()
+                return
+            }
             val saltBase64 = tip.getEncryptSalt(requireContext(), pin, seed)
             val spendKeyPair = newKeyPairFromSeed(spendSeed)
             val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
