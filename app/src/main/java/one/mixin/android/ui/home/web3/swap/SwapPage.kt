@@ -90,7 +90,7 @@ fun SwapPage(
     source: String,
     slippageBps: Int,
     onSelectToken: (SelectTokenType) -> Unit,
-    onSwap: (QuoteResult) -> Unit,
+    onSwap: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
@@ -168,11 +168,12 @@ fun SwapPage(
                                 .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .clickable {
+                                    isLoading = true
                                     isReverse = !isReverse
                                     invalidFlag = !invalidFlag
                                     fromToken?.let { f ->
                                         toToken?.let { t ->
-                                            context.defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${f.getUnique()} ${t.getUnique()}")
+                                            context.defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, if (isReverse) "${t.getUnique()} ${f.getUnique()}" else "${f.getUnique()} ${t.getUnique()}")
                                         }
                                     }
                                     context.clickVibrate()
@@ -193,7 +194,7 @@ fun SwapPage(
                             text = inputText,
                             title = stringResource(id = R.string.Token_From),
                             readOnly = false,
-                            selectClick = { onSelectToken(SelectTokenType.From) },
+                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                             onInputChanged = { inputText = it },
                             onMax = {
                                 inputText = fromToken?.balance ?: "0"
@@ -206,19 +207,19 @@ fun SwapPage(
                             text = quoteResult?.outAmount ?: "",
                             title = stringResource(id = R.string.To),
                             readOnly = true,
-                            selectClick = { onSelectToken(SelectTokenType.To) }
+                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
                         )
                     },
                     margin = 6.dp,
                 )
 
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    if (errorInfo.isNullOrBlank() && !isLoading) {
+                    if (errorInfo.isNullOrBlank()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .alpha(if (quoteResult == null) 0f else 1f)
+                                .alpha(if (quoteResult == null || isLoading) 0f else 1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
@@ -227,18 +228,16 @@ fun SwapPage(
                                 val rate = quote.rate()
                                 if (rate != BigDecimal.ZERO) {
                                     PriceInfo(
-                                        fromToken = from,
+                                        fromToken = fromToken!!,
                                         toToken = toToken,
-                                        exchangeRate = quote.rate(),
+                                        exchangeRate = rate,
                                         onPriceExpired = {
                                             invalidFlag = !invalidFlag
                                         }
                                     )
-                                } else {
-
                                 }
                                 if (!from.inMixin()) {
-                                    SlippageInfo(slippageBps, quote.rate() != BigDecimal.ZERO, onShowSlippage)
+                                    SlippageInfo(slippageBps, rate != BigDecimal.ZERO, onShowSlippage)
                                 }
                             }
                         }
@@ -266,19 +265,20 @@ fun SwapPage(
                     Spacer(modifier = Modifier.height(20.dp))
                     val keyboardController = LocalSoftwareKeyboardController.current
                     val focusManager = LocalFocusManager.current
+                    val checkBalance = checkBalance(inputText, fromToken?.balance)
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
                         onClick = {
-                            quoteResult?.let { onSwap(it) }
+                            quoteResult?.let { onSwap(it, fromToken!!, toToken!!, inputText) }
                             keyboardController?.hide()
                             focusManager.clearFocus()
                         },
                         enabled = quoteResult != null && errorInfo == null && !isLoading,
                         colors =
                             ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (quoteResult != null && errorInfo == null) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                                backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
                         shape = RoundedCornerShape(32.dp),
                         elevation =
@@ -296,8 +296,8 @@ fun SwapPage(
                             )
                         } else {
                             Text(
-                                text = if (quoteResult == null) "${fromToken!!.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (quoteResult == null) MixinAppTheme.colors.textAssist else Color.White,
+                                text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
                     }

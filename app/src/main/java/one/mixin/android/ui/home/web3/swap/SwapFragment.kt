@@ -111,14 +111,15 @@ class SwapFragment : BaseFragment() {
     }
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
-    private var fromToken: SwapToken? by mutableStateOf(null)
-    private var toToken: SwapToken? by mutableStateOf(null)
-    private var initialAmount: String? = null
-    private var slippage: Int by mutableIntStateOf(DefaultSlippage)
     private var tokenItems: List<TokenItem>? = null
     private val web3tokens: List<Web3Token>? by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
     }
+    private var fromToken: SwapToken? by mutableStateOf(null)
+    private var toToken: SwapToken? by mutableStateOf(null)
+
+    private var initialAmount: String? = null
+    private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
     private val swapViewModel by viewModels<SwapViewModel>()
 
@@ -184,9 +185,9 @@ class SwapFragment : BaseFragment() {
                                 onSelectToken = { type ->
                                     selectCallback(swapTokens, type)
                                 },
-                                onSwap = { quote ->
+                                onSwap = { quote, from, to, amount ->
                                     lifecycleScope.launch {
-                                        handleSwap(quote)
+                                        handleSwap(quote, from, to, amount)
                                     }
                                 },
                                 source = getSource(),
@@ -279,19 +280,12 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResult) {
-        val inputMint = fromToken?.getUnique() ?: return
-        val outputMint = toToken?.getUnique() ?: return
-        val amount = if (inMixin()) {
-            initialAmount ?: return
-        } else {
-            val a = fromToken?.toLongAmount(initialAmount ?: return) ?: return
-            if (a <= 0L) return
-            a.toString()
-        }
+    private suspend fun handleSwap(quote: QuoteResult, form: SwapToken, to: SwapToken, amount: String) {
+        val inputMint = form.getUnique()
+        val outputMint = to.getUnique()
 
         val resp = handleMixinResponse(
-            invokeNetwork = { 
+            invokeNetwork = {
                 swapViewModel.web3Swap(
                     SwapRequest(
                         if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
@@ -318,14 +312,14 @@ class SwapFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
-            swapViewModel.checkAndSyncTokens(listOfNotNull(fromToken?.assetId, toToken?.assetId))
+            swapViewModel.checkAndSyncTokens(listOfNotNull(form.assetId, to.assetId))
             openSwapTransfer(resp)
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
             showBrowserBottomSheetDialogFragment(requireActivity(), signMessage) { hash, serializedTx ->
                 lifecycleScope.launch {
-                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx, toToken!!.symbol).apply {
+                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx, to.symbol).apply {
                         setCloseAction {
                             findNavController().navigateUp()
                             parentFragmentManager.popBackStackImmediate()
