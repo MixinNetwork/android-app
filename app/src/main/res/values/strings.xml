@@ -1562,6 +1562,9 @@
     <string name="balance_max">MAX</string>
     <string name="balance_half">HALF</string>
     <string name="Failed">Failed</string>
+    <string name="single_transaction_should_be_greater_than">single transaction should be ≥ %1$s</string>
+    <string name="single_transaction_should_be_less_than">single transaction should be ≤ %1$s</string>
+    <string name="single_transaction_should_be_between">single transaction should be %1$s ≤ %2$s</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>
