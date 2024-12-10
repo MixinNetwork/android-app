@@ -13,7 +13,7 @@ class RefreshContactJob : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).req
         val response = contactService.friends().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val users = response.data as List<User>
-            userDao.insertUpdateList(users, appDao)
+            userDao().insertUpdateList(users, appDao())
         }
     }
 }

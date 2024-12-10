@@ -24,13 +24,13 @@ class ConvertDataJob(
     }
 
     override fun onAdded() {
-        appDatabase.insertMessage(message)
+        database().insertMessage(message)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
 
     override fun cancel() {
         isCancelled = true
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         removeJob()
     }
@@ -48,7 +48,7 @@ class ConvertDataJob(
             val extensionName = message.name?.getExtensionName()
             val file = MixinApplication.appContext.getDocumentPath().createDocumentTemp(message.conversationId, message.messageId, extensionName)
             file.copyFromInputStream(inputStream)
-            messageDao.updateMediaMessageUrl(file.name, message.messageId)
+            messageDao().updateMediaMessageUrl(file.name, message.messageId)
             MessageFlow.update(message.conversationId, message.messageId)
 
             jobManager.addJobInBackground(

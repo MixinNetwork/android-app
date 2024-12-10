@@ -24,7 +24,7 @@ class RefreshCircleJob(
                 circleResponse.data?.let { cList ->
                     cList.forEach { c ->
                         handleCircle(c) { circleConversation ->
-                            if (conversationDao.findConversationById(circleConversation.conversationId) != null) return@handleCircle
+                            if (conversationDao().findConversationById(circleConversation.conversationId) != null) return@handleCircle
                             jobManager.addJobInBackground(
                                 RefreshConversationJob(
                                     circleConversation.conversationId,
@@ -32,7 +32,7 @@ class RefreshCircleJob(
                                 ),
                             )
                         }
-                        circleDao.insertUpdate(c)
+                        circleDao().insertUpdate(c)
                     }
                 }
             }
@@ -41,7 +41,7 @@ class RefreshCircleJob(
             if (circleResponse?.isSuccess == true) {
                 circleResponse.data?.let { c ->
                     handleCircle(c)
-                    circleDao.insertUpdate(c)
+                    circleDao().insertUpdate(c)
                 }
             }
         }
@@ -65,10 +65,10 @@ class RefreshCircleJob(
         if (ccResponse?.isSuccess == true) {
             ccResponse.data?.let { ccList ->
                 ccList.forEach { cc ->
-                    circleConversationDao.insertUpdate(cc)
+                    circleConversationDao().insertUpdate(cc)
                     cc.userId?.let { uid ->
                         if (!refreshUserIdSet.contains(uid)) {
-                            val user = userDao.findUser(uid)
+                            val user = userDao().findUser(uid)
                             if (user == null) {
                                 refreshUserIdSet.add(uid)
                             }

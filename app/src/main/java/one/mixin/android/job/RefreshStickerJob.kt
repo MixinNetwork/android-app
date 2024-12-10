@@ -16,7 +16,7 @@ class RefreshStickerJob(private val stickerId: String) : BaseJob(
         val response = accountService.getStickerById(stickerId).execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val s = response.data as Sticker
-            stickerDao.insertUpdate(s)
+            stickerDao().insertUpdate(s)
         }
     }
 }

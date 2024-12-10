@@ -23,6 +23,8 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
+import one.mixin.android.util.database.moveLegacyDatabaseFile
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -32,7 +34,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
-    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentSetupNameBinding::bind)
 
     @Inject
@@ -54,7 +56,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                 nameFab.show()
                 nameCover.visibility = VISIBLE
                 val accountUpdateRequest = AccountUpdateRequest(nameEt.text.toString())
-                mobileViewModel.update(accountUpdateRequest)
+                landingViewModel.update(accountUpdateRequest)
                     .autoDispose(stopScope).subscribe(
                         { r: MixinResponse<Account> ->
                             nameFab.hide()
@@ -65,7 +67,8 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                             }
                             r.data?.let { data ->
                                 Session.storeAccount(data)
-                                mobileViewModel.insertUser(data.toUser())
+                                moveLegacyDatabaseFile(requireContext(), data)
+                                landingViewModel.insertUser(data.toUser())
                             }
 
                             nameEt.hideKeyboard()

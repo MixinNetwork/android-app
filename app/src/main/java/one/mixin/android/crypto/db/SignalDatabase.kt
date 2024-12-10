@@ -12,6 +12,7 @@ import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.crypto.vo.SignedPreKey
+import one.mixin.android.db.MixinDatabase
 
 @Database(
     entities = [
@@ -66,5 +67,10 @@ abstract class SignalDatabase : RoomDatabase() {
         private val CALLBACK =
             object : RoomDatabase.Callback() {
             }
+    }
+
+    override fun close() {
+        INSTANCE = null
+        super.close()
     }
 }

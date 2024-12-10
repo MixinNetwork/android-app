@@ -20,6 +20,7 @@ import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
@@ -62,55 +63,7 @@ open class Injector {
     lateinit var jobManager: MixinJobManager
 
     @Inject
-    lateinit var ftsDatabase: FtsDatabase
-
-    @Inject
-    lateinit var messageDao: MessageDao
-
-    @Inject
-    lateinit var pendingMessagesDao: PendingMessageDao
-
-    @Inject
-    lateinit var messageHistoryDao: MessageHistoryDao
-
-    @Inject
-    lateinit var userDao: UserDao
-
-    @Inject
-    lateinit var appDao: AppDao
-
-    @Inject
-    lateinit var jobDao: JobDao
-
-    @Inject
-    lateinit var conversationDao: ConversationDao
-
-    @Inject
-    lateinit var conversationExtDao: ConversationExtDao
-
-    @Inject
-    lateinit var participantDao: ParticipantDao
-
-    @Inject
-    lateinit var participantSessionDao: ParticipantSessionDao
-
-    @Inject
-    lateinit var snapshotDao: SnapshotDao
-
-    @Inject
-    lateinit var safeSnapshotDao: SafeSnapshotDao
-
-    @Inject
-    lateinit var tokenDao: TokenDao
-
-    @Inject
-    lateinit var circleDao: CircleDao
-
-    @Inject
-    lateinit var circleConversationDao: CircleConversationDao
-
-    @Inject
-    lateinit var traceDao: TraceDao
+    lateinit var databaseProvider: DatabaseProvider
 
     @Inject
     lateinit var circleService: CircleService
@@ -119,16 +72,16 @@ open class Injector {
     lateinit var chatWebSocket: ChatWebSocket
 
     @Inject
-    lateinit var stickerDao: StickerDao
-
-    @Inject
-    lateinit var messageMentionDao: MessageMentionDao
-
-    @Inject
     lateinit var signalProtocol: SignalProtocol
 
     @Inject
     lateinit var encryptedProtocol: EncryptedProtocol
+
+    @Inject
+    lateinit var conversationService: ConversationService
+
+    @Inject
+    lateinit var userService: UserService
 
     @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
@@ -136,34 +89,37 @@ open class Injector {
     @Inject
     lateinit var resendMessageDao: ResendSessionMessageDao
 
-    @Inject
-    lateinit var hyperlinkDao: HyperlinkDao
-
-    @Inject
-    lateinit var userApi: UserService
-
-    @Inject
-    lateinit var conversationService: ConversationService
-
-    @Inject
-    lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    lateinit var pinMessageDao: PinMessageDao
-
-    @Inject
-    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
-
-    @Inject
-    lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    lateinit var database: MixinDatabase
-
     @ApplicationScope
     @Transient
     @Inject
     lateinit var applicationScope: CoroutineScope
+
+    fun database(): MixinDatabase =  databaseProvider.getMixinDatabase()
+    fun ftsDatabase(): FtsDatabase =  databaseProvider.getFtsDatabase()
+
+    fun messageDao(): MessageDao = databaseProvider.getMixinDatabase().messageDao()
+    fun pendingMessagesDao(): PendingMessageDao = databaseProvider.getPendingDatabase().pendingMessageDao()
+    fun messageHistoryDao(): MessageHistoryDao = databaseProvider.getMixinDatabase().messageHistoryDao()
+    fun userDao(): UserDao = databaseProvider.getMixinDatabase().userDao()
+    fun appDao(): AppDao = databaseProvider.getMixinDatabase().appDao()
+    fun jobDao(): JobDao = databaseProvider.getPendingDatabase().jobDao()
+    fun conversationDao(): ConversationDao = databaseProvider.getMixinDatabase().conversationDao()
+    fun conversationExtDao(): ConversationExtDao = databaseProvider.getMixinDatabase().conversationExtDao()
+    fun participantDao(): ParticipantDao = databaseProvider.getMixinDatabase().participantDao()
+    fun participantSessionDao(): ParticipantSessionDao = databaseProvider.getMixinDatabase().participantSessionDao()
+    fun snapshotDao(): SnapshotDao = databaseProvider.getMixinDatabase().snapshotDao()
+    fun safeSnapshotDao(): SafeSnapshotDao = databaseProvider.getMixinDatabase().safeSnapshotDao()
+    fun tokenDao(): TokenDao = databaseProvider.getMixinDatabase().tokenDao()
+    fun circleDao(): CircleDao = databaseProvider.getMixinDatabase().circleDao()
+    fun circleConversationDao(): CircleConversationDao = databaseProvider.getMixinDatabase().circleConversationDao()
+    fun traceDao(): TraceDao = databaseProvider.getMixinDatabase().traceDao()
+    fun stickerDao(): StickerDao = databaseProvider.getMixinDatabase().stickerDao()
+    fun messageMentionDao(): MessageMentionDao = databaseProvider.getMixinDatabase().messageMentionDao()
+    fun hyperlinkDao(): HyperlinkDao = databaseProvider.getMixinDatabase().hyperlinkDao()
+    fun transcriptMessageDao(): TranscriptMessageDao = databaseProvider.getMixinDatabase().transcriptDao()
+    fun pinMessageDao(): PinMessageDao = databaseProvider.getMixinDatabase().pinMessageDao()
+    fun remoteMessageStatusDao(): RemoteMessageStatusDao = databaseProvider.getMixinDatabase().remoteMessageStatusDao()
+    fun expiredMessageDao(): ExpiredMessageDao = databaseProvider.getMixinDatabase().expiredMessageDao()
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint
@@ -197,14 +153,14 @@ open class Injector {
         conversationId: String? = null,
         forceSync: Boolean = true,
     ): User? {
-        var user = userDao.findUser(userId)
+        var user = userDao().findUser(userId)
         if (user == null && forceSync) {
             try {
-                val call = userApi.getUserById(userId).execute()
+                val call = userService.getUserById(userId).execute()
                 val response = call.body()
                 if (response != null && response.isSuccess && response.data != null) {
                     response.data?.let { u ->
-                        userDao.insertUpdate(u, appDao)
+                        userDao().insertUpdate(u, appDao())
                         user = u
                     }
                 }
@@ -221,11 +177,11 @@ open class Injector {
         if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
             return
         }
-        var conversation = conversationDao.findConversationById(data.conversationId)
+        var conversation = conversationDao().findConversationById(data.conversationId)
         var status = conversation?.status ?: ConversationStatus.START.ordinal
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-            conversationDao.upsert(conversation)
+            conversationDao().upsert(conversation)
             status = refreshConversation(data.conversationId)
         }
         if (status == ConversationStatus.START.ordinal) {
@@ -234,7 +190,7 @@ open class Injector {
     }
 
     protected open fun isExistMessage(messageId: String): Boolean =
-        messageDao.findMessageIdById(messageId) != null || messageHistoryDao.findMessageHistoryById(messageId) != null
+        messageDao().findMessageIdById(messageId) != null || messageHistoryDao().findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {
         try {
@@ -254,7 +210,7 @@ open class Injector {
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         syncUser(conversationData.creatorId)
                     }
-                    conversationDao.updateConversation(
+                    conversationDao().updateConversation(
                         conversationData.conversationId,
                         ownerId,
                         conversationData.category,
@@ -271,7 +227,7 @@ open class Injector {
                         remote.add(Participant(conversationId, p.userId, p.role, p.createdAt!!))
                         conversationUserIds.add(p.userId)
                     }
-                    participantDao.replaceAll(conversationId, remote)
+                    participantDao().replaceAll(conversationId, remote)
 
                     if (conversationUserIds.isNotEmpty()) {
                         jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
@@ -282,21 +238,21 @@ open class Injector {
                             ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
                         }
                     sessionParticipants?.let {
-                        participantSessionDao.replaceAll(conversationId, it)
+                        participantSessionDao().replaceAll(conversationId, it)
                     }
 
                     conversationData.circles?.let { circles ->
                         circles.forEach {
-                            val circle = circleDao.findCircleById(it.circleId)
+                            val circle = circleDao().findCircleById(it.circleId)
                             if (circle == null) {
                                 val circleResponse = circleService.getCircle(it.circleId).execute().body()
                                 if (circleResponse?.isSuccess == true) {
                                     circleResponse.data?.let { item ->
-                                        circleDao.insert(item)
+                                        circleDao().insert(item)
                                     }
                                 }
                             }
-                            circleConversationDao.insertUpdate(it)
+                            circleConversationDao().insertUpdate(it)
                         }
                     }
                     return status

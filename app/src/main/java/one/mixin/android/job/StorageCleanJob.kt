@@ -34,7 +34,7 @@ class StorageCleanJob :
                     dir.listFiles()?.forEach { file ->
                         if (file.isFile) {
                             val name = file.name.getFileNameNoEx()
-                            if (name.isUUID() && messageDao.exists(name) == null) { // message's media file
+                            if (name.isUUID() && messageDao().exists(name) == null) { // message's media file
                                 size += file.length()
                                 file.delete()
                                 Timber.e("delete ${file.absolutePath} ${size.fileSize()}")
