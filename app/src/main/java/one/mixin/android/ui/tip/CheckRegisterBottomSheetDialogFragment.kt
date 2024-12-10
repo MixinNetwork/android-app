@@ -183,8 +183,8 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                             signature = Session.getRegisterSignature(selfId, spendSeed),
                             pin = bottomViewModel.getEncryptedTipBody(selfId, spendKeyPair.publicKey.toHex(), pin),
                             salt = saltBase64,
-                            saltPublicHex = edKey.publicKey.hexString(),
-                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfId.toByteArray()).hexString()
+                            masterPublicHex = edKey.publicKey.hexString(),
+                            masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfId.toByteArray()).hexString()
                         ),
                 )
             if (resp.isSuccess) {
