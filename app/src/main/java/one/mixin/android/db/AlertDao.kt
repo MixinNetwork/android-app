@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
@@ -57,4 +58,10 @@ interface AlertDao : BaseDao<Alert> {
 
     @Query("DELETE FROM market_alerts")
     fun deleteAll()
+
+    @Transaction
+    fun deleteAndInsertList(list: List<Alert>) {
+        deleteAll()
+        insertList(list)
+    }
 }
