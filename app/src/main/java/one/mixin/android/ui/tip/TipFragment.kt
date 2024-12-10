@@ -550,8 +550,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             signature = Session.getRegisterSignature(selfAccountId, spendSeed),
                             pin = viewModel.getEncryptedTipBody(selfAccountId, spendKeyPair.publicKey.toHex(), pin),
                             salt = saltBase64,
-                            saltPublicHex = edKey.publicKey.hexString(),
-                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString()
+                            masterPublicHex = edKey.publicKey.hexString(),
+                            masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString()
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {

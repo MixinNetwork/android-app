@@ -169,14 +169,6 @@ open class MixinApplication :
             options.dsn = BuildConfig.SENTRYDSN
             options.isEnableUserInteractionTracing = false
             options.isEnableUserInteractionBreadcrumbs = false
-            options.experimental.sessionReplay.onErrorSampleRate = (if (BuildConfig.DEBUG)
-                BuildConfig.SENTRYTRACESRATEDEBUG
-            else
-                BuildConfig.SENTRYTRACESRATERELEASE).toDoubleOrNull()
-            options.experimental.sessionReplay.sessionSampleRate = (if (BuildConfig.DEBUG)
-                BuildConfig.SENTRYTRACESRATEDEBUG
-            else
-                BuildConfig.SENTRYTRACESRATERELEASE).toDoubleOrNull()
         }
     }
 
