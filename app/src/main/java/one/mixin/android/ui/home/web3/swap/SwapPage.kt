@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -136,8 +137,8 @@ fun SwapPage(
                                     isLoading = false
                                 }
                                 .onFailure { exception ->
+                                    if (exception is CancellationException) return@onFailure
                                     quoteResult = null
-                                    errorInfo = exception.message
                                     isLoading = false
                                 }
                         }
@@ -219,7 +220,7 @@ fun SwapPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .alpha(if (quoteResult == null || isLoading) 0f else 1f)
+                                .alpha(if (quoteResult == null) 0f else 1f)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(MixinAppTheme.colors.backgroundGrayLight)
                                 .padding(20.dp),
@@ -230,6 +231,7 @@ fun SwapPage(
                                     PriceInfo(
                                         fromToken = fromToken!!,
                                         toToken = toToken,
+                                        isLoading = isLoading,
                                         exchangeRate = rate,
                                         onPriceExpired = {
                                             invalidFlag = !invalidFlag
@@ -397,18 +399,22 @@ fun InputArea(
 private fun PriceInfo(
     fromToken: SwapToken,
     toToken: SwapToken?,
+    isLoading: Boolean,
     exchangeRate: BigDecimal,
     onPriceExpired: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     var isPriceReverse by remember {
         mutableStateOf(
-            fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
+            false
         )
     }
     var quoteCountDown by remember { mutableFloatStateOf(0f) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect("${fromToken.getUnique()}-${toToken?.getUnique()}") {
+        isPriceReverse = fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
+    }
+
+    LaunchedEffect("${fromToken.getUnique()}-${toToken?.getUnique()}-${exchangeRate}") {
         while (isActive) {
             quoteCountDown = 0f
             while (isActive && quoteCountDown < 1f) { // 10s
@@ -443,29 +449,47 @@ private fun PriceInfo(
                 ),
             )
             Spacer(modifier = Modifier.width(4.dp))
-            CircularProgressIndicator(
-                progress = quoteCountDown,
-                modifier = Modifier.size(12.dp),
-                strokeWidth = 2.dp,
-                color = MixinAppTheme.colors.textPrimary,
-                backgroundColor = MixinAppTheme.colors.textAssist,
+            if (!isLoading)
+                CircularProgressIndicator(
+                    progress = quoteCountDown,
+                    modifier = Modifier.size(12.dp),
+                    strokeWidth = 2.dp,
+                    color = MixinAppTheme.colors.textPrimary,
+                    backgroundColor = MixinAppTheme.colors.textAssist,
+                )
+        }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .height(24.dp),
+                    color = MixinAppTheme.colors.accent,
+                    strokeWidth = 2.dp,
+                )
+            }
+        } else {
+            Icon(
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .rotate(90f)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {
+                            isPriceReverse = !isPriceReverse
+                        },
+                painter = painterResource(id = R.drawable.ic_switch),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.icon,
             )
         }
-        Icon(
-            modifier =
-            Modifier
-                .size(24.dp)
-                .rotate(90f)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                ) {
-                    isPriceReverse = !isPriceReverse
-                },
-            painter = painterResource(id = R.drawable.ic_switch),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.icon,
-        )
     }
 }
 
