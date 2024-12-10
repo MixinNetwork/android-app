@@ -31,7 +31,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
+import io.sentry.SentryLevel
 import io.sentry.android.core.SentryAndroid
+import io.sentry.android.timber.SentryTimberIntegration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -169,6 +171,15 @@ open class MixinApplication :
             options.dsn = BuildConfig.SENTRYDSN
             options.isEnableUserInteractionTracing = false
             options.isEnableUserInteractionBreadcrumbs = false
+            options.isEnablePerformanceV2 = true
+            options.isEnableAppStartProfiling = true
+
+            options.addIntegration(
+                SentryTimberIntegration(
+                    minEventLevel = SentryLevel.FATAL,
+                    minBreadcrumbLevel = SentryLevel.ERROR
+                )
+            )
         }
     }
 
