@@ -120,7 +120,6 @@
     <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
         <item quantity="other">Padamkan %1$d mesej?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan kumpulan</string>
     <string name="chat_group_call_invite">%1$s telah menjemput anda ke panggilan kumpulan</string>
@@ -130,7 +129,6 @@
     <string name="chat_group_remove">%1$s mengalih keluar %2$s</string>
     <string name="chat_list_empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="chat_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">Mari sembang di Mixin Messenger! Ringkas, selamat, dan senang digunakan. Ia juga menyokong Bitcoin, Ethereum, dan cryptocurrency lain, muat turun https://mixin.one/messenger dan cari @%1$s untuk menambahkan saya sebagai rakan.</string>
     <string name="chat_recall_delete_alert">Mesej yang anda pilih akan dihapus untuk semua orang pada versi terbaharu Mixin dalam sembang ini.</string>
     <string name="chat_waiting">Menunggu %1$s untuk berada dalam talian dan tubuhkan sesi yang disulitkan. %2$s.</string>
@@ -365,7 +363,6 @@
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Masukkan kod 4 digit yang dihantar kepada anda di %1$s</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">Bahasa</string>
     <string name="Large_Amount_Confirmation">Pengesahan Jumlah Besar</string>
     <string name="Large_Amount_Confirmation_with_symbol">Pengesahan Jumlah Besar(%1$s)</string>

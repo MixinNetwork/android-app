@@ -163,7 +163,7 @@ class AccountRepository
 
         fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
-        suspend fun logout(sessionId: String) = accountService.logout(LogoutRequest(sessionId))
+        suspend fun logout(sessionId: String, pinBase64: String) = accountService.logout(LogoutRequest(sessionId, pinBase64))
 
         fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 

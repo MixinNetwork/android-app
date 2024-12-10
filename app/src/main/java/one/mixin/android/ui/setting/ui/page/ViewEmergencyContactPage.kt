@@ -38,7 +38,7 @@ fun ViewEmergencyContactPage(user: User) {
         titleBarActions = {
             val context = LocalContext.current
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.EMERGENCY)
+                context.openUrl(context.getString(R.string.emergency_url))
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_help_outline),
@@ -83,14 +83,14 @@ fun ViewEmergencyContactPage(user: User) {
         HighlightStarLinkText(
             modifier = Modifier.padding(horizontal = 16.dp),
             source = stringResource(id = R.string.setting_emergency_desc),
-            links = arrayOf(Constants.HelpLink.EMERGENCY),
+            links = arrayOf(context.getString(R.string.emergency_url)),
             textStyle =
                 TextStyle(
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist,
                 ),
         ) {
-            context.openUrl(Constants.HelpLink.EMERGENCY)
+            context.openUrl(context.getString(R.string.emergency_url))
         }
 
         Box(modifier = Modifier.height(16.dp))
