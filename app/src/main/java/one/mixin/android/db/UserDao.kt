@@ -31,7 +31,6 @@ interface UserDao : BaseDao<User> {
         }
     }
 
-
     @Transaction
     fun insertUpdateList(
         users: List<User>,
@@ -47,7 +46,6 @@ interface UserDao : BaseDao<User> {
         appDao.insertList(apps)
         insertList(users)
     }
-
 
     @Transaction
     fun insertUpdate(

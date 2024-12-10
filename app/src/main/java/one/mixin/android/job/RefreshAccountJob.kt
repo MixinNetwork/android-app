@@ -6,7 +6,6 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
-
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt

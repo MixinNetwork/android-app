@@ -6,39 +6,14 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.vo.App
-import one.mixin.android.vo.Circle
-import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.RemoteMessageStatus
-import one.mixin.android.vo.Sticker
-import one.mixin.android.vo.StickerAlbum
-import one.mixin.android.vo.User
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isMine
 import one.mixin.android.vo.safe.Output
 import timber.log.Timber
-
-fun CircleConversationDao.updateCheckPin(
-    oldCircleConversation: CircleConversation,
-    newCircleConversation: CircleConversation,
-) {
-    if (oldCircleConversation.pinTime != null) {
-        update(
-            CircleConversation(
-                newCircleConversation.conversationId,
-                newCircleConversation.circleId,
-                newCircleConversation.userId,
-                newCircleConversation.createdAt,
-                oldCircleConversation.pinTime,
-            ),
-        )
-    } else {
-        update(newCircleConversation)
-    }
-}
 
 fun MixinDatabase.clearParticipant(
     conversationId: String,

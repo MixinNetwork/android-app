@@ -8,7 +8,6 @@ import one.mixin.android.vo.Sticker
 
 @Dao
 interface StickerDao : BaseDao<Sticker> {
-
     @Transaction
     fun insertUpdate(s: Sticker) {
         val sticker = getStickerByUnique(s.stickerId)

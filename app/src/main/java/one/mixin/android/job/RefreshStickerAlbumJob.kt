@@ -4,7 +4,6 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-
 import one.mixin.android.event.AlbumEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean

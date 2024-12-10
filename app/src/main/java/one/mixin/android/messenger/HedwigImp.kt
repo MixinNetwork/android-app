@@ -20,7 +20,6 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertNoReplace
-
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
 import one.mixin.android.job.DecryptMessage

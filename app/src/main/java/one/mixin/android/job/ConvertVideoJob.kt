@@ -32,7 +32,6 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.job.NotificationGenerator.database
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory
