@@ -19,12 +19,14 @@ class InitializeActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        val dbMigration = intent.getBooleanExtra(DB_MIGRATION, false)
         val setName = intent.getBooleanExtra(SET_NAME, false)
         val setPin = intent.getBooleanExtra(SET_PIN, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
         val oldVersion = intent.getBooleanExtra(OLD_VERSION, false)
         val dbUpgrade = intent.getBooleanExtra(DB_UPGRADE, false)
         when {
+            dbMigration -> replaceFragment(MigrationFragment.newInstance(), R.id.container)
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
             setPin -> replaceFragment(SetupPinFragment.newInstance(), R.id.container)
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
@@ -48,6 +50,7 @@ class InitializeActivity : BaseActivity() {
         const val WRONG_TIME = "wrong_time"
         const val OLD_VERSION = "old_version"
         const val DB_UPGRADE = "db_upgrade"
+        const val DB_MIGRATION = "db_migration"
 
         private fun getIntent(
             context: Context,
@@ -56,6 +59,7 @@ class InitializeActivity : BaseActivity() {
             wrongTime: Boolean = false,
             oldVersion: Boolean = false,
             dbUpgrade: Boolean = false,
+            dbMigration: Boolean = false,
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
@@ -63,6 +67,7 @@ class InitializeActivity : BaseActivity() {
                 this.putExtra(WRONG_TIME, wrongTime)
                 this.putExtra(OLD_VERSION, oldVersion)
                 this.putExtra(DB_UPGRADE, dbUpgrade)
+                this.putExtra(DB_MIGRATION, dbMigration)
             }
         }
 
@@ -116,6 +121,10 @@ class InitializeActivity : BaseActivity() {
 
         fun showDBUpgrade(context: Context) {
             context.startActivity(getIntent(context, dbUpgrade = true))
+        }
+
+        fun showMigration(context: Context) {
+            context.startActivity(getIntent(context, dbMigration = true))
         }
     }
 }

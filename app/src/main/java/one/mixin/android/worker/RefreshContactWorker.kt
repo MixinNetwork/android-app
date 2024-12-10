@@ -8,7 +8,6 @@ import dagger.assisted.AssistedInject
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdateList
 import one.mixin.android.vo.User
 
 @HiltWorker

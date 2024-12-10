@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import androidx.room.Transaction
 import androidx.room.Update
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleOrder
@@ -13,6 +14,30 @@ import one.mixin.android.vo.ConversationMinimal
 
 @Dao
 interface CircleDao : BaseDao<Circle> {
+    @Transaction
+    fun insertUpdate(
+        circle: Circle,
+    ) {
+        val c = findCircleById(circle.circleId)
+        if (c == null) {
+            insert(circle)
+        } else {
+            update(circle)
+        }
+    }
+
+    @Transaction
+    suspend fun insertUpdateSuspend(
+        circle: Circle,
+    ) {
+        val c = findCircleById(circle.circleId)
+        if (c == null) {
+            insert(circle)
+        } else {
+            update(circle)
+        }
+    }
+
     @Query(
         """
         SELECT c.* FROM circle_conversations cc

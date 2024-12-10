@@ -58,17 +58,17 @@ class GenerateAvatarJob(
             val users = mutableListOf<User>()
             texts = ArrayMap()
             if (list == null) {
-                users.addAll(participantDao.getParticipantsAvatar(groupId))
+                users.addAll(participantDao().getParticipantsAvatar(groupId))
             } else {
-                val us = runBlocking { userDao.findMultiUsersByIds(list.toSet()) }
+                val us = runBlocking { userDao().findMultiUsersByIds(list.toSet()) }
                 users.addAll(us)
             }
             val name = getIconUrlName(groupId, users)
             val f = applicationContext.getGroupAvatarPath(name, false)
-            val icon = conversationDao.getGroupIconUrl(groupId)
+            val icon = conversationDao().getGroupIconUrl(groupId)
             if (f.exists()) {
                 if (f.absolutePath != name) {
-                    conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+                    conversationDao().updateGroupIconUrl(groupId, f.absolutePath)
                 }
                 RxBus.publish(AvatarEvent(groupId, f.absolutePath))
                 return@runBlocking
@@ -90,7 +90,7 @@ class GenerateAvatarJob(
                 } catch (e: Exception) {
                 }
             }
-            conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+            conversationDao().updateGroupIconUrl(groupId, f.absolutePath)
             RxBus.publish(AvatarEvent(groupId, f.absolutePath))
         }
 

@@ -29,6 +29,7 @@ import com.mapbox.maps.loader.MapboxMapsInitializer
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.internal.managers.ApplicationComponentManager
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import io.sentry.android.core.SentryAndroid
@@ -45,6 +46,7 @@ import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.di.ApplicationScope
@@ -89,6 +91,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
+@SuppressLint("UnsafeOptInUsageError")
 open class MixinApplication :
     Application(),
     Application.ActivityLifecycleCallbacks,
@@ -113,11 +116,9 @@ open class MixinApplication :
         fun getHiltWorkerFactory(): HiltWorkerFactory
     }
 
-    @InstallIn(SingletonComponent::class)
-    @EntryPoint
-    interface AppEntryPoint {
-        fun inject(app: MixinApplication)
-    }
+
+    @Inject
+    lateinit var databaseProvider: DatabaseProvider
 
     private fun getWorkerFactory() = EntryPointAccessors.fromApplication(this, HiltWorkerFactoryEntryPoint::class.java).getHiltWorkerFactory()
 
@@ -272,26 +273,11 @@ open class MixinApplication :
             applicationScope.launch {
                 clearData(sessionId)
                 withContext(Dispatchers.Main) {
-                    val entryPoint =
-                        EntryPointAccessors.fromApplication(
-                            this@MixinApplication,
-                            AppEntryPoint::class.java,
-                        )
-                    entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)
                 }
             }
         }
-    }
-
-    fun reject() {
-        MixinDatabase.destroy()
-        val entryPoint =
-            EntryPointAccessors.fromApplication(
-                this@MixinApplication,
-                AppEntryPoint::class.java,
-            )
-        entryPoint.inject(this@MixinApplication)
+        databaseProvider.closeAllDatabases()
     }
 
     private fun clearData(sessionId: String?) {

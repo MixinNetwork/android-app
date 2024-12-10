@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.DestinationTag
 
@@ -15,4 +16,10 @@ interface DepositDao : BaseDao<DepositEntry> {
 
     @Query("DELETE FROM deposit_entries WHERE chain_id=:chainId")
     fun deleteByChainId(chainId: String)
+
+    @Transaction
+    fun deleteAndInsert(chainId: String, list: List<DepositEntry>) {
+        deleteByChainId(chainId)
+        insertList(list)
+    }
 }

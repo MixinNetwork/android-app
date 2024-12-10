@@ -26,7 +26,7 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
         val response = tokenService.getSnapshots(offset = offset, limit = LIMIT)
         if (response.isSuccess && response.data != null) {
             val snapshots = response.data as List<SafeSnapshot>
-            safeSnapshotDao.insertListSuspend(snapshots.map {
+            safeSnapshotDao().insertListSuspend(snapshots.map {
                 if (it.opponentId.isEmpty()) {
                     mapSnapshot(it)
                 } else {
@@ -34,7 +34,7 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
                 }
             })
             snapshots.forEach { item ->
-                if (tokenDao.simpleAsset(item.assetId) == null) {
+                if (tokenDao().simpleAsset(item.assetId) == null) {
                     jobManager.addJobInBackground(RefreshTokensJob(item.assetId))
                 }
             }
@@ -53,7 +53,7 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
     }
 
     private suspend fun mapSnapshot(snapshot: SafeSnapshot): SafeSnapshot {
-        val existingSnapshot = safeSnapshotDao.getSnapshotById(snapshot.snapshotId)
+        val existingSnapshot = safeSnapshotDao().getSnapshotById(snapshot.snapshotId)
         if (existingSnapshot != null && existingSnapshot.opponentId.isNotEmpty()) {
             val updatedSnapshot = snapshot.copy(opponentId = existingSnapshot.opponentId)
             return updatedSnapshot

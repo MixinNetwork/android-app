@@ -8,7 +8,6 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
@@ -45,20 +44,20 @@ class RestoreTransactionJob : BaseJob(
         ) {
             while (true) {
                 val transaction =
-                    rawTransactionDao.findUnspentTransaction() ?: return@runBlocking
+                    rawTransactionDao().findUnspentTransaction() ?: return@runBlocking
 
                 val feeTraceId = uniqueObjectId(transaction.requestId, "FEE")
-                val feeTransaction = rawTransactionDao.findRawTransaction(feeTraceId, RawTransactionType.FEE.value)
+                val feeTransaction = rawTransactionDao().findRawTransaction(feeTraceId, RawTransactionType.FEE.value)
                 try {
                     Timber.e("Restore Transaction(${transaction.requestId}): Get Transaction")
                     val response = utxoService.getTransactionsById(transaction.requestId)
                     if (response.isSuccess) {
                         Timber.e("Restore Transaction(${transaction.requestId}): db begin")
-                        runInTransaction {
+                        database().runInTransaction {
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
-                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                            rawTransactionDao().updateRawTransaction(transaction.requestId, OutputState.signed.name)
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
-                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                            rawTransactionDao().updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }
                         Timber.e("Restore Transaction(${transaction.requestId}): db end")
                         if (feeTransaction == null) {
@@ -81,11 +80,11 @@ class RestoreTransactionJob : BaseJob(
                             Timber.e("Restore Transaction(${transaction.requestId}): Post Transaction Success")
                             val transactionResponse = transactionRsp.data!!.first()
                             Timber.e("Restore Transaction(${transaction.requestId}): db begin")
-                            runInTransaction {
+                            database().runInTransaction {
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
-                                rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                                rawTransactionDao().updateRawTransaction(transaction.requestId, OutputState.signed.name)
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
-                                rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                                rawTransactionDao().updateRawTransaction(feeTraceId, OutputState.signed.name)
                             }
                             Timber.e("Restore Transaction(${transaction.requestId}): db end")
                             if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
@@ -94,8 +93,8 @@ class RestoreTransactionJob : BaseJob(
                         } else {
                             Timber.e("Restore Transaction(${transaction.requestId}): Post Transaction Error ${transactionRsp.errorDescription}")
                             reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
-                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                            rawTransactionDao().updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                            rawTransactionDao().updateRawTransaction(feeTraceId, OutputState.signed.name)
                         }
                         jobManager.addJobInBackground(SyncOutputJob())
                     } else if (response.errorCode >= 500) {
@@ -122,7 +121,7 @@ class RestoreTransactionJob : BaseJob(
         opponentId: String,
         inscriptionHash: String?,
     ) {
-        val user = userDao.findUser(opponentId)
+        val user = userDao().findUser(opponentId)
         if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
             val conversationId = generateConversationId(data.userId, opponentId)
             initConversation(conversationId, data.userId, opponentId)
@@ -133,7 +132,7 @@ class RestoreTransactionJob : BaseJob(
                     MessageCategory.SYSTEM_SAFE_SNAPSHOT.name
                 }
             val message = createMessage(UUID.randomUUID().toString(), conversationId, data.userId, category, inscriptionHash ?: "", data.createdAt, MessageStatus.DELIVERED.name, SafeSnapshotType.snapshot.name, null, data.getSnapshotId)
-            appDatabase.insertMessage(message)
+            database().insertMessage(message)
             if (inscriptionHash != null) {
                 jobManager.addJobInBackground(SyncInscriptionMessageJob(conversationId, message.messageId, inscriptionHash, data.getSnapshotId))
             }
@@ -146,7 +145,7 @@ class RestoreTransactionJob : BaseJob(
         senderId: String,
         recipientId: String,
     ) {
-        val c = conversationDao.findConversationById(conversationId)
+        val c = conversationDao().findConversationById(conversationId)
         if (c != null) return
         val createdAt = nowInUtc()
         val conversation =
@@ -161,9 +160,9 @@ class RestoreTransactionJob : BaseJob(
                 Participant(conversationId, senderId, "", createdAt),
                 Participant(conversationId, recipientId, "", createdAt),
             )
-        appDatabase.runInTransaction {
-            conversationDao.upsert(conversation)
-            participantDao.insertList(participants)
+        database().runInTransaction {
+            conversationDao().upsert(conversation)
+            participantDao().insertList(participants)
         }
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }

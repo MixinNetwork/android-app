@@ -21,7 +21,7 @@ class SyncInscriptionCollectionJob(val hash: String) : BaseJob(
         val collectionResponse = tokenService.getInscriptionCollection(collectionHash)
         if (collectionResponse.isSuccess) {
             val inscriptionCollection = collectionResponse.data ?: return
-            inscriptionCollectionDao.insert(inscriptionCollection)
+            inscriptionCollectionDao().insert(inscriptionCollection)
         } else {
             Timber.e(collectionResponse.errorDescription)
         }

@@ -26,6 +26,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 
@@ -99,7 +100,11 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
 
     private suspend fun getLocalDataInfo(): Pair<Int?, String?>? =
         withContext(Dispatchers.IO) {
-            val dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
+            var dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
+            if (!dbFile.exists()) {
+                return@withContext null
+            }
+            dbFile = dbDir(requireContext())
             if (!dbFile.exists()) {
                 return@withContext null
             }

@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
-import one.mixin.android.db.insertUpdate
+
 
 class InitializeJob(private val botId: String, private val botName: String) :
     BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
@@ -34,7 +34,7 @@ class InitializeJob(private val botId: String, private val botName: String) :
             defaultExceptionHandle = {},
             successBlock = {
                 it.data?.let { u ->
-                    userDao.insertUpdate(u, appDao)
+                    userDao().insertUpdate(u, appDao())
                     return@handleMixinResponse
                 }
             },
