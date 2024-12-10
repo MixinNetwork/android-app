@@ -76,9 +76,9 @@ class Tip
         ): Result<ByteArray> =
             kotlin.runCatching {
                 val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-                Timber.e("createTipPriv after getEphemeralSeed")
+                Timber.d("createTipPriv after getEphemeralSeed")
                 val (priKey, watcher) = identity.getIdentityPrivAndWatcher(pin)
-                Timber.e("createTipPriv after getIdentityPrivAndWatcher")
+                Timber.d("createTipPriv after getIdentityPrivAndWatcher")
                 createPriv(context, priKey, ephemeralSeed, watcher, pin, failedSigners, legacyPin, forRecover)
             }
 
@@ -92,18 +92,18 @@ class Tip
         ): Result<ByteArray> =
             kotlin.runCatching {
                 val ephemeralSeed = ephemeral.getEphemeralSeed(context, deviceId)
-                Timber.e("updateTipPriv after getEphemeralSeed")
+                Timber.d("updateTipPriv after getEphemeralSeed")
 
                 if (!counterEqual) { // node success
-                    Timber.e("updateTipPriv oldPin isNullOrBlank")
+                    Timber.d("updateTipPriv oldPin isNullOrBlank")
                     val (priKey, watcher) = identity.getIdentityPrivAndWatcher(newPin)
-                    Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
+                    Timber.d("updateTipPriv after getIdentityPrivAndWatcher")
                     updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, null)
                 } else {
                     val (priKey, watcher) = identity.getIdentityPrivAndWatcher(oldPin)
-                    Timber.e("updateTipPriv after getIdentityPrivAndWatcher")
+                    Timber.d("updateTipPriv after getIdentityPrivAndWatcher")
                     val (assigneePriv, _) = identity.getIdentityPrivAndWatcher(newPin)
-                    Timber.e("updateTipPriv after get assignee priv")
+                    Timber.d("updateTipPriv after get assignee priv")
                     updatePriv(context, priKey, ephemeralSeed, watcher, newPin, oldPin, assigneePriv, failedSigners)
                 }
             }
@@ -123,7 +123,7 @@ class Tip
                         clearTipPriv(context)
                         null
                     }
-                Timber.e("getOrRecoverTipPriv after readTipPriv privTip == null is ${privTip == null}")
+                Timber.d("getOrRecoverTipPriv after readTipPriv privTip == null is ${privTip == null}")
 
                 suspend fun runCreateTipPriv(): ByteArray {
                     val deviceId = context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null) ?: throw TipNullException("Device id is null")
@@ -148,11 +148,11 @@ class Tip
                             }
                             throw e
                         }
-                    Timber.e("getOrRecoverTipPriv after getAesKey, aesKeyCipher isEmpty: ${aesKeyCipher.isEmpty()}")
+                    Timber.d("getOrRecoverTipPriv after getAesKey, aesKeyCipher isEmpty: ${aesKeyCipher.isEmpty()}")
                     val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
                     try {
                         val aesKey = aesDecrypt(pinToken, aesKeyCipher)
-                        Timber.e("getOrRecoverTipPriv after decrypt AES cipher")
+                        Timber.d("getOrRecoverTipPriv after decrypt AES cipher")
                         val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
                         aesDecrypt(privTipKey, privTip)
                     } catch (e: Exception) {
@@ -303,18 +303,18 @@ class Tip
             }
 
             if (counters.size != tipNodeCount()) {
-                Timber.e("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
+                Timber.d("watch tip node result size is ${counters.size} is not equals to node count ${tipNodeCount()}")
                 throw TipNotAllWatcherSuccessException(nodeErrorInfo)
             }
             val group = counters.groupBy { it.counter }
             if (group.size <= 1) {
                 val nodeCounter = counters.first().counter
-                Timber.e("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
+                Timber.d("watch tip node all counter are $nodeCounter, tipCounter $tipCounter")
                 if (nodeCounter == tipCounter) {
                     return@runCatching
                 }
                 if (nodeCounter < tipCounter) {
-                    Timber.e("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
+                    Timber.d("watch tip node node counter $nodeCounter < tipCounter $tipCounter")
                     // should balance node counter, so see all nodes as failed node
                     val signers = mutableListOf<TipSigner>()
                     counters.mapTo(signers) { it.tipSigner }
@@ -342,7 +342,7 @@ class Tip
                 } else {
                     null
                 }
-            Timber.e("watch tip node counter maxCounter $maxCounter")
+            Timber.d("watch tip node counter maxCounter $maxCounter")
             onNodeCounterInconsistency(maxCounter, failedSigners)
         }
 
@@ -568,7 +568,7 @@ class Tip
                     timestamp = timestamp,
                 )
 
-            Timber.e("generateAesKeyByPin before updateTipSecret")
+            Timber.d("generateAesKeyByPin before updateTipSecret")
             val result =
                 tipNetworkNullable {
                     tipService.updateTipSecret(tipSecretRequest)
@@ -617,7 +617,7 @@ class Tip
                     signatureBase64 = sigBase64,
                     timestamp = timestamp,
                 )
-            Timber.e("getAesKey before readTipSecret")
+            Timber.d("getAesKey before readTipSecret")
             val response = tipNetwork { tipService.readTipSecret(tipSecretReadRequest) }.getOrThrow()
             return response.seedBase64?.base64RawURLDecode() ?: throw TipNullException("Not get tip secret")
         }
@@ -633,7 +633,7 @@ class Tip
 
         @Throws(TipCounterNotSyncedException::class)
         private suspend fun assertTipCounterSynced(tipCounterSynced: TipCounterSyncedLiveData) {
-            Timber.e("assertTipCounterSynced tipCounterSynced.synced: ${tipCounterSynced.synced}")
+            Timber.d("assertTipCounterSynced tipCounterSynced.synced: ${tipCounterSynced.synced}")
             if (!tipCounterSynced.synced) {
                 checkCounter(
                     Session.getTipCounter(),
