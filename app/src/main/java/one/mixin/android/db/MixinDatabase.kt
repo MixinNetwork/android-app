@@ -74,6 +74,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_70_71
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_71_72
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_72_73
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
  
@@ -204,7 +205,8 @@ import kotlin.math.min
         (Alert::class),
         (MarketCapRank::class),
         (MarketCategoryRelation::class),
-        (MembershipOrder::class)
+        (MembershipOrder::class),
+        (UserFetchTime::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -438,6 +440,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_69_70,
                                 MIGRATION_70_71,
                                 MIGRATION_71_72,
+                                MIGRATION_72_73,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

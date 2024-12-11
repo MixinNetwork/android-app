@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -19,6 +20,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSA
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.UserBatchProcessor
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -28,6 +30,7 @@ class ConversationActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
+        UserBatchProcessor.getInstance().init(jobManager)
         if (savedInstanceState == null) {
             if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
                 replaceFragment(
@@ -59,6 +62,9 @@ class ConversationActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var userRepository: UserRepository
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return

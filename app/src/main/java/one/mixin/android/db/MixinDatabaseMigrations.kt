@@ -622,6 +622,13 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
+        val MIGRATION_72_73: Migration =
+            object : Migration(72, 73) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `user_fetch_times` (`user_id` TEXT NOT NULL, `last_fetch_at` INTEGER NOT NULL, PRIMARY KEY(`user_id`))")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
