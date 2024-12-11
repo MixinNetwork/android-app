@@ -31,6 +31,11 @@ jobs:
         MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
       shell: bash
       run: echo MAPBOX_DOWNLOADS_TOKEN=${MAPBOX_DOWNLOADS_TOKEN} >> gradle.properties
+    - name: Set sentry token
+      env:
+        SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      shell: bash
+      run: echo SENTRY.DSN=${SENTRY_DSN} >> gradle.properties
 
     - name: Create google-service.json file
       run: cat /home/runner/work/android-app/android-app/app/src/debug/google-services.json | base64
