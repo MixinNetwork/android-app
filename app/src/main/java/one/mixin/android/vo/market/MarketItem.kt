@@ -65,6 +65,8 @@ data class MarketItem(
     val assetIds: List<String>?,
     @ColumnInfo(name = "sparkline_in_7d")
     val sparklineIn7d: String,
+    @ColumnInfo(name = "sparkline_in_24h")
+    val sparklineIn24: String,
     @ColumnInfo(name = "is_favored")
     var isFavored: Boolean?
 ) : Parcelable {
@@ -99,6 +101,7 @@ data class MarketItem(
                 atlDate = market.atlDate,
                 assetIds = market.assetIds,
                 sparklineIn7d = market.sparklineIn7d,
+                sparklineIn24 = market.sparklineIn24h,
                 isFavored = null
             )
         }
