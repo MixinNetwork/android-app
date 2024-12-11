@@ -199,7 +199,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                             "", "", "", "", "", runCatching {
                                 (BigDecimal(asset.priceUsd) * BigDecimal(asset.changeUsd)).toPlainString()
                             }.getOrNull() ?: "0", "", asset.changeUsd, "", "", "", "", "", "", "", "", "",
-                            "", "", "", "", listOf(asset.assetId), "", null
+                            "", "", "", "", listOf(asset.assetId), "", "", null
                         )
                     }
                     view.navigate(
