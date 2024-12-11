@@ -6,12 +6,31 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import one.mixin.android.ui.sticker.StoreAlbum
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 
 @Dao
 interface StickerAlbumDao : BaseDao<StickerAlbum> {
+
+    @Transaction
+    suspend fun updateOrderedAt(stickerAlbumOrders: List<StickerAlbumOrder>) {
+        stickerAlbumOrders.forEach { o -> updateOrderedAt(o) }
+    }
+
+    @Transaction
+    suspend fun insertUpdate(
+        album: StickerAlbum,
+    ) {
+        val a = findAlbumById(album.albumId)
+        if (a == null) {
+            insert(album)
+        } else {
+            update(album)
+        }
+    }
+
     @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' AND added = 1 ORDER BY ordered_at DESC, created_at DESC")
     fun observeSystemAddedAlbums(): LiveData<List<StickerAlbum>>
 

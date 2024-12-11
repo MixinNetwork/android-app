@@ -3,10 +3,24 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import one.mixin.android.vo.Sticker
 
 @Dao
 interface StickerDao : BaseDao<Sticker> {
+    @Transaction
+    fun insertUpdate(s: Sticker) {
+        val sticker = getStickerByUnique(s.stickerId)
+        if (sticker != null) {
+            s.lastUseAt = sticker.lastUseAt
+        }
+        if (s.createdAt == "") {
+            s.createdAt = System.currentTimeMillis().toString()
+        }
+        insert(s)
+    }
+
+
     @Query("SELECT * FROM stickers WHERE last_use_at > 0 ORDER BY last_use_at DESC LIMIT 20")
     fun recentUsedStickers(): LiveData<List<Sticker>>
 

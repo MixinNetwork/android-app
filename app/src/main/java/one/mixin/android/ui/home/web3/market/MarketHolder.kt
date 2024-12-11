@@ -62,7 +62,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             } else {
                 ""
             }
-            sparkline.loadSvgWithTint(if (dayType) item.sparklineIn7d else item.sparklineIn7d, isRising, isColorReversed)
+            sparkline.loadSvgWithTint(if (dayType) item.sparklineIn7d else item.sparklineIn24, isRising, isColorReversed)
         }
     }
 }

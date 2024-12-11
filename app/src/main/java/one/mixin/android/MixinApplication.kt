@@ -26,14 +26,14 @@ import coil.util.DebugLogger
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.mapbox.maps.loader.MapboxMapsInitializer
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
+import io.sentry.SentryLevel
+import io.sentry.android.core.SentryAndroid
+import io.sentry.android.timber.SentryTimberIntegration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -150,13 +150,6 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
-        Analytics.setTransmissionInterval(60)
-        AppCenter.start(
-            this,
-            BuildConfig.APPCENTER_API_KEY,
-            Analytics::class.java,
-            Crashes::class.java,
-        )
         if (useMapbox()) {
             AppInitializer.getInstance(this)
                 .initializeComponent(MapboxMapsInitializer::class.java)
@@ -172,6 +165,21 @@ open class MixinApplication :
 
         applicationScope.launch {
             entityInitialize()
+        }
+
+        SentryAndroid.init(this) { options ->
+            options.dsn = BuildConfig.SENTRYDSN
+            options.isEnableUserInteractionTracing = false
+            options.isEnableUserInteractionBreadcrumbs = false
+            options.isEnablePerformanceV2 = true
+            options.isEnableAppStartProfiling = true
+
+            options.addIntegration(
+                SentryTimberIntegration(
+                    minEventLevel = SentryLevel.FATAL,
+                    minBreadcrumbLevel = SentryLevel.ERROR
+                )
+            )
         }
     }
 
