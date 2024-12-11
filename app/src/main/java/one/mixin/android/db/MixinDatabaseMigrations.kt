@@ -544,6 +544,13 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id_created_at` ON `pin_messages` (`conversation_id`, `created_at`)")
                 }
             }
+
+        val MIGRATION_63_64: Migration =
+            object : Migration(63, 64) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `user_fetch_times` (`user_id` TEXT NOT NULL, `last_fetch_at` INTEGER NOT NULL, PRIMARY KEY(`user_id`))")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
