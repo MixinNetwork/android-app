@@ -172,7 +172,7 @@ class Tip
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
             val encryptedSalt = this@Tip.getEncryptedSalt(context)
             val salt = aesDecrypt(saltAESKey, encryptedSalt)
-            if (!Session.hasPhone()) {
+            if (Session.isAnonymous()) {
                 if (!salt.contentEquals(ByteArray(16))) {
                     throw TipNullException("Salt not matched")
                 }

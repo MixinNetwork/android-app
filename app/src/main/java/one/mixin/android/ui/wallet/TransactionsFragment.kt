@@ -370,7 +370,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 sendBottomSheet.show(asset)
             }
             sendReceiveView.receive.setOnClickListener {
-                if (!Session.saltExported() && !Session.hasPhone()) {
+                if (!Session.saltExported() && Session.isAnonymous()) {
                     BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
                         .apply {
                             laterCallback = {
