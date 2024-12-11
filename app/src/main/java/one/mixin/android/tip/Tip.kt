@@ -22,6 +22,7 @@ import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toCompleteMnemonic
@@ -168,12 +169,18 @@ class Tip
             }
 
         suspend fun checkSalt(context: Context, pin: String, tipPriv: ByteArray) {
-            if (!Session.hasPhone()){
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
                 val encryptedSalt = this@Tip.getEncryptedSalt(context)
                 val salt = aesDecrypt(saltAESKey, encryptedSalt)
+            if (!Session.hasPhone()) {
                 if (!salt.contentEquals(ByteArray(16))) {
                     throw TipNullException("Salt not matched")
+                }
+            } else {
+                var local = getMnemonicFromEncryptedPreferences(context)
+                if (local != null && !salt.contentEquals(local)) {
+                    // Clear local mnemonic if salt not matched
+                    removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
                 }
             }
         }
