@@ -185,20 +185,20 @@ class Tip
             }
         }
 
-        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, force: Boolean = false): String {
-            val encryptedSalt = if (Session.hasPhone() || force) {
-                val local = getMnemonicFromEncryptedPreferences(context)
-                if (local != null) {
-                    val saltAESKey = generateSaltAESKey(pin, tipPriv)
-                    aesEncrypt(saltAESKey, local)
-                } else {
-                    this@Tip.getEncryptedSalt(context)
-                }
+        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, isAnonymous: Boolean): String {
+            val rawSalt = if (isAnonymous) {
+                ByteArray(16)
             } else {
-                val rawSalt = ByteArray(16)
-                val saltAESKey = generateSaltAESKey(pin, tipPriv)
-                aesEncrypt(saltAESKey, rawSalt)
+                requireNotNull(getMnemonicFromEncryptedPreferences(context)) // Only register safe
             }
+            val saltAESKey = generateSaltAESKey(pin, tipPriv)
+            val encryptedSalt = aesEncrypt(saltAESKey, rawSalt)
+            val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+            return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
+        }
+
+        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray): String {
+            val encryptedSalt = getEncryptedSalt(context)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
             return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
         }

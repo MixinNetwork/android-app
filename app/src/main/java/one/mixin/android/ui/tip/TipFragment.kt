@@ -538,7 +538,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     return@runCatching false
                 }
             val spendSeed = tip.getSpendPriv(requireContext(), seed)
-            val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed)
+            val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed, !Session.hasPhone())
             val spendKeyPair = newKeyPairFromSeed(spendSeed)
             val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
