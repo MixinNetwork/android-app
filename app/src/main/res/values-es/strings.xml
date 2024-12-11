@@ -181,7 +181,6 @@
         <item quantity="one">¿Eliminar %1$d mensaje?</item>
         <item quantity="other">¿Eliminar %1$d mensajes?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s ha añadido %2$s</string>
     <string name="chat_group_call_decline">%1$s ha rechazado una llamada de grupo</string>
     <string name="chat_group_call_end">La llamada de grupo ha finalizado.</string>
@@ -195,7 +194,6 @@
     <string name="chat_import_fail_content">¡Error en la importación de mensajes! ¿Quieres enviarlo como un archivo?</string>
     <string name="chat_list_empty_info">Puedes chatear con contactos que tengan Mixin instalado en tu teléfono.</string>
     <string name="chat_not_support">Este tipo de mensaje no es compatible, actualiza Mixin a la última versión. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">¡Chateemos en Mixin Messenger! Sencillo, seguro y fácil de usar. También es compatible con Bitcoin, Ethereum y otras criptomonedas. Descarga https://mixin.one/messenger y busca \@%1$s para añadirme como amigo.</string>
     <string name="chat_pin_message">%1$s ha fijado %2$s</string>
     <string name="Chat_pinned">Chat fijado</string>
@@ -336,7 +334,6 @@
     <string name="Disabled">Desactivado</string>
     <string name="disappearing_message">Mensajes que desaparecen</string>
     <string name="disappearing_message_hint">Cuando está habilitado, los nuevos mensajes enviados y recibidos en este chat desaparecerán después de que se hayan visto, lee el documento para **obtener más información**.</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
     <string name="disappearing_option_1">30 segundos</string>
     <string name="disappearing_option_2">10 minutos</string>
     <string name="disappearing_option_3">2 horas</string>
@@ -523,7 +520,6 @@
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Introduce el código de 4 dígitos que te enviamos a %1$s</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">Idioma</string>
     <string name="Large_Amount_Confirmation">Confirmación de gran cantidad</string>
     <string name="Large_Amount_Confirmation_with_symbol">Confirmación de gran cantidad(%1$s)</string>
@@ -861,7 +857,6 @@
     <string name="setting_delete_account_pin_content">Si continúas, tu perfil y los detalles de tu cuenta se eliminarán el %1$s. le nuestro documento para **aprender más**.</string>
     <string name="setting_delete_account_send">Enviaremos un código de 4 dígitos a %1$s</string>
     <string name="setting_delete_account_tip">Tu cartera Mixin todavía tiene algunos activos que se pueden retirar a otras carteras o intercambios. Una vez que se cancele la cuenta, estos activos serán abandonados junto con la cartera y no podrán recuperarse.</string>
-    <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string name="setting_desktop_confirm">Confirmar inicio de sesión en Mixin Messenger Desktop</string>
     <string name="setting_desktop_logout_failed">El cierre de sesión del escritorio ha fallado.</string>
     <string name="setting_duplicate_transfer_desc">Muestra un cuadro de diálogo de confirmación cuando transfieres la misma cantidad a la misma persona dentro de las 6 horas.</string>

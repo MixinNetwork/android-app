@@ -115,7 +115,6 @@
     <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
         <item quantity="other">Hapus %1$d pesan?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan grup</string>
     <string name="chat_group_call_invite">%1$s telah mengundang Anda ke panggilan grup</string>
@@ -125,7 +124,6 @@
     <string name="chat_group_remove">%1$s menghapus %2$s</string>
     <string name="chat_list_empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
     <string name="chat_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_recall_delete_alert">Pesan yang Anda pilih akan dihapus untuk semua orang pada versi Mixin terbaru dalam obrolan ini.</string>
     <string name="chat_waiting">Menunggu %1$s untuk online dan membuat sesi terenkripsi. %2$s.</string>
     <string name="CHATS">OBROLAN</string>
@@ -341,7 +339,6 @@
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Masukkan kode 4 digit yang dikirim kepada Anda di %1$s</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">Bahasa</string>
     <string name="Large_Amount_Confirmation">Konfirmasi Jumlah Besar</string>
     <string name="Large_Amount_Confirmation_with_symbol">Konfirmasi Jumlah Besar(%1$s)</string>

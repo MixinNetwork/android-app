@@ -100,7 +100,7 @@ class OrderConfirmFragment : BaseFragment(R.layout.fragment_order_confirm) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
             titleView.rightAnimator.setOnClickListener { }
             titleView.setSubTitle(getString(R.string.Order_Confirm), "")
             buyVa.displayedChild = 2

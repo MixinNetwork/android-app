@@ -35,7 +35,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="40dp"
         android:textColor="?attr/text_primary"
-        android:gravity="center_horizontal" />
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"/>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

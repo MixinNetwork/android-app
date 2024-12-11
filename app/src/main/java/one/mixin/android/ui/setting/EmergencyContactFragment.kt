@@ -44,7 +44,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             enableRl.setOnClickListener {
                 navTo(AddRecoveryContactFragment.newInstance(), AddRecoveryContactFragment.TAG)
             }
