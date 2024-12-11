@@ -168,7 +168,7 @@ open class MixinApplication :
         }
 
         SentryAndroid.init(this) { options ->
-            options.dsn = BuildConfig.SENTRYDSN
+            options.dsn = BuildConfig.SENTRY_DSN
             options.isEnableUserInteractionTracing = false
             options.isEnableUserInteractionBreadcrumbs = false
             options.isEnablePerformanceV2 = true
