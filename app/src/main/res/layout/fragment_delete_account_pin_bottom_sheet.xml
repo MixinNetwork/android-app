@@ -19,6 +19,8 @@
         android:layout_marginBottom="40dp"
         android:textColor="@color/text_color_error_tip"
         android:text="@string/Enter_PIN_to_delete_account"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:textSize="16sp" />
 
     <one.mixin.android.ui.oldwallet.biometric.BiometricLayout

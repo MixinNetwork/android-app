@@ -45,9 +45,9 @@ class LogoutPinBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() 
         binding.biometricLayout.measureAllChildren = false
         binding.title.setText(R.string.Enter_your_PIN_to_log_out)
         if (sessionId == null) {
-            binding.title.setText(R.string.logout_description)
+            binding.content.setText(R.string.logout_description)
         } else {
-            binding.title.text = ""
+            binding.content.text = ""
         }
     }
 
