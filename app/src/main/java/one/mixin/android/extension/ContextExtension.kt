@@ -126,6 +126,10 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     return b
 }
 
+fun Context.isScreenWideColorGamut(): Boolean {
+    return resources.configuration.isScreenWideColorGamut()
+}
+
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
