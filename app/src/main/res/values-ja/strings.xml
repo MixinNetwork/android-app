@@ -168,7 +168,6 @@
         <item quantity="one">%1$dのメッセージを削除しますか？</item>
         <item quantity="other">%1$dのメッセージを削除しますか？</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
     <string name="chat_group_call_decline">%1$sグループ通話が終了しました</string>
     <string name="chat_group_call_end">グループ通話が終了しました </string>
@@ -182,7 +181,6 @@
     <string name="chat_import_fail_content">メッセージのインポートに失敗しました。ファイルとして送信しますか？</string>
     <string name="chat_list_empty_info">Mixinアプリをダウンロードしている友人とチャットできます</string>
     <string name="chat_not_support">サポートしていない形式です、Mixinを最新版にアップデートしてください%1$s</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">さあ、Mixinでチャットをしましょう！Mixinは安全かつとても簡単に使えます。ビットコインやイーサリアムのような複数の通貨に対応しています。https://mixin.one/messenger からMixinをダウンロードし、%1$sを検索して友達になりましょう。</string>
     <string name="chat_pin_message">%1$sは%2$sをピン留めしました</string>
     <string name="Chat_pinned">ピン留め済みのチャット</string>
@@ -315,7 +313,6 @@
     <string name="Disabled">無効ずみ</string>
     <string name="disappearing_message">表示されないメッセージ</string>
     <string name="disappearing_message_hint">有効にすると、このチャットで送受信された新しいメッセージは、見た後に消えます。詳しくは、こちらをお読みください。</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
     <string name="disappearing_option_1">30秒</string>
     <string name="disappearing_option_2">10分間</string>
     <string name="disappearing_option_3">2時間</string>
@@ -496,7 +493,6 @@
     <string name="landing_privacy_policy_url">プライバシーポリシー: https://mixin.one/pages/privacy </string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">%1$sに送信された4桁のコードを入力してください</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">言語</string>
     <string name="Large_Amount_Confirmation">送金時に通知を行う金額の設定</string>
     <string name="Large_Amount_Confirmation_with_symbol">送金時に通知を行う金額の設定（%1$s）</string>
@@ -809,7 +805,6 @@
     <string name="setting_delete_account_pin_content">%1$sと紐付けられたプロフィールとアカウント情報が削除されます。詳細はこちらをご覧ください。</string>
     <string name="setting_delete_account_send">%1$sへ4桁のコードを送信します</string>
     <string name="setting_delete_account_tip">警告：Mixinウォレット内に他のウォレットや取引所に送金可能な仮想通貨が残っています。アカウントを削除すると、仮想通貨を永遠に引き出すことができませんが、よろしいでしょうか？</string>
-    <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string name="setting_desktop_confirm">デスクトップ版Mixinへのログインを確認</string>
     <string name="setting_desktop_logout_failed">デスクトップ版からのログアウトに失敗しました</string>
     <string name="setting_duplicate_transfer_desc">6時間以内に同じ人に同額の送金を実行する際、確認を行う。</string>
