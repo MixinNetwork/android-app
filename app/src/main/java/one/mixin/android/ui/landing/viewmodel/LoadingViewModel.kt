@@ -83,6 +83,7 @@ internal constructor(
                     signalDatabase.senderKeyDao().insert(SenderKey(key.groupId, "$userId:$d", key.record))
                 }
             }
+            databaseProvider.initAllDatabases()
             val participants = databaseProvider.getMixinDatabase().participantDao().getAllParticipants()
             val newParticipantSession = mutableListOf<ParticipantSession>()
             participants.forEach { p ->

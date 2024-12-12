@@ -250,6 +250,8 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        mainViewModel.initAllDatabases()
+
         MixinApplication.get().isOnline.set(true)
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)

@@ -31,6 +31,8 @@ internal constructor(
     private val conversationService: ConversationService,
 ) : ViewModel() {
 
+    fun initAllDatabases() = databaseProvider.initAllDatabases()
+
     fun updateSession(request: SessionRequest) = accountService.updateSession(request)
 
     fun deviceCheck() = accountService.deviceCheck()
