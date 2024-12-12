@@ -294,7 +294,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Session.storeEd25519Seed(privateKey.base64Encode())
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
-                landingViewModel.initAllDatabases()
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
                 when {
                     account.fullName.isNullOrBlank() -> {

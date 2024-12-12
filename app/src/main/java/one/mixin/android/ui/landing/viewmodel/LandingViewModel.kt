@@ -61,7 +61,6 @@ internal constructor(
     private val emergencyService: EmergencyService,
     private val pinCipher: PinCipher,
 ) : ViewModel() {
-    fun initAllDatabases() = databaseProvider.initAllDatabases()
 
     fun lockAndUpgradeDatabase() = databaseProvider.getMixinDatabase().runInTransaction {
         // do nothing
@@ -92,7 +91,6 @@ internal constructor(
 
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
-            initAllDatabases()
             databaseProvider.getMixinDatabase().userDao().insertSuspend(user)
         }
 
@@ -144,7 +142,6 @@ internal constructor(
         id: String,
         phone: String,
     ) = {
-        initAllDatabases()
         databaseProvider.getMixinDatabase().userDao().updatePhone(id, phone)
     }
 

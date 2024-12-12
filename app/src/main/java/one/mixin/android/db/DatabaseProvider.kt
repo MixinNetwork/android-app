@@ -17,7 +17,7 @@ class DatabaseProvider @Inject constructor(
 
     @Synchronized
     fun getMixinDatabase(): MixinDatabase {
-        if (mixinDatabase == null || mixinDatabase?.isClosed() == true){
+        if (mixinDatabase == null || mixinDatabase?.isOpen != true){
             initAllDatabases()
         }
         return mixinDatabase ?: throw IllegalStateException("MixinDatabase is not initialized")
@@ -25,7 +25,7 @@ class DatabaseProvider @Inject constructor(
 
     @Synchronized
     fun getFtsDatabase(): FtsDatabase {
-        if (ftsDatabase == null || ftsDatabase?.isClosed() == true) {
+        if (ftsDatabase == null || ftsDatabase?.isOpen != true) {
             initAllDatabases()
         }
         return ftsDatabase ?: throw IllegalStateException("FtsDatabase is not initialized")
@@ -33,7 +33,7 @@ class DatabaseProvider @Inject constructor(
 
     @Synchronized
     fun getPendingDatabase(): PendingDatabase {
-        if (pendingDatabase == null || pendingDatabase?.isClosed() == true) {
+        if (pendingDatabase == null || pendingDatabase?.isOpen != true) {
             initAllDatabases()
         }
         return pendingDatabase ?: throw IllegalStateException("PendingDatabase is not initialized")
@@ -42,7 +42,7 @@ class DatabaseProvider @Inject constructor(
     private var identityNumber: String? = null
 
     @Synchronized
-    fun initAllDatabases() {
+    private fun initAllDatabases() {
         val identityNumber = requireNotNull(Session.getAccount()?.identityNumber)
         if (identityNumber == this.identityNumber) return
 

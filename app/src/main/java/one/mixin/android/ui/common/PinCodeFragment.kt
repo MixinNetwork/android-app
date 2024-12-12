@@ -106,7 +106,6 @@ abstract class PinCodeFragment(
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
         moveLegacyDatabaseFile(requireContext(), account)
-        landingViewModel.initAllDatabases()
         if (Session.hasPhone()) {
             // Remove mnemonic if user has phone on sign in
             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
