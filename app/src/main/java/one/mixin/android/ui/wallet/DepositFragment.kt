@@ -104,7 +104,7 @@ class DepositFragment : BaseFragment() {
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
+                rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit), asset.symbol)
             if (notSupport) {
@@ -112,7 +112,7 @@ class DepositFragment : BaseFragment() {
                 sv.isVisible = false
                 val symbol = if (asset.assetId == OMNI_USDT_ASSET_ID) "OMNI-USDT" else asset.symbol
                 val info = getString(R.string.not_supported_deposit, symbol, symbol)
-                val url = Constants.HelpLink.DEPOSIT_NOT_SUPPORT
+                val url = getString(R.string.not_supported_deposit_url)
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
                 if (usdtAssets.contains(asset.assetId)) {

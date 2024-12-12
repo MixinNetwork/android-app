@@ -20,6 +20,7 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.DeactivateRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
@@ -912,11 +913,18 @@ class BottomSheetViewModel
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
 
-        suspend fun logout(sessionId: String) =
-            withContext(Dispatchers.IO) {
-                accountRepository.logout(sessionId)
-            }
+        suspend fun getLogoutTipBody(
+            sessionId: String,
+            pin: String,
+        ): String = pinCipher.encryptPin(pin, TipBody.forLogout(sessionId))
 
+        suspend fun deactivate(request: DeactivateRequest) = accountRepository.deactivate(request)
+
+        suspend fun logout(sessionId: String, pin: String) =
+            withContext(Dispatchers.IO) {
+                val pinBase64 = getLogoutTipBody(sessionId, pin)
+                accountRepository.logout(sessionId, pinBase64)
+            }
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 

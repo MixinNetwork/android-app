@@ -59,7 +59,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             deleteRl.setOnClickListener {
                 verifyDeleteAccount()
             }
