@@ -14,8 +14,9 @@ import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isScreenWideColorGamut
 
-val isP3Supported = ColorSpaces.DisplayP3 != ColorSpaces.Srgb
+val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
 class AppColors(
     val primary: Color,
