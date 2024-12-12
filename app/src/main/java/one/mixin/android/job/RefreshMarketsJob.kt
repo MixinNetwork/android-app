@@ -41,12 +41,9 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                     marketFavoredDao.insertList(marketExtraList)
                 }
                 if (category == "all") {
-                    runInTransaction {
-                        marketCapRankDao.deleteAll()
-                        marketCapRankDao.insertList(list.map {
-                            MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
-                        })
-                    }
+                    marketCapRankDao.insertAll(list.map {
+                        MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
+                    })
                 }
                 marketDao.upsertList(list)
                 val ids = list.flatMap { market ->
