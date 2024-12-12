@@ -40,7 +40,7 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                     marketFavoredDao().insertList(marketExtraList)
                 }
                 if (category == "all") {
-                    marketCapRankDao().deleteAndInsertList(list.map {
+                    marketCapRankDao().insertAll(list.map {
                         MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
                     })
                 }

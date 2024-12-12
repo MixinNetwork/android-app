@@ -37,8 +37,8 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
     suspend fun getUnreadMessageIds(conversationId: String): List<String>
 
     @Transaction
-    fun markReadAndUnseen(conversationId: String){
+    fun markRead(conversationId: String) {
         markReadByConversationId(conversationId)
-        updateConversationUnseen(conversationId)
+        zeroConversationUnseen(conversationId)
     }
 }

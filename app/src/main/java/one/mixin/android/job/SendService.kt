@@ -67,6 +67,6 @@ class SendService : IntentService("SendService") {
         val manager = getSystemService<NotificationManager>()
         manager?.cancel(conversationId.hashCode())
         messageMentionDao.markMentionReadByConversationId(conversationId)
-        remoteMessageStatusDao.markReadAndUnseen(conversationId)
+        remoteMessageStatusDao.markRead(conversationId)
     }
 }

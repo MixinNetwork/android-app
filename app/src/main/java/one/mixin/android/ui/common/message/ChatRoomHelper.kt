@@ -44,10 +44,7 @@ class ChatRoomHelper
         fun markMessageRead(conversationId: String) {
             applicationScope.launch(SINGLE_THREAD) {
                 timeoutEarlyWarning({
-                    databaseProvider.getMixinDatabase().runInTransaction {
-                        remoteMessageStatusDao.markReadByConversationId(conversationId)
-                        remoteMessageStatusDao.zeroConversationUnseen(conversationId)
-                    }
+                    remoteMessageStatusDao.markRead(conversationId)
                 })
             }
         }

@@ -12,7 +12,7 @@ interface MarketCapRankDao : BaseDao<MarketCapRank> {
     fun deleteAll()
 
     @Transaction
-    fun deleteAndInsertList(list: List<MarketCapRank>) {
+    fun insertAll(list: List<MarketCapRank>) {
         deleteAll()
         insertList(list)
     }

@@ -85,15 +85,15 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
         val color = if (dataPointsData.last() >= dataPointsData.first()) {
             if (quoteColorPref) {
-                MixinAppTheme.colors.walletRed
+                MixinAppTheme.colors.marketRed
             } else {
-                MixinAppTheme.colors.walletGreen
+                MixinAppTheme.colors.marketGreen
             }
         } else {
             if (quoteColorPref) {
-                MixinAppTheme.colors.walletGreen
+                MixinAppTheme.colors.marketGreen
             } else {
-                MixinAppTheme.colors.walletRed
+                MixinAppTheme.colors.marketRed
             }
         }
         val circleColor = MixinAppTheme.colors.background
