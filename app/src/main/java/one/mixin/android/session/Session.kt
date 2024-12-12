@@ -113,6 +113,10 @@ object Session {
         return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)
     }
 
+    fun isAnonymous(): Boolean {
+        return !hasPhone()
+    }
+
     fun saltExported(): Boolean {
         val account = getAccount()
         val exportedSaltAt = account?.saltExportedAt ?: return false
