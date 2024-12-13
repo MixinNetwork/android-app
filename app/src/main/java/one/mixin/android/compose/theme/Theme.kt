@@ -10,9 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isScreenWideColorGamut
+
+val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
 class AppColors(
     val primary: Color,
@@ -34,6 +38,20 @@ class AppColors(
     val tipError: Color = Color(0xFFF67070),
     val walletRed: Color = Color(0xFFF67070),
     val walletGreen: Color = Color(0xFF50BD5C),
+    val marketRed: Color = if (isP3Supported) Color(
+        colorSpace = ColorSpaces.DisplayP3,
+        red = 0.898f,
+        green = 0.471f,
+        blue = 0.455f,
+        alpha = 1f
+    ) else Color(0xFFE57874),
+    val marketGreen: Color = if (isP3Supported) Color(
+        colorSpace = ColorSpaces.DisplayP3,
+        red = 0.314f,
+        green = 0.741f,
+        blue = 0.361f,
+        alpha = 1f
+    ) else Color(0xFF50BD5C),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,

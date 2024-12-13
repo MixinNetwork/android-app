@@ -227,7 +227,7 @@ class BackupMnemonicPhraseBulletin(
     private val context = bulletinView.context
 
     override fun show(chain: Bulletin.Chain): Boolean {
-        val display = !Session.saltExported() && !Session.hasPhone()
+        val display = !Session.saltExported() && Session.isAnonymous()
         if (display) {
             bulletinView.setTypeAndCallback(BulletinView.Type.BackupMnemonicPhrase, bulletinMnemonicPhraseCallback)
         }

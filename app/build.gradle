@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 0
-def versionPatch = 1
-def versionBuild = 1
+def versionPatch = 2
+def versionBuild = 3
 
 android {
     compileSdk 35
@@ -521,7 +521,11 @@ sentry {
     org = "mcwm"
     projectName = "android"
 
-    // this will upload your source code to Sentry to show it as part of the stack traces
-    // disable if you don't want to expose your sources
-    includeSourceContext = false
+    tracingInstrumentation {
+        enabled = true
+
+        logcat {
+            enabled = false
+        }
+    }
 }

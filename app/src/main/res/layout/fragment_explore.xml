@@ -88,7 +88,7 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:checked="true"
-                android:text="@string/bots_title"
+                android:text="@string/Explore"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
