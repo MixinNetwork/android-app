@@ -142,6 +142,10 @@ fun SwapPage(
                                     quoteResult = null
                                     isLoading = false
                                 }
+                        } else {
+                            errorInfo = null
+                            quoteResult = null
+                            isLoading = false
                         }
                     }
                 }
@@ -295,7 +299,7 @@ fun SwapPage(
                         if (isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
-                                color = Color.White,
+                                color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
                             )
                         } else {
                             Text(
