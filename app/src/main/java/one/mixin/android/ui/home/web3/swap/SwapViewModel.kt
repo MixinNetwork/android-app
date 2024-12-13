@@ -59,6 +59,7 @@ class SwapViewModel
 
         suspend fun quote(
             context: Context,
+            symbol: String,
             inputMint: String?,
             outputMint: String?,
             amount: String,
@@ -77,22 +78,21 @@ class SwapViewModel
                     return if (response.isSuccess) {
                         Result.success(requireNotNull(response.data))
                     } else if (response.errorCode == INVALID_QUOTE_AMOUNT) {
-                        val builder = StringBuilder(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                         val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
-                        if (extra != null) {
-                            val min = extra.get("min").asString
-                            val max = extra.get("max").asString
-                            if (!min.isNullOrBlank() && !max.isNullOrBlank()) {
-                                builder.append(context.getString(R.string.single_transaction_should_be_between, min, max))
-                            } else if (!min.isNullOrBlank()) {
-                                builder.append(context.getString(R.string.single_transaction_should_be_greater_than, min))
-                            } else if (!max.isNullOrBlank()) {
-                                builder.append(context.getString(R.string.single_transaction_should_be_less_than, max))
+                        val errorMessage = when {
+                            extra != null -> {
+                                val min = extra.get("min")?.asString
+                                val max = extra.get("max")?.asString
+                                when {
+                                    !min.isNullOrBlank() && !max.isNullOrBlank() -> context.getString(R.string.single_transaction_should_be_between, min, symbol, max, symbol)
+                                    !min.isNullOrBlank() -> context.getString(R.string.single_transaction_should_be_greater_than, min, symbol)
+                                    !max.isNullOrBlank() -> context.getString(R.string.single_transaction_should_be_less_than, max, symbol)
+                                    else -> context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                                }
                             }
-                            @Suppress("UNUSED_VARIABLE")
-                            val source = extra.get("source").asString
+                            else -> context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                         }
-                        Result.failure(Throwable(builder.toString()))
+                        return Result.failure(Throwable(errorMessage))
                     } else {
                         Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                     }

@@ -131,7 +131,7 @@ fun SwapPage(
                             Timber.e("Refreshing quote: inputText=$text, fromToken=${from.symbol}, toToken=${to.symbol}")
                             isLoading = true
                             errorInfo = null
-                            viewModel.quote(context, from.getUnique(), to.getUnique(), text, slippageBps.toString(), source)
+                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), text, slippageBps.toString(), source)
                                 .onSuccess { value ->
                                     quoteResult = value
                                     isLoading = false

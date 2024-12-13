@@ -1527,9 +1527,9 @@
     <string name="balance_max">最大</string>
     <string name="balance_half">取半</string>
     <string name="Failed">失败</string>
-    <string name="single_transaction_should_be_greater_than">单笔交易额应 ≥ %1$s</string>
-    <string name="single_transaction_should_be_less_than">单笔交易额应 ≤ %1$s</string>
-    <string name="single_transaction_should_be_between">单笔交易额应 %1$s ≤ %2$s</string>
+    <string name="single_transaction_should_be_greater_than">最低金额 %1$s %2$s</string>
+    <string name="single_transaction_should_be_less_than">最高金额 %1$s %2$s</string>
+    <string name="single_transaction_should_be_between">金额范围 %1$s %2$s ~ %3$s %4$s</string>
     <!-- Web3 -->
     <string name="web3_approve">批准</string>
     <string name="web3_borrow">借款</string>
