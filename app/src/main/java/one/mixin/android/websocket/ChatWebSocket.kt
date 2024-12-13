@@ -187,7 +187,9 @@ class ChatWebSocket(
                         transactions.remove(blazeMessage.id)
                     }
                     if (blazeMessage.data != null && blazeMessage.isReceiveMessageAction()) {
-                        handleReceiveMessage(blazeMessage)
+                        if (databaseProvider.isInit()) {
+                            handleReceiveMessage(blazeMessage)
+                        }
                     }
                 } else {
                     if (transactions[blazeMessage.id] != null) {

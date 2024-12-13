@@ -35,7 +35,7 @@ class DatabaseProvider @Inject constructor(
     @Synchronized
     fun initAllDatabases() {
         val identityNumber = requireNotNull(Session.getAccount()?.identityNumber)
-        if (identityNumber == this.identityNumber && mixinDatabase == null && ftsDatabase == null && pendingDatabase == null) return
+        if (identityNumber == this.identityNumber && isInit()) return
 
         mixinDatabase?.close()
         val db = MixinDatabase.getDatabase(context)
@@ -59,4 +59,7 @@ class DatabaseProvider @Inject constructor(
         pendingDatabase?.close()
         pendingDatabase = null
     }
+
+    @Synchronized
+    fun isInit() = mixinDatabase != null && ftsDatabase != null && pendingDatabase != null
 }
