@@ -300,7 +300,7 @@ fun SwapPage(
                         } else {
                             Text(
                                 text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
+                                color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
                     }
