@@ -138,6 +138,7 @@ fun SwapPage(
                                 }
                                 .onFailure { exception ->
                                     if (exception is CancellationException) return@onFailure
+                                    errorInfo = exception.message
                                     quoteResult = null
                                     isLoading = false
                                 }
