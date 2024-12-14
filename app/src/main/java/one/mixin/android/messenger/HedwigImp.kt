@@ -101,11 +101,11 @@ class HedwigImp(
 
     private fun startObserveFlood() {
         runFloodJob()
-        databaseProvider.getPendingDatabase().addObserver(floodObserver)
+        databaseProvider.getPendingDatabase(true).addObserver(floodObserver)
     }
 
     private fun stopObserveFlood() {
-        databaseProvider.getPendingDatabase().removeObserver(floodObserver)
+        databaseProvider.getPendingDatabase(true).removeObserver(floodObserver)
     }
 
     @Synchronized

@@ -26,7 +26,10 @@ class DatabaseProvider @Inject constructor(
     }
 
     @Synchronized
-    fun getPendingDatabase(): PendingDatabase {
+    fun getPendingDatabase(needCreate: Boolean = false): PendingDatabase {
+        if (pendingDatabase == null) {
+            initAllDatabases()
+        }
         return pendingDatabase ?: throw IllegalStateException("PendingDatabase is not initialized")
     }
 
