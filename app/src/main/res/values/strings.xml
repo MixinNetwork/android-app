@@ -728,6 +728,7 @@
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
     <string name="notification_content">Don\'t miss messages from your friends.</string>
     <string name="Notifications">Notifications</string>
+    <string name="Enable_Notifications">Enable Notifications</string>
     <string name="Now_Playing">Now Playing</string>
     <string name="number_reached_limit">The number has reached the limit</string>
     <string name="Off">Off</string>
