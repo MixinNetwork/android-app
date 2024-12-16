@@ -5,9 +5,12 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.File
@@ -102,14 +105,11 @@ suspend fun clearJobsAndRawTransaction(context: Context) =
         if (!dbFile.exists()) {
             return@withContext
         }
-        var db: SQLiteDatabase? = null
+        var db: SupportSQLiteDatabase? = null
         try {
-            db =
-                SQLiteDatabase.openDatabase(
-                    dbFile.absolutePath,
-                    null,
-                    SQLiteDatabase.OPEN_READWRITE,
-                )
+            // Init database
+            MixinDatabase.getDatabase(context)
+            db = MixinDatabase.getWritableDatabase() ?: return@withContext
             if (!supportsDeferForeignKeys) {
                 db.execSQL("PRAGMA foreign_keys = FALSE")
             }
@@ -121,13 +121,14 @@ suspend fun clearJobsAndRawTransaction(context: Context) =
             db.execSQL("DELETE FROM `raw_transactions`")
             db.execSQL("DELETE FROM `outputs`")
             db.setTransactionSuccessful()
+            Timber.e("Clear jobs and raw transaction")
         } catch (e: Exception) {
+            Timber.e(e)
             reportException(e)
         } finally {
             db?.endTransaction()
             if (!supportsDeferForeignKeys) {
                 db?.execSQL("PRAGMA foreign_keys = TRUE")
             }
-            db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
         }
     }
