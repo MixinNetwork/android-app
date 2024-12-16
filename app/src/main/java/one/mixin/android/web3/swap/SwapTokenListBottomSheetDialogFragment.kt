@@ -189,11 +189,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     ((currentChain != null && it.chain.chainId == currentChain) || currentChain == null) && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
                 }.toMutableList() ?: mutableListOf()
 
-            val total = if (inMixin()) {
-                assetList
-            } else {
-                search(s, assetList)
-            }
+            val total = search(s, assetList, inMixin())
+
             adapter.tokens = ArrayList(total)
             if (!isAdded) {
                 return@launch
@@ -210,14 +207,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private suspend fun search(
         s: String,
         localTokens: MutableList<SwapToken>,
+        inMixin: Boolean
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
-
+        if (localTokens.isEmpty()) binding.pb.isVisible = true
         handleMixinResponse(
-            invokeNetwork = { swapViewModel.searchTokens(s) },
+            invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
                 return@handleMixinResponse resp.data
             },
+            endBlock = {
+                binding.pb.isVisible = false
+            }
         )?.let { remoteList ->
             localTokens.addAll(
                 remoteList.filter { ra ->
