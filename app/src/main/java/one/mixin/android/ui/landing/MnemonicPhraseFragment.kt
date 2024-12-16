@@ -291,9 +291,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 val lastUserId = getLastUserId(requireContext())
                 val sameUser = lastUserId != null && lastUserId == account.userId
                 if (sameUser) {
-                    clearJobsAndRawTransaction(requireContext())
+                    withContext(Dispatchers.IO) {
+                        clearJobsAndRawTransaction(requireContext())
+                    }
                 } else {
-                    clearDatabase(requireContext())
+                    withContext(Dispatchers.IO) {
+                        clearDatabase(requireContext())
+                    }
                     defaultSharedPreferences.clear()
                 }
                 val privateKey = sessionKey.privateKey

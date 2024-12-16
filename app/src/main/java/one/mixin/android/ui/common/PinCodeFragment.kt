@@ -100,10 +100,14 @@ abstract class PinCodeFragment(
         val sameUser = lastUserId != null && lastUserId == account.userId
         if (sameUser) {
             showLoading()
-            clearJobsAndRawTransaction(requireContext())
+            withContext(Dispatchers.IO) {
+                clearJobsAndRawTransaction(requireContext())
+            }
         } else {
             showLoading()
-            clearDatabase(requireContext())
+            withContext(Dispatchers.IO) {
+                clearDatabase(requireContext())
+            }
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.privateKey

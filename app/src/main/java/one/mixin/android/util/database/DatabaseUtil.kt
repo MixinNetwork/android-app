@@ -46,14 +46,13 @@ suspend fun getLastUserId(context: Context): String? =
     }
 
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearDatabase(context: Context) =
-    withContext(Dispatchers.IO) {
+suspend fun clearDatabase(context: Context) {
         try {
             clearFts(context)
             clearPending(context)
             val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
             if (!dbFile.exists()) {
-                return@withContext
+                return
             }
             dbFile.parent?.let {
                 File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
@@ -98,18 +97,17 @@ suspend fun clearFts(context: Context) =
     }
 
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearJobsAndRawTransaction(context: Context) =
-    withContext(Dispatchers.IO) {
+suspend fun clearJobsAndRawTransaction(context: Context) {
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
         val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
         if (!dbFile.exists()) {
-            return@withContext
+            return
         }
         var db: SupportSQLiteDatabase? = null
         try {
             // Init database
             MixinDatabase.getDatabase(context)
-            db = MixinDatabase.getWritableDatabase() ?: return@withContext
+            db = MixinDatabase.getWritableDatabase() ?: return
             if (!supportsDeferForeignKeys) {
                 db.execSQL("PRAGMA foreign_keys = FALSE")
             }
@@ -131,4 +129,4 @@ suspend fun clearJobsAndRawTransaction(context: Context) =
                 db?.execSQL("PRAGMA foreign_keys = TRUE")
             }
         }
-    }
+}
