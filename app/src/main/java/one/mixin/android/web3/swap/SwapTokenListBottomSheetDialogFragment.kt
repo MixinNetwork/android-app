@@ -159,7 +159,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
+                .autoDispose(destroyScope)
                 .subscribe({
                     searchJob?.cancel()
                     searchJob = filter(it.toString())
