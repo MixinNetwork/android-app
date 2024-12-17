@@ -98,7 +98,9 @@ abstract class PinCodeFragment(
         val account = response.data as Account
 
         showLoading()
-        clearJobsAndRawTransaction(requireContext(), account.identityNumber)
+        withContext(Dispatchers.IO) {
+            clearJobsAndRawTransaction(requireContext(), account.identityNumber)
+        }
 
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)

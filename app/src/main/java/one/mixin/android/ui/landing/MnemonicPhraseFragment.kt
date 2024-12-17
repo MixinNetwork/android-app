@@ -286,9 +286,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
-
-                clearJobsAndRawTransaction(requireContext(), account.identityNumber)
-
+                withContext(Dispatchers.IO) {
+                    clearJobsAndRawTransaction(requireContext(), account.identityNumber)
+                }
                 val privateKey = sessionKey.privateKey
                 val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
                 Session.storeEd25519Seed(privateKey.base64Encode())
