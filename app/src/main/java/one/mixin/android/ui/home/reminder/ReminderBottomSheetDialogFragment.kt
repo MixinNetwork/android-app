@@ -21,6 +21,7 @@ import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.compose.theme.languageBasedImage
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -155,63 +156,65 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                when (popupType) {
-                    is PopupType.NewVersionReminder -> {
-                        ReminderPage(R.drawable.bg_reminber_version, R.string.New_Update_Available, R.string.New_Update_Available_desc, R.string.Update_Now, action = {
-                            Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
-                            dismissAllowingStateLoss()
-                        }, dismiss = {
-                            requireContext().defaultSharedPreferences.putLong(
-                                PREF_NEW_VERSION,
-                                System.currentTimeMillis(),
-                            )
-                            dismissAllowingStateLoss()
-                        })
-                    }
-
-                    is PopupType.BackupMnemonicReminder -> {
-                        ReminderPage(R.drawable.bg_reminber_mnemonic, R.string.Backup_Mnemonic_Phrase, R.string.Backup_Mnemonic_Phrase_desc, R.string.Backup_Now, action = {
-                            SettingActivity.showMnemonicPhrase(context)
-                            dismissAllowingStateLoss()
-                        }, dismiss = {
-                            requireContext().defaultSharedPreferences.putLong(
-                                PREF_EMERGENCY_CONTACT,
-                                System.currentTimeMillis(),
-                            )
-                            dismissAllowingStateLoss()
-                        })
-                    }
-
-                    is PopupType.NotificationPermissionReminder -> {
-                        ReminderPage(
-                            languageBasedImage(
-                                R.drawable.bg_reminder_notifaction,
-                                R.drawable.bg_reminder_notifaction_cn
-                            ), R.string.Turn_On_Notifications, R.string.notification_content, R.string.Enable_Notifications, action = {
-                                requireContext().openNotificationSetting()
+                MixinAppTheme {
+                    when (popupType) {
+                        is PopupType.NewVersionReminder -> {
+                            ReminderPage(R.drawable.bg_reminber_version, R.string.New_Update_Available, R.string.New_Update_Available_desc, R.string.Update_Now, action = {
+                                Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
                                 dismissAllowingStateLoss()
                             }, dismiss = {
                                 requireContext().defaultSharedPreferences.putLong(
-                                    PREF_NOTIFICATION_ON,
+                                    PREF_NEW_VERSION,
                                     System.currentTimeMillis(),
                                 )
                                 dismissAllowingStateLoss()
                             })
-                    }
+                        }
 
-                    is PopupType.RestoreContactReminder -> {
-                        ReminderPage(R.drawable.bg_reminber_recovery_contact, R.string.Emergency_Contact, R.string.setting_emergency_content, R.string.Continue, action = {
-                            SettingActivity.showEmergencyContact(requireContext())
-                            dismissAllowingStateLoss()
-                        }, dismiss = {
-                            requireContext().defaultSharedPreferences.putLong(
-                                PREF_EMERGENCY_CONTACT,
-                                System.currentTimeMillis(),
-                            )
-                            dismissAllowingStateLoss()
-                        })
-                    }
+                        is PopupType.BackupMnemonicReminder -> {
+                            ReminderPage(R.drawable.bg_reminber_mnemonic, R.string.Backup_Mnemonic_Phrase, R.string.Backup_Mnemonic_Phrase_desc, R.string.Backup_Now, action = {
+                                SettingActivity.showMnemonicPhrase(context)
+                                dismissAllowingStateLoss()
+                            }, dismiss = {
+                                requireContext().defaultSharedPreferences.putLong(
+                                    PREF_EMERGENCY_CONTACT,
+                                    System.currentTimeMillis(),
+                                )
+                                dismissAllowingStateLoss()
+                            })
+                        }
 
+                        is PopupType.NotificationPermissionReminder -> {
+                            ReminderPage(
+                                languageBasedImage(
+                                    R.drawable.bg_reminder_notifaction,
+                                    R.drawable.bg_reminder_notifaction_cn
+                                ), R.string.Turn_On_Notifications, R.string.notification_content, R.string.Enable_Notifications, action = {
+                                    requireContext().openNotificationSetting()
+                                    dismissAllowingStateLoss()
+                                }, dismiss = {
+                                    requireContext().defaultSharedPreferences.putLong(
+                                        PREF_NOTIFICATION_ON,
+                                        System.currentTimeMillis(),
+                                    )
+                                    dismissAllowingStateLoss()
+                                })
+                        }
+
+                        is PopupType.RestoreContactReminder -> {
+                            ReminderPage(R.drawable.bg_reminber_recovery_contact, R.string.Emergency_Contact, R.string.setting_emergency_content, R.string.Continue, action = {
+                                SettingActivity.showEmergencyContact(requireContext())
+                                dismissAllowingStateLoss()
+                            }, dismiss = {
+                                requireContext().defaultSharedPreferences.putLong(
+                                    PREF_EMERGENCY_CONTACT,
+                                    System.currentTimeMillis(),
+                                )
+                                dismissAllowingStateLoss()
+                            })
+                        }
+
+                    }
                 }
             }
             doOnPreDraw {

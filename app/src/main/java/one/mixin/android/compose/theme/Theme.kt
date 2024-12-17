@@ -124,7 +124,7 @@ private val DarkColorPalette =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
         bgGradientStart = Color(0xFF2C3136),
-        bgGradientEnd = Color(0xFF2C3136),
+        bgGradientEnd = Color(0xFF1C2029),
     )
 
 private val LightDrawablePalette =
