@@ -216,7 +216,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
                 return@handleMixinResponse resp.data?.filter { ra ->
-                    !localTokens.any { a -> a.address.equals(ra.address, true) }
+                    !localTokens.any { a -> a.address.equals(ra.address, true) || a.assetId.equals(ra.assetId, true) }
                 }?.map { token ->
                     if (inMixin) {
                         token.copy(address = "")
