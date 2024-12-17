@@ -90,7 +90,7 @@ fun SwapPage(
     initialAmount: String?,
     source: String,
     slippageBps: Int,
-    onSelectToken: (SelectTokenType) -> Unit,
+    onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onSwap: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
@@ -200,7 +200,7 @@ fun SwapPage(
                             text = inputText,
                             title = stringResource(id = R.string.Token_From),
                             readOnly = false,
-                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.To else SelectTokenType.From) },
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                             onInputChanged = { inputText = it },
                             onMax = {
                                 inputText = fromToken?.balance ?: "0"
@@ -213,7 +213,7 @@ fun SwapPage(
                             text = quoteResult?.outAmount ?: "",
                             title = stringResource(id = R.string.To),
                             readOnly = true,
-                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
                         )
                     },
                     margin = 6.dp,

@@ -184,8 +184,8 @@ class SwapFragment : BaseFragment() {
                                 to = toToken,
                                 initialAmount = initialAmount,
                                 slippageBps = slippage,
-                                onSelectToken = { type ->
-                                    selectCallback(swapTokens, type)
+                                onSelectToken = { isReverse, type ->
+                                    selectCallback(swapTokens, isReverse, type)
                                 },
                                 onSwap = { quote, from, to, amount ->
                                     lifecycleScope.launch {
@@ -214,22 +214,15 @@ class SwapFragment : BaseFragment() {
 
     private val selectCallback = fun(
         list: List<SwapToken>,
+        isReverse: Boolean,
         type: SelectTokenType,
     ) {
-        if (type == SelectTokenType.From) {
+        if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
                 AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND, ArrayList(list.map { t -> t.assetId }))
                     .setOnAssetClick { t ->
                         val token = t.toSwapToken()
-                        if (token == toToken) {
-                            toToken = fromToken
-                        }
-                        fromToken = token
-                        fromToken?.let { from ->
-                            toToken?.let { to ->
-                                defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
-                            }
-                        }
+                        saveQuoteToken(token, isReverse, type)
                     }.setOnDepositClick {
                         parentFragmentManager.popBackStackImmediate()
                     }
@@ -241,10 +234,7 @@ class SwapFragment : BaseFragment() {
                 ).apply {
                     setOnClickListener { t ->
                         val token = t.toSwapToken()
-                        if (token == toToken) {
-                            toToken = fromToken
-                        }
-                        fromToken = token
+                        saveQuoteToken(token, isReverse, type)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
@@ -265,20 +255,37 @@ class SwapFragment : BaseFragment() {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                         return@setOnClickListener
                     }
-                    if (token == fromToken) {
-                        fromToken = toToken
-                    }
-                    toToken = token
-                    if (inMixin()) {
-                        fromToken?.let { from ->
-                            toToken?.let { to ->
-                                defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
-                            }
-                        }
-                    }
+                    saveQuoteToken(token, isReverse, type)
                     dismissNow()
                 }
             }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
+        }
+    }
+
+    private fun saveQuoteToken(
+        token: SwapToken,
+        isReverse: Boolean,
+        type: SelectTokenType,
+    ) {
+        if (type == SelectTokenType.From) {
+            if (token == toToken) {
+                toToken = fromToken
+            }
+            fromToken = token
+        } else {
+            if (token == fromToken) {
+                fromToken = toToken
+            }
+            toToken = token
+        }
+
+        if (inMixin()) {
+            fromToken?.let { from ->
+                toToken?.let { to ->
+                    if (isReverse) defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${to.getUnique()} ${from.getUnique()}")
+                    else defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
+                }
+            }
         }
     }
 
