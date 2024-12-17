@@ -321,7 +321,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                             if (it[initialIndex]?.messageId == messageId) { // Only change when data is same
                                 binding.viewPager.setCurrentItem(initialIndex, false)
                             } else {
-                                reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex")
+                                lifecycleScope.launch {
+                                    val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
+                                    reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
+                                }
                             }
                             checkOrientation()
                             firstLoad = false

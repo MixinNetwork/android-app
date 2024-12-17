@@ -203,6 +203,16 @@ class ConversationRepository
                 messageDao.indexMediaMessages(conversationId, messageId)
             }
 
+        suspend fun countIndexMediaMessages(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): Int =
+            if (excludeLive) {
+                messageDao.countIndexMediaMessagesExcludeLive(conversationId)
+            } else {
+                messageDao.countIndexMediaMessages(conversationId)
+            }
+
         fun getMediaMessages(
             conversationId: String,
             index: Int,
