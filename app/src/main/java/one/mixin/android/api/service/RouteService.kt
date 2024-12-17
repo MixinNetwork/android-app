@@ -149,6 +149,7 @@ interface RouteService {
     @GET("web3/tokens/search/{query}")
     suspend fun searchTokens(
         @Path("query") query: String,
+        @Query("source") source: String?
     ): MixinResponse<List<SwapToken>>
 
     @POST("web3/stake")

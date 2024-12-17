@@ -189,11 +189,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     ((currentChain != null && it.chain.chainId == currentChain) || currentChain == null) && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
                 }.toMutableList() ?: mutableListOf()
 
-            val total = if (inMixin()) {
-                assetList
-            } else {
-                search(s, assetList)
-            }
+            val total = search(s, assetList, currentChain, inMixin())
+
             adapter.tokens = ArrayList(total)
             if (!isAdded) {
                 return@launch
@@ -210,18 +207,29 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private suspend fun search(
         s: String,
         localTokens: MutableList<SwapToken>,
+        currentChain: String?,
+        inMixin: Boolean
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
-
+        if (localTokens.isEmpty()) binding.pb.isVisible = true
         handleMixinResponse(
-            invokeNetwork = { swapViewModel.searchTokens(s) },
+            invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data
+                return@handleMixinResponse resp.data?.map { token ->
+                    if (inMixin) {
+                        token.copy(address = "")
+                    } else {
+                        token.copy(assetId = "")
+                    }
+                }
             },
+            endBlock = {
+                binding.pb.isVisible = false
+            }
         )?.let { remoteList ->
             localTokens.addAll(
                 remoteList.filter { ra ->
-                    !localTokens.any { a -> a.address.equals(ra.address, true) }
+                    !localTokens.any { a -> a.address.equals(ra.address, true) } && ((currentChain != null && ra.chain.chainId == currentChain) || currentChain == null)
                 },
             )
         }

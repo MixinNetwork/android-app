@@ -14,11 +14,12 @@ data class QuoteResult(
     val jupiterQuoteResponse: JupiterQuoteResponse? = null,
 )
 
-fun QuoteResult?.rate(): BigDecimal {
+fun QuoteResult?.rate(fromToken: SwapToken?, toToken: SwapToken?): BigDecimal {
     if (this == null) return BigDecimal.ZERO
+    if (fromToken == null || toToken == null) return BigDecimal.ZERO
     return runCatching {
-        val inValue = inAmount.toBigDecimal()
-        val outValue = outAmount.toBigDecimal()
+        val inValue = fromToken.realAmount(inAmount)
+        val outValue = toToken.realAmount(outAmount)
         outValue.divide(inValue, 8, RoundingMode.CEILING)
     }.getOrDefault(BigDecimal.ZERO)
 }
