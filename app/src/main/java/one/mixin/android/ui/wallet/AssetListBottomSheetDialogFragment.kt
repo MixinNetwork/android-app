@@ -14,6 +14,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ChainId.BinanceSmartChain
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -75,6 +80,47 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var currentSearch: Job? = null
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<TokenItem>()
+    private var currentChain: String? = null
+
+    private fun initRadio() {
+        binding.apply {
+            radio.isVisible = true
+            radioAll.isChecked = true
+            radioAll.isVisible = true
+            radioEth.isVisible = true
+            radioTron.isVisible = true
+            radioBsc.isVisible = true
+            radioPolygon.isVisible = true
+            radioGroup.setOnCheckedChangeListener { _, id ->
+                currentChain = when (id) {
+                    R.id.radio_eth -> {
+                        ETHEREUM_CHAIN_ID
+                    }
+
+                    R.id.radio_solana -> {
+                        SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_tron -> {
+                        TRON_CHAIN_ID
+                    }
+
+                    R.id.radio_bsc -> {
+                        BinanceSmartChain
+                    }
+
+                    R.id.radio_polygon -> {
+                        Polygon
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+                filter(searchEt.et.text?.toString() ?: "")
+            }
+        }
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -91,6 +137,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         binding.apply {
+            initRadio()
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
@@ -178,7 +225,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val assetList =
             defaultAssets.filter {
                 it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
+            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }.filter { item ->
+                ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+            }
         adapter.submitList(assetList) {
             binding.assetRv.scrollToPosition(0)
         }
@@ -200,10 +249,14 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         } else {
                             list
                         }
+                    }?.filter { item ->
+                        ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                     }
                 adapter.submitList(localAssets)
 
-                val remoteAssets = bottomViewModel.queryAsset(query)
+                val remoteAssets = bottomViewModel.queryAsset(query).filter { item ->
+                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 adapter.submitList(result) {
