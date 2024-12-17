@@ -211,7 +211,7 @@ fun SwapPage(
                     bottomCompose = {
                         InputArea(
                             token = toToken,
-                            text = quoteResult?.outAmount ?: "",
+                            text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                             title = stringResource(id = R.string.To),
                             readOnly = true,
                             selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
