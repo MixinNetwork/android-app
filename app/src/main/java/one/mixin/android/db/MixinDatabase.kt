@@ -64,6 +64,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_59_60
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_60_61
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_61_62
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_62_63
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_63_64
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
@@ -116,6 +117,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserFetchTime
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
@@ -181,7 +183,8 @@ import kotlin.math.min
         (MarketCoin::class),
         (MarketFavored::class),
         (Alert::class),
-        (MarketCapRank::class)
+        (MarketCapRank::class),
+        (UserFetchTime::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -356,6 +359,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_60_61,
                                 MIGRATION_61_62,
                                 MIGRATION_62_63,
+                                MIGRATION_63_64,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
