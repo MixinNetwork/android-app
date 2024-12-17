@@ -389,7 +389,7 @@ class AssetRepository
 
         suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
 
-        suspend fun searchTokens(query: String) = routeService.searchTokens(query)
+        suspend fun searchTokens(query: String, inMixin: Boolean) = routeService.searchTokens(query, if (inMixin) "mixin" else null)
 
         suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
 

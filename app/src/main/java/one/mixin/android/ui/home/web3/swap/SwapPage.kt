@@ -90,7 +90,7 @@ fun SwapPage(
     initialAmount: String?,
     source: String,
     slippageBps: Int,
-    onSelectToken: (SelectTokenType) -> Unit,
+    onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onSwap: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
@@ -131,7 +131,8 @@ fun SwapPage(
                             Timber.e("Refreshing quote: inputText=$text, fromToken=${from.symbol}, toToken=${to.symbol}")
                             isLoading = true
                             errorInfo = null
-                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), text, slippageBps.toString(), source)
+                            val amount = if (source == "") from.toLongAmount(text).toString() else text
+                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
                                 .onSuccess { value ->
                                     quoteResult = value
                                     isLoading = false
@@ -200,7 +201,7 @@ fun SwapPage(
                             text = inputText,
                             title = stringResource(id = R.string.Token_From),
                             readOnly = false,
-                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.To else SelectTokenType.From) },
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                             onInputChanged = { inputText = it },
                             onMax = {
                                 inputText = fromToken?.balance ?: "0"
@@ -210,10 +211,10 @@ fun SwapPage(
                     bottomCompose = {
                         InputArea(
                             token = toToken,
-                            text = quoteResult?.outAmount ?: "",
+                            text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                             title = stringResource(id = R.string.To),
                             readOnly = true,
-                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
                         )
                     },
                     margin = 6.dp,
@@ -231,7 +232,7 @@ fun SwapPage(
                                 .padding(20.dp),
                         ) {
                             quoteResult?.let { quote ->
-                                val rate = quote.rate()
+                                val rate = quote.rate(fromToken, toToken)
                                 if (rate != BigDecimal.ZERO) {
                                     PriceInfo(
                                         fromToken = fromToken!!,
