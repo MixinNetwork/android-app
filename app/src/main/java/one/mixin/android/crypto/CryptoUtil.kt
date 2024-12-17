@@ -311,7 +311,7 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
     )
 
     val encodedKey = entropy.toHex()
-    encryptedPrefs.edit().putString(alias, encodedKey).apply()
+    encryptedPrefs.edit().putString(alias, encodedKey).commit()
 }
 
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
