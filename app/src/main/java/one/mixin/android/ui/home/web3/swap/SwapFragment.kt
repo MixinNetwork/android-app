@@ -299,11 +299,11 @@ class SwapFragment : BaseFragment() {
                     SwapRequest(
                         if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
                         inputMint,
-                        if (inMixin()) 0 else amount.toLong(),
-                        if (inMixin()) amount else "0",
+                        if (inMixin()) 0 else quote.inAmount.toLong(),
+                        if (inMixin()) quote.inAmount else "0",
                         outputMint,
-                        slippage,
-                        getSource(),
+                        quote.slippage,
+                        quote.source,
                         quote.payload,
                         quote.jupiterQuoteResponse
                     )
