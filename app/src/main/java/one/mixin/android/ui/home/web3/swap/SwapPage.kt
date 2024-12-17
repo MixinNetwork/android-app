@@ -232,7 +232,7 @@ fun SwapPage(
                                 .padding(20.dp),
                         ) {
                             quoteResult?.let { quote ->
-                                val rate = quote.rate()
+                                val rate = quote.rate(fromToken, toToken)
                                 if (rate != BigDecimal.ZERO) {
                                     PriceInfo(
                                         fromToken = fromToken!!,
