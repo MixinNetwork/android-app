@@ -189,7 +189,7 @@ class SwapFragment : BaseFragment() {
                                 },
                                 onSwap = { quote, from, to, amount ->
                                     lifecycleScope.launch {
-                                        handleSwap(quote, from, to, amount)
+                                        handleSwap(quote, from, to, amount, navController)
                                     }
                                 },
                                 source = getSource(),
@@ -289,7 +289,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResult, form: SwapToken, to: SwapToken, amount: String) {
+    private suspend fun handleSwap(quote: QuoteResult, form: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
         val inputMint = form.getUnique()
         val outputMint = to.getUnique()
 
@@ -330,7 +330,7 @@ class SwapFragment : BaseFragment() {
                 lifecycleScope.launch {
                     val txStateFragment = TransactionStateFragment.newInstance(serializedTx, to.symbol).apply {
                         setCloseAction {
-                            findNavController().navigateUp()
+                            navigateUp(navController)
                             parentFragmentManager.popBackStackImmediate()
                         }
                     }
