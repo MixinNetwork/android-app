@@ -56,7 +56,7 @@ fun EmergencyContactPage() {
         titleBarActions = {
             val context = LocalContext.current
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.EMERGENCY)
+                context.openUrl(context.getString(R.string.emergency_url))
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_help_outline),
