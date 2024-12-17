@@ -79,6 +79,7 @@ import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.reportEvent
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
@@ -317,7 +318,11 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     adapter.submitList(it) {
                         if (firstLoad) {
                             adapter.initialPos = initialIndex
-                            binding.viewPager.setCurrentItem(initialIndex, false)
+                            if (it[initialIndex]?.messageId == messageId) { // Only change when data is same
+                                binding.viewPager.setCurrentItem(initialIndex, false)
+                            } else {
+                                reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex")
+                            }
                             checkOrientation()
                             firstLoad = false
                         }
