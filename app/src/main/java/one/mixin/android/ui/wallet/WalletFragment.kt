@@ -448,10 +448,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 assetsAdapter.notifyDataSetChanged()
             }
         checkPin()
-        refreshAllPendingDeposit()
 
         val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
         _headBinding?.sendReceiveView?.badge?.isVisible = swap
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshAllPendingDeposit()
     }
 
     private fun refreshAllPendingDeposit() =
