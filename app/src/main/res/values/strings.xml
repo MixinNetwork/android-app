@@ -1837,4 +1837,6 @@
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
     <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
+    <string name="recharge_confirmation">%1$s Recharge Confirmation</string>
+    <string name="recharge_confirmation_count">There are %1$d recharge confirmations</string>
 </resources>
