@@ -20,7 +20,7 @@ class InscriptionMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID)
     override fun onRun() =
         runBlocking {
             syncOutputs(0)
-            val hash = outputDao.findUnspentInscriptionHash()
+            val hash = outputDao().findUnspentInscriptionHash()
             if (hash.isNotEmpty()) {
                 jobManager.addJobInBackground(SyncInscriptionsJob(hash))
             }
@@ -40,7 +40,7 @@ class InscriptionMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID)
             outputs.filterNot {
                 it.inscriptionHash.isNullOrEmpty()
             }.apply {
-                outputDao.insertUnspentOutputs(this)
+                outputDao().insertUnspentOutputs(this)
             }.mapNotNull { it.inscriptionHash }.apply {
                 if (isNotEmpty()) {
                     jobManager.addJobInBackground(SyncInscriptionsJob(this))

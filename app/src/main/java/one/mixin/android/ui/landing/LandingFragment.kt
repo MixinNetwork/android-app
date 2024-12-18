@@ -55,4 +55,5 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
             )
         }
     }
+
 }

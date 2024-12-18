@@ -26,10 +26,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
+import one.mixin.android.util.database.moveLegacyDatabaseFile
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -84,6 +84,7 @@ abstract class PinCodeFragment(
     }
 
     protected suspend fun handleAccount(
+        landingViewModel: LandingViewModel,
         response: MixinResponse<Account>,
         sessionKey: EdKeyPair,
         action: () -> Unit,
@@ -96,25 +97,18 @@ abstract class PinCodeFragment(
 
         val account = response.data as Account
 
-        val lastUserId = getLastUserId(requireContext())
-        val sameUser = lastUserId != null && lastUserId == account.userId
-        if (sameUser) {
-            showLoading()
-            withContext(Dispatchers.IO) {
-                clearJobsAndRawTransaction(requireContext())
-            }
-        } else {
-            showLoading()
-            withContext(Dispatchers.IO) {
-                clearDatabase(requireContext())
-            }
-            defaultSharedPreferences.clear()
+        showLoading()
+        withContext(Dispatchers.IO) {
+            clearJobsAndRawTransaction(requireContext(), account.identityNumber)
         }
+
         val privateKey = sessionKey.privateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
         Session.storeEd25519Seed(privateKey.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
+        moveLegacyDatabaseFile(requireContext(), account)
+        landingViewModel.initAllDatabases()
         if (Session.hasPhone()) {
             // Remove mnemonic if user has phone on sign in
             removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
@@ -136,7 +130,6 @@ abstract class PinCodeFragment(
                 RestoreActivity.show(requireContext())
             }
         }
-        MixinApplication.get().reject()
         activity?.finish()
     }
 

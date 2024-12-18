@@ -13,6 +13,8 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
+
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -25,7 +27,7 @@ class TimeFragment : BaseFragment(R.layout.fragment_time) {
         fun newInstance() = TimeFragment()
     }
 
-    private val loadingViewModel by viewModels<LoadingViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentTimeBinding::bind)
 
     override fun onResume() {
@@ -51,7 +53,7 @@ class TimeFragment : BaseFragment(R.layout.fragment_time) {
                 everybodyPb.visibility = View.VISIBLE
                 continueTv.visibility = View.INVISIBLE
                 currentJob =
-                    loadingViewModel.pingServer(
+                    landingViewModel.pingServer(
                         {
                             if (isAdded) {
                                 everybodyPb.visibility = View.INVISIBLE

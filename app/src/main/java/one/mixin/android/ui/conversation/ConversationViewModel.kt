@@ -113,7 +113,6 @@ import javax.inject.Inject
 class ConversationViewModel
     @Inject
     internal constructor(
-        private val appDatabase: MixinDatabase,
         private val conversationRepository: ConversationRepository,
         private val userRepository: UserRepository,
         private val jobManager: MixinJobManager,

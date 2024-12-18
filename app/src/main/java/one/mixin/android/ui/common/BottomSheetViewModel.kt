@@ -38,7 +38,7 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.db.runInTransaction
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
@@ -119,6 +119,7 @@ import javax.inject.Inject
 class BottomSheetViewModel
     @Inject
     internal constructor(
+        private val databaseProvider: DatabaseProvider,
         private val accountRepository: AccountRepository,
         private val jobManager: MixinJobManager,
         private val userRepository: UserRepository,
@@ -269,7 +270,7 @@ class BottomSheetViewModel
                     val signFeeResult = SignResult(signFee.raw, signFee.change)
                     rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
                     Timber.e("Kernel Withdrawal($traceId): db begin")
-                    runInTransaction {
+                    databaseProvider.getMixinDatabase().runInTransaction {
                         Timber.e("Kernel Withdrawal($traceId): db update fee Utxo ${feeUtxos.ids}")
                         tokenRepository.updateUtxoToSigned(feeUtxos.ids)
                         Timber.e("Kernel Withdrawal($traceId): db update Utxo ${withdrawalUtxos.ids}")
@@ -314,7 +315,7 @@ class BottomSheetViewModel
                     jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
                 } else {
                     Timber.e("Kernel Withdrawal($traceId): db begin")
-                    runInTransaction {
+                    databaseProvider.getMixinDatabase().runInTransaction {
                         if (signWithdrawalResult.change != null) {
                             val changeOutput = changeToOutput(signWithdrawalResult.change, asset, changeMask, data.last().keys, withdrawalUtxos.lastOutput)
                             Timber.e("Kernel Withdrawal($traceId): db insert change")
@@ -425,7 +426,7 @@ class BottomSheetViewModel
             val signResult = SignResult(sign.raw, sign.change)
             Timber.e("Kernel Address Transaction($trace): db begin")
             withContext(SINGLE_DB_THREAD) {
-                runInTransaction {
+                databaseProvider.getMixinDatabase().runInTransaction {
                     if (signResult.change != null) {
                         val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                         Timber.e("Kernel Address Transaction($trace): sign db insert change")
@@ -508,7 +509,7 @@ class BottomSheetViewModel
             val signResult = SignResult(sign.raw, sign.change)
             Timber.e("Kernel Transaction($trace): db begin")
             withContext(SINGLE_DB_THREAD) {
-                runInTransaction {
+                databaseProvider.getMixinDatabase().runInTransaction {
                     if (signResult.change != null) {
                         val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
                         Timber.e("Kernel Transaction($trace): sign db insert change")

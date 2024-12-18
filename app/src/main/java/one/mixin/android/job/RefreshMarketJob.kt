@@ -18,8 +18,8 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
         val response = routeService.market(assetId)
         if (response.isSuccess && response.data != null) {
             response.data?.let { market->
-                marketDao.insert(market)
-                marketCoinDao.insertList(market.assetIds?.map { assetId ->
+                marketDao().insert(market)
+                marketCoinDao().insertList(market.assetIds?.map { assetId ->
                     MarketCoin(
                         coinId = market.coinId,
                         assetId = assetId,

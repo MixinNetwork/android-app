@@ -16,11 +16,11 @@ class CleanupQuoteContentJob(private val rowId: Long) : BaseJob(Params(PRIORITY_
     override fun onRun() =
         runBlocking {
             val gson = GsonHelper.customGson
-            val list = messageDao.findBigQuoteMessage(rowId, 100)
+            val list = messageDao().findBigQuoteMessage(rowId, 100)
             list.forEach { quoteMinimal ->
-                val quoteMsg = messageDao.findQuoteMessageItemById(quoteMinimal.conversationId, quoteMinimal.quoteMessageId)
+                val quoteMsg = messageDao().findQuoteMessageItemById(quoteMinimal.conversationId, quoteMinimal.quoteMessageId)
                 if (quoteMsg == null) {
-                    messageDao.updateQuoteContentNullByQuoteMessageId(quoteMinimal.conversationId, quoteMinimal.quoteMessageId)
+                    messageDao().updateQuoteContentNullByQuoteMessageId(quoteMinimal.conversationId, quoteMinimal.quoteMessageId)
                 } else {
                     quoteMsg.thumbImage =
                         if ((quoteMsg.thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
@@ -28,7 +28,7 @@ class CleanupQuoteContentJob(private val rowId: Long) : BaseJob(Params(PRIORITY_
                         } else {
                             quoteMsg.thumbImage
                         }
-                    messageDao.updateQuoteContentByQuoteId(quoteMinimal.conversationId, quoteMinimal.quoteMessageId, gson.toJson(quoteMsg))
+                    messageDao().updateQuoteContentByQuoteId(quoteMinimal.conversationId, quoteMinimal.quoteMessageId, gson.toJson(quoteMsg))
                 }
             }
             Timber.e("process ${list.size}")

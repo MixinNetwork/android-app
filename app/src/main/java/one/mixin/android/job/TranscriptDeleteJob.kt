@@ -20,13 +20,13 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
     }
 
     override fun onRun() {
-        val cIds = messageDao.findConversationsByMessages(messageIds)
+        val cIds = messageDao().findConversationsByMessages(messageIds)
         messageIds.forEach { messageId ->
-            mixinDatabase.deleteMessageById(messageId)
-            ftsDatabase.deleteByMessageId(messageId)
-            transcriptMessageDao.getTranscript(messageId).forEach { transcriptMessage ->
+            database().deleteMessageById(messageId)
+            ftsDatabase().deleteByMessageId(messageId)
+            transcriptMessageDao().getTranscript(messageId).forEach { transcriptMessage ->
                 if (transcriptMessage.isAttachment()) {
-                    transcriptMessageDao.delete(transcriptMessage)
+                    transcriptMessageDao().delete(transcriptMessage)
                     transcriptMessage.absolutePath()?.let { url ->
                         deleteAttachment(transcriptMessage.messageId, url)
                     }
@@ -36,8 +36,8 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
             }
         }
         cIds.forEach { id ->
-            conversationDao.refreshLastMessageId(id)
-            conversationExtDao.refreshCountByConversationId(id)
+            conversationDao().refreshLastMessageId(id)
+            conversationExtDao().refreshCountByConversationId(id)
             MessageFlow.delete(id, messageIds)
         }
     }
@@ -46,7 +46,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
         messageId: String,
         mediaUrl: String,
     ) {
-        val count = transcriptMessageDao.countTranscriptByMessageId(messageId)
+        val count = transcriptMessageDao().countTranscriptByMessageId(messageId)
         if (count <= 1) {
             File(Uri.parse(mediaUrl).path!!).apply {
                 if (exists()) {
@@ -57,7 +57,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
     }
 
     private fun deleteTranscript(transcriptMessage: TranscriptMessage) {
-        val list = transcriptMessageDao.getTranscript(transcriptMessage.messageId)
+        val list = transcriptMessageDao().getTranscript(transcriptMessage.messageId)
         if (list.isEmpty()) {
             return
         } else {
@@ -65,7 +65,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
                 if (t.isTranscript()) {
                     deleteTranscript(t)
                 } else {
-                    val count = transcriptMessageDao.countTranscriptByMessageId(t.messageId)
+                    val count = transcriptMessageDao().countTranscriptByMessageId(t.messageId)
                     if (count > 1) {
                         return@forEach
                     } else {
@@ -74,7 +74,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
                                 deleteAttachment(transcriptMessage.messageId, url)
                             }
                         }
-                        transcriptMessageDao.delete(t)
+                        transcriptMessageDao().delete(t)
                     }
                 }
             }

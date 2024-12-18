@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCapRank
@@ -38,14 +37,14 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                             now
                         )
                     }
-                    marketFavoredDao.insertList(marketExtraList)
+                    marketFavoredDao().insertList(marketExtraList)
                 }
                 if (category == "all") {
-                    marketCapRankDao.insertAll(list.map {
+                    marketCapRankDao().insertAll(list.map {
                         MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
                     })
                 }
-                marketDao.upsertList(list)
+                marketDao().upsertList(list)
                 val ids = list.flatMap { market ->
                     market.assetIds?.map { assetId ->
                         MarketCoin(
@@ -55,7 +54,7 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                         )
                     } ?: emptyList()
                 }
-                marketCoinDao.insertIgnoreList(ids)
+                marketCoinDao().insertIgnoreList(ids)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))

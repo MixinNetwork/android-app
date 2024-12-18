@@ -22,7 +22,10 @@ import androidx.paging.PagedList
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.RxBus
+import one.mixin.android.db.DatabaseProvider
+import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.event.ProgressEvent.Companion.playEvent
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.ui.player.internal.ConversationLoader
@@ -48,7 +51,10 @@ class MusicService : MediaSessionService(), LifecycleOwner {
     private var currentPlaylist: List<MediaMetadataCompat>? = null
 
     @Inject
-    lateinit var db: MixinDatabase
+    lateinit var dataProvider: DatabaseProvider
+
+    val messageDao: MessageDao
+        get() = dataProvider.getMixinDatabase().messageDao()
 
     private val dispatcher = ServiceLifecycleDispatcher(this)
 
@@ -144,7 +150,7 @@ class MusicService : MediaSessionService(), LifecycleOwner {
                 if (exists == null) {
                     RxBus.publish(playEvent(mediaId)) // respond UI before load
 
-                    val index = db.messageDao().indexAudioByConversationId(mediaId, albumId)
+                    val index = messageDao.indexAudioByConversationId(mediaId, albumId)
                     conversationObserver.loadAround(index, mediaId)
                 } else {
                     MusicPlayer.get().playMediaById(mediaId)
@@ -169,11 +175,11 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         conversationObserver = ConversationObserver(mediaId)
         val initialLoadKey =
             if (mediaId != null) {
-                db.messageDao().indexAudioByConversationId(mediaId, albumId)
+                messageDao.indexAudioByConversationId(mediaId, albumId)
             } else {
                 0
             }
-        conversationLiveData = conversationLoader.conversationLiveData(albumId, db, initialLoadKey = initialLoadKey)
+        conversationLiveData = conversationLoader.conversationLiveData(albumId, dataProvider.getMixinDatabase(), initialLoadKey = initialLoadKey)
         conversationLiveData?.observe(this, conversationObserver)
     }
 
@@ -284,7 +290,7 @@ class MusicService : MediaSessionService(), LifecycleOwner {
                 if (oldPos != newPos && newPos == 0 || newPos == (currentPlaylist?.size ?: 0) - 1) {
                     lifecycleScope.launch {
                         val item = newPosition.mediaItem ?: return@launch
-                        val index = db.messageDao().indexAudioByConversationId(item.mediaId, albumId)
+                        val index = messageDao.indexAudioByConversationId(item.mediaId, albumId)
                         conversationObserver.loadAround(index, item.mediaId, false)
                     }
                 }

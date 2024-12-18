@@ -18,28 +18,28 @@ class SyncInscriptionsJob(val hash: List<String>) : BaseJob(
         }
 
     private suspend fun syncInscriptions() {
-        val local = inscriptionDao.getExitsHash(hash)
+        val local = inscriptionDao().getExitsHash(hash)
         (hash - local.toSet()).forEach {
             val response = tokenService.getInscriptionItem(it)
             if (response.isSuccess) {
                 val inscription = response.data ?: return@forEach
-                inscriptionDao.insert(inscription)
+                inscriptionDao().insert(inscription)
                 syncInscriptionCollection(inscription.collectionHash)
             } else {
                 Timber.e(response.errorDescription)
             }
         }
-        inscriptionDao.getInscriptionCollectionIds(hash).forEach {
+        inscriptionDao().getInscriptionCollectionIds(hash).forEach {
             syncInscriptionCollection(it)
         }
     }
 
     private suspend fun syncInscriptionCollection(collectionHash: String) {
-        if (inscriptionCollectionDao.exits(collectionHash) == null) {
+        if (inscriptionCollectionDao().exits(collectionHash) == null) {
             val collectionResponse = tokenService.getInscriptionCollection(collectionHash)
             if (collectionResponse.isSuccess) {
                 val inscriptionCollection = collectionResponse.data ?: return
-                inscriptionCollectionDao.insert(inscriptionCollection)
+                inscriptionCollectionDao().insert(inscriptionCollection)
             } else {
                 Timber.e(collectionResponse.errorDescription)
             }

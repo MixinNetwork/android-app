@@ -1,6 +1,7 @@
 package one.mixin.android.websocket
 
 import android.annotation.SuppressLint
+import android.app.Application
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
@@ -18,11 +19,9 @@ import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.makeMessageStatus
-import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
@@ -49,15 +48,13 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
+    private val databaseProvider: DatabaseProvider,
     private var applicationScope: CoroutineScope,
     private val okHttpClient: OkHttpClient,
     private val accountService: AccountService,
-    private val mixinDatabase: MixinDatabase,
-    private val pendingDatabase: PendingDatabase,
     private val jobManager: MixinJobManager,
     private val linkState: LinkState,
 ) : WebSocketListener() {
-    private val offsetDao: OffsetDao = mixinDatabase.offsetDao()
 
     private val failCode = 1000
     private val quitCode = 1001
@@ -139,7 +136,7 @@ class ChatWebSocket(
     }
 
     private fun sendPendingMessage() {
-        val blazeMessage = createListPendingMessage(pendingDatabase.getLastBlazeMessageCreatedAt())
+        val blazeMessage = createListPendingMessage(databaseProvider.getPendingDatabase().getLastBlazeMessageCreatedAt())
         val transaction =
             WebSocketTransaction(
                 blazeMessage.id,
@@ -190,7 +187,9 @@ class ChatWebSocket(
                         transactions.remove(blazeMessage.id)
                     }
                     if (blazeMessage.data != null && blazeMessage.isReceiveMessageAction()) {
-                        handleReceiveMessage(blazeMessage)
+                        if (databaseProvider.isInit()) {
+                            handleReceiveMessage(blazeMessage)
+                        }
                     }
                 } else {
                     if (transactions[blazeMessage.id] != null) {
@@ -290,29 +289,29 @@ class ChatWebSocket(
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
-            mixinDatabase.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
-            pendingDatabase.makeMessageStatus(data.status, data.messageId)
-            val offset = offsetDao.getStatusOffset()
+            databaseProvider.getMixinDatabase().makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
+            databaseProvider.getPendingDatabase().makeMessageStatus(data.status, data.messageId)
+            val offset = databaseProvider.getMixinDatabase().offsetDao().getStatusOffset()
             if (offset == null || offset != data.updatedAt) {
-                offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
+                databaseProvider.getMixinDatabase().offsetDao().insert(Offset(STATUS_OFFSET, data.updatedAt))
             }
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
-                mixinDatabase.makeMessageStatus(data.status, data.messageId)
-                pendingDatabase.makeMessageStatus(data.status, data.messageId)
+                databaseProvider.getMixinDatabase().makeMessageStatus(data.status, data.messageId)
+                databaseProvider.getPendingDatabase().makeMessageStatus(data.status, data.messageId)
             } else {
                 applicationScope.launch(FLOOD_THREAD) {
                     val jsonData = gson.toJson(data)
                     if (jsonData.isNullOrBlank()) {
                         reportException(IllegalArgumentException("Error flood data: ${blazeMessage.id} ${blazeMessage.action}"))
-                        mixinDatabase.jobDao().insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name)))
+                        databaseProvider.getMixinDatabase().jobDao().insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name)))
                         return@launch
                     }
-                    pendingDatabase.insertFloodMessage(FloodMessage(data.messageId, jsonData, data.createdAt))
+                    databaseProvider.getPendingDatabase().insertFloodMessage(FloodMessage(data.messageId, jsonData, data.createdAt))
                 }
             }
         } else {
-            pendingDatabase.insertJob(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
+            databaseProvider.getPendingDatabase().insertJob(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
     }
 

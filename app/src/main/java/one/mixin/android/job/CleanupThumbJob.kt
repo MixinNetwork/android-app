@@ -13,7 +13,7 @@ class CleanupThumbJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist
 
     override fun onRun() =
         runBlocking {
-            messageDao.cleanupBigThumb()
+            messageDao().cleanupBigThumb()
             PropertyHelper.updateKeyValue(Constants.Account.PREF_CLEANUP_THUMB, false)
         }
 }
