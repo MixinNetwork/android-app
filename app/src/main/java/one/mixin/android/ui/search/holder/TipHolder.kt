@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchTipBinding
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.isMao
 import one.mixin.android.ui.search.SearchFragment
 
 class TipHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -26,8 +27,11 @@ class TipHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(bin
                 onItemClickListener?.onUrlClick(url)
             }
         } else {
-            binding.searchTipTv.text =
+            binding.searchTipTv.text = if (target.isMao()) {
+                "${itemView.context.getString(R.string.search_mao)}$target"
+            } else {
                 "${itemView.context.getString(R.string.search_placeholder_number)}$target"
+            }
             binding.searchTipTv.highLight(target)
             if (searching) {
                 binding.pb.isVisible = true

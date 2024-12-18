@@ -13,6 +13,7 @@ import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
+import one.mixin.android.extension.isMao
 import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
@@ -144,6 +145,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             return true
         }
         if (keyword.length < 4) return false
+        if (keyword.isMao()) return true
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
             try {

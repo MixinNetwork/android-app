@@ -785,3 +785,8 @@ fun BigDecimal.currencyFormat(): String {
         "≈ $${this.setScale(2, RoundingMode.HALF_UP)}"
     }
 }
+
+fun String.isMao(): Boolean {
+    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
+    return regex.matches(this)
+}
