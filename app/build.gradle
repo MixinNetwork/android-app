@@ -467,8 +467,14 @@ dependencies {
     implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
     implementation "com.google.android.gms:play-services-pay:$playPayVersion"
 
-    //Jetpack Datastore - Proto Datastore
+    // Jetpack Datastore - Proto Datastore
     implementation "androidx.datastore:datastore:$datastoreVersion"
+
+    // AppsFlyer
+    implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {
+        exclude group: 'com.squareup.leakcanary', module: 'leakcanary-android-process'
+    }
+    implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
 }
 
 composeCompiler {
