@@ -1017,7 +1017,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
-        if (output!=null  && output.isUUID()) {
+        if (output != null && output.isUUID()) {
             checkToken(output)
         }
         if (input != null && input.isUUID()) {
