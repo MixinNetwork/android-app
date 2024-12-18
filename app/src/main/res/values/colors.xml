@@ -46,7 +46,6 @@
     <color name="bgFlag">#FFFFFF</color>
     <color name="bgTranslucence">#EEFFFFFF</color>
     <color name="bgRank">#E5E8EE</color>
-    <color name="bgConfirmation">@color/bgGrayLight</color>
     <color name="bgChooseNetworkYellow">#4DFFF7AD</color>
     <color name="bgChooseNetwork">#F6F7FA</color>
 
