@@ -103,6 +103,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
@@ -1016,6 +1017,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
         SwapActivity.show(requireContext(), input, output, amount)
         dismiss()
     }

@@ -128,7 +128,6 @@ fun SwapPage(
                 fromToken?.let { from ->
                     toToken?.let { to ->
                         if (text.isNotBlank()) {
-                            Timber.e("Refreshing quote: inputText=$text, fromToken=${from.symbol}, toToken=${to.symbol}")
                             isLoading = true
                             errorInfo = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
