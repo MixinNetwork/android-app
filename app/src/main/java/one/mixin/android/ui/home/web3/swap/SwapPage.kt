@@ -285,7 +285,7 @@ fun SwapPage(
                             keyboardController?.hide()
                             focusManager.clearFocus()
                         },
-                        enabled = quoteResult != null && errorInfo == null && !isLoading,
+                        enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
                         colors =
                             ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
