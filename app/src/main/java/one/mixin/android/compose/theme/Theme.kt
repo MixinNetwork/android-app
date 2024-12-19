@@ -3,7 +3,11 @@ package one.mixin.android.compose.theme
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RippleConfiguration
+import androidx.compose.material.RippleDefaults
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
@@ -56,15 +60,15 @@ class AppColors(
     val unchecked: Color,
     val tipWarning: Color,
     val tipWarningBorder: Color,
-    val borderPrimary:Color,
-    val rippleColor:Color = Color(0x33000000),
+    val borderPrimary: Color,
+    val rippleColor: Color = Color(0x33000000),
 )
 
 class AppDrawables(
     @DrawableRes
     val bgAlertCard: Int,
 
-)
+    )
 
 object MixinAppTheme {
     val colors: AppColors
@@ -152,11 +156,22 @@ fun MixinAppTheme(
             handleColor = Color(0xFF3D75E3),
             backgroundColor = Color(0x663D75E3),
         )
-    MaterialTheme(if (darkTheme) darkColors() else lightColors()) {
+
+    @OptIn(ExperimentalMaterialApi::class)
+    val rippleConfiguration = RippleConfiguration(
+        color = Color.White,
+        rippleAlpha = RippleDefaults.rippleAlpha(Color.White, true),
+    )
+
+    @OptIn(ExperimentalMaterialApi::class)
+    MaterialTheme(
+        if (darkTheme) darkColors() else lightColors(),
+    ) {
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalDrawables provides drawables,
             LocalTextSelectionColors provides textSelectionColors,
+            LocalRippleConfiguration provides rippleConfiguration,
             content = content,
         )
     }
