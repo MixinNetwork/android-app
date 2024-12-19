@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
@@ -121,6 +122,7 @@ class SwapFragment : BaseFragment() {
     private var toToken: SwapToken? by mutableStateOf(null)
 
     private var initialAmount: String? = null
+    private var lastOrderTime: Long by mutableLongStateOf(0)
     private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
     private val swapViewModel by viewModels<SwapViewModel>()
@@ -183,6 +185,7 @@ class SwapFragment : BaseFragment() {
                                 from = fromToken,
                                 to = toToken,
                                 initialAmount = initialAmount,
+                                lastOrderTime = lastOrderTime,
                                 slippageBps = slippage,
                                 onSelectToken = { isReverse, type ->
                                     selectCallback(swapTokens, isReverse, type)
@@ -345,8 +348,8 @@ class SwapFragment : BaseFragment() {
         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
             setOnDone {
-                // Todo
-                // clearInputAndRefreshInMixinFromToToken()
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
             }
         }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
     }

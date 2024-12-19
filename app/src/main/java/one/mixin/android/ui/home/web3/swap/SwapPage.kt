@@ -88,6 +88,7 @@ fun SwapPage(
     from: SwapToken?,
     to: SwapToken?,
     initialAmount: String?,
+    lastOrderTime: Long?,
     source: String,
     slippageBps: Int,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
@@ -95,7 +96,6 @@ fun SwapPage(
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
-    rememberCoroutineScope()
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
 
@@ -103,6 +103,9 @@ fun SwapPage(
     var errorInfo by remember { mutableStateOf<String?>(null) }
 
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
+    LaunchedEffect(lastOrderTime) {
+        inputText = initialAmount ?: ""
+    }
 
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
