@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 0
-def versionPatch = 3
-def versionBuild = 1
+def versionPatch = 5
+def versionBuild = 0
 
 android {
     compileSdk 35
@@ -467,8 +467,14 @@ dependencies {
     implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
     implementation "com.google.android.gms:play-services-pay:$playPayVersion"
 
-    //Jetpack Datastore - Proto Datastore
+    // Jetpack Datastore - Proto Datastore
     implementation "androidx.datastore:datastore:$datastoreVersion"
+
+    // AppsFlyer
+    implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {
+        exclude group: 'com.squareup.leakcanary', module: 'leakcanary-android-process'
+    }
+    implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
 }
 
 composeCompiler {
