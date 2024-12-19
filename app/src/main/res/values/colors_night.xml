@@ -54,7 +54,6 @@
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
     <color name="bgGrayLightNight">@color/bgGrayNight</color>
-    <color name="bgConfirmationNight">@color/bgGrayNight</color>
 
     <color name="bgBlockNight">#23272B</color>
     <color name="codeBorderNight">#545859</color>

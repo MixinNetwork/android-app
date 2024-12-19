@@ -35,7 +35,6 @@
         <item name="bg_menu">@color/bgMenuNight</item>
         <item name="bg_menu_border">@color/bgMenuBorderNight</item>
         <item name="bg_gray_light">@color/bgGrayLightNight</item>
-        <item name="bg_confirmation">@color/bgConfirmationNight</item>
         <item name="bg_block">@color/bgBlockNight</item>
         <item name="bg_post">@color/bgPostNight</item>
         <item name="bg_clip">@color/bgClipNight</item>

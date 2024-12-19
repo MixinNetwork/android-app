@@ -147,6 +147,8 @@ class WalletViewModel
         depositEntry: DepositEntry,
     ) = tokenRepository.pendingDeposits(assetId, requireNotNull(depositEntry.destination) { "refreshPendingDeposit required destination not null" }, depositEntry.tag)
 
+    fun getPendingDisplays() = tokenRepository.getPendingDisplays()
+
     suspend fun clearAllPendingDeposits() = tokenRepository.clearAllPendingDeposits()
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
