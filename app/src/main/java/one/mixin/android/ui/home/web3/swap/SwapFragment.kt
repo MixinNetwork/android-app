@@ -18,7 +18,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
@@ -123,6 +122,7 @@ class SwapFragment : BaseFragment() {
 
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
+    private var reviewing: Boolean by mutableStateOf(false)
     private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
     private val swapViewModel by viewModels<SwapViewModel>()
@@ -186,6 +186,7 @@ class SwapFragment : BaseFragment() {
                                 to = toToken,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
+                                reviewing = reviewing,
                                 slippageBps = slippage,
                                 onSelectToken = { isReverse, type ->
                                     selectCallback(swapTokens, isReverse, type)
@@ -329,7 +330,10 @@ class SwapFragment : BaseFragment() {
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
-            showBrowserBottomSheetDialogFragment(requireActivity(), signMessage) { hash, serializedTx ->
+            reviewing = true
+            showBrowserBottomSheetDialogFragment(requireActivity(), signMessage, onDismiss = {
+                reviewing = false
+            }, onTxhash = { hash, serializedTx ->
                 lifecycleScope.launch {
                     val txStateFragment = TransactionStateFragment.newInstance(serializedTx, to.symbol).apply {
                         setCloseAction {
@@ -339,7 +343,7 @@ class SwapFragment : BaseFragment() {
                     }
                     navTo(txStateFragment, TransactionStateFragment.TAG)
                 }
-            }
+            })
         }
     }
 
@@ -351,7 +355,11 @@ class SwapFragment : BaseFragment() {
                 initialAmount = null
                 lastOrderTime = System.currentTimeMillis()
             }
+            setOnDestroy {
+                reviewing = false
+            }
         }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+        reviewing = true
     }
 
     private suspend fun initFromTo() {

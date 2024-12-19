@@ -90,6 +90,7 @@ fun SwapPage(
     to: SwapToken?,
     initialAmount: String?,
     lastOrderTime: Long?,
+    reviewing: Boolean,
     source: String,
     slippageBps: Int,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
@@ -123,17 +124,17 @@ fun SwapPage(
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
     var isButtonEnabled by remember { mutableStateOf(true) }
 
-    LaunchedEffect(inputText, invalidFlag, fromToken, toToken)  {
+    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken)  {
         shouldRefreshQuote.emit(inputText)
     }
 
-    LaunchedEffect(inputText, invalidFlag, fromToken, toToken) {
+    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken) {
         shouldRefreshQuote
             .debounce(300L)
             .collectLatest { text ->
                 fromToken?.let { from ->
                     toToken?.let { to ->
-                        if (text.isNotBlank()) {
+                        if (text.isNotBlank() && !reviewing) {
                             isLoading = true
                             errorInfo = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
