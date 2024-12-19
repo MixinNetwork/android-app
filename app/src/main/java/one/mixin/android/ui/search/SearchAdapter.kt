@@ -11,17 +11,19 @@ import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.databinding.ItemSearchChatBinding
 import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
+import one.mixin.android.databinding.ItemSearchMaoUserBinding
 import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
-import one.mixin.android.extension.isMao
 import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
 import one.mixin.android.ui.search.holder.HeaderHolder
+import one.mixin.android.ui.search.holder.MaoUserHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -47,7 +49,13 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         if (position == 0 && data.showTip) {
             -1
         } else {
-            getItemViewType(position).toLong() + data.getHeaderFactor(position)
+            val type =
+                getItemViewType(position)
+            if (type == TypeMaoUser.index) {
+                -1
+            } else {
+                type.toLong() + data.getHeaderFactor(position)
+            }
         }
 
     override fun onBindHeaderViewHolder(
@@ -140,12 +148,16 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         notifyDataSetChanged()
     }
 
+    fun setMaoUser(maoUser: MaoUser?) {
+        data.maoUser = maoUser
+        notifyDataSetChanged()
+    }
+
     private fun shouldTips(keyword: String): Boolean {
         if (data.url != null) {
             return true
         }
         if (keyword.length < 4) return false
-        if (keyword.isMao()) return true
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
             try {
@@ -164,24 +176,34 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         position: Int,
     ) {
         when (getItemViewType(position)) {
-            0 -> {
+            TypeTip.index -> {
                 (holder as TipHolder).bind(query, searchingId, data.url, onItemClickListener)
             }
+
+            TypeMaoUser.index -> {
+                data.getItem(position).let {
+                    (holder as MaoUserHolder).bind(it as MaoUser, onItemClickListener)
+                }
+            }
+
             TypeAsset.index -> {
                 data.getItem(position).let {
                     (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener)
                 }
             }
+
             TypeUser.index -> {
                 data.getItem(position).let {
                     (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                 }
             }
+
             TypeChat.index -> {
                 data.getItem(position).let {
                     (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                 }
             }
+
             TypeMessage.index -> {
                 data.getItem(position).let {
                     (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
@@ -197,21 +219,30 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         viewType: Int,
     ): RecyclerView.ViewHolder =
         when (viewType) {
-            0 -> {
+            TypeTip.index -> {
                 TipHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
+            TypeMaoUser.index -> {
+                MaoUserHolder(ItemSearchMaoUserBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
+
             TypeAsset.index -> {
                 AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             TypeUser.index -> {
                 ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             TypeChat.index -> {
                 ChatHolder(ItemSearchChatBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             TypeMessage.index -> {
                 MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             else -> {
                 ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
@@ -219,7 +250,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     override fun getItemViewType(position: Int) =
         when (data.getItem(position)) {
-            is TipItem -> 0
+            is TipItem -> TypeTip.index
+            is MaoUser -> TypeMaoUser.index
             is TokenItem -> TypeAsset.index
             is User -> TypeUser.index
             is ChatMinimal -> TypeChat.index

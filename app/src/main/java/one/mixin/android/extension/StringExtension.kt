@@ -786,6 +786,12 @@ fun BigDecimal.currencyFormat(): String {
     }
 }
 
+fun String?.isValidMao(): Boolean {
+    if (this.isNullOrBlank()) return false
+    val regex = Regex("^[^\\sA-Z]{1,128}$")
+    return !this.all { it.isDigit() } && regex.matches(this)
+}
+
 fun String.isMao(): Boolean {
     val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
     return regex.matches(this)
