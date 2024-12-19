@@ -370,11 +370,11 @@ class SwapFragment : BaseFragment() {
             val lastFrom = lastSelectedPair?.getOrNull(0)
             val lastTo = lastSelectedPair?.getOrNull(1)
             if (tokens.isNotEmpty()) {
-                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens[0].toSwapToken()
+                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens.getOrNull(0)?.toSwapToken()
                 toToken = if (input != null && output == null) {
-                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens[1].toSwapToken()
+                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens.getOrNull(1)?.toSwapToken()
                 } else {
-                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens[1].toSwapToken()
+                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens.getOrNull(1)?.toSwapToken()
                 }
                 if (toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
