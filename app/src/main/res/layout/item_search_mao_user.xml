@@ -38,19 +38,19 @@
         android:id="@+id/icon"
         android:layout_width="14dp"
         android:layout_height="14dp"
-        android:layout_alignTop="@id/mixin_id_tv"
-        android:layout_alignBottom="@id/mixin_id_tv"
+        android:layout_below="@id/center"
         android:layout_marginEnd="2dp"
         android:layout_toEndOf="@id/avatar" />
 
     <TextView
-        android:id="@+id/mixin_id_tv"
+        android:id="@+id/mao_name_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/center"
-        android:layout_marginTop="2dp"
+        android:layout_alignTop="@id/icon"
+        android:layout_alignBottom="@id/icon"
         android:layout_toEndOf="@id/icon"
         android:ellipsize="end"
         android:singleLine="true"
+        android:includeFontPadding="false"
         android:textColor="?attr/text_assist" />
 </RelativeLayout>

@@ -16,7 +16,7 @@ class MaoUserHolder constructor(
 ) : NormalHolder(binding.root) {
 
     companion object {
-        private const val iconUrl = "https://mixin.one/assets/7d8b4b8d8f6b1b4e1b4e1b4e1b4e1b4e.png"
+        private const val MAO_ICON = "https://kernel.mixin.dev/objects/fe75a8e48aeffb486df622c91bebfe4056ada7009f3151fb49e2a18340bbd615/icon"
     }
 
     fun bind(
@@ -25,9 +25,9 @@ class MaoUserHolder constructor(
     ) {
         binding.apply {
             normal.setName(user)
-            mixinIdTv.text = user.maoName
-            mixinIdTv.highLightMao()
-            icon.loadImage(iconUrl, R.drawable.ic_avatar_place_holder, transformation = CoilRoundedHexagonTransformation())
+            maoNameTv.text = user.maoName
+            maoNameTv.highLightMao()
+            icon.loadImage(MAO_ICON, R.drawable.ic_inscription_icon, transformation = CoilRoundedHexagonTransformation())
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             root.setOnClickListener {
                 onItemClickListener?.onUserClick(user)
