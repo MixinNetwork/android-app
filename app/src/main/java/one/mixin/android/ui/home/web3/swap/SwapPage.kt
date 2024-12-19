@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.QuoteResult
@@ -96,6 +97,7 @@ fun SwapPage(
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
 
@@ -111,15 +113,16 @@ fun SwapPage(
     var isReverse by remember { mutableStateOf(false) }
     var invalidFlag by remember { mutableStateOf(false) } // trigger to refresh quote
 
-    var fromToken by remember(from, to, isReverse) { 
+    var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
     }
-    var toToken by remember(from, to, isReverse) { 
+    var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
-    
+    var isButtonEnabled by remember { mutableStateOf(true) }
+
     LaunchedEffect(inputText, invalidFlag, fromToken, toToken)  {
         shouldRefreshQuote.emit(inputText)
     }
@@ -281,9 +284,16 @@ fun SwapPage(
                             .fillMaxWidth()
                             .height(48.dp),
                         onClick = {
-                            quoteResult?.let { onSwap(it, fromToken!!, toToken!!, inputText) }
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
+                            if (isButtonEnabled) {
+                                isButtonEnabled = false
+                                quoteResult?.let { onSwap(it, fromToken!!, toToken!!, inputText) }
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                scope.launch{
+                                    delay(1000)
+                                    isButtonEnabled = true
+                                }
+                            }
                         },
                         enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
                         colors =
