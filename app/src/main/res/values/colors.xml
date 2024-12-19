@@ -132,6 +132,8 @@
     <color name="call_light_green">#5DBC7A</color>
     <color name="warning_yellow_bg">#FEF7B6</color>
 
+    <color name="mao_user">#F7A500</color>
+
     <color name="border_primary">#E5E8EE</color>
 
     <color name="call_voice">#50BD5C</color>
