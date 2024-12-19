@@ -9,8 +9,11 @@ import one.mixin.android.vo.MessageMention
 
 @Dao
 interface MessageMentionDao : BaseDao<MessageMention> {
-    @Query("SELECT * FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0")
-    fun getUnreadMentionMessageByConversationId(conversationId: String): LiveData<List<MessageMention>>
+    @Query("SELECT count(1) FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0")
+    fun countUnreadMentionMessageByConversationId(conversationId: String): LiveData<Int>
+
+    @Query("SELECT * FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0 ORDER BY rowid ASC LIMIT 1")
+    suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String): MessageMention?
 
     @Query("UPDATE message_mentions SET has_read = 1 WHERE message_id = :messageId")
     suspend fun suspendMarkMentionRead(messageId: String)
