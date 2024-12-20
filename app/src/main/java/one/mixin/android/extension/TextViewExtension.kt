@@ -118,6 +118,34 @@ fun TextView.highLight(
     setText(spannable)
 }
 
+
+fun TextView.highLightMao(
+    @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null),
+    @ColorInt maoColor: Int = resources.getColor(R.color.mao_user, null),
+) {
+    val text = this.text.toString()
+    if (!text.isMao()) return
+    val spannable = SpannableString(text)
+    val maoStartIndex = text.length - 4
+    val maoEndIndex = text.length 
+
+    spannable.setSpan(
+        ForegroundColorSpan(color),
+        0,
+        maoStartIndex,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
+
+    spannable.setSpan(
+        ForegroundColorSpan(maoColor),
+        maoStartIndex,
+        maoEndIndex,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
+
+    setText(spannable)
+}
+
 fun TextView.highLightClick(
     target: String?,
     ignoreCase: Boolean = true,

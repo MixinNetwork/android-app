@@ -44,6 +44,7 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
             TypeMarket -> MarketHolder(ItemSearchMarketBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeBot -> BotHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeDapp -> DappHolder(ItemSearchDappBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            else -> throw IllegalArgumentException("Unknown type: $type")
         }
     }
 
@@ -61,6 +62,7 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
                     TypeMarket -> (holder as MarketHolder).bind(it as Market, query, onItemClickListener)
                     TypeDapp -> (holder as DappHolder).bind(it as Dapp, query, onItemClickListener)
                     TypeBot -> (holder as BotHolder).bind(it as SearchBot, query, onItemClickListener)
+                    else -> throw IllegalArgumentException("Unknown type: $type")
                 }
             }
         }
