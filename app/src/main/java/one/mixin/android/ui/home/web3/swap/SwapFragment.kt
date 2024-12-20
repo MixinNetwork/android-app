@@ -339,6 +339,9 @@ class SwapFragment : BaseFragment() {
                         setCloseAction {
                             navigateUp(navController)
                             parentFragmentManager.popBackStackImmediate()
+                            parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
+                                parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+                            }
                         }
                     }
                     navTo(txStateFragment, TransactionStateFragment.TAG)
