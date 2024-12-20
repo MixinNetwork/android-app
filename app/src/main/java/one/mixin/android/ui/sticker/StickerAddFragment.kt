@@ -10,13 +10,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -128,8 +132,8 @@ class StickerAddFragment : BaseFragment() {
                     try {
                         val loader = requireContext().imageLoader
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        val result = loader.execute(request).drawable as BitmapDrawable? ?: return@withContext 0
-                        val byteArray = result.bitmap.toBytes()
+                        val result = (loader.execute(request).request as? SuccessResult)?.image?.asDrawable(requireContext().resources) ?: return@withContext 0
+                        val byteArray = result.toBitmap().toBytes()
                         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
                         if (bitmap.width < dp100) {
                             dp100
@@ -226,7 +230,7 @@ class StickerAddFragment : BaseFragment() {
                 val byteArray =
                     if (mimeType == MimeType.GIF.toString()) {
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        val result = loader.execute(request).drawable ?: return@withContext null
+                        val result = loader.execute(request).image?.asDrawable(requireContext().resources) ?: return@withContext null
                         val w = result.intrinsicWidth
                         val h = result.intrinsicHeight
                         if (min(w, h) >= MIN_SIZE && max(w, h) <= MAX_SIZE) {
@@ -244,7 +248,7 @@ class StickerAddFragment : BaseFragment() {
                 StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
             } else {
                 val request = ImageRequest.Builder(requireContext()).data(url).build()
-                var bitmap = (loader.execute(request).drawable as BitmapDrawable?)?.bitmap ?: return@withContext null
+                var bitmap = (loader.execute(request).request as? SuccessResult)?.image?.toBitmap() ?: return@withContext null
 
                 val ratio = bitmap.width / bitmap.height.toFloat()
                 if (ratio in RATIO_MIN_MAX..RATIO_MAX_MIN) {

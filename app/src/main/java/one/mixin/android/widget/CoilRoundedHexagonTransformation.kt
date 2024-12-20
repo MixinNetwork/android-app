@@ -15,7 +15,7 @@ import coil3.transform.Transformation
 import kotlin.math.cos
 import kotlin.math.sin
 
-class CoilRoundedHexagonTransformation : Transformation {
+class CoilRoundedHexagonTransformation : Transformation() {
     override val cacheKey: String = javaClass.name
 
     override suspend fun transform(

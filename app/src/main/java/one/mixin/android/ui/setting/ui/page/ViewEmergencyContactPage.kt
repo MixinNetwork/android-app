@@ -21,7 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.HighlightStarLinkText
 import one.mixin.android.compose.SettingPageScaffold

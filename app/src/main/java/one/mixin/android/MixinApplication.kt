@@ -50,8 +50,8 @@ import leakcanary.ReachabilityWatcher
 import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.di.ApplicationScope

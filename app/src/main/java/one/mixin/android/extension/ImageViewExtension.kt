@@ -8,12 +8,15 @@ import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import coil3.dispose
-import coil3.imageLoader
 import coil3.load
-import coil3.request.CachePolicy
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.request.bitmapConfig
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.request.transformations
 import coil3.transform.Transformation
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource

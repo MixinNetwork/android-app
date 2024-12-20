@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import coil3.size.Size
 import coil3.transform.Transformation
 
-class GrayscaleTransformation : Transformation {
+class GrayscaleTransformation : Transformation() {
     override val cacheKey: String
         get() = "grayscale_transformation"
 

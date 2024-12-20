@@ -20,7 +20,6 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight

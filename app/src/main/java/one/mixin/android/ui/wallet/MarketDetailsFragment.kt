@@ -28,8 +28,8 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
-import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.setQuoteText
+import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob

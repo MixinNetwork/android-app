@@ -21,6 +21,7 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
 import coil3.imageLoader
 import coil3.request.ImageRequest
+import coil3.request.transformations
 import coil3.transform.CircleCropTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

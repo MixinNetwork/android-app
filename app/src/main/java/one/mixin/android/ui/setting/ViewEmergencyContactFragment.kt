@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentViewEmergencyContactBinding

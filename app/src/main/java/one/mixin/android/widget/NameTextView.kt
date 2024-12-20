@@ -3,7 +3,8 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.os.Build.*
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.text.InputFilter
 import android.text.TextUtils
 import android.util.AttributeSet

@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase

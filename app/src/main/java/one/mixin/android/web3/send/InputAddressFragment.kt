@@ -15,9 +15,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.supportDepositFromMixin
@@ -42,8 +40,6 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.InputFragment
-import one.mixin.android.web3.js.getSolanaRpc
-import org.sol4k.PublicKey
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint
