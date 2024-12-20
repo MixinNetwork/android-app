@@ -50,6 +50,7 @@ import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.completeMao
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
@@ -87,9 +88,10 @@ internal constructor(
             null
         } else {
             runCatching {
-                val response = userRepository.searchSuspend(query)
+                val maoName = query.completeMao()
+                val response = userRepository.searchSuspend(query.completeMao())
                 if (response.isSuccess) {
-                    return@runCatching response.data?.toMaoUser(query)
+                    return@runCatching response.data?.toMaoUser(maoName)
                 }
                 return@runCatching null
             }.getOrNull()

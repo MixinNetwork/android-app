@@ -25,19 +25,4 @@ class ContactHolder constructor(
             }
         }
     }
-
-    fun bind(
-        user: MaoUser,
-        onItemClickListener: SearchFragment.OnSearchClickListener?,
-    ) {
-        binding.apply {
-            normal.setName(user)
-            mixinIdTv.text = user.maoName
-            mixinIdTv.highLightMao()
-            avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            root.setOnClickListener {
-                onItemClickListener?.onUserClick(user)
-            }
-        }
-    }
 }

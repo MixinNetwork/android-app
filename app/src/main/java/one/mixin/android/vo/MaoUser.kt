@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.extension.isMao
 
 class MaoUser(
     val maoName: String,
@@ -26,13 +27,20 @@ class MaoUser(
         return membership?.isProsperity() == true
     }
 }
-fun User.toMaoUser(query: String) :MaoUser{
-  val maoName = when {
-        query.endsWith(".mao") -> query 
-        query.endsWith(".") -> "${query}mao" 
-        query.endsWith(".m") -> "${query}ao" 
-        query.endsWith(".ma") -> "${query}o" 
-        else -> "${query}.mao" 
-    }  
+fun User.toMaoUser(maoName: String) :MaoUser{
     return MaoUser(maoName = maoName, userId, identityNumber, fullName, avatarUrl, isVerified, appId, membership)
-} 
+}
+
+fun String.completeMao(): String {
+    return if (isMao())
+        this
+    else {
+        when {
+            endsWith(".mao") -> this
+            endsWith(".") -> "${this}mao"
+            endsWith(".m") -> "${this}ao"
+            endsWith(".ma") -> "${this}o"
+            else -> "${this}.mao"
+        }
+    }
+}
