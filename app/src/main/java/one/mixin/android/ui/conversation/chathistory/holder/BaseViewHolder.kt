@@ -3,12 +3,10 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +28,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.membershipIcon
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {

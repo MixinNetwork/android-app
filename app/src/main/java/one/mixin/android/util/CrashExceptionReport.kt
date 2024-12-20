@@ -1,15 +1,11 @@
 package one.mixin.android.util
 
-import android.os.Build
-import androidx.collection.ArrayMap
 import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.HttpDataSource
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.sentry.Sentry
 import io.sentry.SentryLevel
-import one.mixin.android.BuildConfig
 import one.mixin.android.extension.getStackTraceString
-import one.mixin.android.session.Session
 
 fun reportException(e: Throwable) {
     FirebaseCrashlytics.getInstance().recordException(e)

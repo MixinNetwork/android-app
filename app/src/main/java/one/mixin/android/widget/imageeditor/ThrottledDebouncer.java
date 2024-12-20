@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
+import io.sentry.android.core.internal.util.Debouncer;
 import okio.Throttler;
 
 /**

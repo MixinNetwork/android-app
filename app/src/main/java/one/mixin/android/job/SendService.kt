@@ -10,7 +10,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.RemoteMessageStatusDao
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.vo.EncryptCategory

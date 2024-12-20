@@ -6,7 +6,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable

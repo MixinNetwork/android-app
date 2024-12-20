@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home.web3.widget
 
+import one.mixin.android.ui.home.web3.widget.MarketSort.entries
+
 enum class MarketSort(val value: Int) {
     RANK_ASCENDING(0),
     RANK_DESCENDING(1),

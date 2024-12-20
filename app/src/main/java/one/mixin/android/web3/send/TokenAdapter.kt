@@ -11,7 +11,6 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal

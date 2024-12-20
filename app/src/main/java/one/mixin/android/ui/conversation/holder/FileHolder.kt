@@ -13,7 +13,6 @@ import one.mixin.android.Constants.Colors.HIGHLIGHTED
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.MessageAdapter

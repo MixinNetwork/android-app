@@ -7,9 +7,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -37,7 +35,6 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Address
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet

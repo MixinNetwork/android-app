@@ -61,9 +61,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
@@ -79,7 +79,6 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 

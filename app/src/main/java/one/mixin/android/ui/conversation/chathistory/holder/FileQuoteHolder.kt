@@ -6,7 +6,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.media3.common.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager

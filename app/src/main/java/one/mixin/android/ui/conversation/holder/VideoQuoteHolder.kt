@@ -6,7 +6,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis

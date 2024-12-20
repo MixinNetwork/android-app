@@ -7,7 +7,6 @@ import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage

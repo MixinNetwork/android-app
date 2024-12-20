@@ -3,19 +3,14 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.api.MixinResponseException
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
-import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.generateConversationId
 
 class RefreshDappJob : BaseJob(
     Params(PRIORITY_UI_HIGH)

@@ -16,7 +16,6 @@ import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
-import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -46,7 +45,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -140,7 +138,6 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -164,7 +161,6 @@ import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
-import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment

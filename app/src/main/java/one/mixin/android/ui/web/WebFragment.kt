@@ -61,10 +61,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.uber.autodispose.autoDispose
@@ -317,7 +318,7 @@ class WebFragment : BaseFragment() {
 
                         if (isDetached) return@launch
                         if (result !is SuccessResult) return@launch
-                        val bitmap = (result.drawable as BitmapDrawable).bitmap
+                        val bitmap = result.image.toBitmap()
                         processor.detect(
                             lifecycleScope,
                             bitmap,
