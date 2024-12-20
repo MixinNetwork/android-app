@@ -20,6 +20,7 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
+import coil3.toBitmap
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
@@ -371,7 +372,7 @@ class GenerateAvatarJob(
                         .build()
 
                 val result = applicationContext.imageLoader.execute(request)
-                val bitmap = (result as? SuccessResult)?.image?.asDrawable(MixinApplication.appContext.resources)?.toBitmap()
+                val bitmap = (result as? SuccessResult)?.image?.toBitmap()
                 if (bitmap != null) {
                     bitmaps.add(bitmap)
                 } else {
