@@ -35,9 +35,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint

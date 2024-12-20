@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import coil.request.ImageRequest
+import coil3.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.inscription.compose.Barcode

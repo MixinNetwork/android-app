@@ -1,8 +1,8 @@
 package one.mixin.android.widget
 
 import android.graphics.Bitmap
-import coil.size.Size
-import coil.transform.Transformation
+import coil3.size.Size
+import coil3.transform.Transformation
 
 class GrayscaleTransformation : Transformation {
     override val cacheKey: String

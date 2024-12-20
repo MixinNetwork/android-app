@@ -10,8 +10,8 @@ import android.graphics.PointF
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import androidx.core.graphics.createBitmap
-import coil.size.Size
-import coil.transform.Transformation
+import coil3.size.Size
+import coil3.transform.Transformation
 import kotlin.math.cos
 import kotlin.math.sin
 

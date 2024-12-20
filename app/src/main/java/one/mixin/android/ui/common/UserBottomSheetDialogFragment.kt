@@ -22,8 +22,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil3.imageLoader
+import coil3.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose

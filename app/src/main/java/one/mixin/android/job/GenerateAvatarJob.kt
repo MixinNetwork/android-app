@@ -15,9 +15,9 @@ import android.text.TextPaint
 import androidx.collection.ArrayMap
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.R

@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.request.ImageRequest
+import coil3.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.CoilImageCompat
