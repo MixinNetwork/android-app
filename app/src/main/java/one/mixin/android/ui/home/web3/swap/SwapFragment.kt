@@ -46,6 +46,7 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -293,8 +294,8 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResult, form: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
-        val inputMint = form.getUnique()
+    private suspend fun handleSwap(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
+        val inputMint = from.getUnique()
         val outputMint = to.getUnique()
 
         val resp = handleMixinResponse(
@@ -325,8 +326,8 @@ class SwapFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
-            swapViewModel.checkAndSyncTokens(listOfNotNull(form.assetId, to.assetId))
-            openSwapTransfer(resp)
+            swapViewModel.checkAndSyncTokens(listOfNotNull(from.assetId, to.assetId))
+            openSwapTransfer(resp, from, to)
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
@@ -350,9 +351,16 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun openSwapTransfer(swapResult: SwapResponse) {
-        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
-        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
+    private suspend fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
+        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint)
+        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint)
+        if (inputToken == null) {
+            toast(getString(R.string.swap_not_supported, from.symbol))
+            return
+        } else if (outToken == null) {
+            toast(getString(R.string.swap_not_supported, to.symbol))
+            return
+        }
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
             setOnDone {
                 initialAmount = null
