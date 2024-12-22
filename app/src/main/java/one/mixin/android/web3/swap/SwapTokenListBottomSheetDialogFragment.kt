@@ -22,6 +22,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -190,8 +191,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }.toMutableList()
 
             val total = search(s, assetList, currentChain, inMixin())
-
-            adapter.tokens = ArrayList(total)
+            adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
             if (!isAdded) {
                 return@launch
             }

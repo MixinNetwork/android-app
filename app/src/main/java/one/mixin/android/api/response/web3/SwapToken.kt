@@ -75,3 +75,39 @@ interface Swappable : Parcelable {
     fun toSwapToken(): SwapToken
     fun getUnique(): String
 }
+
+fun List<SwapToken>.sortByKeywordAndBalance(keyword: String?): List<SwapToken> {
+    return sortedWith { a, b ->
+        when {
+            !keyword.isNullOrBlank() -> {
+                val aMatchLevel = getMatchLevel(a, keyword)
+                val bMatchLevel = getMatchLevel(b, keyword)
+
+                when {
+                    aMatchLevel != bMatchLevel -> bMatchLevel.compareTo(aMatchLevel)
+                    else -> a.symbol.compareTo(b.symbol)
+                }
+            }
+            else -> {
+                when {
+                    !a.balance.isNullOrBlank() && !b.balance.isNullOrBlank() ->
+                        b.balance!!.compareTo(a.balance!!)
+                    !a.balance.isNullOrBlank() -> -1
+                    !b.balance.isNullOrBlank() -> 1
+                    else -> a.symbol.compareTo(b.symbol)
+                }
+            }
+        }
+    }
+}
+
+private fun getMatchLevel(token: SwapToken, keyword: String): Int {
+    val symbolLower = token.symbol.lowercase()
+    val keywordLower = keyword.lowercase()
+
+    return when {
+        symbolLower == keywordLower -> 2
+        symbolLower.startsWith(keywordLower) -> 1
+        else -> 0
+    }
+}
