@@ -352,16 +352,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint)
-        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint)
-        if (inputToken == null) {
-            toast(getString(R.string.swap_not_supported, from.symbol))
-            return
-        } else if (outToken == null) {
-            toast(getString(R.string.swap_not_supported, to.symbol))
-            return
-        }
-        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
+        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
             setOnDone {
                 initialAmount = null
                 lastOrderTime = System.currentTimeMillis()
