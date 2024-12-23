@@ -28,6 +28,7 @@ import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
+import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
@@ -186,7 +187,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                         is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> getString(R.string.error_unknown_with_message, throwable.message ?: throwable.javaClass.name)
+                        else -> getString(R.string.error_unknown_with_message, throwable.msg())
                     }
 
                 is TipNodeException -> {
@@ -208,7 +209,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
 
-                else -> getString(R.string.error_unknown_with_message, throwable.message ?: throwable.javaClass.name)
+                else -> getString(R.string.error_unknown_with_message, throwable.msg())
             }
     }
 

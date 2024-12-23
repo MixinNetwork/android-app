@@ -56,6 +56,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.msg
 import one.mixin.android.vo.Scope
 import timber.log.Timber
 import java.net.SocketTimeoutException
@@ -223,8 +224,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         else ->
                             requireContext().getString(
                                 R.string.error_unknown_with_message,
-                                e.message ?: e.javaClass.name,
-                            )
+                                e.msg())
                     }
             }
         }
