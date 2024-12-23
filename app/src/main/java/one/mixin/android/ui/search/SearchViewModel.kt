@@ -89,7 +89,7 @@ internal constructor(
         } else {
             runCatching {
                 val maoName = query.completeMao()
-                val response = userRepository.searchSuspend(query.completeMao())
+                val response = userRepository.searchSuspend(query)
                 if (response.isSuccess) {
                     return@runCatching response.data?.toMaoUser(maoName)
                 }
