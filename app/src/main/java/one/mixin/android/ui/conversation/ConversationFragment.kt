@@ -2016,18 +2016,15 @@ ConversationFragment() :
     }
 
     private fun bindData() {
-        chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
+        chatViewModel.countUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
-        ) { mentionMessages ->
-            binding.flagLayout.mentionCount = mentionMessages.size
+        ) { count ->
+            binding.flagLayout.mentionCount = count
             binding.flagLayout.mentionFlagLayout.setOnClickListener {
                 lifecycleScope.launch {
-                    if (mentionMessages.isEmpty()) {
-                        return@launch
-                    }
-                    val messageId = mentionMessages.first().messageId
-                    scrollToMessage(messageId) {
-                        chatRoomHelper.markMentionRead(messageId, conversationId)
+                    val message = chatViewModel.getFirstUnreadMentionMessageByConversationId(conversationId) ?: return@launch
+                    scrollToMessage(message.messageId) {
+                        chatRoomHelper.markMentionRead(message.messageId, conversationId)
                     }
                 }
             }

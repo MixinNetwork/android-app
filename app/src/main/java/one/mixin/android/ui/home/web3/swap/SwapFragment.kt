@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
@@ -17,7 +18,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
@@ -121,6 +121,8 @@ class SwapFragment : BaseFragment() {
     private var toToken: SwapToken? by mutableStateOf(null)
 
     private var initialAmount: String? = null
+    private var lastOrderTime: Long by mutableLongStateOf(0)
+    private var reviewing: Boolean by mutableStateOf(false)
     private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
     private val swapViewModel by viewModels<SwapViewModel>()
@@ -183,6 +185,8 @@ class SwapFragment : BaseFragment() {
                                 from = fromToken,
                                 to = toToken,
                                 initialAmount = initialAmount,
+                                lastOrderTime = lastOrderTime,
+                                reviewing = reviewing,
                                 slippageBps = slippage,
                                 onSelectToken = { isReverse, type ->
                                     selectCallback(swapTokens, isReverse, type)
@@ -326,17 +330,23 @@ class SwapFragment : BaseFragment() {
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
-            showBrowserBottomSheetDialogFragment(requireActivity(), signMessage) { hash, serializedTx ->
+            reviewing = true
+            showBrowserBottomSheetDialogFragment(requireActivity(), signMessage, onDismiss = {
+                reviewing = false
+            }, onTxhash = { hash, serializedTx ->
                 lifecycleScope.launch {
                     val txStateFragment = TransactionStateFragment.newInstance(serializedTx, to.symbol).apply {
                         setCloseAction {
                             navigateUp(navController)
                             parentFragmentManager.popBackStackImmediate()
+                            parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
+                                parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+                            }
                         }
                     }
                     navTo(txStateFragment, TransactionStateFragment.TAG)
                 }
-            }
+            })
         }
     }
 
@@ -345,10 +355,14 @@ class SwapFragment : BaseFragment() {
         val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
             setOnDone {
-                // Todo
-                // clearInputAndRefreshInMixinFromToToken()
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
+            }
+            setOnDestroy {
+                reviewing = false
             }
         }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+        reviewing = true
     }
 
     private suspend fun initFromTo() {
@@ -367,11 +381,11 @@ class SwapFragment : BaseFragment() {
             val lastFrom = lastSelectedPair?.getOrNull(0)
             val lastTo = lastSelectedPair?.getOrNull(1)
             if (tokens.isNotEmpty()) {
-                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens[0].toSwapToken()
+                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens.getOrNull(0)?.toSwapToken()
                 toToken = if (input != null && output == null) {
-                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens[1].toSwapToken()
+                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens.getOrNull(1)?.toSwapToken()
                 } else {
-                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens[1].toSwapToken()
+                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens.getOrNull(1)?.toSwapToken()
                 }
                 if (toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
