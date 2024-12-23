@@ -38,12 +38,8 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -55,12 +51,6 @@ fun InputContent(
     readOnly: Boolean = false,
 ) {
     if (readOnly) {
-        val v =
-            try {
-                if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).multiply(BigDecimal(Fiats.getRate()))
-            } catch (e: Exception) {
-                BigDecimal.ZERO
-            }
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -83,40 +73,13 @@ fun InputContent(
                     }
                 }
             }
-            if (v != BigDecimal.ZERO) {
-                Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "${Fiats.getSymbol()}${v.priceFormat()}",
-                        style =
-                            TextStyle(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Light,
-                                color = MixinAppTheme.colors.textAssist,
-                            ),
-                    )
-                }
-            } else {
-                Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
-            }
+            Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
     } else {
         val focusRequester = remember { FocusRequester() }
         val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
         Column(modifier = Modifier.fillMaxWidth()) {
-            val valueText by mutableStateOf(
-                if (token != null) {
-                    val v =
-                        try {
-                            if (text.isBlank()) BigDecimal.ZERO else BigDecimal(text)
-                        } catch (e: Exception) {
-                            BigDecimal.ZERO
-                        }
-                    mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).multiply(BigDecimal(Fiats.getRate())))
-                } else {
-                    mutableStateOf(BigDecimal.ZERO)
-                },
-            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -131,7 +94,6 @@ fun InputContent(
                             } catch (e: Exception) {
                                 return@BasicTextField
                             }
-                        valueText.value = v.multiply(BigDecimal(token?.price ?: "0").multiply(BigDecimal(Fiats.getRate())))
                         onInputChanged?.invoke(it)
                     },
                     maxLines = 1,
@@ -163,21 +125,7 @@ fun InputContent(
                 }
             }
             Box(modifier = Modifier.width(8.dp))
-            if (valueText.value != BigDecimal.ZERO) {
-                Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "${Fiats.getSymbol()}${valueText.value.priceFormat()}",
-                        style =
-                            TextStyle(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Light,
-                                color = MixinAppTheme.colors.textAssist,
-                            ),
-                    )
-                }
-            } else {
-                Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
-            }
+            Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
     }
 }

@@ -961,7 +961,7 @@
     <string name="setting_transfer_large_summary_greater">当转账金额大于 %1$s 时显示确认弹窗。</string>
     <string name="Settings">设置</string>
     <string name="Share">分享</string>
-    <string name="Share_Contact">分享他的名片</string>
+    <string name="Share_Contact">分享名片</string>
     <string name="Share_error">分享出错</string>
     <string name="Share_Link">分享邀请链接</string>
     <string name="Share_Logs">分享日志文件</string>
@@ -1527,6 +1527,9 @@
     <string name="balance_max">最大</string>
     <string name="balance_half">取半</string>
     <string name="Failed">失败</string>
+    <string name="single_transaction_should_be_greater_than">最低金额 %1$s %2$s</string>
+    <string name="single_transaction_should_be_less_than">最高金额 %1$s %2$s</string>
+    <string name="single_transaction_should_be_between">金额范围 %1$s %2$s ~ %3$s %4$s</string>
     <!-- Web3 -->
     <string name="web3_approve">批准</string>
     <string name="web3_borrow">借款</string>
@@ -1798,4 +1801,5 @@
     <string name="help_link">https://support.mixin.one/zh/category/mixin-messenger-1hmc388</string>
     <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
+    <string name="open_source">版权所有 Mixin Messenger\n根据 GPL-3.0 授权许可</string>
 </resources>
