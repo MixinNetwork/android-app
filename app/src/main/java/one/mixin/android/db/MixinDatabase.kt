@@ -287,12 +287,18 @@ abstract class MixinDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: MixinDatabase? = null
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+        private var NAME: String? = null
+
+        fun getCurrentDbName(): String? {
+            return NAME
+        }
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
         fun getDatabase(context: Context): MixinDatabase {
                 if (INSTANCE == null) {
                     val dir = dbDir(context)
+                    NAME = dir.name
                     val builder =
                         Room.databaseBuilder(context, MixinDatabase::class.java, File(dir, DB_NAME).absolutePath)
                             .openHelperFactory(

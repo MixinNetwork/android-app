@@ -48,6 +48,8 @@ class DatabaseProvider @Inject constructor(
         val identityNumber = requireNotNull(Session.getAccount()?.identityNumber)
         if (identityNumber == this.identityNumber && isInit()) return
 
+        this.identityNumber = identityNumber
+
         mixinDatabase?.close()
         val db = MixinDatabase.getDatabase(context)
         mixinDatabase = db
@@ -69,6 +71,8 @@ class DatabaseProvider @Inject constructor(
 
         pendingDatabase?.close()
         pendingDatabase = null
+
+        identityNumber = null
     }
 
     @Synchronized
