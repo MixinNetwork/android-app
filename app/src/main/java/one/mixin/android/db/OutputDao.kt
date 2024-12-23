@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
@@ -163,4 +164,20 @@ interface OutputDao : BaseDao<Output> {
     )
     suspend fun findUnspentInscriptionHash(): List<String>
 
+
+    @Transaction
+    fun clearJobsAndRawTransaction() {
+        clearOutputs()
+        clearJobs()
+        clearRawTransaction()
+    }
+
+    @Query("DELETE FROM outputs")
+    fun clearOutputs()
+
+    @Query("DELETE FROM raw_transactions")
+    fun clearRawTransaction()
+
+    @Query("DELETE FROM jobs")
+    fun clearJobs()
 }

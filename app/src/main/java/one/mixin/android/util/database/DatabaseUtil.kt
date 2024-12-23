@@ -97,36 +97,21 @@ suspend fun clearFts(context: Context) =
     }
 
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearJobsAndRawTransaction(context: Context) {
-        val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-        if (!dbFile.exists()) {
-            return
-        }
-        var db: SupportSQLiteDatabase? = null
-        try {
-            // Init database
-            MixinDatabase.getDatabase(context)
-            db = MixinDatabase.getWritableDatabase() ?: return
-            if (!supportsDeferForeignKeys) {
-                db.execSQL("PRAGMA foreign_keys = FALSE")
-            }
-            if (supportsDeferForeignKeys) {
-                db.execSQL("PRAGMA defer_foreign_keys = TRUE")
-            }
-            db.beginTransaction()
-            db.execSQL("DELETE FROM `jobs`")
-            db.execSQL("DELETE FROM `raw_transactions`")
-            db.execSQL("DELETE FROM `outputs`")
-            db.setTransactionSuccessful()
-            Timber.e("Clear jobs and raw transaction")
-        } catch (e: Exception) {
-            Timber.e(e)
-            reportException(e)
-        } finally {
-            db?.endTransaction()
-            if (!supportsDeferForeignKeys) {
-                db?.execSQL("PRAGMA foreign_keys = TRUE")
-            }
-        }
+fun clearJobsAndRawTransaction(context: Context) {
+    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    if (!dbFile.exists()) {
+        return
+    }
+    try {
+        // Init database
+        Timber.e("clearJobsAndRawTransaction start")
+        val db = MixinDatabase.getDatabase(context)
+        db.outputDao().clearJobsAndRawTransaction()
+        Timber.e("clearJobsAndRawTransaction success")
+    } catch (e: Exception) {
+        Timber.e(e)
+        reportException(e)
+    } finally {
+        Timber.e("clearJobsAndRawTransaction finally")
+    }
 }
