@@ -318,7 +318,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     adapter.submitList(it) {
                         if (firstLoad) {
                             adapter.initialPos = initialIndex
-                            if (it[initialIndex]?.messageId == messageId) { // Only change when data is same
+                            if (it.getOrNull(initialIndex)?.messageId == messageId) { // Only change when data is same
                                 binding.viewPager.setCurrentItem(initialIndex, false)
                             } else {
                                 lifecycleScope.launch {
