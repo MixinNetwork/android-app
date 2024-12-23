@@ -106,6 +106,18 @@
                     android:text="@string/LogAndDebug"
                     android:textColor="@color/colorBlue"
                     android:textSize="16sp" />
+
+
+            <TextView
+                android:id="@+id/open_source"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/open_source"
+                android:textColor="?attr/text_assist"
+                android:textSize="13sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

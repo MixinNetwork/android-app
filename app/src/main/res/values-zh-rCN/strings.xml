@@ -1801,4 +1801,5 @@
     <string name="help_link">https://support.mixin.one/zh/category/mixin-messenger-1hmc388</string>
     <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
+    <string name="open_source">版权所有 Mixin Messenger\n根据 GPL-3.0 授权许可</string>
 </resources>
