@@ -223,7 +223,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         else ->
                             requireContext().getString(
                                 R.string.error_unknown_with_message,
-                                e.message,
+                                e.message ?: e.javaClass.name,
                             )
                     }
             }

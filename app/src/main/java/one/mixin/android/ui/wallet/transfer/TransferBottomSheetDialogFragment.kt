@@ -543,7 +543,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                         is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> getString(R.string.error_unknown_with_message, throwable.message)
+                        else -> getString(R.string.error_unknown_with_message, throwable.message ?: throwable.javaClass.name)
                     }
 
                 is UtxoException -> {
@@ -569,7 +569,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
 
-                else -> getString(R.string.error_unknown_with_message, throwable.message)
+                else -> getString(R.string.error_unknown_with_message, throwable.message ?: throwable.javaClass.name)
             }
     }
 
