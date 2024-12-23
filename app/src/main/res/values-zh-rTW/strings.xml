@@ -822,7 +822,7 @@
     <string name="setting_transfer_large_summary_greater">當轉賬金額大於 %1$s 時顯示確認彈窗。</string>
     <string name="Settings">設定</string>
     <string name="Share">分享</string>
-    <string name="Share_Contact">分享他的名片</string>
+    <string name="Share_Contact">分享名片</string>
     <string name="Share_error">分享出錯</string>
     <string name="Share_Link">分享邀請連結</string>
     <string name="share_message_description">你確定要傳送來自%1$s的%2$s？</string>
