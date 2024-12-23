@@ -41,7 +41,7 @@ fun reportExoPlayerException(
 }
 
 fun Throwable.msg(): String {
-    if (message == null) {
+    if (message.isNullOrBlank()) {
         reportEvent("Unknown exception: ${this.javaClass.name}")
         return this.javaClass.name
     }
