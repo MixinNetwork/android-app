@@ -961,7 +961,7 @@
     <string name="setting_transfer_large_summary_greater">当转账金额大于 %1$s 时显示确认弹窗。</string>
     <string name="Settings">设置</string>
     <string name="Share">分享</string>
-    <string name="Share_Contact">分享他的名片</string>
+    <string name="Share_Contact">分享名片</string>
     <string name="Share_error">分享出错</string>
     <string name="Share_Link">分享邀请链接</string>
     <string name="Share_Logs">分享日志文件</string>
