@@ -186,7 +186,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                         is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> getString(R.string.error_unknown_with_message, throwable.message)
+                        else -> getString(R.string.error_unknown_with_message, throwable.message ?: throwable.javaClass.name)
                     }
 
                 is TipNodeException -> {
@@ -208,7 +208,7 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
 
-                else -> getString(R.string.error_unknown_with_message, throwable.message)
+                else -> getString(R.string.error_unknown_with_message, throwable.message ?: throwable.javaClass.name)
             }
     }
 
