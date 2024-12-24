@@ -881,7 +881,7 @@
     <string name="search_placeholder_explore">名称, 符号, 链接</string>
     <string name="search_placeholder_collectible">名称</string>
     <string name="search_placeholder_number">搜索 Mixin ID 或手机号码：</string>
-    <string name="search_mao">搜索 Mao：</string>
+    <string name="search_mao">搜索 MAO：</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d 条相关的消息</item>
         <item quantity="other">%1$d 条相关的消息</item>
