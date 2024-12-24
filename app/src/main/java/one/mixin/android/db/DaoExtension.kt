@@ -1,11 +1,8 @@
 package one.mixin.android.db
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.session.Session
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
