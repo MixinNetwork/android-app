@@ -7,10 +7,15 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
+import com.github.salomonbrys.kotson.gsonTypeToken
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.util.GsonHelper
+import java.lang.reflect.Type
 
 inline val Fragment.defaultSharedPreferences: SharedPreferences
     get() = requireContext().defaultSharedPreferences
@@ -88,4 +93,41 @@ fun Context.updatePinCheck() {
         }
         putPrefPinInterval(this, tmp)
     }
+}
+
+object TypeTokenCache {
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getListType(clazz: Class<T>): Type {
+        return TypeToken.getParameterized(List::class.java, clazz).type
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getMutableListType(clazz: Class<T>): Type {
+        return TypeToken.getParameterized(MutableList::class.java, clazz).type
+    }
+}
+
+fun <T> SharedPreferences.addToList(key: String, item: T, clazz: Class<T>, limit: Int = 6) {
+    val gson = GsonHelper.customGson
+    val jsonString = getString(key, null)
+    val currentList: MutableList<T> = jsonString?.let {
+        gson.fromJson(it, TypeTokenCache.getMutableListType(clazz))
+    } ?: mutableListOf()
+
+    currentList.remove(item)
+    currentList.add(0, item)
+
+    if (currentList.size > limit) {
+        currentList.removeAll(currentList.subList(limit, currentList.size))
+    }
+
+    edit().putString(key, gson.toJson(currentList)).apply()
+}
+
+fun <T> SharedPreferences.getList(key: String, clazz: Class<T>): List<T> {
+    val gson = GsonHelper.customGson
+    val jsonString = getString(key, null)
+    return jsonString?.let {
+        gson.fromJson(it, TypeTokenCache.getListType(clazz))
+    } ?: emptyList()
 }
