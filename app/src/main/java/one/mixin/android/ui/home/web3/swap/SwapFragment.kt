@@ -233,16 +233,19 @@ class SwapFragment : BaseFragment() {
                     }
                     .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
             } else {
-                val data = ArrayList(web3tokens ?: emptyList())
-                Web3TokenListBottomSheetDialogFragment.newInstance(
+                val data = ArrayList(web3tokens?.map { it.toSwapToken() } ?: emptyList())
+                SwapTokenListBottomSheetDialogFragment.newInstance(
                     data
                 ).apply {
-                    setOnClickListener { t ->
-                        val token = t.toSwapToken()
+                    setOnClickListener { token, alert ->
+                        if (alert) {
+                            SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
+                            return@setOnClickListener
+                        }
                         saveQuoteToken(token, isReverse, type)
                         dismissNow()
                     }
-                }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+                }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             }
         } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
