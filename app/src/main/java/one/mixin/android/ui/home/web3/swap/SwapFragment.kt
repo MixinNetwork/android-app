@@ -326,7 +326,6 @@ class SwapFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
-            swapViewModel.checkAndSyncTokens(listOfNotNull(from.assetId, to.assetId))
             openSwapTransfer(resp, from, to)
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
