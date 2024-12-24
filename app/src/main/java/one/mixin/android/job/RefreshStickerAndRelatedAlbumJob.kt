@@ -17,7 +17,7 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
 
     override fun onRun() =
         runBlocking {
-            val localSticker = stickerDao.findStickerById(stickerId)
+            val localSticker = stickerDao().findStickerById(stickerId)
             var albumId: String? = null
             if (localSticker != null) {
                 albumId = localSticker.albumId
@@ -31,21 +31,21 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
             }
 
             if (albumId.isNullOrBlank()) {
-                albumId?.let { stickerDao.updateAlbumId(stickerId, it) }
+                albumId?.let { stickerDao().updateAlbumId(stickerId, it) }
                 return@runBlocking
             }
 
-            var album = stickerAlbumDao.findAlbumById(albumId)
+            var album = stickerAlbumDao().findAlbumById(albumId)
             if (album == null) {
                 val albumResponse = accountService.getAlbumByIdSuspend(albumId)
                 if (albumResponse.isSuccess && albumResponse.data != null) {
                     album = albumResponse.data as StickerAlbum
-                    stickerAlbumDao.insertSuspend(album)
+                    stickerAlbumDao().insertSuspend(album)
                 }
             }
 
             if (album == null || album.category == "PERSONAL") {
-                stickerDao.updateAlbumId(stickerId, albumId)
+                stickerDao().updateAlbumId(stickerId, albumId)
                 return@runBlocking
             }
 
@@ -58,13 +58,13 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
                     } else {
                         null
                     }
-                mixinDatabase.runInTransaction {
+                database().runInTransaction {
                     for (s in stickers) {
-                        stickerDao.insertUpdate(s)
+                        stickerDao().insertUpdate(s)
                         relationships?.add(StickerRelationship(albumId, s.stickerId))
                     }
                     relationships?.let { rs ->
-                        stickerRelationshipDao.insertList(rs)
+                        stickerRelationshipDao().insertList(rs)
                     }
                 }
             }

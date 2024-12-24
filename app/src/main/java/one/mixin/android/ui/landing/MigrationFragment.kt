@@ -4,40 +4,29 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
-import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.landing.viewmodel.LandingViewModel
+import one.mixin.android.util.database.migrationDbFile
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
+class MigrationFragment : BaseFragment(R.layout.fragment_upgrade) {
     companion object {
-        const val TAG: String = "UpgradeFragment"
+        const val TAG: String = "MigrationFragment"
 
-        const val ARGS_TYPE = "args_type"
-        const val TYPE_DB = 0
 
-        fun newInstance(type: Int) =
-            UpgradeFragment().withArgs {
-                putInt(ARGS_TYPE, type)
-            }
+        fun newInstance() = MigrationFragment()
     }
 
-    private val viewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentUpgradeBinding::bind)
 
-    private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
@@ -46,13 +35,10 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        MixinApplication.get().isOnline.set(true)
-
         lifecycleScope.launch {
             binding.pb.isIndeterminate = true
             withContext(Dispatchers.IO) {
-                PropertyHelper.checkMigrated()
-                viewModel.lockAndUpgradeDatabase()
+                migrationDbFile(requireContext())
             }
             MainActivity.show(requireContext())
             activity?.finish()

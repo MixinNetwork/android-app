@@ -73,7 +73,7 @@ class AttachmentDownloadJob(
                 it.cancel()
             }
         }
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
@@ -111,14 +111,14 @@ class AttachmentDownloadJob(
                 val result = decryptAttachment(it)
                 if (result) {
                     val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.messageId, attachmentResponse.created_at, shareable))
-                    messageDao.updateMessageContent(attachmentExtra, message.messageId)
+                    messageDao().updateMessageContent(attachmentExtra, message.messageId)
                 }
             }
             removeJob()
         } else {
             removeJob()
             Log.e(TAG, "get attachment url failed")
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
             MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
         }
@@ -129,7 +129,7 @@ class AttachmentDownloadJob(
         throwable: Throwable?,
     ) {
         super.onCancel(cancelReason, throwable)
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
         removeJob()
@@ -137,7 +137,7 @@ class AttachmentDownloadJob(
 
     override fun onAdded() {
         super.onAdded()
-        messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.messageId)
+        messageDao().updateMediaStatus(MediaStatus.PENDING.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         RxBus.publish(loadingEvent(message.messageId, 0f))
     }
@@ -179,14 +179,14 @@ class AttachmentDownloadJob(
             try {
                 call!!.execute()
             } catch (e: Exception) {
-                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
                 MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
                 destination.delete()
                 return false
             }
         if (response.code == 404) {
-            messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.messageId)
+            messageDao().updateMediaStatus(MediaStatus.EXPIRED.name, message.messageId)
             MessageFlow.update(message.conversationId, message.messageId)
             attachmentProcess.remove(message.messageId)
             destination.delete()
@@ -221,7 +221,7 @@ class AttachmentDownloadJob(
                         }
                     }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMedia(message.messageId, imageFile.name, imageFile.length(), MediaStatus.DONE.name)
+                messageDao().updateMedia(message.messageId, imageFile.name, imageFile.length(), MediaStatus.DONE.name)
                 MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_DATA")) {
@@ -236,7 +236,7 @@ class AttachmentDownloadJob(
                     MixinApplication.get().getDocumentPath()
                         .createDocumentTemp(message.conversationId, message.messageId, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMedia(message.messageId, dataFile.name, dataFile.length(), MediaStatus.DONE.name)
+                messageDao().updateMedia(message.messageId, dataFile.name, dataFile.length(), MediaStatus.DONE.name)
                 MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_VIDEO")) {
@@ -254,7 +254,7 @@ class AttachmentDownloadJob(
                     MixinApplication.get().getVideoPath()
                         .createVideoTemp(message.conversationId, message.messageId, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMedia(message.messageId, videoFile.name, videoFile.length(), MediaStatus.DONE.name)
+                messageDao().updateMedia(message.messageId, videoFile.name, videoFile.length(), MediaStatus.DONE.name)
                 MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_AUDIO")) {
@@ -268,14 +268,14 @@ class AttachmentDownloadJob(
                     MixinApplication.get().getAudioPath()
                         .createAudioTemp(message.conversationId, message.messageId, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMedia(message.messageId, audioFile.name, audioFile.length(), MediaStatus.DONE.name)
+                messageDao().updateMedia(message.messageId, audioFile.name, audioFile.length(), MediaStatus.DONE.name)
                 MessageFlow.update(message.conversationId, message.messageId)
                 attachmentProcess.remove(message.messageId)
             }
             destination.delete()
             return true
         } else {
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            messageDao().updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
             attachmentProcess.remove(message.messageId)
             destination.delete()
             return false

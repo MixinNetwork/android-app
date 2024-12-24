@@ -57,8 +57,8 @@ class SendGiphyJob(
                 MediaStatus.PENDING,
                 MessageStatus.SENDING.name,
             )
-        messageDao.insert(message)
-        conversationDao.updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+        messageDao().insert(message)
+        conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
         MessageFlow.insert(message.conversationId, message.messageId)
     }
 
@@ -103,7 +103,7 @@ class SendGiphyJob(
                     MediaStatus.PENDING,
                     MessageStatus.SENDING.name,
                 )
-            messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
+            messageDao().updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
             MessageFlow.update(message.conversationId, message.messageId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }

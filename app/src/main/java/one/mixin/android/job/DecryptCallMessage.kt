@@ -385,14 +385,14 @@ class DecryptCallMessage(
 
     private fun notifyServer(data: BlazeMessageData) {
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-        messageHistoryDao.insert(MessageHistory(data.messageId))
+        messageHistoryDao().insert(MessageHistory(data.messageId))
     }
 
     private fun updateRemoteMessageStatus(
         messageId: String,
         status: MessageStatus = MessageStatus.DELIVERED,
     ) {
-        jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
+        jobDao().insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
     private fun saveCallMessage(
@@ -427,11 +427,11 @@ class DecryptCallMessage(
     }
 
     private fun insertCallMessage(message: Message) {
-        database.insertAndNotifyConversation(message)
-        database.conversationDao().findConversationById(message.conversationId)?.let {
+        database().insertAndNotifyConversation(message)
+        database().conversationDao().findConversationById(message.conversationId)?.let {
             val expiredIn = it.expireIn ?: return@let
             if (it.expireIn > 0) {
-                database.expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
+                database().expiredMessageDao().insert(ExpiredMessage(message.messageId, expiredIn, null))
             }
         }
     }

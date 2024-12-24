@@ -34,7 +34,6 @@ import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.clear
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
@@ -49,12 +48,11 @@ import one.mixin.android.session.decryptPinToken
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
@@ -78,7 +76,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             }
     }
 
-    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private var errorInfo by mutableStateOf<String?>(null)
 
@@ -109,7 +107,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private fun anonymousRequest(words: List<String>? = null) {
         lifecycleScope.launch {
-            mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (!words.isNullOrEmpty()) {
                 val w = words.let {
@@ -144,7 +142,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             val signature = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), GsonHelper.customGson.toJson(message).toByteArray())
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signature.hexString())
+                    landingViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signature.hexString())
                 },
 
                 successBlock = { r ->
@@ -152,7 +150,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 exceptionBlock = { t ->
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     errorInfo = t.message
                     Timber.e(t)
                     true
@@ -163,7 +161,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString())
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     }
                     true
                 }
@@ -212,7 +210,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         lifecycleScope.launch {
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse)
+                    landingViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse)
                 },
 
                 successBlock = { r ->
@@ -220,7 +218,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 exceptionBlock = { t ->
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     errorInfo = t.message
                     Timber.e(t)
                     true
@@ -228,7 +226,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     true
                 }
             )
@@ -246,7 +244,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }
@@ -258,7 +256,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             val sessionSecret = sessionKey.publicKey.base64Encode()
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.create(
+                    landingViewModel.create(
                         verificationId,
                         AccountRequest(
                             purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
@@ -274,7 +272,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 exceptionBlock = { t ->
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     errorInfo = t.message
                     Timber.e(t)
                     true
@@ -282,33 +280,25 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     true
                 }
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
-                val lastUserId = getLastUserId(requireContext())
-                val sameUser = lastUserId != null && lastUserId == account.userId
-                if (sameUser) {
-                    withContext(Dispatchers.IO) {
-                        clearJobsAndRawTransaction(requireContext())
-                    }
-                } else {
-                    withContext(Dispatchers.IO) {
-                        clearDatabase(requireContext())
-                    }
-                    defaultSharedPreferences.clear()
+                withContext(Dispatchers.IO) {
+                    clearJobsAndRawTransaction(requireContext(), account.identityNumber)
                 }
                 val privateKey = sessionKey.privateKey
                 val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
                 Session.storeEd25519Seed(privateKey.base64Encode())
                 Session.storePinToken(pinToken.base64Encode())
                 Session.storeAccount(account)
+                landingViewModel.initAllDatabases()
                 defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
                 when {
                     account.fullName.isNullOrBlank() -> {
-                        mobileViewModel.insertUser(account.toUser())
+                        landingViewModel.insertUser(account.toUser())
                         InitializeActivity.showSetupName(requireContext())
                     }
 
@@ -316,14 +306,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         RestoreActivity.show(requireContext())
                     }
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
-                MixinApplication.get().reject()
+                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Success)
                 activity?.finish()
             } else {
                 if (r != null) {
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
-                mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
         }
     }

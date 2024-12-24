@@ -3,7 +3,9 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -28,7 +30,7 @@ class RefreshDappJob : BaseJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            userRepo.getBotPublicKey(WEB3_BOT_USER_ID, false)
+            getBotPublicKey(WEB3_BOT_USER_ID, false)
             val response = web3Service.dapps()
             if (response.isSuccess && response.data != null) {
                 val gson = GsonHelper.customGson
@@ -59,10 +61,69 @@ class RefreshDappJob : BaseJob(
                 }
                 RxBus.publish(WCChangeEvent())
             } else if (response.errorCode == 401) {
-                userRepo.getBotPublicKey(WEB3_BOT_USER_ID, true)
+                getBotPublicKey(WEB3_BOT_USER_ID, true)
             } else {
                 delay(3000)
                 jobManager.addJobInBackground(RefreshDappJob())
             }
         }
+
+    suspend fun findBotPublicKey(
+        conversationId: String,
+        botId: String,
+    ): String? {
+        return participantSessionDao().findBotPublicKey(conversationId, botId)
+    }
+
+    suspend fun fetchSessionsSuspend(ids: List<String>) = userService.fetchSessionsSuspend(ids)
+
+    suspend fun saveSession(participantSession: ParticipantSession) {
+        participantSessionDao().insertSuspend(participantSession)
+    }
+
+    suspend fun getBotPublicKey(botId: String, force: Boolean) {
+        if (botId != ROUTE_BOT_USER_ID && botId != WEB3_BOT_USER_ID) return
+
+        val key =
+            findBotPublicKey(
+                generateConversationId(
+                    botId,
+                    Session.getAccountId()!!,
+                ),
+                botId,
+            )
+        if (key != null && !force) {
+            if (botId == ROUTE_BOT_USER_ID) {
+                MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
+            } else if (botId == WEB3_BOT_USER_ID) {
+                MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
+            }
+        } else {
+            val sessionResponse = fetchSessionsSuspend(listOf(botId))
+            if (sessionResponse.isSuccess) {
+                val sessionData = requireNotNull(sessionResponse.data)[0]
+                saveSession(
+                    ParticipantSession(
+                        generateConversationId(
+                            sessionData.userId,
+                            Session.getAccountId()!!,
+                        ),
+                        sessionData.userId,
+                        sessionData.sessionId,
+                        publicKey = sessionData.publicKey,
+                    ),
+                )
+                if (botId == ROUTE_BOT_USER_ID) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
+                } else if (botId == WEB3_BOT_USER_ID) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
+                }
+            } else {
+                throw MixinResponseException(
+                    sessionResponse.errorCode,
+                    sessionResponse.errorDescription,
+                )
+            }
+        }
+    }
 }

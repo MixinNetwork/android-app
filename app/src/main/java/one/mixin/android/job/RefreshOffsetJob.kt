@@ -29,7 +29,7 @@ class RefreshOffsetJob : MixinJob(
     }
 
     override fun onRun() {
-        val statusOffset = offsetDao.getStatusOffset()
+        val statusOffset = offsetDao().getStatusOffset()
         var status = statusOffset?.getEpochNano() ?: firstInstallTime
 
         while (true) {
@@ -41,7 +41,7 @@ class RefreshOffsetJob : MixinJob(
                 }
                 for (m in blazeMessages) {
                     val callback = block@{
-                        val mh = messageHistoryDao.findMessageHistoryById(m.messageId)
+                        val mh = messageHistoryDao().findMessageHistoryById(m.messageId)
                         if (mh != null) {
                             return@block
                         }
@@ -56,9 +56,9 @@ class RefreshOffsetJob : MixinJob(
                             pendingMessageStatusLruCache.put(m.messageId, m.status)
                         }
                     }
-                    pendingDatabase.makeMessageStatus(m.status, m.messageId, callback)
-                    mixinDatabase.makeMessageStatus(m.status, m.messageId, callback)
-                    offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
+                    pendingDatabase().makeMessageStatus(m.status, m.messageId, callback)
+                    database().makeMessageStatus(m.status, m.messageId, callback)
+                    offsetDao().insert(Offset(STATUS_OFFSET, m.updatedAt))
                 }
                 if (blazeMessages.isNotEmpty() && blazeMessages.last().updatedAt.getEpochNano() == status) {
                     break

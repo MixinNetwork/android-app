@@ -969,11 +969,11 @@ ConversationFragment() :
 
     private val conversationId: String by lazy<String> {
         var cid = requireArguments().getString(CONVERSATION_ID)
-        if (cid.isNullOrBlank()) {
+        if (cid.isNullOrBlank() && recipient != null) {
             isFirstMessage = true
             cid = generateConversationId(sender.userId, recipient!!.userId)
         }
-        cid
+        requireNotNull(cid)
     }
 
     private var recipient: User? = null

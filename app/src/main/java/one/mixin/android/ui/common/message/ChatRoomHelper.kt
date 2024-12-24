@@ -3,11 +3,11 @@ package one.mixin.android.ui.common.message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.insertNoReplace
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.util.SINGLE_THREAD
@@ -26,7 +26,7 @@ class ChatRoomHelper
         private val remoteMessageStatusDao: RemoteMessageStatusDao,
         private val messageMentionDao: MessageMentionDao,
         private val jobDao: JobDao,
-        private val ftsDbHelper: FtsDatabase,
+        private val databaseProvider: DatabaseProvider
     ) {
         fun saveDraft(
             conversationId: String,

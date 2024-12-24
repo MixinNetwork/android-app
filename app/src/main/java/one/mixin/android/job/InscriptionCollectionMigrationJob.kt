@@ -14,7 +14,7 @@ class InscriptionCollectionMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy
 
     override fun onRun() =
         runBlocking {
-            val allHash = inscriptionCollectionDao.allCollectionHash()
+            val allHash = inscriptionCollectionDao().allCollectionHash()
             allHash.forEach {
                 if (!syncInscriptionCollection(it)) {
                     // Wait next timing
@@ -28,7 +28,7 @@ class InscriptionCollectionMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy
         val collectionResponse = tokenService.getInscriptionCollection(collectionHash)
         if (collectionResponse.isSuccess) {
             val inscriptionCollection = collectionResponse.data ?: return false
-            inscriptionCollectionDao.insert(inscriptionCollection)
+            inscriptionCollectionDao().insert(inscriptionCollection)
             return true
         } else {
             Timber.e(collectionResponse.errorDescription)

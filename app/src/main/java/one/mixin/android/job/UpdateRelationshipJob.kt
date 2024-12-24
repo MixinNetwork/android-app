@@ -33,13 +33,13 @@ class UpdateRelationshipJob(
         }
         when {
             RelationshipAction.valueOf(request.action) == ADD ->
-                userDao.updateUserRelationship(request.user_id, UserRelationship.FRIEND.name)
+                userDao().updateUserRelationship(request.user_id, UserRelationship.FRIEND.name)
             RelationshipAction.valueOf(request.action) == REMOVE ->
-                userDao.updateUserRelationship(request.user_id, UserRelationship.STRANGER.name)
+                userDao().updateUserRelationship(request.user_id, UserRelationship.STRANGER.name)
             RelationshipAction.valueOf(request.action) == BLOCK ->
-                userDao.updateUserRelationship(request.user_id, UserRelationship.BLOCKING.name)
+                userDao().updateUserRelationship(request.user_id, UserRelationship.BLOCKING.name)
             RelationshipAction.valueOf(request.action) == UNBLOCK ->
-                userDao.updateUserRelationship(request.user_id, UserRelationship.STRANGER.name)
+                userDao().updateUserRelationship(request.user_id, UserRelationship.STRANGER.name)
         }
     }
 
@@ -72,11 +72,11 @@ class UpdateRelationshipJob(
         }
     }
 
-    private suspend fun updateUser(u: User) {
+    private fun updateUser(u: User) {
         if (u.app != null) {
             u.appId = u.app!!.appId
-            userRepo.insertApp(u.app!!)
+            appDao().insert(u.app!!)
         }
-        userRepo.upsert(u)
+        userDao().upsert(u)
     }
 }

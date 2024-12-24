@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.core.view.children
@@ -45,8 +46,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -61,7 +60,6 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
@@ -70,15 +68,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.SessionRequest
-import one.mixin.android.api.service.ConversationService
-import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
@@ -118,12 +111,9 @@ import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
-import one.mixin.android.repository.AccountRepository
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCErrorEvent
@@ -164,7 +154,6 @@ import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
-import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
@@ -173,14 +162,11 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.legacyDatabaseExists
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
-import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
 import timber.log.Timber
@@ -194,28 +180,9 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var jobManager: MixinJobManager
 
     @Inject
-    lateinit var conversationService: ConversationService
-
-    @Inject
-    lateinit var userService: UserService
-
-    @Inject
-    lateinit var conversationDao: ConversationDao
-
-    @Inject
-    lateinit var userDao: UserDao
-
-    @Inject
-    lateinit var userRepo: UserRepository
-
-    @Inject
-    lateinit var accountRepo: AccountRepository
-
-    @Inject
-    lateinit var participantDao: ParticipantDao
-
-    @Inject
     lateinit var tip: Tip
+
+    private val mainViewModel by viewModels<MainViewModel>()
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener =
@@ -259,6 +226,12 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
+        if (legacyDatabaseExists(this)) {
+            InitializeActivity.showMigration(this)
+            finish()
+            return
+        }
+
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
@@ -276,6 +249,8 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+
+        mainViewModel.initAllDatabases()
 
         MixinApplication.get().isOnline.set(true)
         if (checkNeedGo2MigrationPage()) {
@@ -527,7 +502,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkNeedGo2MigrationPage(): Boolean {
         val currentVersion =
             try {
-                readVersion(getDatabasePath(DB_NAME))
+                readVersion(databaseFile(this))
             } catch (e: Exception) {
                 0
             }
@@ -611,7 +586,7 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
         runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
-            accountRepo.deviceCheck().subscribeOn(Schedulers.io())
+            mainViewModel.deviceCheck().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
                 .subscribe(
@@ -631,7 +606,7 @@ class MainActivity : BlazeBaseActivity() {
         val client = SafetyNet.getClient(this)
         val task = client.attest(nonce, BuildConfig.SAFETYNET_API_KEY)
         task.addOnSuccessListener { safetyResp ->
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+            mainViewModel.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
@@ -769,7 +744,7 @@ class MainActivity : BlazeBaseActivity() {
             val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {
                 lifecycleScope.launch {
-                    val user = userRepo.refreshUser(userId) ?: return@launch
+                    val user = mainViewModel.refreshUser(userId) ?: return@launch
                     TransferFragment.newInstance(buildEmptyTransferBiometricItem(user))
                         .showNow(supportFragmentManager, TransferFragment.TAG)
                 }
@@ -783,93 +758,11 @@ class MainActivity : BlazeBaseActivity() {
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?
-                var conversation = conversationDao.findConversationById(conversationId)
-                if (conversation == null) {
-                    val response =
-                        conversationService.getConversation(conversationId).execute().body()
-                    if (response != null && response.isSuccess) {
-                        response.data?.let { data ->
-                            var ownerId: String = data.creatorId
-                            if (data.category == ConversationCategory.CONTACT.name) {
-                                ownerId =
-                                    data.participants.find { p -> p.userId != Session.getAccountId() }!!.userId
-                            } else if (data.category == ConversationCategory.GROUP.name) {
-                                ownerId = data.creatorId
-                            }
-                            var c = conversationDao.findConversationById(data.conversationId)
-                            if (c == null) {
-                                c =
-                                    Conversation(
-                                        data.conversationId,
-                                        ownerId,
-                                        data.category,
-                                        data.name,
-                                        data.iconUrl,
-                                        data.announcement,
-                                        data.codeUrl,
-                                        "",
-                                        data.createdAt,
-                                        null,
-                                        null,
-                                        null,
-                                        0,
-                                        ConversationStatus.SUCCESS.ordinal,
-                                        null,
-                                    )
-                                conversation = c
-                                conversationDao.upsert(c)
-                            } else {
-                                conversationDao.updateConversation(
-                                    data.conversationId,
-                                    ownerId,
-                                    data.category,
-                                    data.name,
-                                    data.announcement,
-                                    data.muteUntil,
-                                    data.createdAt,
-                                    data.expireIn,
-                                    ConversationStatus.SUCCESS.ordinal,
-                                )
-                            }
-
-                            val participants = mutableListOf<Participant>()
-                            val userIdList = mutableListOf<String>()
-                            for (p in data.participants) {
-                                val item =
-                                    Participant(conversationId, p.userId, p.role, p.createdAt!!)
-                                if (p.role == ParticipantRole.OWNER.name) {
-                                    participants.add(0, item)
-                                } else {
-                                    participants.add(item)
-                                }
-
-                                val u = userDao.findUser(p.userId)
-                                if (u == null) {
-                                    userIdList.add(p.userId)
-                                }
-                            }
-                            if (userIdList.isNotEmpty()) {
-                                jobManager.addJobInBackground(RefreshUserJob(userIdList))
-                            }
-                            participantDao.insertList(participants)
-                        }
-                    }
-                }
+                val conversation = mainViewModel.syncConverstion(conversationId)
                 if (conversation?.isGroupConversation() == true) {
                     innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
-                    var user = userDao.findOwnerByConversationId(conversationId)
-                    if (user == null) {
-                        val response =
-                            userService.getUserById(conversation!!.ownerId!!).execute()
-                                .body()
-                        if (response != null && response.isSuccess) {
-                            response.data?.let { u ->
-                                runBlocking { userRepo.upsert(u) }
-                                user = u
-                            }
-                        }
-                    }
+                    val user = mainViewModel.syncOwnerByConversationId(conversationId)
                     innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
                 runOnUiThread { dismissDialog() }

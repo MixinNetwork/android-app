@@ -16,7 +16,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deleteOnExists
@@ -24,6 +23,8 @@ import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
+import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.dbDir
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -37,7 +38,7 @@ suspend fun backup(
     context: Context,
     callback: (Result) -> Unit,
 ) = coroutineScope {
-    val dbFile = context.getDatabasePath(DB_NAME)
+    val dbFile = databaseFile(context)
     if (dbFile == null) {
         withContext(Dispatchers.Main) {
             Timber.e("No database files found")
@@ -67,10 +68,8 @@ suspend fun backup(
     val copyPath = "$backupDir${File.separator}$tmpName"
     var result: File? = null
     try {
-        runInTransaction {
-            MixinDatabase.checkPoint()
-            result = dbFile.copyTo(File(copyPath), overwrite = true)
-        }
+        MixinDatabase.checkPoint()
+        result = dbFile.copyTo(File(copyPath), overwrite = true)
         context.getOldBackupPath(false)?.deleteRecursively()
     } catch (e: Exception) {
         result?.delete()
@@ -196,8 +195,8 @@ suspend fun backupApi29(
             }
             return@withContext
         }
-        val dbFile = context.getDatabasePath(DB_NAME)
-        if (dbFile == null) {
+        val dbFile = databaseFile(context)
+        if (!dbFile.exists() && dbFile.length() <= 0) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)
@@ -205,12 +204,13 @@ suspend fun backupApi29(
             return@withContext
         }
         val tmpFile = File(context.getMediaPath(), DB_NAME)
+        if (tmpFile.parentFile?.exists() != true) {
+            tmpFile.parentFile?.mkdirs()
+        }
         try {
             val inputStream = dbFile.inputStream()
-            runInTransaction {
-                MixinDatabase.checkPoint()
-                tmpFile.outputStream().use { output -> inputStream.copyTo(output) }
-            }
+            MixinDatabase.checkPoint()
+            tmpFile.outputStream().use { output -> inputStream.copyTo(output) }
             var db: SQLiteDatabase? = null
             try {
                 db =
@@ -264,7 +264,7 @@ suspend fun restore(
     val target =
         internalFindBackup(context, coroutineContext)
             ?: return@withContext callback(Result.NOT_FOUND)
-    val file = context.getDatabasePath(DB_NAME)
+    var file =  dbDir(context)
     try {
         if (file.exists()) {
             file.delete()
@@ -314,7 +314,7 @@ suspend fun restoreApi29(
         }
         return@withContext
     }
-    val file = context.getDatabasePath(DB_NAME)
+    val file = databaseFile(context)
     try {
         val inputStream = context.contentResolver.openInputStream(backupDb.uri)
         if (inputStream == null) {
@@ -412,7 +412,7 @@ suspend fun findBackupApi29(
             return@withContext null
         }
         val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
-        val dbFile = backupChildDirectory?.findFile("mixin.db")
+        val dbFile = backupChildDirectory?.findFile(DB_NAME)
         if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0 || dbFile == null || !dbFile.exists() || dbFile.length() <= 0) {
             return@withContext null
         }

@@ -73,27 +73,27 @@ abstract class MixinJob(
         sessionId: String,
     ): Boolean {
         val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
-        val data = jobSenderKey.signalKeysChannel(blazeMessage) ?: return false
+        val data = jobSenderKey().signalKeysChannel(blazeMessage) ?: return false
         val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
         if (!keys.isNullOrEmpty()) {
             val preKeyBundle = createPreKeyBundle(keys[0])
             signalProtocol.processSession(recipientId, preKeyBundle)
         } else {
-            participantSessionDao.insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
+            participantSessionDao().insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
             return false
         }
 
         val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId.getDeviceId())
         if (err) return false
         val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, sessionId)
-        val checksum = jobSenderKey.getCheckSum(conversationId)
+        val checksum = jobSenderKey().getCheckSum(conversationId)
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages), checksum))
-        val result = jobSenderKey.deliverNoThrow(bm)
+        val result = jobSenderKey().deliverNoThrow(bm)
         if (result.retry) {
             return sendSenderKey(conversationId, recipientId, sessionId)
         }
         if (result.success) {
-            participantSessionDao.insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
+            participantSessionDao().insertParticipantSessionSent(ParticipantSessionSent(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
         }
         return result.success
     }
@@ -108,7 +108,7 @@ abstract class MixinJob(
                     createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))),
                 )
 
-            val data = jobSenderKey.signalKeysChannel(blazeMessage) ?: return false
+            val data = jobSenderKey().signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (!keys.isNullOrEmpty()) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
@@ -122,7 +122,7 @@ abstract class MixinJob(
 
     protected fun deliver(blazeMessage: BlazeMessage): Boolean {
         blazeMessage.params?.conversation_id?.let {
-            blazeMessage.params.conversation_checksum = jobSenderKey.getCheckSum(it)
+            blazeMessage.params.conversation_checksum = jobSenderKey().getCheckSum(it)
         }
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
@@ -132,7 +132,7 @@ abstract class MixinJob(
             when (bm.error.code) {
                 CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
-                        jobSenderKey.syncConversation(it)
+                        jobSenderKey().syncConversation(it)
                     }
                     throw ChecksumException()
                 }
@@ -169,13 +169,13 @@ abstract class MixinJob(
                 MessageStatus.SENDING.name,
             )
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
-        jobSenderKey.deliverNoThrow(bm)
+        jobSenderKey().deliverNoThrow(bm)
     }
 
     protected fun checkConversation(conversationId: String) {
-        val conversation = conversationDao.findConversationById(conversationId) ?: return
+        val conversation = conversationDao().findConversationById(conversationId) ?: return
         if (conversation.isGroupConversation()) {
-            jobSenderKey.syncConversation(conversation.conversationId)
+            jobSenderKey().syncConversation(conversation.conversationId)
         } else {
             checkConversationExist(conversation)
         }
@@ -190,8 +190,8 @@ abstract class MixinJob(
             )
         val response = conversationApi.create(request).execute().body()
         if (response != null && response.isSuccess && response.data != null && !isCancelled) {
-            conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
-            conversationDao.updateConversationExpireInById(conversation.conversationId, response.data?.expireIn)
+            conversationDao().updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+            conversationDao().updateConversationExpireInById(conversation.conversationId, response.data?.expireIn)
 
             val sessionParticipants =
                 response.data!!.participantSessions.let { resp ->
@@ -200,7 +200,7 @@ abstract class MixinJob(
                     }
                 }
             sessionParticipants?.let {
-                participantSessionDao.replaceAll(conversation.conversationId, it)
+                participantSessionDao().replaceAll(conversation.conversationId, it)
             }
             return response.data?.expireIn
         } else {

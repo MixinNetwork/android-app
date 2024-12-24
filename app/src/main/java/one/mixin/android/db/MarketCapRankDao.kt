@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
 
 @Dao

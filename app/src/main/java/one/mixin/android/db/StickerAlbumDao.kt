@@ -67,4 +67,5 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
 
     @Query("SELECT max(ordered_at) FROM sticker_albums")
     suspend fun findMaxOrder(): Int?
+
 }

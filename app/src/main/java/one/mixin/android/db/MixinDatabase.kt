@@ -77,6 +77,7 @@ import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
+import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
@@ -127,6 +128,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokensExtra
+import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
@@ -235,7 +237,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun favoriteAppDao(): FavoriteAppDao
 
-    abstract fun mentionMessageDao(): MessageMentionDao
+    abstract fun messageMentionDao(): MessageMentionDao
 
     abstract fun circleDao(): CircleDao
 
@@ -277,23 +279,28 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
+    override fun close() {
+        INSTANCE = null
+        super.close()
+    }
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
-
-        private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+        private var NAME: String? = null
 
-        fun destroy() {
-            INSTANCE = null
+        fun getCurrentDbName(): String? {
+            return NAME
         }
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
         fun getDatabase(context: Context): MixinDatabase {
-            synchronized(lock) {
                 if (INSTANCE == null) {
+                    val dir = dbDir(context)
+                    NAME = dir.name
                     val builder =
-                        Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                        Room.databaseBuilder(context, MixinDatabase::class.java, File(dir, DB_NAME).absolutePath)
                             .openHelperFactory(
                                 MixinOpenHelperFactory(
                                     FrameworkSQLiteOpenHelperFactory(),
@@ -384,7 +391,6 @@ abstract class MixinDatabase : RoomDatabase() {
                     INSTANCE = builder.build()
                 }
                 return INSTANCE as MixinDatabase
-            }
         }
 
         fun query(query: String): String? {
@@ -411,7 +417,12 @@ abstract class MixinDatabase : RoomDatabase() {
         }
 
         fun checkPoint() {
-            supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
+            supportSQLiteDatabase?.let { db ->
+                db.beginTransaction()
+                db.query("PRAGMA wal_checkpoint(FULL)")?.close()
+                db.setTransactionSuccessful()
+                db.endTransaction()
+            }
         }
 
         fun getWritableDatabase(): SupportSQLiteDatabase? {
@@ -431,12 +442,4 @@ abstract class MixinDatabase : RoomDatabase() {
                 }
             }
     }
-}
-
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
-}
-
-suspend fun withTransaction(block: suspend () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }

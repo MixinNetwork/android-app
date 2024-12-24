@@ -5,6 +5,7 @@ import one.mixin.android.Constants.DB_DELETE_MEDIA_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -28,14 +29,18 @@ import javax.inject.Inject
 class CleanMessageHelper
     @Inject
     internal constructor(
+        private val databaseProvider: DatabaseProvider,
         private val jobManager: MixinJobManager,
-        private val appDatabase: MixinDatabase,
         private val messageDao: MessageDao,
         private val conversationDao: ConversationDao,
         private val remoteMessageStatusDao: RemoteMessageStatusDao,
         private val conversationExtDao: ConversationExtDao,
-        private val ftsDatabase: FtsDatabase,
     ) {
+        private val ftsDatabase: FtsDatabase
+            get() = databaseProvider.getFtsDatabase()
+        private val appDatabase: MixinDatabase
+            get() = databaseProvider.getMixinDatabase()
+
         suspend fun deleteMessageByConversationId(
             conversationId: String,
             deleteConversation: Boolean = false,

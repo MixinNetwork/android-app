@@ -25,7 +25,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.putString
@@ -46,7 +45,6 @@ import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class UserRepository
     @Inject
     constructor(
@@ -261,7 +259,10 @@ class UserRepository
 
         suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
-        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleByIdSuspend(circleId)
+        suspend fun deleteCircleById(circleId: String) {
+            circleDao.deleteCircleByIdSuspend(circleId)
+            circleConversationDao.deleteByCircleIdSuspend(circleId)
+        }
 
         suspend fun findConversationItemByCircleId(circleId: String) =
             circleDao.findConversationItemByCircleId(circleId)
@@ -274,7 +275,7 @@ class UserRepository
 
         suspend fun sortCircleConversations(list: List<CircleOrder>?) =
             withContext(Dispatchers.IO) {
-                runInTransaction {
+                appDatabase.runInTransaction {
                     list?.forEach {
                         circleDao.updateOrderAt(it)
                     }
@@ -286,9 +287,6 @@ class UserRepository
             circleId: String,
         ) =
             circleConversationDao.deleteByIdsSuspend(conversationId, circleId)
-
-        suspend fun deleteByCircleId(circleId: String) =
-            circleConversationDao.deleteByCircleIdSuspend(circleId)
 
         suspend fun insertCircleConversation(circleConversation: CircleConversation) =
             circleConversationDao.insertSuspend(circleConversation)

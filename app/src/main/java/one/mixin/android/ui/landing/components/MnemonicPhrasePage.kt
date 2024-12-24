@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 
 @Composable
 fun MnemonicPhrasePage(
@@ -37,7 +37,7 @@ fun MnemonicPhrasePage(
     errorInfo: String?,
     requestCaptcha: () -> Unit
 ) {
-    val viewModel = hiltViewModel<MobileViewModel>()
+    val viewModel = hiltViewModel<LandingViewModel>()
     val mnemonicPhraseState by viewModel.mnemonicPhraseState.observeAsState(MnemonicPhraseState.Initial)
     MixinAppTheme {
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {

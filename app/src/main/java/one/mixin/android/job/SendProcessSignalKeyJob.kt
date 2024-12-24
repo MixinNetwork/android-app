@@ -30,7 +30,7 @@ class SendProcessSignalKeyJob(
             }
         } else if (action == ProcessSignalKeyAction.REMOVE_PARTICIPANT) {
             Session.getAccountId()?.let {
-                appDatabase.clearParticipant(data.conversationId, participantId!!)
+                database().clearParticipant(data.conversationId, participantId!!)
                 signalProtocol.clearSenderKey(data.conversationId, it)
                 RxBus.publish(SenderKeyChange(data.conversationId))
             }
@@ -42,7 +42,7 @@ class SendProcessSignalKeyJob(
                         ParticipantSession(data.conversationId, item.userId, item.sessionId, publicKey = item.publicKey)
                     }
                 if (!ps.isNullOrEmpty()) {
-                    participantSessionDao.insertList(ps)
+                    participantSessionDao().insertList(ps)
                 }
                 RxBus.publish(SenderKeyChange(data.conversationId, participantId))
             }

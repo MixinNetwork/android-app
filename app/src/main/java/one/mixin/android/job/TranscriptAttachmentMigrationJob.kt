@@ -46,10 +46,10 @@ class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(
                 Timber.d("Transcript attachment migration old not exists")
             }
 
-            if (propertyDao.findValueByKey(Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT)?.toBoolean() != true) {
+            if (propertyDao().findValueByKey(Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT)?.toBoolean() != true) {
                 MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
             }
-            propertyDao.updateValueByKey(Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, false.toString())
+            propertyDao().updateValueByKey(Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, false.toString())
             Timber.d("Transcript attachment migration completed!!!")
         }
 }

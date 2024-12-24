@@ -42,7 +42,7 @@ class SendTranscriptJob(
         if (chatWebSocket.connected) {
             jobManager.start()
         }
-        val conversation = conversationDao.findConversationById(message.conversationId)
+        val conversation = conversationDao().findConversationById(message.conversationId)
         if (conversation != null) {
             val stringBuffer = StringBuffer()
             transcriptMessages.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
@@ -50,7 +50,7 @@ class SendTranscriptJob(
                     transcript.mediaName
                 } else {
                     if (transcript.isContact()) {
-                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                        transcript.sharedUserId?.let { userId -> userDao().findUser(userId) }?.fullName
                     } else {
                         transcript.content
                     }?.joinWhiteSpace()?.let {
@@ -58,8 +58,8 @@ class SendTranscriptJob(
                     }
                 }
             }
-            ftsDatabase.insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
-            appDatabase.insertMessage(message)
+            ftsDatabase().insertFts4(stringBuffer.toString(), message.conversationId, message.messageId, message.category, message.userId, message.createdAt)
+            database().insertMessage(message)
             MessageFlow.insert(message.conversationId, message.messageId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
@@ -87,7 +87,7 @@ class SendTranscriptJob(
                     }
                 }
             }
-            transcriptMessageDao.insertList(transcriptMessages)
+            transcriptMessageDao().insertList(transcriptMessages)
         } else {
             reportException(Throwable("Insert failed, no conversation exist"))
         }
@@ -102,7 +102,7 @@ class SendTranscriptJob(
 
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
-            messageDao.updateMediaSize(mediaSize, message.messageId)
+            messageDao().updateMediaSize(mediaSize, message.messageId)
             MessageFlow.update(message.conversationId, message.messageId)
             transcripts.filter { t ->
                 t.isAttachment()
@@ -116,7 +116,7 @@ class SendTranscriptJob(
                 jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.messageId))
             }
         } else {
-            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+            messageDao().updateMediaStatus(MediaStatus.DONE.name, message.messageId)
             MessageFlow.update(message.conversationId, message.messageId)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)
@@ -128,7 +128,7 @@ class SendTranscriptJob(
         transcriptId: String,
         list: MutableSet<TranscriptMessage>,
     ) {
-        val transcripts = transcriptMessageDao.getTranscript(transcriptId)
+        val transcripts = transcriptMessageDao().getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
             getTranscripts(transcriptMessage.messageId, list)

@@ -24,21 +24,7 @@ class EmergencyViewModel
                 accountRepository.createEmergency(request)
             }
 
-        suspend fun createVerifyEmergency(
-            id: String,
-            request: EmergencyRequest,
-        ) =
-            withContext(Dispatchers.IO) {
-                accountRepository.createVerifyEmergency(id, request)
-            }
 
-        suspend fun loginVerifyEmergency(
-            id: String,
-            request: EmergencyRequest,
-        ) =
-            withContext(Dispatchers.IO) {
-                accountRepository.loginVerifyEmergency(id, request)
-            }
 
         suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 

@@ -33,7 +33,7 @@ class InitializeJob(private val botId: String, private val botName: String) :
             defaultExceptionHandle = {},
             successBlock = {
                 it.data?.let { u ->
-                    userDao.insertUpdate(u, appDao)
+                    userDao().insertUpdate(u, appDao())
                     return@handleMixinResponse
                 }
             },

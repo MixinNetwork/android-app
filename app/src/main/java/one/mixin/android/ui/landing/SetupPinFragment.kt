@@ -19,6 +19,7 @@ import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetPinPage
 import one.mixin.android.ui.landing.components.SetupPinPage
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -33,7 +34,7 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
             }
     }
 
-    private val mobileViewModel by viewModels<MobileViewModel>()
+    private val landingViewModel by viewModels<LandingViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     enum class SetupPinDestination {

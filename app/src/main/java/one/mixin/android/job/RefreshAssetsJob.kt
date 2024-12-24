@@ -23,7 +23,7 @@ class RefreshAssetsJob(
                 val response = assetService.getAssetByIdSuspend(assetId)
                 if (response.isSuccess && response.data != null) {
                     response.data?.let {
-                        assetDao.insert(it)
+                        assetDao().insert(it)
                         refreshChainById(it.chainId)
                     }
                 }
@@ -34,11 +34,11 @@ class RefreshAssetsJob(
                     response.data?.map {
                         it.assetId
                     }?.let { ids ->
-                        assetDao.findAllAssetIdSuspend().subtract(ids.toSet()).chunked(100).forEach {
-                            assetDao.zeroClearSuspend(it)
+                        assetDao().findAllAssetIdSuspend().subtract(ids.toSet()).chunked(100).forEach {
+                            assetDao().zeroClearSuspend(it)
                         }
                     }
-                    assetDao.insertList(list)
+                    assetDao().insertList(list)
                 }
                 refreshChains()
                 refreshFiats()
@@ -58,8 +58,8 @@ class RefreshAssetsJob(
         val resp = assetService.getChains()
         if (resp.isSuccess) {
             resp.data?.let { chains ->
-                chains.subtract(chainDao.getChains().toSet()).let {
-                    chainDao.insertList(it.toList())
+                chains.subtract(chainDao().getChains().toSet()).let {
+                    chainDao().insertList(it.toList())
                 }
             }
         }
@@ -69,8 +69,8 @@ class RefreshAssetsJob(
         val resp = assetService.getChainById(chainId)
         if (resp.isSuccess) {
             resp.data?.let { chain ->
-                val isExits = chainDao.isExits(chain.chainId, chain.name, chain.symbol, chain.iconUrl, chain.threshold) != null
-                if (!isExits) chainDao.upsertSuspend(chain)
+                val isExits = chainDao().isExits(chain.chainId, chain.name, chain.symbol, chain.iconUrl, chain.threshold) != null
+                if (!isExits) chainDao().upsertSuspend(chain)
             }
         }
     }

@@ -40,6 +40,7 @@ import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ConversationExtDao
+import one.mixin.android.db.DatabaseProvider
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HistoryPriceDao
@@ -76,9 +77,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
-import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.repository.TokenRepository
-import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
@@ -100,15 +98,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var ftsDatabase: FtsDatabase
-
-    @Inject
-    @Transient
-    lateinit var mixinDatabase: MixinDatabase
-
-    @Inject
-    @Transient
-    lateinit var pendingDatabase: PendingDatabase
+    lateinit var databaseProvider: DatabaseProvider
 
     @Inject
     @Transient
@@ -160,183 +150,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
-    lateinit var messageDao: MessageDao
-
-    @Inject
-    @Transient
-    lateinit var messageHistoryDao: MessageHistoryDao
-
-    @Inject
-    @Transient
-    lateinit var userDao: UserDao
-
-    @Inject
-    @Transient
-    lateinit var conversationDao: ConversationDao
-
-    @Inject
-    @Transient
-    lateinit var conversationExtDao: ConversationExtDao
-
-    @Inject
-    @Transient
-    lateinit var participantDao: ParticipantDao
-
-    @Inject
-    @Transient
-    lateinit var participantSessionDao: ParticipantSessionDao
-
-    @Inject
-    @Transient
-    lateinit var offsetDao: OffsetDao
-
-    @Inject
-    @Transient
-    lateinit var assetDao: AssetDao
-
-    @Inject
-    @Transient
-    lateinit var tokenDao: TokenDao
-
-    @Inject
-    @Transient
-    lateinit var tokensExtraDao: TokensExtraDao
-
-    @Inject
-    @Transient
-    lateinit var snapshotDao: SnapshotDao
-
-    @Inject
-    @Transient
-    lateinit var chainDao: ChainDao
-
-    @Inject
-    @Transient
     lateinit var chatWebSocket: ChatWebSocket
-
-    @Inject
-    @Transient
-    lateinit var conversationRepo: ConversationRepository
-
-    @Inject
-    @Transient
-    lateinit var userRepo: UserRepository
-
-    @Inject
-    @Transient
-    lateinit var assetRepo: TokenRepository
-
-    @Inject
-    @Transient
-    lateinit var stickerDao: StickerDao
-
-    @Inject
-    @Transient
-    lateinit var hyperlinkDao: HyperlinkDao
-
-    @Inject
-    @Transient
-    lateinit var stickerAlbumDao: StickerAlbumDao
-
-    @Inject
-    @Transient
-    lateinit var stickerRelationshipDao: StickerRelationshipDao
-
-    @Inject
-    @Transient
-    lateinit var addressDao: AddressDao
-
-    @Inject
-    @Transient
-    lateinit var topAssetDao: TopAssetDao
-
-    @Inject
-    @Transient
-    lateinit var jobDao: JobDao
-
-    @Inject
-    @Transient
-    lateinit var favoriteAppDao: FavoriteAppDao
-
-    @Inject
-    @Transient
-    lateinit var messageMentionDao: MessageMentionDao
-
-    @Inject
-    @Transient
-    lateinit var appDao: AppDao
-
-    @Inject
-    @Transient
-    lateinit var circleDao: CircleDao
-
-    @Inject
-    @Transient
-    lateinit var circleConversationDao: CircleConversationDao
-
-    @Inject
-    @Transient
-    lateinit var transcriptMessageDao: TranscriptMessageDao
-
-    @Inject
-    @Transient
-    lateinit var pinMessageDao: PinMessageDao
-
-    @Inject
-    @Transient
-    lateinit var propertyDao: PropertyDao
-
-    @Inject
-    @Transient
-    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
-
-    @Inject
-    @Transient
-    lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    @Transient
-    lateinit var outputDao: OutputDao
-
-    @Inject
-    @Transient
-    lateinit var rawTransactionDao: RawTransactionDao
-
-    @Inject
-    @Transient
-    lateinit var safeSnapshotDao: SafeSnapshotDao
-
-    @Inject
-    @Transient
-    lateinit var inscriptionDao: InscriptionDao
-
-    @Inject
-    @Transient
-    lateinit var marketDao: MarketDao
-
-    @Inject
-    @Transient
-    lateinit var marketFavoredDao: MarketFavoredDao
-
-    @Inject
-    @Transient
-    lateinit var alertDao: AlertDao
-
-    @Inject
-    @Transient
-    lateinit var marketCapRankDao: MarketCapRankDao
-
-    @Inject
-    @Transient
-    lateinit var marketCoinDao: MarketCoinDao
-
-    @Inject
-    @Transient
-    lateinit var historyPriceDao: HistoryPriceDao
-
-    @Inject
-    @Transient
-    lateinit var inscriptionCollectionDao: InscriptionCollectionDao
 
     @Inject
     @Transient
@@ -345,10 +159,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var encryptedProtocol: EncryptedProtocol
-
-    @Transient
-    @Inject
-    lateinit var appDatabase: MixinDatabase
 
     @Transient
     @Inject
@@ -375,9 +185,105 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     lateinit var applicationScope: CoroutineScope
 
-    @Transient
-    @Inject
-    lateinit var jobSenderKey: JobSenderKey
+    fun jobSenderKey(): JobSenderKey {
+        return JobSenderKey(
+            participantSessionDao(),
+            signalProtocol,
+            conversationApi,
+            participantDao(),
+            chatWebSocket,
+            linkState,
+            messageHistoryDao(),
+        )
+    }
+
+    fun database(): MixinDatabase = databaseProvider.getMixinDatabase()
+
+    fun pendingDatabase(): PendingDatabase = databaseProvider.getPendingDatabase()
+
+    fun ftsDatabase(): FtsDatabase = databaseProvider.getFtsDatabase()
+
+    fun messageDao(): MessageDao = database().messageDao()
+
+    fun messageHistoryDao(): MessageHistoryDao = database().messageHistoryDao()
+
+    fun userDao(): UserDao = database().userDao()
+
+    fun conversationDao(): ConversationDao = database().conversationDao()
+
+    fun conversationExtDao(): ConversationExtDao = database().conversationExtDao()
+
+    fun participantDao(): ParticipantDao = database().participantDao()
+
+    fun participantSessionDao(): ParticipantSessionDao = database().participantSessionDao()
+
+    fun offsetDao(): OffsetDao = database().offsetDao()
+
+    fun assetDao(): AssetDao = database().assetDao()
+
+    fun tokenDao(): TokenDao = database().tokenDao()
+
+    fun tokensExtraDao(): TokensExtraDao = database().tokensExtraDao()
+
+    fun snapshotDao(): SnapshotDao = database().snapshotDao()
+
+    fun chainDao(): ChainDao = database().chainDao()
+
+    fun stickerDao(): StickerDao = database().stickerDao()
+
+    fun hyperlinkDao(): HyperlinkDao = database().hyperlinkDao()
+
+    fun stickerAlbumDao(): StickerAlbumDao = database().stickerAlbumDao()
+
+    fun stickerRelationshipDao(): StickerRelationshipDao = database().stickerRelationshipDao()
+
+    fun addressDao(): AddressDao = database().addressDao()
+
+    fun topAssetDao(): TopAssetDao = database().topAssetDao()
+
+    fun jobDao(): JobDao = pendingDatabase().jobDao()
+
+    fun favoriteAppDao(): FavoriteAppDao = database().favoriteAppDao()
+
+    fun messageMentionDao(): MessageMentionDao = database().messageMentionDao()
+
+    fun appDao(): AppDao = database().appDao()
+
+    fun circleDao(): CircleDao = database().circleDao()
+
+    fun circleConversationDao(): CircleConversationDao = database().circleConversationDao()
+
+    fun transcriptMessageDao(): TranscriptMessageDao = database().transcriptDao()
+
+    fun pinMessageDao(): PinMessageDao = database().pinMessageDao()
+
+    fun propertyDao(): PropertyDao = database().propertyDao()
+
+    fun remoteMessageStatusDao(): RemoteMessageStatusDao = database().remoteMessageStatusDao()
+
+    fun expiredMessageDao(): ExpiredMessageDao = database().expiredMessageDao()
+
+    fun outputDao(): OutputDao = database().outputDao()
+
+    fun rawTransactionDao(): RawTransactionDao = database().rawTransactionDao()
+
+    fun safeSnapshotDao(): SafeSnapshotDao = database().safeSnapshotDao()
+
+    fun inscriptionDao(): InscriptionDao = database().inscriptionDao()
+
+    fun marketDao(): MarketDao = database().marketDao()
+
+    fun marketFavoredDao(): MarketFavoredDao = database().marketFavoredDao()
+
+    fun alertDao(): AlertDao = database().alertDao()
+
+    fun marketCapRankDao(): MarketCapRankDao = database().marketCapRankDao()
+
+    fun marketCoinDao(): MarketCoinDao = database().marketCoinDao()
+
+    fun historyPriceDao(): HistoryPriceDao = database().historyPriceDao()
+
+    fun inscriptionCollectionDao(): InscriptionCollectionDao = database().inscriptionCollectionDao()
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

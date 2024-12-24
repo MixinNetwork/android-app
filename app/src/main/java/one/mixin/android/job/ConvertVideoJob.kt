@@ -32,7 +32,6 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.job.NotificationGenerator.database
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory
@@ -111,9 +110,9 @@ class ConvertVideoJob(
             )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
-        val mId = messageDao.findMessageIdById(message.messageId)
+        val mId = messageDao().findMessageIdById(message.messageId)
         if (mId == null) {
-            database.insertMessage(message)
+            database().insertMessage(message)
             MessageFlow.insert(message.conversationId, message.messageId)
         }
     }
@@ -252,9 +251,9 @@ class ConvertVideoJob(
                     if (error != null) MessageStatus.FAILED.name else MessageStatus.SENDING.name,
                 )
             if (error == null) {
-                messageDao.updateMediaMessageUrl(videoFile.name, messageId)
-                messageDao.updateMessageContent(null, messageId)
-                messageDao.updateMediaDuration(duration.toString(), messageId)
+                messageDao().updateMediaMessageUrl(videoFile.name, messageId)
+                messageDao().updateMessageContent(null, messageId)
+                messageDao().updateMediaDuration(duration.toString(), messageId)
                 MessageFlow.update(message.conversationId, message.messageId)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             }
@@ -264,7 +263,7 @@ class ConvertVideoJob(
 
     override fun cancel() {
         isCancelled = true
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, messageId)
+        messageDao().updateMediaStatus(MediaStatus.CANCELED.name, messageId)
         MessageFlow.update(conversationId, messageId)
         removeJob()
     }

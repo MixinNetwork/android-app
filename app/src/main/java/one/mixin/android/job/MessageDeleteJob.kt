@@ -23,26 +23,26 @@ class MessageDeleteJob(
     override fun onRun() =
         runBlocking {
             val deleteTimes =
-                messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+                messageDao().countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
             repeat(deleteTimes) {
                 val ids =
-                    messageDao.getMessageIdsByConversationId(
+                    messageDao().getMessageIdsByConversationId(
                         conversationId,
                         lastRowId,
                         DB_DELETE_LIMIT,
                     )
-                ftsDatabase.deleteByMessageIds(ids)
-                appDatabase.deleteMessageByIds(ids)
+                ftsDatabase().deleteByMessageIds(ids)
+                database().deleteMessageByIds(ids)
                 MessageFlow.delete(conversationId, ids)
             }
-            val currentRowId = messageDao.findLastMessageRowId(conversationId)
+            val currentRowId = messageDao().findLastMessageRowId(conversationId)
             if (deleteConversation && currentRowId == null) {
-                conversationDao.deleteConversationById(conversationId)
-                conversationExtDao.deleteConversationById(conversationId)
+                conversationDao().deleteConversationById(conversationId)
+                conversationExtDao().deleteConversationById(conversationId)
             } else {
-                remoteMessageStatusDao.countUnread(conversationId)
-                conversationDao.refreshLastMessageId(conversationId)
-                conversationExtDao.refreshCountByConversationId(conversationId)
+                remoteMessageStatusDao().countUnread(conversationId)
+                conversationDao().refreshLastMessageId(conversationId)
+                conversationExtDao().refreshCountByConversationId(conversationId)
             }
         }
 }

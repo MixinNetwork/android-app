@@ -34,7 +34,7 @@ class AsyncProcessTransferAttachmentFileJob(private val folder: File) : BaseJob(
             if (f.isFile && f.length() > 0) {
                 val messageId = f.name
                 if (messageId.isUUID()) {
-                    val transferMessage = transcriptMessageDao.findAttachmentMessage(messageId)
+                    val transferMessage = transcriptMessageDao().findAttachmentMessage(messageId)
                     transferMessage?.mediaUrl?.let { mediaUrl ->
                         val dir = context.getTranscriptDirPath()
                         if (!dir.exists()) {
@@ -42,7 +42,7 @@ class AsyncProcessTransferAttachmentFileJob(private val folder: File) : BaseJob(
                         }
                         f.copy(File(dir, mediaUrl))
                     }
-                    val message = messageDao.findAttachmentMessage(messageId)
+                    val message = messageDao().findAttachmentMessage(messageId)
                     if (message?.mediaUrl != null) {
                         val extensionName = message.mediaUrl.getExtensionName()
                         val outFile =

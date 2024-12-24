@@ -28,6 +28,7 @@ import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -65,7 +66,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
     private val userIdentityNumber: String? by lazy { requireArguments().getString(ARGS_IDENTITY_NUMBER) }
 
-    private val viewModel by viewModels<EmergencyViewModel>()
+    private val viewModel by viewModels<LandingViewModel>()
 
     private val binding by viewBinding(FragmentVerificationEmergencyBinding::bind)
 
@@ -160,7 +161,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
             handleMixinResponse(
                 invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildLoginEmergencyRequest(sessionKey)) },
                 successBlock = { response ->
-                    handleAccount(response, sessionKey) {
+                    handleAccount(viewModel, response, sessionKey) {
                         defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
                     }
                 },

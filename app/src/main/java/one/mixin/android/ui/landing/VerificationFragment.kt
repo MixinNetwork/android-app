@@ -48,6 +48,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
+import one.mixin.android.ui.landing.viewmodel.LandingViewModel
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -84,7 +85,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
+    private val viewModel by viewModels<LandingViewModel>()
 
     @Inject
     lateinit var tip: Tip
@@ -267,7 +268,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             handleMixinResponse(
                 invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
                 successBlock = { response ->
-                    handleAccount(response, sessionKey) {
+                    handleAccount(viewModel, response, sessionKey) {
                         defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
                     }
                 },

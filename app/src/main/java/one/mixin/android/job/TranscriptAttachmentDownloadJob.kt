@@ -62,7 +62,7 @@ class TranscriptAttachmentDownloadJob(
             }
         }
         removeJob()
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+        transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
     override fun getRetryLimit(): Int {
@@ -75,7 +75,7 @@ class TranscriptAttachmentDownloadJob(
             return
         }
         jobManager.saveJob(this)
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
+        transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
         val attachmentId =
             try {
                 GsonHelper.customGson.fromJson(
@@ -94,10 +94,10 @@ class TranscriptAttachmentDownloadJob(
                     processTranscript()
                 }
             } else {
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+                transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
             }
         } else {
-            transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+            transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
             Timber.e(TAG, "get attachment url failed")
         }
         removeJob()
@@ -108,14 +108,14 @@ class TranscriptAttachmentDownloadJob(
         throwable: Throwable?,
     ) {
         super.onCancel(cancelReason, throwable)
-        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
+        transcriptMessageDao().updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
         removeJob()
     }
 
     private fun processTranscript() {
-        if (transcriptMessageDao.hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
-            messageDao.findMessageById(transcriptMessage.transcriptId)?.let {
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
+        if (transcriptMessageDao().hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
+            messageDao().findMessageById(transcriptMessage.transcriptId)?.let {
+                messageDao().updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
                 MessageFlow.update(it.conversationId, it.messageId)
             }
         }
@@ -211,7 +211,7 @@ class TranscriptAttachmentDownloadJob(
                             }
                         }
                     imageFile.copyFromInputStream(attachmentCipherInputStream)
-                    transcriptMessageDao.updateMedia(
+                    transcriptMessageDao().updateMedia(
                         imageFile.name,
                         imageFile.length(),
                         MediaStatus.DONE.name,
@@ -234,7 +234,7 @@ class TranscriptAttachmentDownloadJob(
                                 extensionName.notNullWithElse({ ".$it" }, ""),
                             )
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
-                    transcriptMessageDao.updateMedia(
+                    transcriptMessageDao().updateMedia(
                         dataFile.name,
                         dataFile.length(),
                         MediaStatus.DONE.name,
@@ -260,7 +260,7 @@ class TranscriptAttachmentDownloadJob(
                                 ".$extensionName",
                             )
                     videoFile.copyFromInputStream(attachmentCipherInputStream)
-                    transcriptMessageDao.updateMedia(
+                    transcriptMessageDao().updateMedia(
                         videoFile.name,
                         videoFile.length(),
                         MediaStatus.DONE.name,
@@ -279,7 +279,7 @@ class TranscriptAttachmentDownloadJob(
                         MixinApplication.get()
                             .getTranscriptFile(transcriptMessage.messageId, ".ogg")
                     audioFile.copyFromInputStream(attachmentCipherInputStream)
-                    transcriptMessageDao.updateMedia(
+                    transcriptMessageDao().updateMedia(
                         audioFile.name,
                         audioFile.length(),
                         MediaStatus.DONE.name,
