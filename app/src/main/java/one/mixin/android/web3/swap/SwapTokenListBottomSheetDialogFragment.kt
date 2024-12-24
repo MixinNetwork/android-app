@@ -215,8 +215,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.filter { ra ->
-                    !localTokens.any { a -> a.address.equals(ra.address, true) || a.assetId.equals(ra.assetId, true) }
+                return@handleMixinResponse resp.data?.map { ra ->
+                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
+                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                    }
+                    return@map ra
                 }?.map { token ->
                     if (inMixin) {
                         token.copy(address = "")
@@ -229,11 +232,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )?.let { remoteList ->
-            localTokens.addAll(
-                remoteList.filter {
-                    currentChain == null  || (it.chain.chainId == currentChain)
-                }
-            )
+            remoteList.filter {
+                currentChain == null || (it.chain.chainId == currentChain)
+            }
         }
         return localTokens
     }
