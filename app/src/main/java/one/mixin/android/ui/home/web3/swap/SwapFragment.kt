@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
@@ -36,6 +37,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
@@ -242,6 +244,7 @@ class SwapFragment : BaseFragment() {
                             SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                             return@setOnClickListener
                         }
+                        requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_WEB3_SWAP, token, SwapToken::class.java)
                         saveQuoteToken(token, isReverse, type)
                         dismissNow()
                     }
@@ -263,6 +266,7 @@ class SwapFragment : BaseFragment() {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                         return@setOnClickListener
                     }
+                    requireContext().defaultSharedPreferences.addToList(if (inMixin()) Constants.Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP, token, SwapToken::class.java)
                     saveQuoteToken(token, isReverse, type)
                     dismissNow()
                 }
