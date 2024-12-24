@@ -88,14 +88,9 @@ fun List<SwapToken>.sortByKeywordAndBalance(keyword: String?): List<SwapToken> {
                     else -> a.symbol.compareTo(b.symbol)
                 }
             }
+
             else -> {
-                when {
-                    !a.balance.isNullOrBlank() && !b.balance.isNullOrBlank() ->
-                        b.balance!!.compareTo(a.balance!!)
-                    !a.balance.isNullOrBlank() -> -1
-                    !b.balance.isNullOrBlank() -> 1
-                    else -> a.symbol.compareTo(b.symbol)
-                }
+                compareByBalanceAndPrice(a, b)
             }
         }
     }
@@ -109,5 +104,36 @@ private fun getMatchLevel(token: SwapToken, keyword: String): Int {
         symbolLower == keywordLower -> 2
         symbolLower.startsWith(keywordLower) -> 1
         else -> 0
+    }
+}
+
+private fun compareByBalanceAndPrice(a: SwapToken, b: SwapToken): Int {
+    val aValue = calculateTokenValue(a)
+    val bValue = calculateTokenValue(b)
+
+    return when {
+        aValue != BigDecimal.ZERO || bValue != BigDecimal.ZERO -> bValue.compareTo(aValue)
+        else -> {
+            when {
+                !a.balance.isNullOrBlank() && !b.balance.isNullOrBlank() ->
+                    b.balance!!.compareTo(a.balance!!)
+
+                !a.balance.isNullOrBlank() -> -1
+                !b.balance.isNullOrBlank() -> 1
+                else -> a.symbol.compareTo(b.symbol)
+            }
+        }
+    }
+}
+
+private fun calculateTokenValue(token: SwapToken): BigDecimal {
+    if (token.balance.isNullOrBlank() || token.price.isNullOrBlank()) {
+        return BigDecimal.ZERO
+    }
+
+    return try {
+        BigDecimal(token.balance).multiply(BigDecimal(token.price))
+    } catch (e: Exception) {
+        BigDecimal.ZERO
     }
 }
