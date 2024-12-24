@@ -1,10 +1,8 @@
 package one.mixin.android.ui.search.holder
 
 import one.mixin.android.databinding.ItemSearchContactBinding
-import one.mixin.android.extension.highLightMao
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
-import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.User
 
 class ContactHolder constructor(
