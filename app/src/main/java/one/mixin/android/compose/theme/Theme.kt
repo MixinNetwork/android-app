@@ -62,6 +62,7 @@ class AppColors(
     val tipWarningBorder: Color,
     val borderPrimary: Color,
     val rippleColor: Color = Color(0x33000000),
+    val borderColor: Color,
 )
 
 class AppDrawables(
@@ -75,9 +76,6 @@ object MixinAppTheme {
         @Composable
         get() = LocalColors.current
 
-    val drawables: AppDrawables
-        @Composable
-        get() = LocalDrawables.current
 }
 
 private val LightColorPalette =
@@ -99,6 +97,7 @@ private val LightColorPalette =
         tipWarning = Color(0xFFFBF1F0),
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0xFFE5E8EE),
+        borderColor = Color(0xFFE5E8EE),
     )
 
 private val DarkColorPalette =
@@ -120,19 +119,10 @@ private val DarkColorPalette =
         tipWarning = Color(0xFF3E373B),
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
-    )
-
-private val LightDrawablePalette =
-    AppDrawables(
-        bgAlertCard = R.drawable.bg_alert_card
-    )
-private val DarkDrawablePalette =
-    AppDrawables(
-        bgAlertCard = R.drawable.bg_alert_card_night
+        borderColor = Color(0xFF6E7073),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
-private val LocalDrawables = compositionLocalOf { LightDrawablePalette }
 
 @Composable
 fun MixinAppTheme(
@@ -144,12 +134,6 @@ fun MixinAppTheme(
             DarkColorPalette
         } else {
             LightColorPalette
-        }
-    val drawables =
-        if (darkTheme) {
-            DarkDrawablePalette
-        } else {
-            LightDrawablePalette
         }
     val textSelectionColors =
         TextSelectionColors(
@@ -169,7 +153,6 @@ fun MixinAppTheme(
     ) {
         CompositionLocalProvider(
             LocalColors provides colors,
-            LocalDrawables provides drawables,
             LocalTextSelectionColors provides textSelectionColors,
             LocalRippleConfiguration provides rippleConfiguration,
             content = content,

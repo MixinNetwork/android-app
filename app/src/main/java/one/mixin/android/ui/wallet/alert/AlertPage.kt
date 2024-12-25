@@ -109,7 +109,7 @@ fun AlertPage(coin: CoinItem, pop: () -> Unit, onAdd: () -> Unit, toAll: () -> U
         } else {
             Column (
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 14.dp)
                     .fillMaxSize()
             ) {
                 Spacer(modifier = Modifier.height(2.dp))
