@@ -67,6 +67,7 @@ class AppColors(
     val rippleColor: Color = Color(0x33000000),
     val bgGradientStart: Color,
     val bgGradientEnd: Color,
+    val borderColor: Color,
 )
 
 class AppDrawables(
@@ -80,9 +81,6 @@ object MixinAppTheme {
         @Composable
         get() = LocalColors.current
 
-    val drawables: AppDrawables
-        @Composable
-        get() = LocalDrawables.current
 }
 
 private val LightColorPalette =
@@ -106,6 +104,7 @@ private val LightColorPalette =
         borderPrimary = Color(0xFFE5E8EE),
         bgGradientStart = Color(0xFFFFFFFF),
         bgGradientEnd = Color(0xFFE7EFFF),
+        borderColor = Color(0xFFE5E8EE),
     )
 
 private val DarkColorPalette =
@@ -129,19 +128,10 @@ private val DarkColorPalette =
         borderPrimary = Color(0x33FFFFFF),
         bgGradientStart = Color(0xFF2C3136),
         bgGradientEnd = Color(0xFF1C2029),
-    )
-
-private val LightDrawablePalette =
-    AppDrawables(
-        bgAlertCard = R.drawable.bg_alert_card
-    )
-private val DarkDrawablePalette =
-    AppDrawables(
-        bgAlertCard = R.drawable.bg_alert_card_night
+        borderColor = Color(0xFF6E7073),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
-private val LocalDrawables = compositionLocalOf { LightDrawablePalette }
 
 @Composable
 fun MixinAppTheme(
@@ -153,12 +143,6 @@ fun MixinAppTheme(
             DarkColorPalette
         } else {
             LightColorPalette
-        }
-    val drawables =
-        if (darkTheme) {
-            DarkDrawablePalette
-        } else {
-            LightDrawablePalette
         }
     val textSelectionColors =
         TextSelectionColors(
@@ -178,7 +162,6 @@ fun MixinAppTheme(
     ) {
         CompositionLocalProvider(
             LocalColors provides colors,
-            LocalDrawables provides drawables,
             LocalTextSelectionColors provides textSelectionColors,
             LocalRippleConfiguration provides rippleConfiguration,
             content = content,
@@ -193,7 +176,7 @@ fun languageBasedImage(@DrawableRes defaultImage:Int, @DrawableRes zh:Int) : Int
 
     val drawableRes = when {
         isCurrChinese() -> zh
-        else -> defaultImage 
+        else -> defaultImage
     }
     return drawableRes
 }
