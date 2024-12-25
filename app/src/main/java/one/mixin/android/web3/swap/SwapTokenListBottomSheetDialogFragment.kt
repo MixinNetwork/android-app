@@ -176,9 +176,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                // Todo
-                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
-                dismiss()
+                onDepositListner?.invoke()
             }
             searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -303,5 +301,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         this.adapter.setOnClickListener(onClickListener)
     }
 
-    private fun inMixin(): Boolean = tokens.firstOrNull()?.inMixin() == true
+    fun setOnDeposit(onDepositListner: () -> Unit) {
+        this.onDepositListner = onDepositListner
+    }
+
+    private var onDepositListner: (() -> Unit)? = null
+
+    private fun inMixin(): Boolean = key == Constants.Account.PREF_TO_SWAP || key == Constants.Account.PREF_FROM_SWAP
 }
