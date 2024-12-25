@@ -41,7 +41,7 @@ fun AssetFilter(coins: Set<CoinItem>?, open: () -> Unit) {
             ) {
                 open.invoke()
             }
-            .border(1.dp, shape = RoundedCornerShape(24.dp), color = MixinAppTheme.colors.backgroundWindow)
+            .border(1.dp, shape = RoundedCornerShape(24.dp), color = MixinAppTheme.colors.borderColor)
     ) {
         if (coins.isNullOrEmpty()) {
             Row(
