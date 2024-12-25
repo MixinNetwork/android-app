@@ -63,6 +63,7 @@ import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -231,6 +232,10 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_SWAP,
                     ArrayList(list)
                 ).apply {
+                    setOnDeposit {
+                        parentFragmentManager.popBackStackImmediate()
+                        dismissNow()
+                    }
                     setOnClickListener { t, _ ->
                         saveQuoteToken(t, isReverse, type)
                         requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_SWAP, t, SwapToken::class.java)
@@ -243,6 +248,10 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_WEB3_SWAP,
                     data
                 ).apply {
+                    setOnDeposit {
+                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                        dismissNow()
+                    }
                     setOnClickListener { token, alert ->
                         if (alert) {
                             SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
