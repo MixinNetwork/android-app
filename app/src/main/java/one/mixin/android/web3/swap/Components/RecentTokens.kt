@@ -39,12 +39,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.priceFormat2
 import one.mixin.android.ui.search.SearchViewModel
+import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -104,21 +107,23 @@ fun RecentTokens(key: String, callback: (SwapToken) -> Unit) {
 
 @Composable
 fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
+    val context = LocalContext.current
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp
-    val itemWidth = ((screenWidthDp - 64) / 3).dp
+    val itemWidth = ((screenWidthDp - 72) / 3).dp
     Row(
         modifier = Modifier
             .widthIn(max = itemWidth)
             .border(
-                BorderStroke(1.dp, Color(0x0f000000)),
-                shape = RoundedCornerShape(32.dp)
+                BorderStroke(1.dp, Color(0x0f000000)), shape = RoundedCornerShape(32.dp)
             )
             .clip(RoundedCornerShape(21.dp))
             .clickable {
                 swapTokenClick.invoke(search)
             }
-            .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 12.dp), verticalAlignment = Alignment.CenterVertically
+            .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 10.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         Box {
             CoilImage(
@@ -140,7 +145,19 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
         Spacer(modifier = Modifier.width(4.dp))
         Column {
             Text(search.symbol, fontSize = 14.sp, lineHeight = 14.sp, color = MixinAppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(search.name, fontSize = 12.sp, lineHeight = 12.sp, color = MixinAppTheme.colors.textAssist, maxLines = 1)
+            if (search.changeUsd != null) {
+                val p = runCatching { BigDecimal(search.changeUsd).multiply(BigDecimal(100)) }.getOrDefault(BigDecimal.ZERO)
+                Text(
+                    "${if (p >= BigDecimal.ZERO) "+" else "-"}${p.priceFormat2()}%", fontSize = 12.sp, lineHeight = 12.sp, color = if (p >= BigDecimal.ZERO) {
+                        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                    } else {
+                        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                    },
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
+            } else {
+                Text(search.name, fontSize = 12.sp, lineHeight = 12.sp, color = MixinAppTheme.colors.textAssist, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
 }
