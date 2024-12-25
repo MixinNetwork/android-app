@@ -47,15 +47,18 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.completeMao
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toMaoUser
 import javax.inject.Inject
 
 @HiltViewModel
@@ -81,6 +84,21 @@ internal constructor(
         } else {
             firstUrl(query)
         }
+    }
+
+    suspend fun searchMaoUser(query: String?): MaoUser? {
+        return (if (query.isNullOrEmpty()) {
+            null
+        } else {
+            runCatching {
+                val maoName = query.completeMao()
+                val response = userRepository.searchSuspend(query)
+                if (response.isSuccess) {
+                    return@runCatching response.data?.toMaoUser(maoName)
+                }
+                return@runCatching null
+            }.getOrNull()
+        })
     }
 
     suspend inline fun <reified T> fuzzySearch(
