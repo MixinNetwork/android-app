@@ -176,6 +176,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
+                // Todo
                 navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                 dismiss()
             }
@@ -202,7 +203,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentTokens(key)
+                            RecentTokens(key) {
+                                adapter.onClick(it)
+                            }
                         }
                     }
 

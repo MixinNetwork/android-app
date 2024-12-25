@@ -16,6 +16,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
@@ -25,8 +26,10 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.getList
 import one.mixin.android.extension.pmap
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -328,5 +331,25 @@ internal constructor(
     fun removeRecentSearch(sp: SharedPreferences) {
         sp.remove(PREF_RECENT_SEARCH)
         _recentSearches.value = emptyList()
+    }
+
+    private val _recentSwapTokens = MutableStateFlow<List<SwapToken>>(emptyList())
+    val recentSwapTokens = _recentSwapTokens.asStateFlow()
+
+    suspend fun getRecentSwapTokens(sp: SharedPreferences, key: String) {
+        val list = sp.getList(key, SwapToken::class.java)
+        list.map {
+            if (it.address.isNullOrBlank().not()) {
+
+            } else if (it.assetId.isNullOrBlank().not()) {
+
+            }
+        }
+        _recentSwapTokens.value = list
+    }
+
+    fun removeRecent(sp: SharedPreferences, key: String) {
+        sp.remove(key)
+        _recentSwapTokens.value = emptyList()
     }
 }
