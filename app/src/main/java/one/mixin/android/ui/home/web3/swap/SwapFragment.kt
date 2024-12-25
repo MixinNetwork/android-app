@@ -226,17 +226,21 @@ class SwapFragment : BaseFragment() {
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
-                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND, ArrayList(list.map { t -> t.assetId }))
-                    .setOnAssetClick { t ->
-                        val token = t.toSwapToken()
-                        saveQuoteToken(token, isReverse, type)
-                    }.setOnDepositClick {
-                        parentFragmentManager.popBackStackImmediate()
+                list
+                SwapTokenListBottomSheetDialogFragment.newInstance(
+                    Constants.Account.PREF_FROM_SWAP,
+                    ArrayList(list)
+                ).apply {
+                    setOnClickListener { t, _ ->
+                        saveQuoteToken(t, isReverse, type)
+                        requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_SWAP, t, SwapToken::class.java)
+                        dismissNow()
                     }
-                    .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             } else {
                 val data = ArrayList(web3tokens?.map { it.toSwapToken() } ?: emptyList())
                 SwapTokenListBottomSheetDialogFragment.newInstance(
+                    Constants.Account.PREF_FROM_WEB3_SWAP,
                     data
                 ).apply {
                     setOnClickListener { token, alert ->
@@ -252,11 +256,13 @@ class SwapFragment : BaseFragment() {
             }
         } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
-                ArrayList(
-                    list.run {
-                        this
-                    },
-                ),
+                if (inMixin()) Constants.Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP,
+                tokens =
+                    ArrayList(
+                        list.run {
+                            this
+                        },
+                    ),
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
