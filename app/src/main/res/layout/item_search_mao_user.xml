@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:background="?attr/bg_white"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerVertical="true"
+        android:layout_margin="@dimen/margin12" />
+
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" />
+
+    <one.mixin.android.widget.NameTextView
+        android:id="@+id/normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/center"
+        android:layout_marginBottom="2dp"
+        android:layout_toEndOf="@id/avatar"
+        android:textColor="?attr/text_primary"
+        app:ellipsize="end"
+        app:lines="1"
+        app:maxWidth="240dp"
+        app:textSize="16sp"
+        tools:text="name" />
+
+    <TextView
+        android:id="@+id/mao_name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/avatar"
+        android:singleLine="true"
+        android:textColor="?attr/text_assist"
+        android:drawablePadding="2dp"
+        android:textSize="14sp" />
+</RelativeLayout>
