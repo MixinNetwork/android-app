@@ -103,6 +103,9 @@ class UnstakeFragment : BaseFragment() {
                                 setCloseAction {
                                     parentFragmentManager.popBackStackImmediate()
                                     parentFragmentManager.popBackStackImmediate()
+                                    parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
+                                        parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+                                    }
                                 }
                             }
                         navTo(txStateFragment, TransactionStateFragment.TAG)

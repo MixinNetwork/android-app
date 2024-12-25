@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.QuoteResult
@@ -88,14 +89,16 @@ fun SwapPage(
     from: SwapToken?,
     to: SwapToken?,
     initialAmount: String?,
+    lastOrderTime: Long?,
+    reviewing: Boolean,
     source: String,
     slippageBps: Int,
-    onSelectToken: (SelectTokenType) -> Unit,
+    onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onSwap: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     pop: () -> Unit,
 ) {
-    rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
 
@@ -103,35 +106,39 @@ fun SwapPage(
     var errorInfo by remember { mutableStateOf<String?>(null) }
 
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
+    LaunchedEffect(lastOrderTime) {
+        inputText = initialAmount ?: ""
+    }
 
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
     var invalidFlag by remember { mutableStateOf(false) } // trigger to refresh quote
 
-    var fromToken by remember(from, to, isReverse) { 
+    var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
     }
-    var toToken by remember(from, to, isReverse) { 
+    var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
-    
-    LaunchedEffect(inputText, invalidFlag, fromToken, toToken)  {
+    var isButtonEnabled by remember { mutableStateOf(true) }
+
+    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken)  {
         shouldRefreshQuote.emit(inputText)
     }
 
-    LaunchedEffect(inputText, invalidFlag, fromToken, toToken) {
+    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken) {
         shouldRefreshQuote
             .debounce(300L)
             .collectLatest { text ->
                 fromToken?.let { from ->
                     toToken?.let { to ->
-                        if (text.isNotBlank()) {
-                            Timber.e("Refreshing quote: inputText=$text, fromToken=${from.symbol}, toToken=${to.symbol}")
+                        if (text.isNotBlank() && !reviewing) {
                             isLoading = true
                             errorInfo = null
-                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), text, slippageBps.toString(), source)
+                            val amount = if (source == "") from.toLongAmount(text).toString() else text
+                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
                                 .onSuccess { value ->
                                     quoteResult = value
                                     isLoading = false
@@ -200,7 +207,7 @@ fun SwapPage(
                             text = inputText,
                             title = stringResource(id = R.string.Token_From),
                             readOnly = false,
-                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.To else SelectTokenType.From) },
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                             onInputChanged = { inputText = it },
                             onMax = {
                                 inputText = fromToken?.balance ?: "0"
@@ -210,10 +217,10 @@ fun SwapPage(
                     bottomCompose = {
                         InputArea(
                             token = toToken,
-                            text = quoteResult?.outAmount ?: "",
+                            text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                             title = stringResource(id = R.string.To),
                             readOnly = true,
-                            selectClick = { onSelectToken(if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
                         )
                     },
                     margin = 6.dp,
@@ -231,7 +238,7 @@ fun SwapPage(
                                 .padding(20.dp),
                         ) {
                             quoteResult?.let { quote ->
-                                val rate = quote.rate()
+                                val rate = quote.rate(fromToken, toToken)
                                 if (rate != BigDecimal.ZERO) {
                                     PriceInfo(
                                         fromToken = fromToken!!,
@@ -278,11 +285,18 @@ fun SwapPage(
                             .fillMaxWidth()
                             .height(48.dp),
                         onClick = {
-                            quoteResult?.let { onSwap(it, fromToken!!, toToken!!, inputText) }
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
+                            if (isButtonEnabled) {
+                                isButtonEnabled = false
+                                quoteResult?.let { onSwap(it, fromToken!!, toToken!!, inputText) }
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                scope.launch{
+                                    delay(1000)
+                                    isButtonEnabled = true
+                                }
+                            }
                         },
-                        enabled = quoteResult != null && errorInfo == null && !isLoading,
+                        enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
                         colors =
                             ButtonDefaults.outlinedButtonColors(
                                 backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,

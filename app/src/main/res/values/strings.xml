@@ -1838,4 +1838,5 @@
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
     <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
+    <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
 </resources>

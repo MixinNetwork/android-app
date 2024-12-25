@@ -204,6 +204,11 @@ class SharedMediaViewModel
             excludeLive: Boolean,
         ): Int = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
 
+        suspend fun countIndexMediaMessages(
+            conversationId: String,
+            excludeLive: Boolean,
+        ) = conversationRepository.countIndexMediaMessages(conversationId, excludeLive)
+
         fun getMediaMessages(
             conversationId: String,
             index: Int,
