@@ -75,6 +75,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment.PopupType
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
@@ -727,8 +728,9 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
             ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
-                ?.let { type ->
-                    ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                .let { type ->
+                    (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
+                    if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
                 }
         }
     }
