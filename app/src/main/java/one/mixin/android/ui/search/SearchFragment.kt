@@ -32,6 +32,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.isValidMao
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -47,6 +48,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentUsedApp
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
@@ -90,6 +92,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     private var searchJob: Job? = null
+    private var searchMaoJob: Job? = null
     private var searchUrlJob: Job? = null
     private var messageSearchJob: Job? = null
     private var refreshAssetsJob: Job? = null
@@ -98,6 +101,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchUrlJob?.cancel()
+        searchMaoJob?.cancel()
         refreshAssetsJob?.cancel()
         messageSearchJob?.cancel()
         searchJob?.cancel()
@@ -215,6 +219,11 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 override fun onChatClick(chatMinimal: ChatMinimal) {
                     binding.searchRv.hideKeyboard()
                     context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
+                }
+
+                override fun onUserClick(user: MaoUser) {
+                    binding.searchRv.hideKeyboard()
+                    context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
                 override fun onUserClick(user: User) {
@@ -355,6 +364,17 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
             searchAdapter.setData(tokenItems, users, chatMinimals)
 
             messageSearchJob?.join()
+
+            if (keyword.isValidMao()) {
+                searchAdapter.setMaoUser(null)
+                searchMaoJob = launch {
+                    searchViewModel.searchMaoUser(keyword)?.let { maoUser ->
+                        searchAdapter.setMaoUser(maoUser)
+                    }
+                }
+            } else {
+                searchAdapter.setMaoUser(null)
+            }
             (requireActivity() as MainActivity).hideSearchLoading()
         }
 
@@ -411,6 +431,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     interface OnSearchClickListener {
         fun onUserClick(user: User)
+
+        fun onUserClick(user: MaoUser)
 
         fun onBotClick(bot: SearchBot)
 
