@@ -339,10 +339,8 @@ internal constructor(
     suspend fun getRecentSwapTokens(sp: SharedPreferences, key: String) {
         val list = sp.getList(key, SwapToken::class.java)
         list.map {
-            if (it.address.isNullOrBlank().not()) {
-
-            } else if (it.assetId.isNullOrBlank().not()) {
-
+            if (it.assetId.isNullOrBlank().not()) {
+                it.changeUsd = tokenRepository.findChangeUsdByAssetId(it.assetId)
             }
         }
         _recentSwapTokens.value = list

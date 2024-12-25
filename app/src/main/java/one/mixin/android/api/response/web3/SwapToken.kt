@@ -21,6 +21,7 @@ data class SwapToken(
     var price: String? = null,
     var balance: String? = null,
     var collectionHash: String? = null,
+    var changeUsd: String? = null,
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
