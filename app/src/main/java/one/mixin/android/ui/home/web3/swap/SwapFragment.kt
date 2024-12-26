@@ -232,6 +232,9 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_SWAP,
                     ArrayList(list)
                 ).apply {
+                    if (list.isEmpty()) {
+                        setLoading(true)
+                    }
                     setOnDeposit {
                         parentFragmentManager.popBackStackImmediate()
                         dismissNow()
