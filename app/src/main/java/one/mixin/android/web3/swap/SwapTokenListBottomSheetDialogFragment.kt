@@ -270,7 +270,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
         if (localTokens.isEmpty()) binding.pb.isVisible = true
-        handleMixinResponse(
+        val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
                 return@handleMixinResponse resp.data?.map { ra ->
@@ -294,7 +294,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 currentChain == null || (it.chain.chainId == currentChain)
             }
         }
-        return localTokens
+        return remoteList ?: emptyList()
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {

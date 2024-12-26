@@ -148,7 +148,7 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
             if (search.changeUsd != null) {
                 val p = runCatching { BigDecimal(search.changeUsd).multiply(BigDecimal(100)) }.getOrDefault(BigDecimal.ZERO)
                 Text(
-                    "${if (p >= BigDecimal.ZERO) "+" else "-"}${p.priceFormat2()}%", fontSize = 12.sp, lineHeight = 12.sp, color = if (p >= BigDecimal.ZERO) {
+                    "${if (p >= BigDecimal.ZERO) "+" else ""}${p.priceFormat2()}%", fontSize = 12.sp, lineHeight = 12.sp, color = if (p >= BigDecimal.ZERO) {
                         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
                     } else {
                         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
