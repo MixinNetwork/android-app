@@ -227,12 +227,16 @@ class SwapFragment : BaseFragment() {
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
-                list
+                val data = if (list.isEmpty()) {
+                    ArrayList(tokenItems?.map { it.toSwapToken() })
+                } else {
+                    ArrayList(list)
+                }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(list)
+                    ArrayList(data)
                 ).apply {
-                    if (list.isEmpty()) {
+                    if (data.isEmpty()) {
                         setLoading(true)
                     }
                     setOnDeposit {
@@ -251,6 +255,9 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_WEB3_SWAP,
                     data
                 ).apply {
+                    if (data.isEmpty()) {
+                        setLoading(true)
+                    }
                     setOnDeposit {
                         navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                         dismissNow()
