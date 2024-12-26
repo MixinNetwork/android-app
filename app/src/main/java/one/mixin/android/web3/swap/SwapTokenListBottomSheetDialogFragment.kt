@@ -34,13 +34,11 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
@@ -176,7 +174,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                onDepositListner?.invoke()
+                onDepositListener?.invoke()
             }
             searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -245,7 +243,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             val assetList =
                 tokens.filter {
-                    ((currentChain != null && it.chain.chainId == currentChain) || currentChain == null) && (it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s))
+                    (currentChain != null && it.chain.chainId == currentChain) || currentChain == null
                 }.toMutableList()
 
             val total = search(s, assetList, currentChain, inMixin())
@@ -273,27 +271,23 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
-                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
-                    }
-                    return@map ra
-                }?.map { token ->
+                return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { token ->
                     if (inMixin) {
                         token.copy(address = "")
                     } else {
                         token.copy(assetId = "")
                     }
+                }?.map { ra ->
+                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
+                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                    }
+                    return@map ra
                 }
             },
             endBlock = {
                 binding.pb.isVisible = false
             }
-        )?.let { remoteList ->
-            remoteList.filter {
-                currentChain == null || (it.chain.chainId == currentChain)
-            }
-        }
+        )
         return remoteList ?: emptyList()
     }
 
@@ -301,11 +295,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         this.adapter.setOnClickListener(onClickListener)
     }
 
-    fun setOnDeposit(onDepositListner: () -> Unit) {
-        this.onDepositListner = onDepositListner
+    fun setOnDeposit(onDepositListener: () -> Unit) {
+        this.onDepositListener = onDepositListener
     }
 
-    private var onDepositListner: (() -> Unit)? = null
+    private var onDepositListener: (() -> Unit)? = null
 
     private fun inMixin(): Boolean = key == Constants.Account.PREF_TO_SWAP || key == Constants.Account.PREF_FROM_SWAP
 }
