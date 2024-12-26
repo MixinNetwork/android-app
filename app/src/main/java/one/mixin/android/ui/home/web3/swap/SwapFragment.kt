@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
@@ -36,6 +37,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
@@ -46,6 +48,7 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -60,6 +63,7 @@ import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -223,33 +227,51 @@ class SwapFragment : BaseFragment() {
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
-                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND, ArrayList(list.map { t -> t.assetId }))
-                    .setOnAssetClick { t ->
-                        val token = t.toSwapToken()
-                        saveQuoteToken(token, isReverse, type)
-                    }.setOnDepositClick {
+                list
+                SwapTokenListBottomSheetDialogFragment.newInstance(
+                    Constants.Account.PREF_FROM_SWAP,
+                    ArrayList(list)
+                ).apply {
+                    setOnDeposit {
                         parentFragmentManager.popBackStackImmediate()
+                        dismissNow()
                     }
-                    .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    setOnClickListener { t, _ ->
+                        saveQuoteToken(t, isReverse, type)
+                        requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_SWAP, t, SwapToken::class.java)
+                        dismissNow()
+                    }
+                }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             } else {
-                val data = ArrayList(web3tokens ?: emptyList())
-                Web3TokenListBottomSheetDialogFragment.newInstance(
+                val data = ArrayList(web3tokens?.map { it.toSwapToken() } ?: emptyList())
+                SwapTokenListBottomSheetDialogFragment.newInstance(
+                    Constants.Account.PREF_FROM_WEB3_SWAP,
                     data
                 ).apply {
-                    setOnClickListener { t ->
-                        val token = t.toSwapToken()
+                    setOnDeposit {
+                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                        dismissNow()
+                    }
+                    setOnClickListener { token, alert ->
+                        if (alert) {
+                            SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
+                            return@setOnClickListener
+                        }
+                        requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_WEB3_SWAP, token, SwapToken::class.java)
                         saveQuoteToken(token, isReverse, type)
                         dismissNow()
                     }
-                }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
+                }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             }
         } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
-                ArrayList(
-                    list.run {
-                        this
-                    },
-                ),
+                if (inMixin()) Constants.Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP,
+                tokens =
+                    ArrayList(
+                        list.run {
+                            this
+                        },
+                    ),
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
@@ -259,6 +281,7 @@ class SwapFragment : BaseFragment() {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                         return@setOnClickListener
                     }
+                    requireContext().defaultSharedPreferences.addToList(if (inMixin()) Constants.Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP, token, SwapToken::class.java)
                     saveQuoteToken(token, isReverse, type)
                     dismissNow()
                 }
@@ -293,8 +316,8 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResult, form: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
-        val inputMint = form.getUnique()
+    private suspend fun handleSwap(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
+        val inputMint = from.getUnique()
         val outputMint = to.getUnique()
 
         val resp = handleMixinResponse(
@@ -325,8 +348,7 @@ class SwapFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
-            swapViewModel.checkAndSyncTokens(listOfNotNull(form.assetId, to.assetId))
-            openSwapTransfer(resp)
+            openSwapTransfer(resp, from, to)
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
@@ -350,10 +372,8 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun openSwapTransfer(swapResult: SwapResponse) {
-        val inputToken = tokenItems?.find { it.assetId == swapResult.quote.inputMint } ?: swapViewModel.findToken(swapResult.quote.inputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
-        val outToken = tokenItems?.find { it.assetId == swapResult.quote.outputMint } ?: swapViewModel.findToken(swapResult.quote.outputMint) ?: throw IllegalStateException(getString(R.string.Data_error))
-        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, inputToken, outToken).apply {
+    private suspend fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
+        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
             setOnDone {
                 initialAmount = null
                 lastOrderTime = System.currentTimeMillis()

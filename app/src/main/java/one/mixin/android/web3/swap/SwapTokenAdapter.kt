@@ -37,6 +37,10 @@ class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         this.onClickListener = onClickListener
     }
 
+    fun onClick(token: SwapToken) {
+        onClickListener?.invoke(token, false)
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
