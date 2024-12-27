@@ -227,11 +227,18 @@ class SwapFragment : BaseFragment() {
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
-                list
+                val data = if (list.isEmpty()) {
+                    ArrayList(tokenItems?.map { it.toSwapToken() })
+                } else {
+                    ArrayList(list)
+                }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(list)
+                    ArrayList(data), fromToken?.getUnique()
                 ).apply {
+                    if (data.isEmpty()) {
+                        setLoading(true)
+                    }
                     setOnDeposit {
                         parentFragmentManager.popBackStackImmediate()
                         dismissNow()
@@ -272,6 +279,7 @@ class SwapFragment : BaseFragment() {
                             this
                         },
                     ),
+                if (inMixin()) toToken?.getUnique() else null
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
