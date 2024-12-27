@@ -352,6 +352,17 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     }
                 }
 
+            if (keyword.isValidMao()) {
+                searchAdapter.setMaoUser(null)
+                searchMaoJob = launch {
+                    searchViewModel.searchMaoUser(keyword)?.let { maoUser ->
+                        searchAdapter.setMaoUser(maoUser)
+                    }
+                }
+            } else {
+                searchAdapter.setMaoUser(null)
+            }
+
             val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
             refreshAssetsJob =
                 launch {
@@ -365,16 +376,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
             messageSearchJob?.join()
 
-            if (keyword.isValidMao()) {
-                searchAdapter.setMaoUser(null)
-                searchMaoJob = launch {
-                    searchViewModel.searchMaoUser(keyword)?.let { maoUser ->
-                        searchAdapter.setMaoUser(maoUser)
-                    }
-                }
-            } else {
-                searchAdapter.setMaoUser(null)
-            }
             (requireActivity() as MainActivity).hideSearchLoading()
         }
 
