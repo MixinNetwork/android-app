@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.Constraints
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -41,6 +42,7 @@ import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
+import one.mixin.android.extension.getList
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
@@ -409,17 +411,27 @@ class SwapFragment : BaseFragment() {
             val lastFrom = lastSelectedPair?.getOrNull(0)
             val lastTo = lastSelectedPair?.getOrNull(1)
             if (tokens.isNotEmpty()) {
-                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken() ?: tokens.getOrNull(0)?.toSwapToken()
+                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken()
+                    ?: lastFrom?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastFrom } }
+                        ?: tokens.getOrNull(0)?.toSwapToken()
                 toToken = if (input != null && output == null) {
-                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken() ?: tokens.getOrNull(1)?.toSwapToken()
+                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken()
+                    ?: lastTo?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastTo } }
+                    ?: tokens.getOrNull(1)?.toSwapToken()
                 } else {
-                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken() ?: tokens.getOrNull(1)?.toSwapToken()
+                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken()
+                        ?: lastTo?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastTo } }
+                        ?: tokens.getOrNull(1)?.toSwapToken()
                 }
                 if (toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
                 }
             }
         }
+    }
+
+    private val saveSwapTokens by lazy {
+        defaultSharedPreferences.getList(Constants.Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Constants.Account.PREF_TO_SWAP, SwapToken::class.java)
     }
 
     private suspend fun refreshTokens() {
@@ -472,17 +484,9 @@ class SwapFragment : BaseFragment() {
                 }
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
-                    toToken = swapTokens.getOrNull(1)
-                } else {
-                    val found = swapTokens.firstOrNull { s -> s.assetId == fromToken?.assetId }
-                    if (toToken != null) {
-                        val toFound = swapTokens.firstOrNull { s -> s.assetId == toToken?.assetId }
-                        if (toFound == null) {
-                            toToken = swapTokens.getOrNull(1)
-                        }
-                    } else {
-                        toToken = swapTokens.getOrNull(1)
-                    }
+                }
+                if (toToken == null) {
+                    toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
                 }
             }
             if (swapTokens.isNotEmpty()) {
