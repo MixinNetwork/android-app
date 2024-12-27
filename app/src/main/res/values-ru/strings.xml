@@ -170,7 +170,6 @@
         <item quantity="many">Удалить %1$d сообщения?</item>
         <item quantity="other">Удалить %1$d сообщения?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s добавил %2$s</string>
     <string name="chat_group_call_decline">%1$s отклонил групповой вызов</string>
     <string name="chat_group_call_end">Групповой вызов завершен</string>
@@ -184,7 +183,6 @@
     <string name="chat_import_fail_content">Не удалось импортировать сообщение! Вы хотите отправить его в виде файла?</string>
     <string name="chat_list_empty_info">Вы можете общаться с контактами, на телефоне которых установлен Mixin.</string>
     <string name="chat_not_support">Этот тип сообщений не поддерживается, пожалуйста, обновите Mixin до последней версии. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">Давайте общаться в Mixin Messenger! Простой, безопасный и простой в использовании. Он также поддерживает биткойн, эфириум и другие криптовалюты. Загрузите https://mixin.one/messenger и выполните поиск \@%1$s, чтобы добавить меня в друзья.</string>
     <string name="chat_pin_message">%1$s закрепил %2$s</string>
     <string name="Chat_pinned">Чат закреплен</string>
@@ -322,7 +320,6 @@
     <string name="Disabled">Отключенный</string>
     <string name="disappearing_message">Исчезающие сообщения</string>
     <string name="disappearing_message_hint">Если эта функция включена, отправленные и полученные новые сообщения в этом чате исчезнут после того, как они будут просмотрены. Прочтите документ, чтобы **узнать больше**</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
     <string name="disappearing_option_1">30 секунд</string>
     <string name="disappearing_option_2">10 минут</string>
     <string name="disappearing_option_3">2 часа</string>
@@ -508,7 +505,6 @@
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Введите 4-значный код, отправленный вам на %1$s.</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">Язык</string>
     <string name="Large_Amount_Confirmation">Подтверждение крупной суммы</string>
     <string name="Large_Amount_Confirmation_with_symbol">Подтверждение крупной суммы(%1$s)</string>
@@ -830,7 +826,6 @@
     <string name="setting_delete_account_pin_content">Если вы продолжите, ваш профиль и данные аккаунта будут удалены %1$s. прочтите наш документ, чтобы **Узнать больше**.</string>
     <string name="setting_delete_account_send">Мы отправим 4-значный код на %1$s.</string>
     <string name="setting_delete_account_tip">В вашем кошельке Mixin все еще есть активы, которые можно вывести на другие кошельки или биржи. После удаления учетной записи эти активы будут закрыты вместе с кошельком и их нельзя будет восстановить.</string>
-    <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string name="setting_desktop_confirm">Подтвердите вход в Mixin Messenger Desktop</string>
     <string name="setting_desktop_logout_failed">Выход из рабочего стола не удался.</string>
     <string name="setting_duplicate_transfer_desc">Отображение диалогового окна подтверждения при переводе одной и той же суммы одному и тому же человеку в течение 6 часов.</string>

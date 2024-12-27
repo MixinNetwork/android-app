@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
@@ -68,6 +69,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -100,7 +102,6 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import timber.log.Timber
 import java.math.BigDecimal
@@ -117,7 +118,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         private const val ARGS_IN_ASSET = "args_in_asset"
         private const val ARGS_OUT_AMOUNT = "args_out_amount"
         private const val ARGS_OUT_ASSET = "args_out_asset"
-        fun newInstance(swapResult: SwapResponse, inAsset: TokenItem, outAssetItem: TokenItem): SwapTransferBottomSheetDialogFragment {
+        fun newInstance(swapResult: SwapResponse, inAsset: SwapToken, outAssetItem: SwapToken): SwapTransferBottomSheetDialogFragment {
             return SwapTransferBottomSheetDialogFragment()
                 .withArgs {
                     putString(ARGS_LINK, swapResult.tx)
@@ -143,7 +144,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val inAsset by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_IN_ASSET, TokenItem::class.java))
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_IN_ASSET, SwapToken::class.java))
     }
 
     private val inAmount by lazy {
@@ -151,7 +152,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val outAsset by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_OUT_ASSET, TokenItem::class.java))
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_OUT_ASSET, SwapToken::class.java))
     }
 
     private val outAmount by lazy {
@@ -237,7 +238,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                                 .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
                                         ) {
                                             CoilImage(
-                                                model = inAsset.iconUrl,
+                                                model = inAsset.icon,
                                                 placeholder = R.drawable.ic_avatar_place_holder,
                                                 modifier = Modifier
                                                     .size(67.dp)
@@ -253,7 +254,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                                 .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
                                         ) {
                                             CoilImage(
-                                                model = outAsset.iconUrl,
+                                                model = outAsset.icon,
                                                 placeholder = R.drawable.ic_avatar_place_holder,
                                                 modifier = Modifier
                                                     .size(67.dp)
@@ -401,10 +402,21 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
     private var onDoneAction: (() -> Unit)? = null
+    private var onDestroyAction: (() -> Unit)? = null
 
     fun setOnDone(callback: () -> Unit): SwapTransferBottomSheetDialogFragment {
         onDoneAction = callback
         return this
+    }
+
+    fun setOnDestroy(callback: () -> Unit): SwapTransferBottomSheetDialogFragment {
+        onDestroyAction = callback
+        return this
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDestroyAction?.invoke()
     }
 
     private fun showPin() {
@@ -657,9 +669,9 @@ fun UserBadge(
 fun ItemPriceContent(
     title: String,
     inAmount: BigDecimal,
-    inAsset: TokenItem,
+    inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: TokenItem
+    outAsset: SwapToken
 ) {
     var isSwitch by remember { mutableStateOf(false) }
     val price = outAmount.divide(inAmount, 8, RoundingMode.HALF_UP)
@@ -707,9 +719,9 @@ fun ItemPriceContent(
 fun AssetChanges(
     title: String,
     inAmount: BigDecimal,
-    inAsset: TokenItem,
+    inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: TokenItem
+    outAsset: SwapToken
 ) {
     Column(
         modifier =
@@ -730,7 +742,7 @@ fun AssetChanges(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
-                model = outAsset.iconUrl,
+                model = outAsset.icon,
                 modifier =
                 Modifier
                     .size(24.dp)
@@ -746,7 +758,7 @@ fun AssetChanges(
             )
             Box(modifier = Modifier.weight(1f))
             Text(
-                text = outAsset.chainName ?: "",
+                text = outAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )
@@ -758,7 +770,7 @@ fun AssetChanges(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
-                model = inAsset.iconUrl,
+                model = inAsset.icon,
                 modifier =
                 Modifier
                     .size(24.dp)
@@ -774,7 +786,7 @@ fun AssetChanges(
             )
             Box(modifier = Modifier.weight(1f))
             Text(
-                text = inAsset.chainName ?: "",
+                text = inAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )

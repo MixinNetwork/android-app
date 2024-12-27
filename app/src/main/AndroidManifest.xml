@@ -54,7 +54,11 @@
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
         android:largeHeap="true"
-        tools:ignore="LockedOrientationActivity,UnusedAttribute" >
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/backup_config"
+        android:fullBackupContent="false"
+        tools:ignore="LockedOrientationActivity,UnusedAttribute"
+        tools:replace="android:fullBackupContent,android:allowBackup,android:dataExtractionRules">
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

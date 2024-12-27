@@ -70,6 +70,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
@@ -543,7 +544,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                         is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> getString(R.string.error_unknown_with_message, throwable.message)
+                        else -> getString(R.string.error_unknown_with_message, throwable.msg())
                     }
 
                 is UtxoException -> {
@@ -569,7 +570,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
 
-                else -> getString(R.string.error_unknown_with_message, throwable.message)
+                else -> getString(R.string.error_unknown_with_message, throwable.msg())
             }
     }
 

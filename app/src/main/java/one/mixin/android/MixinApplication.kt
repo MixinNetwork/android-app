@@ -23,8 +23,11 @@ import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
 import coil.decode.VideoFrameDecoder
 import coil.util.DebugLogger
+import com.appsflyer.AppsFlyerConversionListener
+import com.appsflyer.AppsFlyerLib
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.mapbox.maps.loader.MapboxMapsInitializer
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -167,7 +170,11 @@ open class MixinApplication :
         applicationScope.launch {
             entityInitialize()
         }
+        initSentry()
+        initAppsFlyer()
+    }
 
+    private fun initSentry() {
         SentryAndroid.init(this) { options ->
             options.dsn = BuildConfig.SENTRYDSN
             options.isEnableUserInteractionTracing = false
@@ -181,6 +188,33 @@ open class MixinApplication :
                     minBreadcrumbLevel = SentryLevel.ERROR
                 )
             )
+        }
+    }
+
+    private fun initAppsFlyer() {
+        AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
+            override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
+                Timber.d("AppsFlyer Conversion Data: $conversionData")
+            }
+
+            override fun onConversionDataFail(error: String) {
+                Timber.e("AppsFlyer Conversion Data Error: $error")
+            }
+
+            override fun onAppOpenAttribution(attributionData: Map<String, String>) {
+                Timber.d("AppsFlyer Attribution Data: $attributionData")
+            }
+
+            override fun onAttributionFailure(error: String) {
+                Timber.e("AppsFlyer Attribution Failure: $error")
+            }
+        }, this)
+        AppsFlyerLib.getInstance().start(this)
+        FirebaseAnalytics.getInstance(this).appInstanceId.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val additionalData = mapOf("app_instance_id" to task.result)
+                AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+            }
         }
     }
 

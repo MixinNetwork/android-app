@@ -14,7 +14,7 @@ import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.AddressService
@@ -379,7 +379,7 @@ class AssetRepository
             amount: String,
             slippage: String,
             source: String,
-        ): MixinResponse<QuoteResponse> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source)
+        ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
@@ -389,7 +389,7 @@ class AssetRepository
 
         suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
 
-        suspend fun searchTokens(query: String) = routeService.searchTokens(query)
+        suspend fun searchTokens(query: String, inMixin: Boolean) = routeService.searchTokens(query, if (inMixin) "mixin" else null)
 
         suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
 

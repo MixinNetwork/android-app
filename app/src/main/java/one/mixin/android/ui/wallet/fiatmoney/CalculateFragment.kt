@@ -179,7 +179,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }
                 }
                 titleView.setSubTitle(getString(R.string.Buy), "")
-                titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+                titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
                 assetRl.setOnClickListener {
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile
                     val supportAssetIds = routeProfile?.supportAssetIds ?: return@setOnClickListener

@@ -323,7 +323,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
-                        if (!Session.saltExported() && !Session.hasPhone()) {
+                        if (!Session.saltExported() && Session.isAnonymous()) {
                             BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
                                 .apply {
                                     laterCallback = {

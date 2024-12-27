@@ -203,6 +203,16 @@ class ConversationRepository
                 messageDao.indexMediaMessages(conversationId, messageId)
             }
 
+        suspend fun countIndexMediaMessages(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): Int =
+            if (excludeLive) {
+                messageDao.countIndexMediaMessagesExcludeLive(conversationId)
+            } else {
+                messageDao.countIndexMediaMessages(conversationId)
+            }
+
         fun getMediaMessages(
             conversationId: String,
             index: Int,
@@ -471,7 +481,9 @@ class ConversationRepository
 
         suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-        fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
+        fun countUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.countUnreadMentionMessageByConversationId(conversationId)
+
+        suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getFirstUnreadMentionMessageByConversationId(conversationId)
 
         suspend fun updateCircles(
             conversationId: String?,

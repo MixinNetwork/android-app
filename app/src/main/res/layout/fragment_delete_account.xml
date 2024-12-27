@@ -184,7 +184,8 @@
         android:layout_below="@id/change_rl"
         android:layout_marginBottom="24dp"
         android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/log_out_tv"

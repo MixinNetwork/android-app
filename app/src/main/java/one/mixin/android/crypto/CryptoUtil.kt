@@ -16,6 +16,7 @@ import one.mixin.android.Constants.Tip.ENCRYPTED_MNEMONIC
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
 import one.mixin.android.util.InvalidEd25519Exception
 import one.mixin.eddsa.Ed25519Sign
 import one.mixin.eddsa.Ed25519Verify
@@ -302,16 +303,19 @@ private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
 }
 
 fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
-    val encryptedPrefs = EncryptedSharedPreferences.create(
-        context,
-        ENCRYPTED_MNEMONIC,
-        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
+    val encryptedPrefs = runCatching{
+        EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }.onFailure {
+        context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
+    }.getOrThrow()  // Unable to create when logging in, it crashes directly
     val encodedKey = entropy.toHex()
-    encryptedPrefs.edit().putString(alias, encodedKey).apply()
+    encryptedPrefs.edit().putString(alias, encodedKey).commit()
 }
 
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
@@ -323,18 +327,26 @@ fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    encryptedPrefs.edit().remove(alias).apply()
+    runCatching {
+        encryptedPrefs.edit().remove(alias).apply()
+    }.onFailure {
+        if (Session.saltExported()) context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
+    }
 }
 
 fun getValueFromEncryptedPreferences(context: Context, alias: String): ByteArray? {
-    val encryptedPrefs = EncryptedSharedPreferences.create(
-        context,
-        ENCRYPTED_MNEMONIC,
-        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    val encryptedPrefs = runCatching {
+        EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }.onFailure {
+        if (Session.saltExported()) context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
+    }.getOrNull()
 
-    val encodedText = encryptedPrefs.getString(alias, null) ?: return null
+    val encodedText = encryptedPrefs?.getString(alias, null) ?: return null
     return encodedText.hexStringToByteArray()
 }
