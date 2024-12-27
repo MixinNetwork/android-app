@@ -66,9 +66,9 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
 
-            val isBackupReminderNeeded = !Session.saltExported() && Session.isAnonymous()
-            val lastBackupReminderTime = sharedPreferences.getLong(PREF_BACKUP_MNEMONIC, 0)
-            if (isBackupReminderNeeded && System.currentTimeMillis() - lastBackupReminderTime > INTERVAL_24_HOURS) {
+            val isBackupMnemonicReminderNeeded = !Session.saltExported() && Session.isAnonymous()
+            val lastBackupMnemonicReminderTime = sharedPreferences.getLong(PREF_BACKUP_MNEMONIC, 0)
+            if (isBackupMnemonicReminderNeeded && System.currentTimeMillis() - lastBackupMnemonicReminderTime > INTERVAL_24_HOURS) {
                 return PopupType.BackupMnemonicReminder
             }
 
@@ -177,7 +177,7 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 dismissAllowingStateLoss()
                             }, dismiss = {
                                 requireContext().defaultSharedPreferences.putLong(
-                                    PREF_EMERGENCY_CONTACT,
+                                    PREF_BACKUP_MNEMONIC,
                                     System.currentTimeMillis(),
                                 )
                                 dismissAllowingStateLoss()
