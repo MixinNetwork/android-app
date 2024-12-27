@@ -38,7 +38,6 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
@@ -81,21 +80,6 @@ fun InputContent(
         val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
         Column(modifier = Modifier.fillMaxWidth()) {
-            val valueText by mutableStateOf(
-                if (token != null) {
-                    val v =
-                        try {
-                            if (text.isBlank()) BigDecimal.ZERO else BigDecimal(text)
-                        } catch (e: Exception) {
-                            BigDecimal.ZERO
-                        }
-                    mutableStateOf(v.multiply(runCatching {
-                        BigDecimal(token.price ?: "0")
-                    }.getOrDefault(BigDecimal.ZERO)).multiply(BigDecimal(Fiats.getRate())))
-                } else {
-                    mutableStateOf(BigDecimal.ZERO)
-                },
-            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -110,7 +94,6 @@ fun InputContent(
                             } catch (e: Exception) {
                                 return@BasicTextField
                             }
-                        valueText.value = v.multiply(BigDecimal(token?.price ?: "0").multiply(BigDecimal(Fiats.getRate())))
                         onInputChanged?.invoke(it)
                     },
                     maxLines = 1,

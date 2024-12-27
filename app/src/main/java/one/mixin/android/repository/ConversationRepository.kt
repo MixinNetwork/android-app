@@ -481,7 +481,9 @@ class ConversationRepository
 
         suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-        fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
+        fun countUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.countUnreadMentionMessageByConversationId(conversationId)
+
+        suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getFirstUnreadMentionMessageByConversationId(conversationId)
 
         suspend fun updateCircles(
             conversationId: String?,

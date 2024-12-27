@@ -16,6 +16,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
@@ -25,8 +26,10 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.getList
 import one.mixin.android.extension.pmap
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -44,15 +47,18 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.completeMao
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toMaoUser
 import javax.inject.Inject
 
 @HiltViewModel
@@ -78,6 +84,21 @@ internal constructor(
         } else {
             firstUrl(query)
         }
+    }
+
+    suspend fun searchMaoUser(query: String?): MaoUser? {
+        return (if (query.isNullOrEmpty()) {
+            null
+        } else {
+            runCatching {
+                val maoName = query.completeMao()
+                val response = userRepository.searchSuspend(query)
+                if (response.isSuccess) {
+                    return@runCatching response.data?.toMaoUser(maoName)
+                }
+                return@runCatching null
+            }.getOrNull()
+        })
     }
 
     suspend inline fun <reified T> fuzzySearch(
@@ -328,5 +349,23 @@ internal constructor(
     fun removeRecentSearch(sp: SharedPreferences) {
         sp.remove(PREF_RECENT_SEARCH)
         _recentSearches.value = emptyList()
+    }
+
+    private val _recentSwapTokens = MutableStateFlow<List<SwapToken>>(emptyList())
+    val recentSwapTokens = _recentSwapTokens.asStateFlow()
+
+    suspend fun getRecentSwapTokens(sp: SharedPreferences, key: String) {
+        val list = sp.getList(key, SwapToken::class.java)
+        list.map {
+            if (it.assetId.isNullOrBlank().not()) {
+                it.changeUsd = tokenRepository.findChangeUsdByAssetId(it.assetId)
+            }
+        }
+        _recentSwapTokens.value = list
+    }
+
+    fun removeRecent(sp: SharedPreferences, key: String) {
+        sp.remove(key)
+        _recentSwapTokens.value = emptyList()
     }
 }

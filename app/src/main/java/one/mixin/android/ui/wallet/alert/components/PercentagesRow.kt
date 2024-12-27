@@ -64,7 +64,7 @@ fun PercentagesRow(modifier: Modifier, type: AlertType, onPercentageClick: (Floa
                     modifier = Modifier
                         .weight(1f)
                         .background(color = MixinAppTheme.colors.backgroundWindow, shape = RoundedCornerShape(16.dp))
-                        .border(1.dp, color = MixinAppTheme.colors.borderPrimary, shape = RoundedCornerShape(16.dp))
+                        .border(1.dp, color = MixinAppTheme.colors.borderColor, shape = RoundedCornerShape(16.dp))
                         .clip(RoundedCornerShape(16.dp))
                         .clickable(
                             onClick = {

@@ -1259,4 +1259,6 @@ class TokenRepository
             marketCoinDao.insertIgnoreList(ids)
         }
     }
+
+    suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 }

@@ -46,7 +46,7 @@ open class ErrorHandler {
                             is CronetException -> {
                                 handleCronetException(throwable)
                             }
-                            else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
+                            else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
                         }
                     is CancellationException -> {
                         // ignore kotlin coroutine job cancellation exception
@@ -61,7 +61,7 @@ open class ErrorHandler {
                             toast(R.string.error_connection_error)
                         }
                     }
-                    else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
+                    else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
                 }
             }
         }
