@@ -15,10 +15,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import androidx.compose.ui.platform.LocalContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
+import one.mixin.android.util.isCurrChinese
+import java.util.Locale
 
 val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
@@ -62,6 +65,8 @@ class AppColors(
     val tipWarningBorder: Color,
     val borderPrimary: Color,
     val rippleColor: Color = Color(0x33000000),
+    val bgGradientStart: Color,
+    val bgGradientEnd: Color,
     val borderColor: Color,
 )
 
@@ -97,6 +102,8 @@ private val LightColorPalette =
         tipWarning = Color(0xFFFBF1F0),
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0xFFE5E8EE),
+        bgGradientStart = Color(0xFFFFFFFF),
+        bgGradientEnd = Color(0xFFE7EFFF),
         borderColor = Color(0xFFE5E8EE),
     )
 
@@ -119,6 +126,8 @@ private val DarkColorPalette =
         tipWarning = Color(0xFF3E373B),
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
+        bgGradientStart = Color(0xFF2C3136),
+        bgGradientEnd = Color(0xFF1C2029),
         borderColor = Color(0xFF6E7073),
     )
 
@@ -158,4 +167,16 @@ fun MixinAppTheme(
             content = content,
         )
     }
+}
+
+@Composable
+@DrawableRes
+fun languageBasedImage(@DrawableRes defaultImage:Int, @DrawableRes zh:Int) : Int{
+    val context = LocalContext.current
+
+    val drawableRes = when {
+        isCurrChinese() -> zh
+        else -> defaultImage
+    }
+    return drawableRes
 }
