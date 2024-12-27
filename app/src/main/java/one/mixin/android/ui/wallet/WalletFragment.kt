@@ -465,6 +465,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 successBlock = {
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
                         return@handleMixinResponse
                     }
                     val destinationTags = walletViewModel.findDepositEntryDestinations()

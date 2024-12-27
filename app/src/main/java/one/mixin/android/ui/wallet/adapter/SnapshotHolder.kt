@@ -132,7 +132,7 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
         binding.value.textColor = when {
             snapshot.type == SafeSnapshotType.pending.name -> binding.root.context.colorFromAttribute(R.attr.text_primary)
             // Pending withdrawal
-            snapshot.withdrawal.withdrawalHash.isBlank() -> binding.root.context.colorFromAttribute(R.attr.text_primary)
+            snapshot.withdrawal?.withdrawalHash.isNullOrBlank() -> binding.root.context.colorFromAttribute(R.attr.text_primary)
             isPositive -> binding.root.context.getColor(R.color.wallet_green)
             else -> binding.root.context.getColor(R.color.wallet_pink)
         }

@@ -236,6 +236,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 successBlock = {
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
                         return@handleMixinResponse
                     }
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
