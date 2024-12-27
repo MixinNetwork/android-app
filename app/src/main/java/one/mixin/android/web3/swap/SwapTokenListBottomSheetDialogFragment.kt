@@ -41,6 +41,7 @@ import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -48,12 +49,14 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     companion object {
         const val ARGS_TOKENS = "args_tokens"
         const val ARGS_KEY = "args_key"
+        const val ARGS_UNIQUE = "args_unique"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
-        fun newInstance(key: String, tokens: ArrayList<SwapToken>) =
+        fun newInstance(key: String, tokens: ArrayList<SwapToken>, selectUnique: String? = null) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_TOKENS, tokens)
                 putString(ARGS_KEY, key)
+                putString(ARGS_UNIQUE, selectUnique)
             }
     }
 
@@ -66,8 +69,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         requireNotNull(requireArguments().getString(ARGS_KEY))
     }
 
+    private val selectUnique by lazy {
+        requireArguments().getString(ARGS_UNIQUE)
+    }
+
     private val adapter by lazy {
-        SwapTokenAdapter()
+        SwapTokenAdapter(selectUnique)
     }
 
     private var isLoading = false

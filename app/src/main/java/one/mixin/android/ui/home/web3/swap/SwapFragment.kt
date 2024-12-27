@@ -234,7 +234,7 @@ class SwapFragment : BaseFragment() {
                 }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(data)
+                    ArrayList(data), fromToken?.getUnique()
                 ).apply {
                     if (data.isEmpty()) {
                         setLoading(true)
@@ -255,9 +255,6 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_WEB3_SWAP,
                     data
                 ).apply {
-                    if (data.isEmpty()) {
-                        setLoading(true)
-                    }
                     setOnDeposit {
                         navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                         dismissNow()
@@ -282,6 +279,7 @@ class SwapFragment : BaseFragment() {
                             this
                         },
                     ),
+                if (inMixin()) toToken?.getUnique() else null
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
