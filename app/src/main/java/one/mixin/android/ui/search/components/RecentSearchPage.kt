@@ -167,7 +167,7 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
         modifier = Modifier
             .widthIn(max = itemWidth)
             .border(
-                BorderStroke(1.dp, Color(0x0f000000)),
+                BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)),
                 shape = RoundedCornerShape(32.dp)
             )
             .clip(RoundedCornerShape(32.dp))

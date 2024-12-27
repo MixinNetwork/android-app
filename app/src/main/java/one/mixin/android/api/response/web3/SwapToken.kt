@@ -52,8 +52,8 @@ data class SwapToken(
     fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolTokenAssetKey, true)
 
     fun getUnique(): String {
-        return address.ifEmpty {
-            assetId
+        return assetId.ifEmpty {
+            address
         }
     }
 
