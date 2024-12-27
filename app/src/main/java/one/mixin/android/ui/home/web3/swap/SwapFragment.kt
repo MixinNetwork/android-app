@@ -472,17 +472,9 @@ class SwapFragment : BaseFragment() {
                 }
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
-                    toToken = swapTokens.getOrNull(1)
-                } else {
-                    val found = swapTokens.firstOrNull { s -> s.assetId == fromToken?.assetId }
-                    if (toToken != null) {
-                        val toFound = swapTokens.firstOrNull { s -> s.assetId == toToken?.assetId }
-                        if (toFound == null) {
-                            toToken = swapTokens.getOrNull(1)
-                        }
-                    } else {
-                        toToken = swapTokens.getOrNull(1)
-                    }
+                }
+                if (toToken == null) {
+                    toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
                 }
             }
             if (swapTokens.isNotEmpty()) {
