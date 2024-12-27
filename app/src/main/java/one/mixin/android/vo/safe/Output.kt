@@ -78,5 +78,7 @@ data class Output(
 
 enum class OutputState {
     unspent,
+    spent,
+    @Deprecated("use spent")
     signed,
 }

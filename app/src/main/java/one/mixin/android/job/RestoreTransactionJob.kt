@@ -56,9 +56,9 @@ class RestoreTransactionJob : BaseJob(
                         Timber.e("Restore Transaction(${transaction.requestId}): db begin")
                         runInTransaction {
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
-                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.spent.name)
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
-                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.spent.name)
                         }
                         Timber.e("Restore Transaction(${transaction.requestId}): db end")
                         if (feeTransaction == null) {
@@ -83,9 +83,9 @@ class RestoreTransactionJob : BaseJob(
                             Timber.e("Restore Transaction(${transaction.requestId}): db begin")
                             runInTransaction {
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
-                                rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
+                                rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.spent.name)
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
-                                rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                                rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.spent.name)
                             }
                             Timber.e("Restore Transaction(${transaction.requestId}): db end")
                             if (feeTransaction == null && transaction.receiverId.isNotBlank()) {
@@ -94,8 +94,8 @@ class RestoreTransactionJob : BaseJob(
                         } else {
                             Timber.e("Restore Transaction(${transaction.requestId}): Post Transaction Error ${transactionRsp.errorDescription}")
                             reportException(e = Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
-                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                            rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.spent.name)
+                            rawTransactionDao.updateRawTransaction(feeTraceId, OutputState.spent.name)
                         }
                         jobManager.addJobInBackground(SyncOutputJob())
                     } else if (response.errorCode >= 500) {

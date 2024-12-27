@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 64,
-    "identityHash": "92fa1b7638e3f4feb7a0c9caff850da7",
+    "identityHash": "edabaab5427aedb6b77a897e670dfd06",
     "entities": [
       {
         "tableName": "users",
@@ -2825,7 +2825,7 @@
       },
       {
         "tableName": "raw_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `receiver_id` TEXT NOT NULL, `type` INTEGER NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `inscription_hash` TEXT, PRIMARY KEY(`request_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`request_id` TEXT NOT NULL, `raw_transaction` TEXT NOT NULL, `receiver_id` TEXT NOT NULL, `type` INTEGER NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `inscription_hash` TEXT, `transaction_hash` TEXT, PRIMARY KEY(`request_id`))",
         "fields": [
           {
             "fieldPath": "requestId",
@@ -2868,6 +2868,12 @@
             "columnName": "inscription_hash",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "transactionHash",
+            "columnName": "transaction_hash",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2886,6 +2892,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_raw_transactions_state_type` ON `${TABLE_NAME}` (`state`, `type`)"
+          },
+          {
+            "name": "index_raw_transactions_transaction_hash",
+            "unique": false,
+            "columnNames": [
+              "transaction_hash"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_raw_transactions_transaction_hash` ON `${TABLE_NAME}` (`transaction_hash`)"
           }
         ],
         "foreignKeys": []
@@ -3465,7 +3480,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '92fa1b7638e3f4feb7a0c9caff850da7')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'edabaab5427aedb6b77a897e670dfd06')"
     ]
   }
 }
