@@ -122,7 +122,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                     val assets = walletViewModel.allAssetItems()
                     if (nowTokens.size == 1) {
-                        val output = if (nowTokens.first().assetId == USDT_ASSET_ID) {
+                        val input = if (nowTokens.first().assetId == USDT_ASSET_ID) {
                             XIN_ASSET_ID
                         } else {
                             USDT_ASSET_ID
@@ -130,8 +130,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                         view.navigate(R.id.action_market_details_to_swap,
                             Bundle().apply {
-                                putString(ARGS_INPUT, nowTokens.first().assetId)
-                                putString(ARGS_OUTPUT, output)
+                                putString(ARGS_INPUT, input)
+                                putString(ARGS_OUTPUT, nowTokens.first().assetId)
                                 putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
                             })
                     } else {

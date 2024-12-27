@@ -35,3 +35,11 @@ fun reportExoPlayerException(
     val msg = "$prefix onPlayerError errorCode: ${error.errorCode}, errorCodeName: ${error.errorCodeName} cause: $cause"
     reportException(msg, error)
 }
+
+fun Throwable.msg(): String {
+    if (message.isNullOrBlank()) {
+        reportEvent("Unknown exception: ${this.javaClass.name}")
+        return this.javaClass.name
+    }
+    return message ?: "Unknown"
+}

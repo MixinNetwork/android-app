@@ -4,6 +4,7 @@ import PageScaffold
 import android.content.Context
 import android.graphics.Rect
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,9 +49,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -71,6 +74,7 @@ import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
 import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
@@ -165,7 +169,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 10.dp)
+                            .padding(horizontal = 12.dp)
                             .verticalScroll(rememberScrollState())
                             .imePadding(),
                         horizontalAlignment = Alignment.Start,
@@ -196,14 +200,14 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                 expandType = true
                                 coroutineScope.launch { bottomSheetState.show() }
                             }
+                            Spacer(modifier = Modifier.height(6.dp))
 
                             Spacer(modifier = Modifier.height(2.dp))
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
-                                    .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard),
+                                    .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -373,7 +377,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                     )
                                 }
                             }
-
+                            Spacer(modifier = Modifier.height(6.dp))
                             if (inputError != null) {
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Column(modifier = Modifier.padding(horizontal = 10.dp)) {

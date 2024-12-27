@@ -2,17 +2,24 @@ package one.mixin.android.web3.swap
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
@@ -21,6 +28,7 @@ import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -33,6 +41,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.receive.Web3AddressFragment
+import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
@@ -40,11 +49,13 @@ import java.util.concurrent.TimeUnit
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val ARGS_TOKENS = "args_tokens"
+        const val ARGS_KEY = "args_key"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
-        fun newInstance(tokens: ArrayList<SwapToken>) =
+        fun newInstance(key: String, tokens: ArrayList<SwapToken>) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_TOKENS, tokens)
+                putString(ARGS_KEY, key)
             }
     }
 
@@ -52,6 +63,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private val swapViewModel by viewModels<SwapViewModel>()
 
     private var tokens: List<SwapToken> = emptyList()
+
+    private val key by lazy {
+        requireNotNull(requireArguments().getString(ARGS_KEY))
+    }
 
     private val adapter by lazy {
         SwapTokenAdapter()
@@ -71,7 +86,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    private fun initRadio(){
+    private fun initRadio() {
         binding.apply {
             if (!inMixin()) { // only solana network
                 radioSolana.isChecked = true
@@ -119,11 +134,19 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
+    private fun Dialog.setViewTreeOwners() {
+        val decorView = window?.decorView ?: return
+        decorView.setViewTreeLifecycleOwner(this@SwapTokenListBottomSheetDialogFragment)
+        decorView.setViewTreeViewModelStoreOwner(this@SwapTokenListBottomSheetDialogFragment)
+        decorView.setViewTreeSavedStateRegistryOwner(this@SwapTokenListBottomSheetDialogFragment)
+    }
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
         dialog: Dialog,
         style: Int,
     ) {
+        dialog.setViewTreeOwners()
         super.setupDialog(dialog, style)
         tokens = requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)!!
         contentView = binding.root
@@ -153,8 +176,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
-                dismiss()
+                onDepositListner?.invoke()
             }
             searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -163,6 +185,44 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     searchJob?.cancel()
                     searchJob = filter(it.toString())
                 }, {})
+
+        }
+    }
+
+    private val composeId by lazy {
+        View.generateViewId()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        binding.apply {
+            root.findViewById<ComposeView>(composeId).let {
+                if (it == null) {
+                    val composeView = ComposeView(requireContext()).apply {
+                        id = View.generateViewId()
+                        setContent {
+                            RecentTokens(key) {
+                                adapter.onClick(it)
+                            }
+                        }
+                    }
+
+                    root.addView(
+                        composeView,
+                        RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT
+                        ).apply {
+                            addRule(RelativeLayout.BELOW, searchView.id)
+                        })
+
+                    radio.updateLayoutParams<RelativeLayout.LayoutParams> {
+                        addRule(RelativeLayout.BELOW, composeView.id)
+                    }
+                    root.requestLayout()
+                    root.invalidate()
+                }
+            }
         }
     }
 
@@ -189,8 +249,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }.toMutableList()
 
             val total = search(s, assetList, currentChain, inMixin())
-
-            adapter.tokens = ArrayList(total)
+            adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
             if (!isAdded) {
                 return@launch
             }
@@ -207,15 +266,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         s: String,
         localTokens: MutableList<SwapToken>,
         currentChain: String?,
-        inMixin: Boolean
+        inMixin: Boolean,
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
         if (localTokens.isEmpty()) binding.pb.isVisible = true
-        handleMixinResponse(
+        val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.filter { ra ->
-                    !localTokens.any { a -> a.address.equals(ra.address, true) || a.assetId.equals(ra.assetId, true) }
+                return@handleMixinResponse resp.data?.map { ra ->
+                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
+                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                    }
+                    return@map ra
                 }?.map { token ->
                     if (inMixin) {
                         token.copy(address = "")
@@ -228,18 +290,22 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )?.let { remoteList ->
-            localTokens.addAll(
-                remoteList.filter {
-                    currentChain == null  || (it.chain.chainId == currentChain)
-                }
-            )
+            remoteList.filter {
+                currentChain == null || (it.chain.chainId == currentChain)
+            }
         }
-        return localTokens
+        return remoteList ?: emptyList()
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
         this.adapter.setOnClickListener(onClickListener)
     }
 
-    private fun inMixin(): Boolean = tokens.firstOrNull()?.inMixin() == true
+    fun setOnDeposit(onDepositListner: () -> Unit) {
+        this.onDepositListner = onDepositListner
+    }
+
+    private var onDepositListner: (() -> Unit)? = null
+
+    private fun inMixin(): Boolean = key == Constants.Account.PREF_TO_SWAP || key == Constants.Account.PREF_FROM_SWAP
 }

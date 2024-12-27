@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import coil3.dispose
@@ -18,6 +19,9 @@ import coil3.request.error
 import coil3.request.placeholder
 import coil3.request.transformations
 import coil3.transform.Transformation
+import androidx.core.widget.TextViewCompat
+import coil3.asDrawable
+import coil3.imageLoader
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -28,6 +32,7 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.R
 import one.mixin.android.util.StringSignature
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import one.mixin.android.widget.lottie.RLottieDrawable
 import one.mixin.android.widget.lottie.RLottieImageView
 
@@ -414,4 +419,16 @@ fun ImageView.loadRoundImage(
         )
             .into(this)
     }
+}
+
+fun TextView.loadImage(url: String, size: Int, @DrawableRes placeholder: Int? = null) {
+    val request = ImageRequest.Builder(context).data(url).apply {
+        placeholder?.let { placeholder(it) }
+        transformations(CoilRoundedHexagonTransformation())
+    }.target { image ->
+        val drawable = image.asDrawable(this.context.resources)
+        drawable.setBounds(0, 0, size, size)
+        TextViewCompat.setCompoundDrawablesRelative(this, drawable, null, null, null)
+    }.build()
+    context.imageLoader.enqueue(request)
 }
