@@ -474,7 +474,7 @@ class SwapFragment : BaseFragment() {
                     token.balance = t.balance
                     token
                 }
-                swapTokens = remote.union(swapTokens).toList()
+                swapTokens = swapTokens.union(remote).toList()
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
@@ -488,7 +488,7 @@ class SwapFragment : BaseFragment() {
                     token.price = t.priceUsd
                     token
                 }
-                swapTokens = remote.union(swapTokens).toList()
+                swapTokens = swapTokens.union(remote).toList()
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
