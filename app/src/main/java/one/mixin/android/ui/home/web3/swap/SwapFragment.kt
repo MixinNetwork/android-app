@@ -234,7 +234,7 @@ class SwapFragment : BaseFragment() {
                 }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(data), fromToken?.getUnique()
+                    ArrayList(data),
                 ).apply {
                     if (data.isEmpty()) {
                         setLoading(true)
@@ -279,7 +279,6 @@ class SwapFragment : BaseFragment() {
                             this
                         },
                     ),
-                if (inMixin()) toToken?.getUnique() else null
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
