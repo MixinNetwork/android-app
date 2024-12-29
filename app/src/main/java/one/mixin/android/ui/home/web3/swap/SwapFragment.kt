@@ -436,7 +436,8 @@ class SwapFragment : BaseFragment() {
     }
 
     private val saveSwapTokens by lazy {
-        defaultSharedPreferences.getList(Constants.Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Constants.Account.PREF_TO_SWAP, SwapToken::class.java)
+        if (inMixin()) defaultSharedPreferences.getList(Constants.Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Constants.Account.PREF_TO_SWAP, SwapToken::class.java)
+        else emptyList()
     }
 
     private suspend fun refreshTokens() {
