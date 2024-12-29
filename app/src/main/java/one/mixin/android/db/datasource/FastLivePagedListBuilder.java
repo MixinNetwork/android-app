@@ -118,7 +118,7 @@ public final class FastLivePagedListBuilder<Key, Value> {
     /**
      * Constructs the {@code LiveData<PagedList>}.
      * <p>
-     * No work (such as loading) is done immediately, the creation of the first PagedList is is
+     * No work (such as loading) is done immediately, the creation of the first PagedList is
      * deferred until the LiveData is observed.
      *
      * @return The LiveData of PagedLists
