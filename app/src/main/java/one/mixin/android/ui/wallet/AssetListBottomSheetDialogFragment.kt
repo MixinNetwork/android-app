@@ -3,7 +3,11 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
+import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.Constraints
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
@@ -21,13 +26,16 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
+import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.Components.RecentTokens
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.util.viewBinding
@@ -68,6 +76,15 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val fromType: Int by lazy {
         requireArguments().getInt(ARGS_FOR_TYPE)
+    }
+
+    private val key by lazy {
+        when (fromType) {
+            TYPE_FROM_SEND -> Constants.Account.PREF_WALLET_SEND
+            TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
+            TYPE_FROM_TRANSFER -> Constants.Account.PREF_WALLET_TRANSFER
+            else -> Constants.Account.PREF_WALLET_TRANSFER
+        }
     }
 
     private val adapter by lazy { SearchAdapter(requireArguments().getString(ARGS_ASSET_ID)) }
@@ -150,7 +167,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         tokenItem: TokenItem?,
                     ) {
                         binding.searchEt.hideKeyboard()
-                        tokenItem?.let { onAsset?.invoke(it) }
+                        tokenItem?.let {
+                            defaultSharedPreferences.addToList(key, it, TokenItem::class.java)
+                            onAsset?.invoke(it)
+                        }
                         dismiss()
                     }
                 }
@@ -216,6 +236,43 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else {
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     adapter.submitList(defaultAssets)
+                }
+            }
+        }
+    }
+
+    private val composeId by lazy {
+        View.generateViewId()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        binding.apply {
+            root.findViewById<ComposeView>(composeId).let {
+                if (it == null) {
+                    val composeView = ComposeView(requireContext()).apply {
+                        id = View.generateViewId()
+                        setContent {
+                            RecentTokens (key) {
+                                this@AssetListBottomSheetDialogFragment.onAsset?.invoke(it)
+                            }
+                        }
+                    }
+
+                    root.addView(
+                        composeView,
+                        RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT
+                        ).apply {
+                            addRule(RelativeLayout.BELOW, searchView.id)
+                        })
+
+                    radio.updateLayoutParams<RelativeLayout.LayoutParams> {
+                        addRule(RelativeLayout.BELOW, composeView.id)
+                    }
+                    root.requestLayout()
+                    root.invalidate()
                 }
             }
         }
