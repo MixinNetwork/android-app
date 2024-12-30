@@ -29,6 +29,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.getList
+import one.mixin.android.extension.getStringList
 import one.mixin.android.extension.pmap
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -372,12 +373,12 @@ internal constructor(
     val recentTokenItems = _recentTokenItems.asStateFlow()
 
     suspend fun getRecentTokenItems(sp: SharedPreferences, key: String) {
-        val list = sp.getList(key, TokenItem::class.java)
-        list.map { token ->
-            tokenRepository.findChangeUsdByAssetId(token.assetId)?.let {
-                token.changeUsd = it
-            }
+        val ids = sp.getStringList(key)
+        if (ids.isNullOrEmpty()) {
+            _recentTokenItems.value = emptyList()
+            return
         }
+        val list = tokenRepository.findTokenItems(ids.toList()).sortedBy { ids.indexOf(it.assetId) }
         _recentTokenItems.value = list
     }
 

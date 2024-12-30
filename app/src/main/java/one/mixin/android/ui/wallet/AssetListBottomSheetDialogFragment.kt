@@ -168,7 +168,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     ) {
                         binding.searchEt.hideKeyboard()
                         tokenItem?.let {
-                            defaultSharedPreferences.addToList(key, it, TokenItem::class.java)
+                            defaultSharedPreferences.addToList(key, it.assetId)
                             onAsset?.invoke(it)
                         }
                         dismiss()
@@ -254,7 +254,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         id = View.generateViewId()
                         setContent {
                             RecentTokens (key) {
+                                defaultSharedPreferences.addToList(key, it.assetId)
                                 this@AssetListBottomSheetDialogFragment.onAsset?.invoke(it)
+                                dismiss()
                             }
                         }
                     }
