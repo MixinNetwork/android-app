@@ -111,35 +111,11 @@ data class TokenItem(
                 override fun areContentsTheSame(
                     oldItem: TokenItem,
                     newItem: TokenItem,
-                ): Boolean {
-                    return oldItem.assetId == newItem.assetId &&
-                        oldItem.symbol == newItem.symbol &&
-                        oldItem.name == newItem.name &&
-                        oldItem.iconUrl == newItem.iconUrl &&
-                        oldItem.balance == newItem.balance &&
-                        oldItem.priceBtc == newItem.priceBtc &&
-                        oldItem.priceUsd == newItem.priceUsd &&
-                        oldItem.chainId == newItem.chainId &&
-                        oldItem.changeUsd == newItem.changeUsd &&
-                        oldItem.changeBtc == newItem.changeBtc &&
-                        oldItem.hidden == newItem.hidden &&
-                        oldItem.confirmations == newItem.confirmations &&
-                        oldItem.chainIconUrl == newItem.chainIconUrl &&
-                        oldItem.chainSymbol == newItem.chainSymbol &&
-                        oldItem.chainName == newItem.chainName &&
-                        oldItem.chainPriceUsd == newItem.chainPriceUsd &&
-                        oldItem.assetKey == newItem.assetKey &&
-                        oldItem.dust == newItem.dust &&
-                        oldItem.withdrawalMemoPossibility == newItem.withdrawalMemoPossibility &&
-                        oldItem.collectionHash == newItem.collectionHash
-                }
+                ) =
+                    oldItem == newItem
             }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other !is TokenItem) return false
-        return assetId == other.assetId
-    }
 
 }
 
