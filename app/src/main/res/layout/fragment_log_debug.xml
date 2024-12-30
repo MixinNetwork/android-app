@@ -5,7 +5,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/bg_white"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true">
 
     <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
@@ -46,14 +48,14 @@
             android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/Web_debug"
-                tools:ignore="RelativeOverlap" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/Web_debug"
+            android:textColor="@color/colorBlue"
+            android:textSize="16sp"
+            android:layout_centerVertical="true"
+            tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/web_debug_sc"
@@ -92,7 +94,6 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:text="@string/Debug_database_logs"
-                android:foreground="?android:attr/selectableItemBackground"
                 tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.SwitchCompat
