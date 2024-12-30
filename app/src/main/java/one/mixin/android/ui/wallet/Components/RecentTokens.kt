@@ -1,4 +1,4 @@
-package one.mixin.android.web3.swap.Components
+package one.mixin.android.ui.wallet.Components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -40,22 +40,22 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.ui.search.SearchViewModel
+import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentTokens(key: String, callback: (SwapToken) -> Unit) {
+fun RecentTokens(key: String, callback: (TokenItem) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
-    val recentToken by viewModel.recentSwapTokens.collectAsState()
+    val recentToken by viewModel.recentTokenItems.collectAsState()
     LaunchedEffect(Unit) {
-        viewModel.getRecentSwapTokens(context.defaultSharedPreferences, key)
+        viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)
     }
     if (recentToken.isEmpty()) return
     MixinAppTheme {
@@ -77,7 +77,7 @@ fun RecentTokens(key: String, callback: (SwapToken) -> Unit) {
                 )
                 Icon(
                     modifier = Modifier.clickable {
-                        viewModel.removeRecentSwapTokens(context.defaultSharedPreferences, key)
+                        viewModel.removeRecentTokenItems(context.defaultSharedPreferences, key)
                     },
                     painter = painterResource(id = R.drawable.ic_action_delete),
                     contentDescription = null,
@@ -99,13 +99,13 @@ fun RecentTokens(key: String, callback: (SwapToken) -> Unit) {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
+fun RecentToken(recent: TokenItem, tokenItemClick: (TokenItem) -> Unit) {
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -120,20 +120,20 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
             )
             .clip(RoundedCornerShape(21.dp))
             .clickable {
-                swapTokenClick.invoke(search)
+                tokenItemClick.invoke(recent)
             }
             .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 10.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         Box {
             CoilImage(
-                model = search.icon,
+                model = recent.iconUrl,
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder
             )
             CoilImage(
-                model = search.chain.icon,
+                model = recent.chainIconUrl,
                 modifier = Modifier
                     .size(13.dp)
                     .offset(x = 0.dp, y = (19).dp)
@@ -143,20 +143,15 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
         }
         Spacer(modifier = Modifier.width(4.dp))
         Column {
-            Text(search.symbol, fontSize = 14.sp, lineHeight = 14.sp, color = MixinAppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (search.changeUsd != null) {
-                val p = runCatching { BigDecimal(search.changeUsd).multiply(BigDecimal(100)) }.getOrDefault(BigDecimal.ZERO)
-                Text(
-                    "${if (p >= BigDecimal.ZERO) "+" else ""}${p.priceFormat2()}%", fontSize = 12.sp, lineHeight = 12.sp, color = if (p >= BigDecimal.ZERO) {
-                        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-                    } else {
-                        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                    },
-                    maxLines = 1, overflow = TextOverflow.Ellipsis
-                )
-            } else {
-                Text(search.name, fontSize = 12.sp, lineHeight = 12.sp, color = MixinAppTheme.colors.textAssist, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
+            Text(recent.symbol, fontSize = 14.sp, lineHeight = 14.sp, color = MixinAppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val p = runCatching { BigDecimal(recent.changeUsd).multiply(BigDecimal(100)) }.getOrDefault(BigDecimal.ZERO)
+            Text(
+                "${if (p >= BigDecimal.ZERO) "+" else ""}${p.priceFormat2()}%", fontSize = 12.sp, lineHeight = 12.sp, color = if (p >= BigDecimal.ZERO) {
+                    if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+                } else {
+                    if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                }, maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
