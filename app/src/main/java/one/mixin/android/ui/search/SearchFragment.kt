@@ -223,11 +223,25 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
                 override fun onUserClick(user: MaoUser) {
                     binding.searchRv.hideKeyboard()
+                    if (user.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG,
+                        )
+                        return
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
                 override fun onUserClick(user: User) {
                     binding.searchRv.hideKeyboard()
+                    if (user.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG,
+                        )
+                        return
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 

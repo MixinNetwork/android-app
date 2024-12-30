@@ -236,7 +236,7 @@ class SwapFragment : BaseFragment() {
                 }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(data), fromToken?.getUnique()
+                    ArrayList(data), if (isReverse) toToken?.getUnique() else fromToken?.getUnique()
                 ).apply {
                     if (data.isEmpty()) {
                         setLoading(true)
@@ -281,7 +281,9 @@ class SwapFragment : BaseFragment() {
                             this
                         },
                     ),
-                if (inMixin()) toToken?.getUnique() else null
+                if (inMixin()) {
+                    if (isReverse) fromToken?.getUnique() else toToken?.getUnique()
+                } else null
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
@@ -404,6 +406,9 @@ class SwapFragment : BaseFragment() {
             swappable = swapViewModel.allAssetItems()
             tokenItems = swappable
         }
+        swappable.map { it.toSwapToken() }.toList()?.let {
+            swapTokens = it
+        }
         swappable.let { tokens ->
             val input = requireArguments().getString(ARGS_INPUT)
             val output = requireArguments().getString(ARGS_OUTPUT)
@@ -431,7 +436,8 @@ class SwapFragment : BaseFragment() {
     }
 
     private val saveSwapTokens by lazy {
-        defaultSharedPreferences.getList(Constants.Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Constants.Account.PREF_TO_SWAP, SwapToken::class.java)
+        if (inMixin()) defaultSharedPreferences.getList(Constants.Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Constants.Account.PREF_TO_SWAP, SwapToken::class.java)
+        else emptyList()
     }
 
     private suspend fun refreshTokens() {
@@ -462,19 +468,20 @@ class SwapFragment : BaseFragment() {
             },
         )?.let {
             if (!inMixin()) {
-                swapTokens = it.map { token ->
+                val remote = it.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
                         web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                     } ?: return@map token
                     token.balance = t.balance
                     token
                 }
+                swapTokens = swapTokens.union(remote).toList()
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
                 toToken = swapTokens.firstOrNull { s -> s.address != fromToken?.address }
             } else {
-                swapTokens = it.map { token ->
+                val remote = it.map { token ->
                     val t = tokenItems?.firstOrNull { tokenItem ->
                         tokenItem.assetId == token.assetId
                     } ?: return@map token
@@ -482,6 +489,7 @@ class SwapFragment : BaseFragment() {
                     token.price = t.priceUsd
                     token
                 }
+                swapTokens = swapTokens.union(remote).toList()
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
