@@ -94,14 +94,13 @@ object Constants {
 
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
         const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
         const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
-
         const val PREF_WALLET_SEND = "pref_wallet_send"
         const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
-        const val PREF_WALLET_TRANSFER = "pref_wallet_transfer"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"

@@ -80,10 +80,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val key by lazy {
         when (fromType) {
-            TYPE_FROM_SEND -> Constants.Account.PREF_WALLET_SEND
+            TYPE_FROM_SEND, TYPE_FROM_TRANSFER -> Constants.Account.PREF_WALLET_SEND
             TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
-            TYPE_FROM_TRANSFER -> Constants.Account.PREF_WALLET_TRANSFER
-            else -> Constants.Account.PREF_WALLET_TRANSFER
+            else -> Constants.Account.PREF_WALLET_SEND
         }
     }
 
