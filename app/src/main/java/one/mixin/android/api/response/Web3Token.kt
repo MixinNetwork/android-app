@@ -18,6 +18,8 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.getSolanaRpc
+import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
+import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
 import org.sol4k.Transaction
 import org.sol4k.VersionedTransaction
@@ -234,7 +236,21 @@ suspend fun Web3Token.buildTransaction(
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
             val tokenMintAddress = PublicKey(assetKey)
-            val (receiveAssociatedAccount) = PublicKey.findProgramDerivedAddress(receiver, tokenMintAddress)
+            val tokenMintAccount = withContext(Dispatchers.IO) {
+                conn.getAccountInfo(tokenMintAddress)
+            }
+            if (tokenMintAccount == null) {
+                throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "rpc getAccountInfo $assetKey is null")
+            }
+            val tokenProgramId = if (tokenMintAccount.owner == TOKEN_PROGRAM_ID) {
+                TOKEN_PROGRAM_ID
+            } else if (tokenMintAccount.owner == TOKEN_2022_PROGRAM_ID) {
+                TOKEN_2022_PROGRAM_ID
+            } else {
+                throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "invalid account owner ${tokenMintAccount.owner}")
+            }
+
+            val (receiveAssociatedAccount) = PublicKey.findProgramDerivedAddress(receiver, tokenMintAddress, tokenProgramId)
             val receiveAssociatedAccountInfo =
                 withContext(Dispatchers.IO) {
                     conn.getAccountInfo(receiveAssociatedAccount)
@@ -246,6 +262,7 @@ suspend fun Web3Token.buildTransaction(
                         associatedToken = receiveAssociatedAccount,
                         owner = receiver,
                         mint = tokenMintAddress,
+                        tokenProgramId,
                     ),
                 )
             }
@@ -259,7 +276,7 @@ suspend fun Web3Token.buildTransaction(
             if (tokenAmount.decimals != decimals) {
                 throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "Web3Token decimals $decimals not equal rpc decimals ${tokenAmount.decimals}")
             }
-            val (sendAssociatedAccount) = PublicKey.findProgramDerivedAddress(sender, tokenMintAddress)
+            val (sendAssociatedAccount) = PublicKey.findProgramDerivedAddress(sender, tokenMintAddress, tokenProgramId)
             instructions.add(
                 SplTransferInstruction(
                     from = sendAssociatedAccount,
@@ -269,6 +286,7 @@ suspend fun Web3Token.buildTransaction(
                     signers = emptyList(),
                     amount = BigDecimal(v).multiply(BigDecimal.TEN.pow(decimals)).toLong(),
                     decimals = tokenAmount.decimals,
+                    tokenProgramId = tokenProgramId,
                 ),
             )
         }
