@@ -2,6 +2,7 @@ package one.mixin.android.ui.search.holder
 
 import androidx.core.view.isVisible
 import one.mixin.android.databinding.ItemSearchMaoUserBinding
+import one.mixin.android.extension.expandTouchArea
 import one.mixin.android.extension.highLightMao
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.sp
@@ -12,6 +13,10 @@ import one.mixin.android.vo.MaoUser
 class MaoUserHolder constructor(
     val binding: ItemSearchMaoUserBinding,
 ) : NormalHolder(binding.root) {
+
+    init {
+        binding.open.expandTouchArea()
+    }
 
     companion object {
         private const val MAO_ICON = "https://kernel.mixin.dev/objects/fe75a8e48aeffb486df622c91bebfe4056ada7009f3151fb49e2a18340bbd615/icon"
