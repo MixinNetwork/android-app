@@ -24,6 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:entries="@array/database"
+                android:textColor="?attr/text_primary"
                 style="@style/common_spinner"/>
 
         <EditText
@@ -37,6 +38,8 @@
                 android:hint="type raw sql"
                 android:padding="12dp"
                 android:maxLines="5"
+                android:textColor="?attr/text_primary"
+                android:textColorHint="?attr/text_assist"
                 tools:ignore="Autofill,HardcodedText,TextFields" />
     </LinearLayout>
 

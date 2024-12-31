@@ -223,11 +223,25 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
                 override fun onUserClick(user: MaoUser) {
                     binding.searchRv.hideKeyboard()
+                    if (user.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG,
+                        )
+                        return
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
                 override fun onUserClick(user: User) {
                     binding.searchRv.hideKeyboard()
+                    if (user.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG,
+                        )
+                        return
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
@@ -352,6 +366,17 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     }
                 }
 
+            if (keyword.isValidMao()) {
+                searchAdapter.setMaoUser(null)
+                searchMaoJob = launch {
+                    searchViewModel.searchMaoUser(keyword)?.let { maoUser ->
+                        searchAdapter.setMaoUser(maoUser)
+                    }
+                }
+            } else {
+                searchAdapter.setMaoUser(null)
+            }
+
             val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
             refreshAssetsJob =
                 launch {
@@ -365,16 +390,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
             messageSearchJob?.join()
 
-            if (keyword.isValidMao()) {
-                searchAdapter.setMaoUser(null)
-                searchMaoJob = launch {
-                    searchViewModel.searchMaoUser(keyword)?.let { maoUser ->
-                        searchAdapter.setMaoUser(maoUser)
-                    }
-                }
-            } else {
-                searchAdapter.setMaoUser(null)
-            }
             (requireActivity() as MainActivity).hideSearchLoading()
         }
 

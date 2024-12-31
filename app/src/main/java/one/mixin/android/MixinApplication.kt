@@ -30,7 +30,6 @@ import com.appsflyer.AppsFlyerLib
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.mapbox.maps.loader.MapboxMapsInitializer
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -67,7 +66,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.ui.conversation.location.useMapbox
+import one.mixin.android.ui.conversation.location.useOpenStreetMap
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -155,9 +154,11 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
-        if (useMapbox()) {
-            AppInitializer.getInstance(this)
-                .initializeComponent(MapboxMapsInitializer::class.java)
+        if (useOpenStreetMap()) {
+            org.osmdroid.config.Configuration.getInstance().load(
+                this,
+                this.getSharedPreferences("osm_prefs", MODE_PRIVATE)
+            )
         }
 
         initNativeLibs(applicationContext)

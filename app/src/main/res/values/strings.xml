@@ -726,8 +726,9 @@
     <string name="Notice">Notice</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
-    <string name="notification_content">Don\'t miss messages from your friends.</string>
+    <string name="notification_content">Enable push notifications to stay updated on price alerts and messages in real time.</string>
     <string name="Notifications">Notifications</string>
+    <string name="Enable_Notifications">Enable Notifications</string>
     <string name="Now_Playing">Now Playing</string>
     <string name="number_reached_limit">The number has reached the limit</string>
     <string name="Off">Off</string>
@@ -959,7 +960,7 @@
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
-    <string name="setting_emergency_content">The recovery contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number or mnemonic phrase.</string>
+    <string name="setting_emergency_content">The Recovery Contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number.</string>
     <string name="setting_emergency_create_success">Create recovery contact successfully</string>
     <string name="setting_emergency_desc">When you lose your mobile number, please contact your recovery contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
     <string name="setting_emergency_pin_tip">Your recovery contact is protected by PIN</string>
@@ -1077,7 +1078,7 @@
     <string name="Trying_connect_tip_network">Connecting the TIP network</string>
     <string name="Trying_connect_tip_node">Trying connect TIP node</string>
     <string name="Tuesday">Tuesday</string>
-    <string name="Turn_On_Notifications">Turn On Notifications</string>
+    <string name="Turn_On_Notifications">Enable push notification</string>
     <string name="Type_message">Type message</string>
     <string name="Unblock">Unblock</string>
     <string name="UNDO">UNDO</string>

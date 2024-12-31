@@ -44,6 +44,9 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launch {
             binding.apply {
+                root.setOnClickListener {
+                    // do nothing
+                }
                 titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 webDebugSc.isChecked =
                     defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
@@ -60,6 +63,9 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                         }
                     }
                 }
+                webDebug.setOnClickListener {
+                    webDebugSc.performClick()
+                }
 
                 diagnosis.setOnClickListener {
                     navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
@@ -74,12 +80,15 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                         DatabaseDebugFragment.TAG,
                     )
                 }
-                databaseDebugLogsSc.isChecked = findValueByKey(Constants.Debug.DB_DEBUG, false)
+                databaseDebugLogsSc.isChecked = findValueByKey(Constants.Debug.DB_DEBUG_LOGS, false)
                 databaseDebugLogsSc.setOnCheckedChangeListener { _, isChecked ->
                     lifecycleScope.launch {
                         updateKeyValue(Constants.Debug.DB_DEBUG_LOGS, isChecked)
                         DatabaseMonitor.reset()
                     }
+                }
+                databaseDebugLogs.setOnClickListener {
+                    databaseDebugLogsSc.performClick()
                 }
                 safe.setOnClickListener {
                     navTo(

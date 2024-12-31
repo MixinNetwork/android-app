@@ -75,7 +75,7 @@ buildscript {
         ext.argon2ktVersion = '0.0.1'
         ext.keccakVersion = '1.1.3'
 
-        ext.mapboxSdkVersion= '10.10.0'
+        ext.streetMapVersion= '6.1.18'
 
         ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.6.1'
@@ -110,7 +110,7 @@ buildscript {
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
 
-        ext.sumsubVersion = '1.34.0'
+        ext.sumsubVersion = '1.34.1'
         ext.checkoutFramesVersion = '4.2.3'
         ext.checkoutSecureVersion = '3.2.2'
         ext.checkoutRiskVersion = '1.0.6'
@@ -160,15 +160,9 @@ allprojects {
         mavenCentral()
         maven { url "https://jitpack.io" }
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
-        maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                username = 'mapbox'
-                password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
-            }
+        maven{
+            url  'https://oss.sonatype.org/content/repositories/snapshots/'
+            name 'OSS-Sonatype'
         }
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
 

@@ -708,8 +708,9 @@
     <string name="Notice">注意</string>
     <string name="Notification_and_Confirmation">通知和确认</string>
     <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>
-    <string name="notification_content">不再遗漏好友的消息。</string>
+    <string name="notification_content">启用推送通知以实时更新价格警报和消息。</string>
     <string name="Notifications">通知</string>
+    <string name="Enable_Notifications">启用通知</string>
     <string name="Now_Playing">正在播放</string>
     <string name="number_reached_limit">已达到上限</string>
     <string name="Off">关闭</string>
@@ -1056,7 +1057,7 @@
     <string name="Trying_connect_tip_network">正在连接 TIP 网络</string>
     <string name="Trying_connect_tip_node">正在连接节点…</string>
     <string name="Tuesday">星期二</string>
-    <string name="Turn_On_Notifications">打开通知</string>
+    <string name="Turn_On_Notifications">启用推送通知</string>
     <string name="Type_message">输入消息</string>
     <string name="Unblock">解除屏蔽</string>
     <string name="UNDO">撤销</string>

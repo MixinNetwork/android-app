@@ -127,7 +127,7 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 }
 
 fun Context.isScreenWideColorGamut(): Boolean {
-    return resources.configuration.isScreenWideColorGamut()
+    return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater

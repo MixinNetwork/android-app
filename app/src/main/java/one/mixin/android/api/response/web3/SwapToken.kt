@@ -52,10 +52,13 @@ data class SwapToken(
     fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolTokenAssetKey, true)
 
     fun getUnique(): String {
-        return address.ifEmpty {
-            assetId
+        return assetId.ifEmpty {
+            assetKey
         }
     }
+
+    val assetKey: String
+        get() = if (address == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else address
 
     fun inMixin(): Boolean = assetId != ""
 
@@ -63,13 +66,24 @@ data class SwapToken(
         if (other !is SwapToken) return false
 
         return if (address.isNotEmpty()) {
-            address == other.address
+            assetKey == other.assetKey
         } else if (assetId.isNotEmpty()) {
             assetId == other.assetId
         } else {
             false
         }
     }
+
+    override fun hashCode(): Int {
+        return if (address.isNotEmpty()) {
+            assetKey.hashCode()
+        } else if (assetId.isNotEmpty()) {
+            assetId.hashCode()
+        } else {
+            super.hashCode()
+        }
+    }
+
 }
 
 interface Swappable : Parcelable {

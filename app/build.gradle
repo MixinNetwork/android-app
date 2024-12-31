@@ -16,9 +16,9 @@ plugins {
 }
 
 def versionMajor = 2
-def versionMinor = 0
-def versionPatch = 6
-def versionBuild = 0
+def versionMinor = 1
+def versionPatch = 0
+def versionBuild = 2
 
 android {
     compileSdk 35
@@ -373,8 +373,7 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
     implementation "com.github.skydoves:balloon:$balloonVersion"
-    implementation "com.mapbox.maps:android:${mapboxSdkVersion}"
-    implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
+    implementation "org.osmdroid:osmdroid-android:$streetMapVersion"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.SeniorZhai:IndicatorSeekBar:${indicatorseekbarVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
