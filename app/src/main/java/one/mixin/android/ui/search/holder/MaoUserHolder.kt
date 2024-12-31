@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search.holder
 
+import androidx.core.view.isVisible
 import one.mixin.android.databinding.ItemSearchMaoUserBinding
 import one.mixin.android.extension.highLightMao
 import one.mixin.android.extension.loadImage
@@ -25,6 +26,12 @@ class MaoUserHolder constructor(
             maoNameTv.text = user.maoName
             maoNameTv.highLightMao()
             maoNameTv.loadImage(MAO_ICON, 14.sp)
+            open.isVisible = user.appId != null
+            open.setOnClickListener {
+                user.appId?.let {
+                    onItemClickListener?.onMaoAppClick(it)
+                }
+            }
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             root.setOnClickListener {
                 onItemClickListener?.onUserClick(user)

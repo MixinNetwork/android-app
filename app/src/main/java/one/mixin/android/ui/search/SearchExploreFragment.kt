@@ -137,6 +137,10 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                     // do noting
                 }
 
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
+                }
+
                 override fun onBotClick(bot: SearchBot) {
                     val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
