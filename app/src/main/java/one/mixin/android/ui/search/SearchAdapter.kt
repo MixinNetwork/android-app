@@ -82,7 +82,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
             TypeUser.index -> if (data.userShowMore()) data.userList else null
             TypeChat.index -> if (data.chatShowMore()) data.chatList else null
-            else -> if (data.messageShowMore()) data.messageList else null
+            TypeMessage.index -> if (data.messageShowMore()) data.messageList else null
+            else -> null // bot, mao, tip, market, dapp no more
         }
 
     @SuppressLint("NotifyDataSetChanged")
