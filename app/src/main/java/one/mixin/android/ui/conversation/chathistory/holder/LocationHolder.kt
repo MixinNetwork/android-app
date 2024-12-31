@@ -8,9 +8,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.mapbox.maps.MapView
-import com.mapbox.maps.ResourceOptionsManager
-import com.mapbox.maps.plugin.gestures.gestures
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -23,11 +20,16 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
-import one.mixin.android.ui.conversation.location.useMapbox
+import one.mixin.android.ui.conversation.location.useOpenStreetMap
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
+import org.osmdroid.api.IMapView
+import org.osmdroid.views.MapView
+import org.osmdroid.api.IMapController
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.views.CustomZoomButtonsController
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
@@ -45,21 +47,37 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             MixinApplication.appContext.dpToPx(4f).toFloat()
         }
 
-        private val useMapbox = useMapbox()
+        private val useMapbox = useOpenStreetMap()
 
         init {
             binding.chatName.setMaxWidth(itemView.context.maxItemWidth() - dp16)
             binding.locationLayout.round(6.dp)
-            var mapBoxView: MapView? = null
+            var osmMapView: MapView? = null
             if (useMapbox) {
-                ResourceOptionsManager.getDefault(itemView.context, BuildConfig.MAPBOX_PUBLIC_TOKEN)
                 val stub = binding.mapboxStub
-                mapBoxView = stub.inflate() as MapView
+                osmMapView = stub.inflate() as MapView
+
+                osmMapView.apply {
+                    setTileSource(TileSourceFactory.MAPNIK)
+                    setMultiTouchControls(false)
+                    isHorizontalMapRepetitionEnabled = false
+                    isVerticalMapRepetitionEnabled = false
+
+                    zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+                    setBuiltInZoomControls(false)
+                    setMultiTouchControls(false)
+
+                    setHasTransientState(false)
+
+                    overlayManager.overlays().removeIf { it is org.osmdroid.views.overlay.compass.CompassOverlay }
+
+                    setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                }
             }
-            mixinMapView = MixinMapView(binding.root.context, binding.googleMap, mapBoxView)
+            mixinMapView = MixinMapView(binding.root.context, binding.googleMap, osmMapView)
             mixinMapView.onCreate(null)
             if (useMapbox) {
-                initMapbox(mapBoxView)
+                initOsm(osmMapView)
             } else {
                 binding.googleMap.getMapAsync(this)
             }
@@ -83,16 +101,14 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             setMapLocation()
         }
 
-        private fun initMapbox(mapboxView: MapView?) {
-            val mapboxMap = mapboxView?.getMapboxMap() ?: return
+        private fun initOsm(osmMapView: MapView?) {
+            val mapController = osmMapView?.controller ?: return
 
-            mixinMapView.mapboxMap = mapboxMap
-            mapboxMap.loadStyleUri(mixinMapView.getMapboxStyle())
-            mapboxView.gestures.updateSettings {
-                rotateEnabled = false
-                rotateEnabled = false
-                pitchEnabled = false
-            }
+            mixinMapView.osmMapController = mapController
+            osmMapView.setMultiTouchControls(false)
+            osmMapView.isHorizontalMapRepetitionEnabled = false
+            osmMapView.isVerticalMapRepetitionEnabled = false
+            
             if (onResumeCalled) {
                 mixinMapView.onResume()
             }
@@ -101,7 +117,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
 
         private fun setMapLocation() {
             if (useMapbox) {
-                if (mixinMapView.mapboxMap == null) return
+                if (mixinMapView.osmMapController == null) return
             } else {
                 if (mixinMapView.googleMap == null) return
             }

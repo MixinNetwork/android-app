@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
@@ -30,13 +31,6 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.mapbox.android.gestures.MoveGestureDetector
-import com.mapbox.maps.MapView
-import com.mapbox.maps.ResourceOptionsManager
-import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener
-import com.mapbox.maps.plugin.gestures.OnMoveListener
-import com.mapbox.maps.plugin.gestures.gestures
-import com.mapbox.maps.plugin.locationcomponent.location
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -67,6 +61,12 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
+import org.osmdroid.views.MapView
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
 
 @AndroidEntryPoint
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
@@ -134,8 +134,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
 
     private lateinit var mixinMapView: MixinMapView
-    private var mapboxView: MapView? = null
-    private val useMapbox = useMapbox()
+    private var osmMapView: org.osmdroid.views.MapView? = null
+    private val useOsm = useOpenStreetMap()
 
     private lateinit var binding: ActivityLocationBinding
 
@@ -147,10 +147,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             if (location != null) {
                 mentionLocation.motion.loadLayoutDescription(R.xml.scene_location_none)
             }
-            if (useMapbox) {
-                ResourceOptionsManager.getDefault(this@LocationActivity, BuildConfig.MAPBOX_PUBLIC_TOKEN)
-                val stub = mentionLocation.mapboxStub
-                mapboxView = stub.inflate() as MapView
+            if (useOsm) {
+                val stub = mentionLocation.osmStub
+                osmMapView = stub.inflate() as org.osmdroid.views.MapView
             } else {
                 try {
                     MapsInitializer.initialize(MixinApplication.appContext)
@@ -158,12 +157,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     Timber.e(e)
                 }
             }
-            mixinMapView =
-                MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapboxView).apply {
-                    onCreate(savedInstanceState)
-                }
-            if (useMapbox) {
-                initMapboxMap(mapboxView)
+            mixinMapView = MixinMapView(
+                this@LocationActivity,
+                mentionLocation.googleMapView,
+                osmMapView
+            ).apply {
+                onCreate(savedInstanceState)
+            }
+            if (useOsm) {
+                initOsmMap(osmMapView)
             } else {
                 mentionLocation.googleMapView.getMapAsync(this@LocationActivity)
             }
@@ -444,47 +446,49 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         googleMap.setOnCameraMoveCanceledListener {}
     }
 
-    private fun initMapboxMap(mapboxView: MapView?) {
-        val mapboxMap = mapboxView?.getMapboxMap() ?: return
-        mixinMapView.mapboxMap = mapboxMap
-        mapboxMap.loadStyleUri(mixinMapView.getMapboxStyle())
-        mapboxView.location.apply {
-            enabled = true
-        }
-        mapboxView.gestures.apply {
-            rotateEnabled = false
-            addOnMoveListener(onMoveListener)
-        }
-        mapboxMap.addOnMapIdleListener {
-            markerAnimatorSet?.cancel()
-            markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(
-                ObjectAnimator.ofFloat(
-                    binding.mentionLocation.icMarker,
-                    View.TRANSLATION_Y,
-                    0f,
-                ),
-            )
-            markerAnimatorSet?.duration = 200
-            markerAnimatorSet?.start()
-            mapboxMap.cameraState.center.let { point ->
-                if (location == null) {
-                    val mixinLatLng = MixinLatLng(point.latitude(), point.longitude())
-                    currentPosition = mixinLatLng
-                    search(mixinLatLng)
-                }
-            }
-        }
-        mixinMapView.pointAnnotationManager?.addClickListener(
-            OnPointAnnotationClickListener { annotation ->
-                val point = annotation.point
-                locationSearchAdapter.setMark(point.latitude(), point.longitude())
-                binding.mentionLocation.icMarker.isVisible = true
-                mixinMapView.moveCamera(MixinLatLng(point.latitude(), point.longitude()))
-                return@OnPointAnnotationClickListener true
-            },
-        )
+    private fun initOsmMap(mapView: org.osmdroid.views.MapView?) {
+        mapView?.apply {
+            setMultiTouchControls(true)
+            overlayManager.tilesOverlay.loadingBackgroundColor = Color.TRANSPARENT
+            overlayManager.tilesOverlay.loadingLineColor = Color.TRANSPARENT
+            
+            addMapListener(object : MapListener {
+                override fun onScroll(event: ScrollEvent?): Boolean {
+                    if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
+                        binding.mentionLocation.icMarker.isVisible = true
+                        locationSearchAdapter.setMark()
+                    }
+                    
+                    markerAnimatorSet?.cancel()
+                    markerAnimatorSet = AnimatorSet()
+                    markerAnimatorSet?.playTogether(
+                        ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat())
+                    )
+                    markerAnimatorSet?.duration = 200
+                    markerAnimatorSet?.start()
 
+                    val center = projection.fromPixels(width/2, height/2) as GeoPoint
+                    currentPosition = MixinLatLng(center.latitude, center.longitude)
+                    if (location == null) {
+                        search(currentPosition!!)
+                    }
+
+                    markerAnimatorSet?.cancel()
+                    markerAnimatorSet = AnimatorSet()
+                    markerAnimatorSet?.playTogether(
+                        ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, 0f)
+                    )
+                    markerAnimatorSet?.duration = 200
+                    markerAnimatorSet?.start()
+                    
+                    return true
+                }
+
+                override fun onZoom(event: ZoomEvent?): Boolean {
+                    return false
+                }
+            })
+        }
         afterInit()
     }
 
@@ -599,27 +603,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private var markerAnimatorSet: AnimatorSet? = null
-
-    private val onMoveListener =
-        object : OnMoveListener {
-            override fun onMoveBegin(detector: MoveGestureDetector) {
-                if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
-                    binding.mentionLocation.icMarker.isVisible = true
-                    locationSearchAdapter.setMark()
-                }
-                markerAnimatorSet?.cancel()
-                markerAnimatorSet = AnimatorSet()
-                markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat()))
-                markerAnimatorSet?.duration = 200
-                markerAnimatorSet?.start()
-            }
-
-            override fun onMove(detector: MoveGestureDetector): Boolean {
-                return false
-            }
-
-            override fun onMoveEnd(detector: MoveGestureDetector) {}
-        }
 
     private val textWatcher =
         object : TextWatcher {
