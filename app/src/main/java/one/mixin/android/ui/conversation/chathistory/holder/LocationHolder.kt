@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
+import android.graphics.ColorFilter
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -8,7 +9,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.MapStyleOptions
-import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatLocationBinding
@@ -25,11 +25,9 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
-import org.osmdroid.api.IMapView
-import org.osmdroid.views.MapView
-import org.osmdroid.api.IMapController
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.CustomZoomButtonsController
+import org.osmdroid.views.MapView
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
@@ -64,9 +62,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
                     isVerticalMapRepetitionEnabled = false
 
                     zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
-                    setBuiltInZoomControls(false)
                     setMultiTouchControls(false)
-
                     setHasTransientState(false)
 
                     overlayManager.overlays().removeIf { it is org.osmdroid.views.overlay.compass.CompassOverlay }
@@ -108,7 +104,6 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             osmMapView.setMultiTouchControls(false)
             osmMapView.isHorizontalMapRepetitionEnabled = false
             osmMapView.isVerticalMapRepetitionEnabled = false
-            
             if (onResumeCalled) {
                 mixinMapView.onResume()
             }

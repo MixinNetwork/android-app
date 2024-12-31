@@ -36,7 +36,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
@@ -57,16 +56,14 @@ import one.mixin.android.util.distanceFormat
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.getImageUrl
-import timber.log.Timber
-import javax.inject.Inject
-import kotlin.math.max
-import kotlin.math.min
-import org.osmdroid.views.MapView
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Marker
+import timber.log.Timber
+import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 
 @AndroidEntryPoint
 class LocationActivity : BaseActivity(), OnMapReadyCallback {

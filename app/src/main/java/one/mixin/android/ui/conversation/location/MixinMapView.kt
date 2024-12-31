@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.location
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import androidx.core.view.isVisible
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -10,16 +11,16 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Marker
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.vo.foursquare.Venue
 import org.osmdroid.api.IMapController
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
 
 class MixinMapView(
     private val context: Context,
@@ -97,7 +98,7 @@ class MixinMapView(
     fun moveCamera(latLng: MixinLatLng) {
         if (useOsm) {
             osmMapView?.controller?.apply {
-                setZoom(OSM_ZOOM_LEVEL.toDouble())
+                setZoom(OSM_ZOOM_LEVEL)
                 setCenter(GeoPoint(latLng.latitude, latLng.longitude))
             }
         } else {
@@ -164,7 +165,7 @@ class MixinMapView(
 
     companion object {
         private const val GOOGLE_MAP_ZOOM_LEVEL = 13f
-        private const val OSM_ZOOM_LEVEL = 12
+        private const val OSM_ZOOM_LEVEL = 16f.toDouble()
     }
 }
 

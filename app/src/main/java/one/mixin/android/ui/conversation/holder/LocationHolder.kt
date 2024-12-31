@@ -1,6 +1,5 @@
 package one.mixin.android.ui.conversation.holder
 
-import android.content.Context
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
@@ -10,10 +9,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.MapStyleOptions
-import org.osmdroid.views.MapView
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -32,7 +27,9 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.CustomZoomButtonsController
+import org.osmdroid.views.MapView
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
@@ -110,7 +107,6 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             osmMapView.setMultiTouchControls(false)
             osmMapView.isHorizontalMapRepetitionEnabled = false
             osmMapView.isVerticalMapRepetitionEnabled = false
-            
             if (onResumeCalled) {
                 mixinMapView.onResume()
             }
