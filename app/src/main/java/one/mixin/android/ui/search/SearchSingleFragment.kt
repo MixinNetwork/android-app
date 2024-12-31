@@ -181,8 +181,11 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 }
 
                 override fun onUserClick(user: MaoUser) {
-                    binding.searchRv.hideKeyboard()
-                    context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+                    // do nothing
+                }
+
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
                 }
 
                 override fun onChatLongClick(

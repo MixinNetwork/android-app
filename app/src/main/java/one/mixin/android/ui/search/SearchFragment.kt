@@ -44,6 +44,7 @@ import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
@@ -243,6 +244,18 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                         return
                     }
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+                }
+
+                override fun onMaoAppClick(appId: String) {
+                    binding.searchRv.hideKeyboard()
+                    lifecycleScope.launch {
+                        val app = searchViewModel.findOrSyncApp(appId)
+                        if (app != null) {
+                            WebActivity.show(requireContext(), url = app.homeUri, null, app = app)
+                        } else {
+                            toast(R.string.Bot_not_found)
+                        }
+                    }
                 }
 
                 override fun onBotClick(bot: SearchBot) {
@@ -448,6 +461,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         fun onUserClick(user: User)
 
         fun onUserClick(user: MaoUser)
+
+        fun onMaoAppClick(userId: String)
 
         fun onBotClick(bot: SearchBot)
 
