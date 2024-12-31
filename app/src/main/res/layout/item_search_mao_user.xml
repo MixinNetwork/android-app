@@ -61,5 +61,5 @@
         android:paddingBottom="4dp"
         android:text="@string/Open"
         android:textColor="@color/white"
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 </RelativeLayout>
