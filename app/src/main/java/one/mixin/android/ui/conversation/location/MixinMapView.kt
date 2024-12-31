@@ -1,8 +1,8 @@
 package one.mixin.android.ui.conversation.location
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -17,7 +17,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.vo.foursquare.Venue
 import org.osmdroid.api.IMapController
-import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
@@ -25,7 +24,7 @@ import org.osmdroid.views.overlay.Marker
 class MixinMapView(
     private val context: Context,
     private val googleMapView: MapView,
-    private val osmMapView: org.osmdroid.views.MapView?
+    private val osmMapView: org.osmdroid.views.MapView?,
 ) {
     private val p = 64.dp.toDouble()
     private val useOsm = useOpenStreetMap()
@@ -35,23 +34,28 @@ class MixinMapView(
         osmMapView?.isVisible = useOsm
 
         if (useOsm) {
-            Configuration.getInstance().load(context, context.getSharedPreferences("osm_prefs", Context.MODE_PRIVATE))
             osmMapView?.setTileSource(TileSourceFactory.MAPNIK)
             osmMapView?.setMultiTouchControls(true)
+            osmMapView?.setHasTransientState(true)
         }
     }
 
     var googleMap: GoogleMap? = null
     var osmMapController: IMapController? = null
+    val marker by lazy {
+        osmMapView?.let { Marker(it) }
+    }
 
     fun addMarker(latLng: MixinLatLng) {
         if (useOsm) {
-            val marker = Marker(osmMapView)
-            marker.position = GeoPoint(latLng.latitude, latLng.longitude)
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.icon = context.resources.getDrawable(R.drawable.ic_location_search_maker)
-            osmMapView?.overlays?.add(marker)
-            osmMapView?.invalidate()
+            marker?.let { marker ->
+                osmMapView?.overlays?.remove(marker)
+                marker.position = GeoPoint(latLng.latitude, latLng.longitude)
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                marker.icon = ContextCompat.getDrawable(context, R.drawable.ic_location_search_maker)
+                osmMapView?.overlays?.add(marker)
+                osmMapView?.invalidate()
+            }
         } else {
             googleMap?.addMarker(
                 MarkerOptions()
@@ -63,12 +67,14 @@ class MixinMapView(
 
     fun addMarker(index: Int, venue: Venue) {
         if (useOsm) {
-            val marker = Marker(osmMapView)
-            marker.position = GeoPoint(venue.location.lat, venue.location.lng)
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.icon = context.resources.getDrawable(R.drawable.ic_location_search_maker)
-            osmMapView?.overlays?.add(marker)
-            osmMapView?.invalidate()
+            marker?.let { marker ->
+                osmMapView?.overlays?.remove(marker)
+                marker.position = GeoPoint(venue.location.lat, venue.location.lng)
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                marker.icon = ContextCompat.getDrawable(context, R.drawable.ic_location_search_maker)
+                osmMapView?.overlays?.add(marker)
+                osmMapView?.invalidate()
+            }
         } else {
             googleMap?.addMarker(
                 MarkerOptions().zIndex(index.toFloat()).position(
@@ -101,6 +107,7 @@ class MixinMapView(
                 setZoom(OSM_ZOOM_LEVEL)
                 setCenter(GeoPoint(latLng.latitude, latLng.longitude))
             }
+            osmMapView?.invalidate()
         } else {
             googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng.toGoogleMap(), GOOGLE_MAP_ZOOM_LEVEL))
         }
@@ -118,6 +125,8 @@ class MixinMapView(
     fun onCreate(savedInstanceState: Bundle?) {
         if (!useOsm) {
             googleMapView.onCreate(savedInstanceState)
+        } else {
+            osmMapView?.onAttachedToWindow()
         }
     }
 
@@ -130,12 +139,18 @@ class MixinMapView(
     fun onResume() {
         if (!useOsm) {
             googleMapView.onResume()
+        } else {
+            osmMapView?.onResume()
+            marker?.onResume()
         }
     }
 
     fun onPause() {
         if (!useOsm) {
             googleMapView.onPause()
+        } else {
+            osmMapView?.onPause()
+            marker?.onPause()
         }
     }
 
@@ -148,6 +163,10 @@ class MixinMapView(
     fun onDestroy() {
         if (!useOsm) {
             googleMapView.onDestroy()
+        } else {
+            osmMapView?.setHasTransientState(false)
+            osmMapView?.onDetach()
+            marker?.onDestroy()
         }
     }
 
