@@ -66,11 +66,11 @@ class PendingView @JvmOverloads constructor(
         }
 
         binding.content.text = if (pendingDisplays.size == 1) binding.root.context.getString(
-            R.string.deposit_confirmation,
+            R.string.Deposit_Pending_Confirmation,
             "${pendingDisplays[0].amount} ${pendingDisplays[0].symbol}"
         )
         else binding.root.context.getString(
-            R.string.deposit_confirmation_count,
+            R.string.Deposits_Pending_Confirmation,
             pendingDisplays.size
         )
     }
