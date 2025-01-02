@@ -416,8 +416,8 @@ fun ImageView.loadRoundImage(
     }
 }
 
-fun TextView.loadImage(url: String, size: Int, @DrawableRes placeholder: Int? = null) {
-    val request = ImageRequest.Builder(context).data(url).apply {
+fun TextView.loadImage(data: Any?, size: Int, @DrawableRes placeholder: Int? = null) {
+    val request = ImageRequest.Builder(context).data(data).apply {
         placeholder?.let { placeholder(it) }
         transformations(CoilRoundedHexagonTransformation())
     }.target { drawable ->
