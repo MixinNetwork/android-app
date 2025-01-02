@@ -28,6 +28,7 @@ import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
+import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -136,6 +137,17 @@ class NewSchemeParser(
                         } else {
                             null
                         }
+                    } else if (payType == PayType.Invoice) {
+                        val invoice = urlQueryParser.mixInvoice
+                        if (invoice == null) return Result.failure(ParserError(FAILURE))
+                        Timber.e(
+                            "invoice: $invoice ${
+                                invoice.entries.map {
+                                    "${it.traceId} ${it.assetId} ${it.amount} ${it.extra} ${it.indexReferences} ${it.hashReferences}"
+                                }
+                            }"
+                        )
+                        null
                     } else {
                         TransferFragment.newInstance(buildAddressBiometricItem(urlQueryParser.lastPath, traceId, token, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference))
                     }
