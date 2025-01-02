@@ -55,7 +55,7 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                     binding.name.text = "N/A"
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
-                } else if(snapshot.opponentId.startsWith("XIN", true)){
+                } else if (snapshot.opponentId.startsWith("XIN", true)) {
                     binding.name.text = snapshot.opponentId
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
@@ -73,7 +73,7 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
             SafeSnapshotType.pending -> {
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
                 binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
-                binding.avatar.setNet()
+                binding.avatar.setDeposit()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
 
@@ -129,12 +129,13 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                     "-1"
                 }
             }
-        binding.value.textColorResource =
-            when {
-                snapshot.type == SafeSnapshotType.pending.name -> R.color.wallet_pending_text_color
-                isPositive -> R.color.wallet_green
-                else -> R.color.wallet_pink
-            }
+        binding.value.textColor = when {
+            snapshot.type == SafeSnapshotType.pending.name -> binding.root.context.colorFromAttribute(R.attr.text_primary)
+            // Pending withdrawal
+            snapshot.withdrawal?.withdrawalHash.isNullOrBlank() -> binding.root.context.colorFromAttribute(R.attr.text_primary)
+            isPositive -> binding.root.context.getColor(R.color.wallet_green)
+            else -> binding.root.context.getColor(R.color.wallet_pink)
+        }
 
         if (snapshot.inscriptionHash.isNullOrBlank()) {
             binding.symbolIv.isVisible = false
@@ -158,8 +159,9 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
 
 class SnapshotHeaderViewHolder(itemView: View, layout: Boolean = false) : RecyclerView.ViewHolder(itemView) {
     private val binding = ItemTransactionHeaderBinding.bind(itemView)
+
     init {
-        if (layout) binding.dateTv.setPadding(16.dp,0,16.dp,0)
+        if (layout) binding.dateTv.setPadding(16.dp, 0, 16.dp, 0)
     }
 
     fun bind(time: String) {

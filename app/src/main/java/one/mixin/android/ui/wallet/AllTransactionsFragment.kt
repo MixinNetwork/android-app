@@ -234,10 +234,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
                 successBlock = {
-                    walletViewModel.clearAllPendingDeposits()
-
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
                         return@handleMixinResponse
                     }
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
@@ -247,13 +246,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                                 dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
                             }
                         }
-                        .chunked(100) { chunk ->
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
                             lifecycleScope.launch {
-                                chunk.map { pd ->
-                                    pd.toSnapshot()
-                                }.let { list ->
-                                    walletViewModel.insertPendingDeposit(list)
-                                }
+                                walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
                 },

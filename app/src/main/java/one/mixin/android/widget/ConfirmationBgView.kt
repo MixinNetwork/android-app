@@ -11,15 +11,24 @@ import android.widget.RelativeLayout
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Shader
+import one.mixin.android.extension.dp
+import kotlin.math.max
+import kotlin.math.min
+
 
 class ConfirmationBgView : RelativeLayout {
     private val colorWhite by lazy { context.colorFromAttribute(R.attr.bg_white) }
-    private val colorConfirmation by lazy { context.colorFromAttribute(R.attr.bg_confirmation) }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private var all = 0
     private var cur = 0
+    private val dp10 = 10.dp.toFloat()
+    private val dp41 = 41.dp.toFloat()
+
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
@@ -34,11 +43,15 @@ class ConfirmationBgView : RelativeLayout {
             paint.color = colorWhite
             canvas.drawRect(0f, 0f, w, h, paint)
         } else {
-            val blueWidth = (cur.toFloat() / all) * w
-            paint.color = colorWhite
-            canvas.drawRect(0f, 0f, w - blueWidth, h, paint)
-            paint.color = colorConfirmation
-            canvas.drawRect(w - blueWidth, 0f, w, h, paint)
+            val gradient = LinearGradient(
+                0f, 0f, w, 0f,
+                intArrayOf(Color.argb(min(51 * cur / all, 51), 80, 189, 92), Color.argb(51, 80, 189, 92)),
+                null,
+                Shader.TileMode.CLAMP
+            )
+            paint.shader = gradient
+            canvas.drawRect(dp41, dp10, w, h - dp10, paint)
+
         }
     }
 

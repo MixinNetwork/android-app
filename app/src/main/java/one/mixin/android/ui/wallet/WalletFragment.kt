@@ -39,6 +39,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
@@ -89,6 +90,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -96,6 +98,7 @@ import one.mixin.android.widget.calcPercent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
+import kotlin.collections.map
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -420,6 +423,24 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
             migrateEnable = it
         }
+
+        walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
+            _headBinding?.apply {
+                pendingView.isVisible = it.isNotEmpty()
+                pendingView.updateTokens(it)
+                pendingView.setOnClickListener { v ->
+                    if (it.size == 0) {
+                        lifecycleScope.launch {
+                            val token = walletViewModel.simpleAssetItem(it[0].assetId) ?: return@launch
+                            WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
+                        }
+                    } else {
+                        WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+                    }
+                }
+            }
+        }
+
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
@@ -431,6 +452,38 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
         _headBinding?.sendReceiveView?.badge?.isVisible = swap
     }
+
+    override fun onResume() {
+        super.onResume()
+        refreshAllPendingDeposit()
+    }
+
+    private fun refreshAllPendingDeposit() =
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { walletViewModel.allPendingDeposit() },
+                successBlock = {
+                    val pendingDeposits = it.data
+                    if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
+                        return@handleMixinResponse
+                    }
+                    val destinationTags = walletViewModel.findDepositEntryDestinations()
+                    pendingDeposits
+                        .filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            lifecycleScope.launch {
+                                walletViewModel.insertPendingDeposit(snapshots)
+                            }
+                        }
+                },
+            )
+        }
+
 
     private var migrateEnable = false
 
