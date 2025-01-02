@@ -79,11 +79,7 @@ class UserRepository
             DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
         suspend fun searchSuspend(query: String): MixinResponse<User> {
-            val response = userService.searchSuspend(query)
-            response.data?.let {
-                upsert(it)
-            }
-            return response
+            return userService.searchSuspend(query)
         }
 
         suspend fun fuzzySearchGroupUser(

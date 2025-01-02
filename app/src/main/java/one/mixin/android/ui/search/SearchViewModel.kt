@@ -22,6 +22,7 @@ import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
@@ -92,11 +93,21 @@ internal constructor(
         } else {
             runCatching {
                 val maoName = query.completeMao()
-                val response = userRepository.searchSuspend(query)
-                if (response.isSuccess) {
-                    return@runCatching response.data?.toMaoUser(maoName)
-                }
-                return@runCatching null
+                return@runCatching handleMixinResponse(
+                    invokeNetwork = {
+                        userRepository.searchSuspend(query)
+                    },
+                    defaultErrorHandle ={
+                        // do nothing
+                    },
+                    successBlock = { response ->
+                        response.data?.let {
+                            withContext(Dispatchers.IO) {
+                                userRepository.insertUser(it)
+                            }
+                        }
+                        return@handleMixinResponse response.data?.toMaoUser(maoName)
+                    })
             }.getOrNull()
         })
     }
@@ -191,6 +202,8 @@ internal constructor(
     }
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
+
+    suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
 
     suspend fun findBotsByIds(appIds: Set<String>) = userRepository.findBotsByIds(appIds)
 

@@ -3,6 +3,7 @@ package one.mixin.android.ui.search
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
@@ -49,13 +50,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         if (position == 0 && data.showTip) {
             -1
         } else {
-            val type =
-                getItemViewType(position)
-            if (type == TypeMaoUser.index) {
-                -1
-            } else {
-                type.toLong() + data.getHeaderFactor(position)
-            }
+            getItemViewType(position).toLong() + data.getHeaderFactor(position)
         }
 
     override fun onBindHeaderViewHolder(
@@ -64,6 +59,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     ) {
         val context = holder.itemView.context
         when (getItemViewType(position)) {
+            TypeMaoUser.index -> holder.bind(context.getText(R.string.MAO).toString(), false)
             TypeAsset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
             TypeUser.index -> holder.bind(context.getText(R.string.CONTACTS).toString(), data.userShowMore())
             TypeChat.index -> holder.bind(context.getText(R.string.CHATS).toString(), data.chatShowMore())
@@ -82,7 +78,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
             TypeUser.index -> if (data.userShowMore()) data.userList else null
             TypeChat.index -> if (data.chatShowMore()) data.chatList else null
-            else -> if (data.messageShowMore()) data.messageList else null
+            TypeMessage.index -> if (data.messageShowMore()) data.messageList else null
+            else -> null // bot, mao, tip, market, dapp no more
         }
 
     @SuppressLint("NotifyDataSetChanged")
