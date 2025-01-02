@@ -3,11 +3,13 @@ package one.mixin.android.vo
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.hmacSha256
+import one.mixin.android.extension.sha256
 import one.mixin.android.util.UUIDUtils
 import one.mixin.android.util.encodeToBase58String
-import timber.log.Timber
 import java.math.BigInteger
 import java.nio.ByteBuffer
+import java.security.MessageDigest
 import java.util.UUID
 
 const val MixinInvoicePrefix = "MIN"
@@ -54,7 +56,6 @@ data class MixinInvoice(
     fun toByteArray(): ByteArray {
         var result = byteArrayOf(version)
 
-        // Write recipient
         val recipientBytes = recipient.toByteArray()
         if (recipientBytes.size > 1024) {
             throw IllegalArgumentException("recipient bytes too long: ${recipientBytes.size}")
@@ -68,12 +69,11 @@ data class MixinInvoice(
         }
         result += entries.size.toByte()
 
-        // Write entries
         entries.forEach { entry ->
             result += UUIDUtils.toByteArray(entry.traceId)
             result += UUIDUtils.toByteArray(entry.assetId)
 
-            val amountStr = entry.amount.toString()
+            val amountStr = entry.amountString()
             if (amountStr.length > 128) {
                 throw IllegalArgumentException("amount string too long: ${amountStr.length}")
             }
@@ -84,7 +84,6 @@ data class MixinInvoice(
                 throw IllegalArgumentException("extra size too large: ${entry.extra.size}")
             }
             
-            // Write extra length as uint16 (big endian)
             result += ((entry.extra.size shr 8) and 0xFF).toByte()
             result += (entry.extra.size and 0xFF).toByte()
             result += entry.extra
@@ -102,7 +101,7 @@ data class MixinInvoice(
 
             entry.hashReferences.forEach { hash ->
                 result += 0.toByte()
-                result += hash.copyOf()
+                result += hash
             }
         }
 
@@ -110,11 +109,12 @@ data class MixinInvoice(
     }
 
     override fun toString(): String {
-        var payload = toByteArray()
+        val payload = toByteArray()
         val data = MixinInvoicePrefix.toByteArray() + payload
-        val checksum = data.sha3Sum256()
-        payload += checksum.slice(0..3).toByteArray()
-        return MixinInvoicePrefix + payload.base64RawURLEncode()
+        val hash = data.sha3Sum256()
+        val checksum = hash.slice(0..3).toByteArray()
+        val finalPayload = payload + checksum
+        return MixinInvoicePrefix + finalPayload.base64RawURLEncode()
     }
 
     companion object {
@@ -190,9 +190,6 @@ data class MixinInvoice(
                     throw IllegalArgumentException("invalid amount: $amountStr")
                 }
 
-                Timber.d("amount: $amount")
-
-                // Read extra length as uint16 (big endian)
                 val extraLengthBytes = ByteArray(2)
                 decoder.get(extraLengthBytes)
                 val extraLength = ((extraLengthBytes[0].toInt() and 0xFF) shl 8) or (extraLengthBytes[1].toInt() and 0xFF)
@@ -293,7 +290,18 @@ data class InvoiceEntry(
         return result
     }
 
+    fun amountString(): String {
+        val amountStr = amount.toString()
+        return if (amountStr.length <= 8) {
+            "0.${"0".repeat(8 - amountStr.length)}$amountStr"
+        } else {
+            val intPart = amountStr.substring(0, amountStr.length - 8)
+            val decimalPart = amountStr.substring(amountStr.length - 8)
+            "$intPart.$decimalPart"
+        }
+    }
+
     override fun toString(): String {
-        return "InvoiceEntry(traceId=$traceId, assetId=$assetId, amount=$amount, extra=${extra.joinToString("") { "%02x".format(it) }}, indexReferences=$indexReferences, hashReferences=${hashReferences.joinToString { it.joinToString("") { "%02x".format(it) } }})"
+        return "InvoiceEntry(traceId=$traceId, assetId=$assetId, amount=${amountString()}, extra=${extra.joinToString("") { "%02x".format(it) }}, indexReferences=$indexReferences, hashReferences=${hashReferences.joinToString { it.joinToString("") { "%02x".format(it) } }})"
     }
 }
