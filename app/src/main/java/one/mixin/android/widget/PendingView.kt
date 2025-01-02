@@ -6,20 +6,15 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
-import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
-import one.mixin.android.databinding.ViewFilterPopupBinding
 import one.mixin.android.databinding.ViewPendingBinding
-import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
-import one.mixin.android.vo.formatAddress
-import one.mixin.android.vo.safe.TokenItem
 
 class PendingView @JvmOverloads constructor(
     context: Context,
@@ -71,11 +66,11 @@ class PendingView @JvmOverloads constructor(
         }
 
         binding.content.text = if (pendingDisplays.size == 1) binding.root.context.getString(
-            R.string.recharge_confirmation,
+            R.string.deposit_confirmation,
             "${pendingDisplays[0].amount} ${pendingDisplays[0].symbol}"
         )
         else binding.root.context.getString(
-            R.string.recharge_confirmation_count,
+            R.string.deposit_confirmation_count,
             pendingDisplays.size
         )
     }
