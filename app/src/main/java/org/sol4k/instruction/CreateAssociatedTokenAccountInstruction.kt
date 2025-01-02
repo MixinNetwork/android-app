@@ -12,6 +12,7 @@ class CreateAssociatedTokenAccountInstruction(
     associatedToken: PublicKey,
     owner: PublicKey,
     mint: PublicKey,
+    tokenProgramId: PublicKey = TOKEN_PROGRAM_ID,
 ) : Instruction {
     companion object {
         @Suppress("unused")
@@ -27,7 +28,7 @@ class CreateAssociatedTokenAccountInstruction(
         AccountMeta(owner),
         AccountMeta(mint),
         AccountMeta(SYSTEM_PROGRAM),
-        AccountMeta(TOKEN_PROGRAM_ID),
+        AccountMeta(tokenProgramId),
         AccountMeta(Constants.SysPubkey.RENT_PUBKEY),
     )
 
