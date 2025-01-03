@@ -49,11 +49,7 @@ class UrlQueryParser(val uri: Uri, from: Int) {
 
     val mixInvoice by lazy {
         if (payType == PayType.Invoice) {
-            return@lazy runCatching {
-                MixinInvoice.fromString(lastPath)
-            }.onFailure {
-                Timber.e("${it.message}")
-            }.getOrThrow()
+            runCatching { MixinInvoice.fromString(lastPath) }.getOrNull()
         } else {
             throw ParserError(FAILURE)
         }

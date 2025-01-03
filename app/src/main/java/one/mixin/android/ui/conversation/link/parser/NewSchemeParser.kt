@@ -16,12 +16,14 @@ import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
+import one.mixin.android.ui.common.biometric.buildInvoiceBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.CollectionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferInvoiceBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
@@ -106,6 +108,12 @@ class NewSchemeParser(
                     val addressTransferBiometricItem = AddressTransferBiometricItem(urlQueryParser.lastPath, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                     checkRawTransaction(addressTransferBiometricItem)
                 }
+            } else if (payType  == PayType.Invoice) {
+                // todo check utxo
+                val invoice = urlQueryParser.mixInvoice ?: return Result.failure(ParserError(FAILURE))
+                val bottom = TransferInvoiceBottomSheetDialogFragment.newInstance(invoice.toString())
+                bottom.show(bottomSheet.parentFragmentManager, TransferInvoiceBottomSheetDialogFragment.TAG)
+                bottomSheet.dismiss()
             } else {
                 val token: TokenItem? =
                     if (asset != null) {
@@ -137,17 +145,6 @@ class NewSchemeParser(
                         } else {
                             null
                         }
-                    } else if (payType == PayType.Invoice) {
-                        val invoice = urlQueryParser.mixInvoice
-                        if (invoice == null) return Result.failure(ParserError(FAILURE))
-                        Timber.e(
-                            "invoice: $invoice ${
-                                invoice.entries.map {
-                                    "${it.traceId} ${it.assetId} ${it.amount} ${it.extra} ${it.indexReferences} ${it.hashReferences}"
-                                }
-                            }"
-                        )
-                        null
                     } else {
                         TransferFragment.newInstance(buildAddressBiometricItem(urlQueryParser.lastPath, traceId, token, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference))
                     }

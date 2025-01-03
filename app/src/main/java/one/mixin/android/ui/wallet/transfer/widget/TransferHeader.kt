@@ -13,10 +13,19 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
+import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.safe.TokenItem
 
 class TransferHeader : LinearLayout {
     private val _binding: ViewTransferHeaderBinding
+
+    companion object {
+        private const val DISPLAY_ASSER = 0
+        private const val DISPLAY_NFT = 1
+        private const val DISPLAY_ASSET_GROUP = 2
+        private const val DISPLAY_STATUS = 3
+        private const val DISPLAY_LOADING = 4
+    }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -29,7 +38,7 @@ class TransferHeader : LinearLayout {
 
     fun progress(type: TransferType) {
         _binding.apply {
-            icon.displayedChild = 3
+            icon.displayedChild = DISPLAY_LOADING
             subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             when (type) {
                 TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {
@@ -89,7 +98,7 @@ class TransferHeader : LinearLayout {
         errorMessage: String?,
     ) {
         _binding.apply {
-            icon.displayedChild = 2
+            icon.displayedChild = DISPLAY_STATUS
             statusIcon.setImageResource(R.drawable.ic_transfer_status_failed)
             subTitle.text = errorMessage
             subTitle.textColorResource = R.color.text_color_error_tip
@@ -139,7 +148,7 @@ class TransferHeader : LinearLayout {
 
     fun success(type: TransferType) {
         _binding.apply {
-            icon.displayedChild = 2
+            icon.displayedChild = DISPLAY_STATUS
             subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             statusIcon.setImageResource(R.drawable.ic_transfer_status_success)
             when (type) {
@@ -208,17 +217,29 @@ class TransferHeader : LinearLayout {
 
     fun awaiting(
         type: TransferType,
+        assetItems: List<TokenItem>,
+    ) {
+        _binding.apply {
+            icon.displayedChild = DISPLAY_ASSET_GROUP
+            assetGroup.setUrls(assetItems.map { it.iconUrl })
+            title.setText(R.string.Transfer_confirmation)
+            subTitle.setText(R.string.review_transfer_hint)
+        }
+    }
+
+    fun awaiting(
+        type: TransferType,
         asset: TokenItem,
     ) {
         _binding.apply {
             icon.displayedChild =
                 if (type == TransferType.approve || type == TransferType.reject) {
                     statusIcon.setImageResource(R.drawable.ic_transfer_approve)
-                    2
+                    DISPLAY_STATUS
                 } else if (type == TransferType.nft || type == TransferType.nftRelease) {
-                    1
+                    DISPLAY_NFT
                 } else {
-                    0
+                    DISPLAY_ASSER
                 }
             when (type) {
                 TransferType.transfer, TransferType.nft, TransferType.addressTransfer -> {

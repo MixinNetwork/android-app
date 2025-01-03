@@ -6,21 +6,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
+import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
 @HiltViewModel
 class TransferViewModel
-    @Inject
-    internal constructor(
-        val tokenRepository: TokenRepository,
-    ) : ViewModel() {
-        private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
-        val status = _status.asStateFlow()
-        var errorMessage: String? = null
+@Inject
+internal constructor(
+    val tokenRepository: TokenRepository,
+) : ViewModel() {
+    private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
+    val status = _status.asStateFlow()
+    var errorMessage: String? = null
 
-        fun updateStatus(status: TransferStatus) {
-            _status.value = status
-        }
-
-        suspend fun findLastWithdrawalSnapshotByReceiver(formatDestination: String) = tokenRepository.findLastWithdrawalSnapshotByReceiver(formatDestination)
+    fun updateStatus(status: TransferStatus) {
+        _status.value = status
     }
+
+    suspend fun findLastWithdrawalSnapshotByReceiver(formatDestination: String) = tokenRepository.findLastWithdrawalSnapshotByReceiver(formatDestination)
+
+    suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
+}

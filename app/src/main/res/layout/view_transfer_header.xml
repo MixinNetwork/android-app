@@ -34,6 +34,11 @@
             app:iconRoundSize="8dp"
             app:iconSize="40dp"/>
 
+        <one.mixin.android.widget.AssetIconGroup
+            android:id="@+id/asset_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
         <ImageView
             android:id="@+id/status_icon"
             android:layout_width="70dp"
