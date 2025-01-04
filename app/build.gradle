@@ -528,7 +528,8 @@ sentry {
 
     tracingInstrumentation {
         enabled = true
-
+        features.set(EnumSet.allOf(InstrumentationFeature::class.java) - InstrumentationFeature.OKHTTP)
+        features.set(EnumSet.allOf(InstrumentationFeature::class.java) - InstrumentationFeature.FILE_IO)
         logcat {
             enabled = false
         }
