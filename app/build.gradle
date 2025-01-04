@@ -18,7 +18,7 @@ plugins {
 def versionMajor = 2
 def versionMinor = 1
 def versionPatch = 2
-def versionBuild = 0
+def versionBuild = 2
 
 android {
     compileSdk 35
@@ -522,14 +522,15 @@ task syncStrings {
 }
 
 
+import io.sentry.android.gradle.extensions.InstrumentationFeature
 sentry {
     org = "mcwm"
     projectName = "android"
 
     tracingInstrumentation {
         enabled = true
-        features.set(EnumSet.allOf(InstrumentationFeature::class.java) - InstrumentationFeature.OKHTTP)
-        features.set(EnumSet.allOf(InstrumentationFeature::class.java) - InstrumentationFeature.FILE_IO)
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.OKHTTP
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.FILE_IO
         logcat {
             enabled = false
         }
