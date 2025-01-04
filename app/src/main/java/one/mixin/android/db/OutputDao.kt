@@ -171,7 +171,7 @@ interface OutputDao : BaseDao<Output> {
         if (signed.isEmpty()) {
             insertList(outputs)
         } else {
-            Timber.e("Insert filter ${signed.joinToString(", ")}")
+            Timber.d("Insert filter ${signed.joinToString(", ")}")
             // Exclude signed data
             val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
             insertList(unsignedData)
