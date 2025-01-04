@@ -233,6 +233,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
+                defaultErrorHandle = {
+                    // do nothing
+                },
                 successBlock = {
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {

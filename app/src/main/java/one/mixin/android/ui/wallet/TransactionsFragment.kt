@@ -277,6 +277,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 invokeNetwork = {
                     walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
                 },
+                defaultErrorHandle = {
+                    // do nothing
+                },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
                         walletViewModel.clearPendingDepositsByAssetId(asset.assetId)

@@ -462,6 +462,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
+                defaultErrorHandle = {
+                    // do nothing
+                },
                 successBlock = {
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {
