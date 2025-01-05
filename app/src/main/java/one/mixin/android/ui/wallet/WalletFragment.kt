@@ -85,6 +85,7 @@ import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ParticipantSession
@@ -462,8 +463,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
-                defaultErrorHandle = {
-                    // do nothing
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
                 },
                 successBlock = {
                     val pendingDeposits = it.data

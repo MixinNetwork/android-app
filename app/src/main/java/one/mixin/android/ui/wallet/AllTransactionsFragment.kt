@@ -39,6 +39,7 @@ import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -233,8 +234,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
-                defaultErrorHandle = {
-                    // do nothing
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
                 },
                 successBlock = {
                     val pendingDeposits = it.data
