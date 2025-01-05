@@ -29,19 +29,6 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
-    runInTransaction {
-        val signed = findSignedOutput(outputs.map { it.outputId })
-        if (signed.isEmpty()) {
-            insertList(outputs)
-        } else {
-            Timber.e("Insert filter ${signed.joinToString(", ")}")
-            // Exclude signed data
-            val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
-            insertList(unsignedData)
-        }
-    }
-
 // Delete SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
