@@ -110,10 +110,19 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
         lifecycleScope.launch {
             val assets = transferViewModel.findTokenItems(invoice.entries.map { it.assetId })
+            val tokenItems = invoice.entries.mapNotNull { entry ->
+                assets.find { it.assetId == entry.assetId }
+            }
+            val receivers = if (invoice.recipient.uuidMembers.isNotEmpty()) {
+                transferViewModel.findMultiUsers(invoice.recipient.uuidMembers)
+            } else {
+                null
+            }
 
-            binding.content.render(invoice, assets) { user ->
-                if (user.userId == Session.getAccountId()) return@render
-                showUserBottom(parentFragmentManager, user)
+            binding.content.render(invoice, tokenItems, receivers) { user ->
+                if (user.userId != Session.getAccountId()) {
+                    showUserBottom(parentFragmentManager, user)
+                }
             }
 
             transferViewModel.status.collect { status ->

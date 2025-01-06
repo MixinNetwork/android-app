@@ -66,27 +66,21 @@ class AssetIconGroup @JvmOverloads constructor(
 
     fun setUrls(urls: List<String?>) {
         val n = urls.size
+        hideAll()
         when {
-            n == 0 -> {
-                hideAll()
-            }
-
             n == 1 -> {
                 showIcon(binding.icon1, urls[0])
-                hideOthers(binding.icon1)
             }
 
             n == 2 -> {
                 showIcon(binding.icon1, urls[0])
                 showIcon(binding.icon2, urls[1])
-                hideOthers(binding.icon2)
             }
 
             n == 3 -> {
                 showIcon(binding.icon1, urls[0])
                 showIcon(binding.icon2, urls[1])
                 showIcon(binding.icon3, urls[2])
-                hideOthers(binding.icon3)
             }
 
             n > 3 -> {
@@ -94,7 +88,6 @@ class AssetIconGroup @JvmOverloads constructor(
                 showIcon(binding.icon2, urls[1])
                 textMore.isVisible = true
                 textMore.text = "+${n - 2}"
-                hideOthers(binding.icon2)
             }
         }
     }
@@ -109,13 +102,5 @@ class AssetIconGroup @JvmOverloads constructor(
         binding.icon2.isVisible = false
         binding.icon3.isVisible = false
         textMore.isVisible = false
-    }
-
-    private fun hideOthers(referenceView: View) {
-        val viewsToHide = listOf(
-            binding.icon3,
-            textMore
-        ).filter { it != referenceView }
-        viewsToHide.forEach { it.isVisible = false }
     }
 }

@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.session.Session
@@ -111,6 +112,11 @@ class NewSchemeParser(
             } else if (payType  == PayType.Invoice) {
                 // todo check utxo
                 val invoice = urlQueryParser.mixInvoice ?: return Result.failure(ParserError(FAILURE))
+                invoice.recipient.members().filter {
+                    it.isUUID()
+                }.forEach {
+                    linkViewModel.refreshUser(it) ?: return Result.failure(ParserError(FAILURE))
+                }
                 val bottom = TransferInvoiceBottomSheetDialogFragment.newInstance(invoice.toString())
                 bottom.show(bottomSheet.parentFragmentManager, TransferInvoiceBottomSheetDialogFragment.TAG)
                 bottomSheet.dismiss()
