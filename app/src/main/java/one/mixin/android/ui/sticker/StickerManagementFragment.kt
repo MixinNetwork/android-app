@@ -24,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isWideScreen
@@ -239,6 +240,7 @@ class StickerManagementFragment : BaseFragment() {
                 cover.visibility = GONE
             }
             if (!editing && position == 0) {
+                imageView.clear()
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {
