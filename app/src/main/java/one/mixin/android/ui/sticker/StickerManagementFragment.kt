@@ -113,7 +113,7 @@ class StickerManagementFragment : BaseFragment() {
                     RxPermissions(requireActivity())
                         .request(
                             *(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                mutableListOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+                                mutableListOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES)
                             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 mutableListOf(Manifest.permission.READ_MEDIA_IMAGES)
                             } else {
