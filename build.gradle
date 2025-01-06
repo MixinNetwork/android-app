@@ -28,7 +28,7 @@ buildscript {
         ext.sharetargetVersion = '1.2.0'
         ext.coordinatorVersion = '1.2.0'
         ext.espressoVersion = '3.6.1'
-        ext.cameraxVersion = '1.4.0-rc01'
+        ext.cameraxVersion = '1.4.1'
         ext.glideVersion = '4.16.0'
         ext.timberVersion = '5.0.1'
         ext.okhttpVersion = '4.12.0'
@@ -79,7 +79,7 @@ buildscript {
 
         ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.6.1'
-        ext.mockitoVersion = '5.14.2'
+        ext.mockitoVersion = '5.15.2'
         ext.androidxJunitVersion = '1.2.1'
         ext.leakcanaryVerison = '2.14'
         ext.mockitoVersion = '1.10.19'
@@ -105,7 +105,7 @@ buildscript {
         ext.markdownVersion = '0.7.3'
 
         ext.bcVersion = '1.70'
-        ext.jsonVersion = '20240303'
+        ext.jsonVersion = '20241224'
         ext.composeVersion = '1.7.6'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
