@@ -2524,6 +2524,12 @@ class ConversationFragment() :
     }
 
     private fun clickGallery() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+            arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO).any { RxPermissions(requireActivity()).isGranted(it) }
+        ) {
+            initGalleryLayout()
+            return
+        }
         RxPermissions(requireActivity())
             .request(
                 *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -2537,7 +2543,11 @@ class ConversationFragment() :
             .autoDispose(stopScope)
             .subscribe(
                 { granted ->
-                    if (granted) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                        arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO).any { RxPermissions(requireActivity()).isGranted(it) }
+                    ) {
+                        initGalleryLayout()
+                    } else if (granted) {
                         initGalleryLayout()
                     } else {
                         context?.openPermissionSetting()
@@ -2623,11 +2633,7 @@ class ConversationFragment() :
                         MenuType.File -> {
                             RxPermissions(requireActivity())
                                 .request(
-                                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
-                                    } else {
-                                        mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    }.apply {
+                                    *mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE).apply {
                                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                                             add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                                         }

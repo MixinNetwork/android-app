@@ -110,6 +110,12 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                        arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES).any { RxPermissions(requireActivity()).isGranted(it) }
+                    ) {
+                        openGalleryFromSticker()
+                        return
+                    }
                     RxPermissions(requireActivity())
                         .request(
                             *(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -125,7 +131,11 @@ class StickerManagementFragment : BaseFragment() {
                         .autoDispose(stopScope)
                         .subscribe(
                             { granted ->
-                                if (granted) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                                    arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES).any { RxPermissions(requireActivity()).isGranted(it) }
+                                ) {
+                                    openGalleryFromSticker()
+                                } else if (granted) {
                                     openGalleryFromSticker()
                                 } else {
                                     context?.openPermissionSetting()
