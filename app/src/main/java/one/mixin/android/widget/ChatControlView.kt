@@ -760,11 +760,13 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         OnClickListener {
             RxPermissions(activity!! as FragmentActivity)
                 .request(
-                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
                     } else {
                         arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    },
+                    }
                 )
                 .subscribe(
                     { granted ->

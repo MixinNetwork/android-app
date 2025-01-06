@@ -12,6 +12,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.CheckBox
+import androidx.compose.foundation.layout.Box
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -108,15 +109,17 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
-                    RxPermissions(activity!!)
+                    RxPermissions(requireActivity())
                         .request(
-                            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                            *(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                                mutableListOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES)
                             } else {
                                 mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            }.apply {
+                            }).apply {
                                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            }.toTypedArray(),
+                            }.toTypedArray()
                         )
                         .autoDispose(stopScope)
                         .subscribe(

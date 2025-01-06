@@ -286,8 +286,7 @@ import kotlin.math.abs
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class
-ConversationFragment() :
+class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,
@@ -2525,10 +2524,28 @@ ConversationFragment() :
     }
 
     private fun clickGallery() {
-        val galleryAlbumFragment = parentFragmentManager.findFragmentByTag(GalleryAlbumFragment.TAG)
-        if (galleryAlbumFragment == null) {
-            initGalleryLayout()
-        }
+        RxPermissions(requireActivity())
+            .request(
+                *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                } else {
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                },
+            )
+            .autoDispose(stopScope)
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        initGalleryLayout()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                },
+                {
+                },
+            )
     }
 
     private fun initGalleryLayout() {
