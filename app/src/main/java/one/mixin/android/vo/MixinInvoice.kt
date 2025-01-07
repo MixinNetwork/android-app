@@ -5,6 +5,7 @@ import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.sha256
+import one.mixin.android.extension.toHex
 import one.mixin.android.util.UUIDUtils
 import one.mixin.android.util.encodeToBase58String
 import java.math.BigInteger
@@ -275,10 +276,23 @@ data class InvoiceEntry(
         if (amount != other.amount) return false
         if (!extra.contentEquals(other.extra)) return false
         if (indexReferences != other.indexReferences) return false
-        if (!hashReferences.equals(other.hashReferences)) return false
+        if (hashReferences != other.hashReferences) return false
 
         return true
     }
+
+    val references:List<Reference>
+        get() {
+            val indexRefs = indexReferences.map { byte ->
+                Reference.IndexValue(byte.toInt() and 0xFF)
+            }
+
+            val hashRefs = hashReferences.map { byteArray ->
+                Reference.HashValue(byteArray.toHex())
+            }
+
+            return indexRefs + hashRefs
+        }
 
     override fun hashCode(): Int {
         var result = traceId.hashCode()
@@ -304,4 +318,9 @@ data class InvoiceEntry(
     override fun toString(): String {
         return "InvoiceEntry(traceId=$traceId, assetId=$assetId, amount=${amountString()}, extra=${extra.joinToString("") { "%02x".format(it) }}, indexReferences=$indexReferences, hashReferences=${hashReferences.joinToString { it.joinToString("") { "%02x".format(it) } }})"
     }
+}
+
+sealed class Reference {
+    data class IndexValue(val value: Int) : Reference()
+    data class HashValue(val value: String) : Reference()
 }

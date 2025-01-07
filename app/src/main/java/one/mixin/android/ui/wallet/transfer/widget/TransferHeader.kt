@@ -222,7 +222,7 @@ class TransferHeader : LinearLayout {
         _binding.apply {
             icon.displayedChild = DISPLAY_ASSET_GROUP
             assetGroup.setUrls(assetItems.map { it.iconUrl })
-            title.setText(R.string.Transfer_batch_confirmation)
+            title.setText(R.string.Confirm_Transfer_in_Batches)
             subTitle.setText(R.string.review_transfer_hint)
         }
     }

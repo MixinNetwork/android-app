@@ -10,8 +10,10 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
@@ -193,7 +195,6 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
     }
 
-
     private fun finishCheck() {
         val returnTo =
             when (val t = this.invoice) {
@@ -232,10 +233,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     ) {
         lifecycleScope.launch {
             canRetry = false
-            if (error?.code == ErrorHandler.WITHDRAWAL_SUSPEND) {
-                // WithdrawalSuspendedBottomSheet.newInstance(t.asset!!).show(parentFragmentManager, WithdrawalSuspendedBottomSheet.TAG)
-                dismissNow()
-            } else if (error != null) {
+            if (error != null) {
                 val errorCode = error.code
                 val errorDescription = error.description
                 if (errorCode in
@@ -254,14 +252,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 }
 
                 val errorInfo =
-                    if (errorCode == ErrorHandler.INSUFFICIENT_TRANSACTION_FEE && invoice is WithdrawBiometricItem) {
-                        // val item = t as WithdrawBiometricItem
-                        // getString(
-                        //     R.string.error_insufficient_transaction_fee_with_amount,
-                        //     "${item.fee} ${t.asset!!.chainSymbol}",
-                        // )
-                        ""
-                    } else if (errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                    if (errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                         requireContext().getString(R.string.error_pin_check_too_many_request)
                     } else if (errorCode == ErrorHandler.PIN_INCORRECT) {
                         val errorCount = bottomViewModel.errorCount()
@@ -359,114 +350,54 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 },
             ) {
                 transferViewModel.updateStatus(TransferStatus.IN_PROGRESS)
-                // val t = this@TransferInvoiceBottomSheetDialogFragment.t
-                // val trace: Trace?
-                // val asset = requireNotNull(t.asset)
-                // val response =
-                //     withContext(Dispatchers.IO) {
-                //         when (t) {
-                //             is TransferBiometricItem -> {
-                //                 val opponentId = if (t.users.size == 1) t.users.first().userId else ""
-                //                 trace = Trace(t.traceId, asset.assetId, t.amount, opponentId, null, null, null, nowInUtc())
-                //                 val receiverIds = t.users.map { it.userId }
-                //                 bottomViewModel.kernelTransaction(asset.assetId, receiverIds, t.threshold, t.amount, pin, t.traceId, t.memo, t.reference)
-                //             }
-                //
-                //             is NftBiometricItem -> {
-                //                 trace = null
-                //                 val amount = t.releaseAmount ?: t.amount
-                //                 bottomViewModel.kernelTransaction(asset.assetId, t.receivers.map { it.userId }, 1.toByte(), amount, pin, t.traceId, t.memo, inscriptionHash = t.inscriptionItem.inscriptionHash, release = t.release)
-                //             }
-                //
-                //             is AddressTransferBiometricItem -> {
-                //                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                //                 bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
-                //             }
-                //
-                //             is SafeMultisigsBiometricItem -> {
-                //                 trace = Trace(t.traceId, asset.assetId, t.amount, null, null, null, null, nowInUtc())
-                //                 bottomViewModel.transactionMultisigs(t, pin)
-                //             }
-                //
-                //             is AddressManageBiometricItem -> {
-                //                 val addressManageBiometricItem = t
-                //                 trace = null
-                //                 if (addressManageBiometricItem.type == ADD) {
-                //                     val assetId = addressManageBiometricItem.asset!!.assetId
-                //                     val destination = addressManageBiometricItem.destination
-                //                     val label = addressManageBiometricItem.label
-                //                     val tag = addressManageBiometricItem.tag
-                //                     bottomViewModel.syncAddr(assetId, destination, label, tag, pin).apply {
-                //                         if (isSuccess) {
-                //                             bottomViewModel.saveAddr(data as Address)
-                //                         }
-                //                     }
-                //                 } else {
-                //                     val addressId = requireNotNull(addressManageBiometricItem.addressId)
-                //                     bottomViewModel.deleteAddr(addressId, pin).apply {
-                //                         if (isSuccess) {
-                //                             bottomViewModel.deleteLocalAddr(addressId)
-                //                         }
-                //                     }
-                //                 }
-                //             }
-                //
-                //             is WithdrawBiometricItem -> {
-                //                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
-                //                 val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                //                 bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
-                //             }
-                //
-                //             else -> {
-                //                 throw IllegalArgumentException("Don't support")
-                //             }
-                //         }
-                //     }
+                val response = withContext(Dispatchers.IO) {
+                    bottomViewModel.invoiceTransaction(pin, invoice)
+                }
                 // if (trace != null) {
                 //     bottomViewModel.insertTrace(trace)
                 // }
-                // if (response.isSuccess) {
-                //     defaultSharedPreferences.putLong(
-                //         Constants.BIOMETRIC_PIN_CHECK,
-                //         System.currentTimeMillis(),
-                //     )
-                //     context?.updatePinCheck()
-                //     isSuccess = true
-                //
-                //     val transactionHash = runCatching {
-                //         val data = response.data as? List<TransactionResponse>
-                //         if (data?.size == 1) {
-                //             data.first().transactionHash
-                //         } else {
-                //             null
-                //         }
-                //     }.getOrNull()
-                //     if (t is SafeMultisigsBiometricItem && t.safe == null) {
-                //         runCatching {
-                //             val data = response.data as? TransactionResponse
-                //             data?.signers
-                //         }.getOrNull()?.let {
-                //             lifecycleScope.launch {
-                //                 val item = t
-                //                 t.signers = it
-                //                 val result = bottomViewModel.findMultiUsers(item.senders, emptyArray())
-                //                 if (result != null) {
-                //                     val senders = result.first
-                //                     binding.content.updateSenders(item, senders) { user ->
-                //                         if (user.userId == Session.getAccountId()) return@updateSenders
-                //                         showUserBottom(parentFragmentManager, user)
-                //                     }
-                //                 }
-                //             }
-                //         }
-                //     }
-                //     binding.content.displayHash(transactionHash)
-                //     transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
-                // } else {
-                //     handleError(response.error) {
-                //         transferViewModel.updateStatus(TransferStatus.FAILED)
-                //     }
-                // }
+                if (response.isSuccess) {
+                    //     defaultSharedPreferences.putLong(
+                    //         Constants.BIOMETRIC_PIN_CHECK,
+                    //         System.currentTimeMillis(),
+                    //     )
+                    //     context?.updatePinCheck()
+                    isSuccess = true
+                    //
+                    //     val transactionHash = runCatching {
+                    //         val data = response.data as? List<TransactionResponse>
+                    //         if (data?.size == 1) {
+                    //             data.first().transactionHash
+                    //         } else {
+                    //             null
+                    //         }
+                    //     }.getOrNull()
+                    //     if (t is SafeMultisigsBiometricItem && t.safe == null) {
+                    //         runCatching {
+                    //             val data = response.data as? TransactionResponse
+                    //             data?.signers
+                    //         }.getOrNull()?.let {
+                    //             lifecycleScope.launch {
+                    //                 val item = t
+                    //                 t.signers = it
+                    //                 val result = bottomViewModel.findMultiUsers(item.senders, emptyArray())
+                    //                 if (result != null) {
+                    //                     val senders = result.first
+                    //                     binding.content.updateSenders(item, senders) { user ->
+                    //                         if (user.userId == Session.getAccountId()) return@updateSenders
+                    //                         showUserBottom(parentFragmentManager, user)
+                    //                     }
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    //     binding.content.displayHash(transactionHash)
+                    transferViewModel.updateStatus(TransferStatus.SUCCESSFUL)
+                } else {
+                    handleError(response.error) {
+                        transferViewModel.updateStatus(TransferStatus.FAILED)
+                    }
+                }
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
@@ -474,88 +405,88 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     private fun getBiometricInfo(): BiometricInfo? {
         return null
         // return when (val t = this.t) {
-            // is TransferBiometricItem -> {
-            //     if (t.users.size == 1) {
-            //         val user = t.users.first()
-            //         BiometricInfo(
-            //             getString(
-            //                 R.string.transfer_to,
-            //                 user.fullName,
-            //             ),
-            //             getString(
-            //                 R.string.contact_mixin_id,
-            //                 user.identityNumber,
-            //             ),
-            //             getDescription(),
-            //         )
-            //     } else {
-            //         BiometricInfo(
-            //             getString(R.string.Multisig_Transaction),
-            //             t.memo ?: "",
-            //             getDescription(),
-            //         )
-            //     }
-            // }
-            //
-            // is NftBiometricItem -> {
-            //     val user = t.receivers.first()
-            //     BiometricInfo(
-            //         getString(
-            //             R.string.transfer_to,
-            //             user.fullName,
-            //         ),
-            //         getString(
-            //             R.string.contact_mixin_id,
-            //             user.identityNumber,
-            //         ),
-            //         getDescription(),
-            //     )
-            // }
-            //
-            // is AddressTransferBiometricItem -> {
-            //     BiometricInfo(
-            //         getString(
-            //             R.string.transfer_to,
-            //             t.address,
-            //         ),
-            //         "",
-            //         getDescription(),
-            //     )
-            // }
-            //
-            // is AddressManageBiometricItem -> {
-            //     val addressManageBiometricItem = t
-            //     BiometricInfo(
-            //         getString(
-            //             if (addressManageBiometricItem.type == ADD) {
-            //                 R.string.Adding_Address
-            //             } else {
-            //                 R.string.Deleting_Address
-            //             }
-            //         ),
-            //         "",
-            //         getDescription(),
-            //     )
-            // }
-            //
-            // is SafeMultisigsBiometricItem -> {
-            //     BiometricInfo(
-            //         getString(
-            //             R.string.Multisig_Transaction,
-            //         ),
-            //         "",
-            //         getDescription(),
-            //     )
-            // }
-            //
-            // else -> {
-            //     t as WithdrawBiometricItem
-            //     BiometricInfo(
-            //         getString(R.string.withdrawal_to, t.address.label),
-            //         t.displayAddress().formatPublicKey(),
-            //         getDescription(),
-            //     )
-            // }
+        // is TransferBiometricItem -> {
+        //     if (t.users.size == 1) {
+        //         val user = t.users.first()
+        //         BiometricInfo(
+        //             getString(
+        //                 R.string.transfer_to,
+        //                 user.fullName,
+        //             ),
+        //             getString(
+        //                 R.string.contact_mixin_id,
+        //                 user.identityNumber,
+        //             ),
+        //             getDescription(),
+        //         )
+        //     } else {
+        //         BiometricInfo(
+        //             getString(R.string.Multisig_Transaction),
+        //             t.memo ?: "",
+        //             getDescription(),
+        //         )
+        //     }
+        // }
+        //
+        // is NftBiometricItem -> {
+        //     val user = t.receivers.first()
+        //     BiometricInfo(
+        //         getString(
+        //             R.string.transfer_to,
+        //             user.fullName,
+        //         ),
+        //         getString(
+        //             R.string.contact_mixin_id,
+        //             user.identityNumber,
+        //         ),
+        //         getDescription(),
+        //     )
+        // }
+        //
+        // is AddressTransferBiometricItem -> {
+        //     BiometricInfo(
+        //         getString(
+        //             R.string.transfer_to,
+        //             t.address,
+        //         ),
+        //         "",
+        //         getDescription(),
+        //     )
+        // }
+        //
+        // is AddressManageBiometricItem -> {
+        //     val addressManageBiometricItem = t
+        //     BiometricInfo(
+        //         getString(
+        //             if (addressManageBiometricItem.type == ADD) {
+        //                 R.string.Adding_Address
+        //             } else {
+        //                 R.string.Deleting_Address
+        //             }
+        //         ),
+        //         "",
+        //         getDescription(),
+        //     )
+        // }
+        //
+        // is SafeMultisigsBiometricItem -> {
+        //     BiometricInfo(
+        //         getString(
+        //             R.string.Multisig_Transaction,
+        //         ),
+        //         "",
+        //         getDescription(),
+        //     )
+        // }
+        //
+        // else -> {
+        //     t as WithdrawBiometricItem
+        //     BiometricInfo(
+        //         getString(R.string.withdrawal_to, t.address.label),
+        //         t.displayAddress().formatPublicKey(),
+        //         getDescription(),
+        //     )
+        // }
         // }
     }
 

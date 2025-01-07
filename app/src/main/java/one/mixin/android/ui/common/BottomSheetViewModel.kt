@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.protobuf.Mixin
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -40,6 +39,7 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
@@ -74,7 +74,6 @@ import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
-import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -84,7 +83,9 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
+import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.Reference
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
@@ -586,6 +587,109 @@ class BottomSheetViewModel
             return transactionRsp
         }
 
+        suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
+            val context = MixinApplication.appContext
+            val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
+            tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
+            val recipient = invoice.recipient
+            // todo check trace
+            val senderIds = listOf(Session.getAccountId()!!)
+            val verifyTransactions = mutableListOf<TransactionResponse>()
+            val signTransactions = mutableListOf<TransactionRequest>()
+            invoice.entries.forEach { entry ->
+                val amount = entry.amountString()
+                val assetId = entry.assetId
+                val asset = assetIdToAsset(assetId)
+                val trace = entry.traceId
+                val data = if (recipient.uuidMembers.isNotEmpty()) {
+                    val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(recipient.uuidMembers, senderIds, trace))
+                    if (ghostKeyResponse.error != null) {
+                        Timber.e("Kernel Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        return ghostKeyResponse
+                    }
+                    ghostKeyResponse.data!!
+                } else if (recipient.xinMembers.isNotEmpty()) {
+                    val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderIds.first(), trace))
+                    if (ghostKeyResponse.error != null) {
+                        Timber.e("Kernel Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        return ghostKeyResponse
+                    }
+                    ghostKeyResponse.data!!
+                } else {
+                    throw IllegalArgumentException("Transfer has no recipient")
+                    null
+                } ?: throw IllegalArgumentException("Transfer has no recipient")
+                Timber.e("Kernel Transaction UtxoWrapper: $amount $assetId $asset")
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val input = utxoWrapper.input
+                val receiverKeys = data.first().keys.joinToString(",")
+                val receiverMask = data.first().mask
+
+                val changeKeys = data.last().keys.joinToString(",")
+                val changeMask = data.last().mask
+                val reference = entry.references.joinToString(",") { reference ->
+                    if (reference is Reference.IndexValue) {
+                        verifyTransactions.getOrNull(reference.value)?.transactionHash ?: throw IllegalArgumentException("Reference not found")
+                    } else if (reference is Reference.HashValue) {
+                        reference.value
+                    } else {
+                        throw IllegalArgumentException("Reference type not supported")
+                        ""
+                    }
+                }
+                val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, entry.extra.toString(), reference)
+                val verifyTransaction = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
+                if (verifyTransaction.error != null) {
+                    Timber.e("Kernel Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
+                    return verifyTransaction
+                } else if ((verifyTransaction.data?.size ?: 0) > 1) {
+                    Timber.e("Kernel Transaction($trace): Parameter exception")
+                    throw IllegalArgumentException("Parameter exception")
+                } else if (verifyTransaction.data?.first()?.state != OutputState.unspent.name) {
+                    Timber.e("Kernel Transaction($trace): Transfer is already paid")
+                    throw IllegalArgumentException("Transfer is already paid")
+                }
+                verifyTransaction.data?.first() ?: throw IllegalArgumentException("Kernel Transaction($trace): Verify transaction is null")
+                verifyTransactions.add(verifyTransaction.data!!.first())
+
+                val views = verifyTransaction.data!!.first().views!!.joinToString(",")
+                val keys = utxoWrapper.formatKeys
+                val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
+                val signResult = SignResult(sign.raw, sign.change)
+                Timber.e("Kernel Transaction($trace): db begin")
+                withContext(SINGLE_DB_THREAD) {
+                    runInTransaction {
+                        if (signResult.change != null) {
+                            val changeOutput = changeToOutput(signResult.change, asset, changeMask, data.last().keys, utxoWrapper.lastOutput)
+                            Timber.e("Kernel Transaction($trace): sign db insert change")
+                            tokenRepository.insertOutput(changeOutput)
+                        }
+                        val transactionHash = sign.hash
+                        val opponentId = invoice.recipient.uuidMembers.firstOrNull() ?: ""
+                        Timber.e("Kernel Transaction($trace): sign db insert snapshot")
+                        tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, trace, assetId, amount, entry.extra.hexString(), SafeSnapshotType.snapshot, reference = reference)
+                        Timber.e("Kernel Transaction($trace): sign db insert raw transaction")
+                        tokenRepository.insetRawTransaction(
+                            RawTransaction(
+                                verifyTransaction.data!!.first().requestId, signResult.raw,
+                                if (invoice.recipient.uuidMembers.isEmpty()) {
+                                    ""
+                                } else {
+                                    invoice.recipient.uuidMembers.joinToString(",")
+                                }, RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), null
+                            )
+                        )
+                        Timber.e("Kernel Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
+                        tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
+                        Timber.e("Kernel Transaction: sign end")
+                    }
+                }
+                signTransactions.add(TransactionRequest(signResult.raw, trace))
+            }
+            return tokenRepository.transactions(signTransactions)
+        }
+
         private fun initConversation(
             conversationId: String,
             senderId: String,
@@ -613,9 +717,10 @@ class BottomSheetViewModel
             asset: String,
             amount: String,
             inscriptionHash: String? = null,
+            ignoreZero: Boolean = true,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
-            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash, true)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash, ignoreZero)
 
             if (candidateOutputs.isEmpty()) {
                 throw EmptyUtxoException

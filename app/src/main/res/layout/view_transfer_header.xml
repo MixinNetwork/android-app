@@ -13,12 +13,14 @@
         android:id="@+id/icon"
         android:layout_marginTop="60dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center">
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/asset_icon"
             android:layout_width="70dp"
-            android:layout_height="70dp" />
+            android:layout_height="70dp"
+            android:layout_gravity="center"/>
 
         <one.mixin.android.widget.InscriptionView
             android:id="@+id/nft_icon"
@@ -32,24 +34,27 @@
             app:textMaxLines="1"
             app:iconRound="all"
             app:iconRoundSize="8dp"
-            app:iconSize="40dp"/>
+            app:iconSize="40dp"
+            android:layout_gravity="center"/>
 
         <one.mixin.android.widget.AssetIconGroup
             android:id="@+id/asset_group"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
 
         <ImageView
             android:id="@+id/status_icon"
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:contentDescription="@null" />
+            android:contentDescription="@null"
+            android:layout_gravity="center"/>
 
         <ProgressBar
             style="@style/AppTheme.WalletBlue"
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"/>
     </ViewAnimator>
 
     <FrameLayout
