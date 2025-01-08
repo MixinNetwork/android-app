@@ -1845,4 +1845,6 @@
     <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
     <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
     <string name="Manage">Manage</string>
+    <string name="Select_More_Photos">Select More Photos</string>
+    <string name="Change_Permissions">Change Permissions</string>
 </resources>
