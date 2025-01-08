@@ -1843,6 +1843,6 @@
     <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
     <string name="Deposits_Pending_Confirmation">%1$d Deposits Pending Confirmation</string>
     <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
-    <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos.</string>
+    <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
     <string name="Manage">Manage</string>
 </resources>

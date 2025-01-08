@@ -68,5 +68,4 @@ class GalleryAlbumAdapter(
     }
 
     fun getFragment(index: Int) = pageMap[index]
-
 }

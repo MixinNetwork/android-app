@@ -19,6 +19,7 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGalleryAlbumBinding
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.ui.conversation.adapter.GalleryAlbumAdapter
@@ -54,10 +55,10 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
 
     override fun onResume() {
         super.onResume()
-        binding.permissionLl.isVisible = when {
+        binding.permissionTv.isVisible = when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_IMAGES) && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_VIDEO) -> false
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) ->true
-            else ->false
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) -> true
+            else -> false
         }
     }
 
@@ -120,7 +121,8 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
             true,
             externalObserver,
         )
-        binding.permissionLl.setOnClickListener {
+        binding.permissionTv.highLight(getString(R.string.Manage))
+        binding.permissionTv.setOnClickListener {
             RxPermissions(requireActivity()).request(
                 *arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
             ).autoDispose(stopScope).subscribe(
