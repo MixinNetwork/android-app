@@ -10,8 +10,35 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <LinearLayout
+            android:id="@+id/permission_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_window"
+            android:paddingStart="12dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Partial_Photo_Access_Permission"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/Manage"
+                android:textColor="@color/text_blue"
+                android:textSize="12sp" />
+        </LinearLayout>
+
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/view_pager"
+            android:layout_below="@+id/permission_ll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/album_tl"/>
