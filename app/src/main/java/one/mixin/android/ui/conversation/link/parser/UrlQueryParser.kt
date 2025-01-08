@@ -49,7 +49,7 @@ class UrlQueryParser(val uri: Uri, from: Int) {
 
     val mixInvoice by lazy {
         if (payType == PayType.Invoice) {
-            runCatching { MixinInvoice.fromString(lastPath) }.getOrNull()
+            runCatching { MixinInvoice.fromString(lastPath) }.getOrNull() ?: throw ParserError(FAILURE)
         } else {
             throw ParserError(FAILURE)
         }

@@ -237,6 +237,8 @@ data class MixinInvoice(
                     }
                 }
 
+                if (entries.isEmpty()) throw IllegalArgumentException("entries is empty")
+
                 val entry = InvoiceEntry(
                     traceId = traceId.toString(),
                     assetId = assetId.toString(),
