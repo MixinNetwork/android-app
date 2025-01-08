@@ -693,8 +693,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Data_error)
                     } else {
                         WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                        dismiss()
                     }
-                    dismiss()
                 }
             }
 
