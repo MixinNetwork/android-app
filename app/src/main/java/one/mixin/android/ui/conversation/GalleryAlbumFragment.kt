@@ -138,7 +138,7 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         builder.setCustomView(viewBinding.root)
 
         val bottomSheet = builder.create()
-        viewBinding.cencel.setOnClickListener {
+        viewBinding.cancel.setOnClickListener {
             bottomSheet.dismiss()
         }
         viewBinding.setting.setOnClickListener {

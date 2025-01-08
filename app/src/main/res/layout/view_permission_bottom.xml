@@ -32,7 +32,7 @@
         android:textColor="?attr/text_primary" />
 
     <TextView
-        android:id="@+id/cencel"
+        android:id="@+id/cancel"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/bg_white"
