@@ -705,6 +705,8 @@ class TokenRepository
             }
         }
 
+        suspend fun transactionsFetch(traceIds: List<String>) = utxoService.transactionsFetch(traceIds)
+
         suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
 
         suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)

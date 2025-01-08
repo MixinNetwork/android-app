@@ -121,6 +121,11 @@ class NewSchemeParser(
                     WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
                     return Result.success(SUCCESS)
                 }
+                val traces = invoice.entries.map { it.traceId }
+                val response = linkViewModel.transactionsFetch(traces)
+                if (response.isSuccess) { // Todo test
+                    return Result.success(FAILURE)
+                }
                 invoice.entries.forEach { entry ->
                     if (!checkUtxo(entry.assetId, entry.amountString())) {
                         return Result.success(SUCCESS)
@@ -349,10 +354,11 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun checkUtxo(asset: String, amount: String): Boolean {
+    private suspend fun checkUtxo(assetId: String, amount: String): Boolean {
         val consolidationAmount = linkViewModel.checkUtxoSufficiency(assetId, amount)
         if (consolidationAmount != null) {
-            UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
+            val asset = checkToken(assetId) ?: return false
+            UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                 .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
             return false
         }

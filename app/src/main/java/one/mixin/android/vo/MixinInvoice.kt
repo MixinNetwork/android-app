@@ -237,8 +237,6 @@ data class MixinInvoice(
                     }
                 }
 
-                if (entries.isEmpty()) throw IllegalArgumentException("entries is empty")
-
                 val entry = InvoiceEntry(
                     traceId = traceId.toString(),
                     assetId = assetId.toString(),
@@ -250,11 +248,39 @@ data class MixinInvoice(
                 entries.add(entry)
             }
 
+            if (entries.isEmpty()) throw IllegalArgumentException("entries is empty")
+            validateInvoiceEntries(entries)
             return MixinInvoice(
                 version = version,
                 recipient = recipient,
                 entries = entries
             )
+        }
+
+        private fun validateInvoiceEntries(entries: List<InvoiceEntry>) {
+            val duplicateTraceIds = entries.groupBy { it.traceId }.filter { it.value.size > 1 }.keys
+            val duplicateAssetIds = entries.groupBy { it.assetId }.filter { it.value.size > 1 }.keys
+
+            val errors = buildList {
+                if (duplicateTraceIds.isNotEmpty()) add(
+                    "Duplicate traceIds: ${
+                        duplicateTraceIds.joinToString(
+                            ", "
+                        )
+                    }"
+                )
+                if (duplicateAssetIds.isNotEmpty()) add(
+                    "Duplicate assetIds: ${
+                        duplicateAssetIds.joinToString(
+                            ", "
+                        )
+                    }"
+                )
+            }
+
+            if (errors.isNotEmpty()) {
+                throw IllegalArgumentException(errors.joinToString("; "))
+            }
         }
     }
 }
