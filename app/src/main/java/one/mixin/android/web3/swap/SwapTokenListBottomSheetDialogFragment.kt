@@ -2,6 +2,7 @@ package one.mixin.android.web3.swap
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
@@ -47,17 +48,19 @@ import java.util.concurrent.TimeUnit
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val ARGS_TOKENS = "args_tokens"
         const val ARGS_KEY = "args_key"
         const val ARGS_UNIQUE = "args_unique"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
         fun newInstance(key: String, tokens: ArrayList<SwapToken>, selectUnique: String? = null) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
-                putParcelableArrayList(ARGS_TOKENS, tokens)
                 putString(ARGS_KEY, key)
                 putString(ARGS_UNIQUE, selectUnique)
+            }.apply {
+                this@Companion.tempTokens = tokens
             }
+
+        private var tempTokens: ArrayList<SwapToken>? = null
     }
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
@@ -153,8 +156,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ) {
         dialog.setViewTreeOwners()
         super.setupDialog(dialog, style)
-        tokens = requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)!!
         contentView = binding.root
+        tokens = tempTokens ?: emptyList()
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
         }
@@ -310,4 +313,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var onDepositListener: (() -> Unit)? = null
 
     private fun inMixin(): Boolean = key == Constants.Account.PREF_TO_SWAP || key == Constants.Account.PREF_FROM_SWAP
+
+    override fun onDestroy() {
+        super.onDestroy()
+        tempTokens = null
+    }
 }
