@@ -123,8 +123,12 @@ class NewSchemeParser(
                 }
                 val traces = invoice.entries.map { it.traceId }
                 val response = linkViewModel.transactionsFetch(traces)
-                if (response.isSuccess) { // Todo test
-                    return Result.success(FAILURE)
+                if (response.isSuccess) { 
+                    if ((response.data?.size ?: 0) == traces.size) {
+                        return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
+                    } else {
+                        return Result.failure(ParserError(FAILURE))
+                    }
                 }
                 invoice.entries.forEach { entry ->
                     if (!checkUtxo(entry.assetId, entry.amountString())) {

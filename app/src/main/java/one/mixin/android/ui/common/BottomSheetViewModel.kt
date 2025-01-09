@@ -11,6 +11,7 @@ import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okio.internal.commonToUtf8String
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -39,7 +40,6 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.escapeSql
-import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
@@ -638,7 +638,7 @@ class BottomSheetViewModel
                         ""
                     }
                 }
-                val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, entry.extra.toString(), reference)
+                val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
                 val verifyTransaction = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
                 if (verifyTransaction.error != null) {
                     Timber.e("Kernel Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
@@ -658,7 +658,7 @@ class BottomSheetViewModel
                 val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
                 val signResult = SignResult(sign.raw, sign.change)
                 Timber.e("Kernel Transaction($trace): db begin")
-                signedTransactions.add(SignedTransaction(trace, signResult, utxoWrapper.ids, asset, assetId, sign.hash, changeMask, data.last().keys, utxoWrapper.lastOutput, amount, entry.extra.hexString(), reference))
+                signedTransactions.add(SignedTransaction(trace, signResult, utxoWrapper.ids, asset, assetId, sign.hash, changeMask, data.last().keys, utxoWrapper.lastOutput, amount, String(entry.extra), reference))
             }
             withContext(SINGLE_DB_THREAD) {
                 runInTransaction {
@@ -670,7 +670,7 @@ class BottomSheetViewModel
                         }
                         val transactionHash = t.transactionHash
                         val opponentId = invoice.recipient.uuidMembers.firstOrNull() ?: ""
-                        Timber.e("Kernel Transaction($t.trace): sign db insert snapshot")
+                        Timber.e("Kernel Transaction($t.trace): sign db insert snapshot, memo${t.memo}")
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, t.trace, t.assetId, t.amount, t.memo, SafeSnapshotType.snapshot, reference = t.reference)
                         Timber.e("Kernel Transaction($t.trace): sign db insert raw transaction")
                         tokenRepository.insetRawTransaction(
@@ -689,7 +689,17 @@ class BottomSheetViewModel
                     }
                 }
             }
-            return tokenRepository.transactions(signedTransactions.map { TransactionRequest(it.signResult.raw, it.trace) })
+            val signedResponse = tokenRepository.transactions(signedTransactions.map { TransactionRequest(it.signResult.raw, it.trace) })
+            if (signedResponse.isSuccess) {
+                withContext(SINGLE_DB_THREAD) {
+                    runInTransaction {
+                        signedResponse.data?.forEach {
+                            tokenRepository.updateRawTransaction(it.requestId, OutputState.signed.name)
+                        }
+                    }
+                }
+            }
+            return signedResponse
         }
 
         private fun initConversation(
