@@ -209,7 +209,7 @@ class TransferContent : LinearLayout {
             sender.setContent(R.plurals.Sender_title, listOf(Session.getAccount()!!.toUser()), 1, {})
             if (receivers.isNullOrEmpty()) {
                 address.isVisible = true
-                address.isVisible = false
+                receive.isVisible = false
                 address.setContent(R.string.Receiver, invoice.recipient.xinMembers.first().toString())
             } else {
                 address.isVisible = false
