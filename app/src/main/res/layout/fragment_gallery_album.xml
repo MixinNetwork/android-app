@@ -10,8 +10,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/permission_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_window"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp"
+            android:visibility="gone"
+            android:textSize="14sp"
+            android:text="@string/Partial_Photo_Access_Permission"
+            android:textColor="?attr/text_assist"
+            android:foreground="?android:attr/selectableItemBackground"/>
+
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/view_pager"
+            android:layout_below="@+id/permission_tv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/album_tl"/>

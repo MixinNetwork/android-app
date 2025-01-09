@@ -38,6 +38,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
@@ -130,6 +131,14 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             object : SearchFragment.OnSearchClickListener {
                 override fun onUserClick(user: User) {
                     // do noting
+                }
+
+                override fun onUserClick(user: MaoUser) {
+                    // do noting
+                }
+
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
                 }
 
                 override fun onBotClick(bot: SearchBot) {

@@ -26,8 +26,7 @@ class TipHolder(val binding: ItemSearchTipBinding) : RecyclerView.ViewHolder(bin
                 onItemClickListener?.onUrlClick(url)
             }
         } else {
-            binding.searchTipTv.text =
-                "${itemView.context.getString(R.string.search_placeholder_number)}$target"
+            binding.searchTipTv.text = "${itemView.context.getString(R.string.search_placeholder_number)}$target"
             binding.searchTipTv.highLight(target)
             if (searching) {
                 binding.pb.isVisible = true

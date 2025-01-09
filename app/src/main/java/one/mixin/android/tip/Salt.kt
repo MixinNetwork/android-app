@@ -76,8 +76,10 @@ internal fun clearSalts(context: Context = MixinApplication.appContext) {
 }
 
 private fun decryptSalt(salt: ByteArray): ByteArray? {
-    val iv = salt.slice(0..15).toByteArray()
-    val ciphertext = salt.slice(16 until salt.size).toByteArray()
-    val cipher = getDecryptCipher(Constants.Tip.ALIAS_SPEND_SALT, iv)
-    return runCatching { cipher.doFinal(ciphertext); throw IllegalArgumentException() }.onFailure { clearSalts() }.getOrNull()
+    return runCatching {
+        val iv = salt.slice(0..15).toByteArray()
+        val ciphertext = salt.slice(16 until salt.size).toByteArray()
+        val cipher = getDecryptCipher(Constants.Tip.ALIAS_SPEND_SALT, iv)
+        cipher.doFinal(ciphertext)
+    }.onFailure { clearSalts() }.getOrNull()
 }

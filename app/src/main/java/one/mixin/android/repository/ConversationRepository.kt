@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -70,10 +71,13 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 
 @Singleton
 class ConversationRepository
@@ -197,6 +201,16 @@ class ConversationRepository
                 messageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
             } else {
                 messageDao.indexMediaMessages(conversationId, messageId)
+            }
+
+        suspend fun countIndexMediaMessages(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): Int =
+            if (excludeLive) {
+                messageDao.countIndexMediaMessagesExcludeLive(conversationId)
+            } else {
+                messageDao.countIndexMediaMessages(conversationId)
             }
 
         fun getMediaMessages(
@@ -467,7 +481,9 @@ class ConversationRepository
 
         suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-        fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
+        fun countUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.countUnreadMentionMessageByConversationId(conversationId)
+
+        suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getFirstUnreadMentionMessageByConversationId(conversationId)
 
         suspend fun updateCircles(
             conversationId: String?,
@@ -660,10 +676,13 @@ class ConversationRepository
             }
         }
 
-        fun getLastPinMessages(conversationId: String) =
-            pinMessageDao.getLastPinMessages(conversationId)
+        fun getLastPinMessageId(conversationId: String): LiveData<String?> =
+            pinMessageDao.getLastPinMessageId(conversationId)
 
-        fun countPinMessages(conversationId: String) =
+        suspend fun getPinMessageById(conversationId: String, messageId: String): PinMessageItem? =
+            pinMessageDao.getPinMessageById(conversationId, messageId)
+
+        suspend fun countPinMessages(conversationId: String) =
             pinMessageDao.countPinMessages(conversationId)
 
         fun insertPinMessages(pinMessages: List<PinMessage>) {

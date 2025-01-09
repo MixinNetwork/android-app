@@ -74,6 +74,7 @@ import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.toHex
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -335,6 +336,7 @@ fun MnemonicPhraseInput(
                                     } else if (state == MnemonicState.Display) {
                                         val clipboard = context.getClipboardManager()
                                         clipboard.setPrimaryClip(ClipData.newPlainText(null, mnemonicList.joinToString(" ")))
+                                        toast(R.string.copied_to_clipboard)
                                     }
                                 }
                                 .padding(8.dp)

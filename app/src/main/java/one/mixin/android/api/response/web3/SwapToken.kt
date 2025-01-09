@@ -21,6 +21,7 @@ data class SwapToken(
     var price: String? = null,
     var balance: String? = null,
     var collectionHash: String? = null,
+    var changeUsd: String? = null,
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -51,10 +52,13 @@ data class SwapToken(
     fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolTokenAssetKey, true)
 
     fun getUnique(): String {
-        return address.ifEmpty {
-            assetId
+        return assetId.ifEmpty {
+            assetKey
         }
     }
+
+    val assetKey: String
+        get() = if (address == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else address
 
     fun inMixin(): Boolean = assetId != ""
 
@@ -62,16 +66,89 @@ data class SwapToken(
         if (other !is SwapToken) return false
 
         return if (address.isNotEmpty()) {
-            address == other.address
+            assetKey == other.assetKey
         } else if (assetId.isNotEmpty()) {
             assetId == other.assetId
         } else {
             false
         }
     }
+
+    override fun hashCode(): Int {
+        return if (address.isNotEmpty()) {
+            assetKey.hashCode()
+        } else if (assetId.isNotEmpty()) {
+            assetId.hashCode()
+        } else {
+            super.hashCode()
+        }
+    }
+
 }
 
 interface Swappable : Parcelable {
     fun toSwapToken(): SwapToken
     fun getUnique(): String
+}
+
+fun List<SwapToken>.sortByKeywordAndBalance(keyword: String?): List<SwapToken> {
+    return sortedWith { a, b ->
+        when {
+            !keyword.isNullOrBlank() -> {
+                val aMatchLevel = getMatchLevel(a, keyword)
+                val bMatchLevel = getMatchLevel(b, keyword)
+
+                when {
+                    aMatchLevel != bMatchLevel -> bMatchLevel.compareTo(aMatchLevel)
+                    else -> a.symbol.compareTo(b.symbol)
+                }
+            }
+
+            else -> {
+                compareByBalanceAndPrice(a, b)
+            }
+        }
+    }
+}
+
+private fun getMatchLevel(token: SwapToken, keyword: String): Int {
+    val symbolLower = token.symbol.lowercase()
+    val keywordLower = keyword.lowercase()
+
+    return when {
+        symbolLower == keywordLower -> 2
+        symbolLower.startsWith(keywordLower) -> 1
+        else -> 0
+    }
+}
+
+private fun compareByBalanceAndPrice(a: SwapToken, b: SwapToken): Int {
+    val aValue = calculateTokenValue(a)
+    val bValue = calculateTokenValue(b)
+
+    return when {
+        aValue != BigDecimal.ZERO || bValue != BigDecimal.ZERO -> bValue.compareTo(aValue)
+        else -> {
+            when {
+                !a.balance.isNullOrBlank() && !b.balance.isNullOrBlank() ->
+                    b.balance!!.compareTo(a.balance!!)
+
+                !a.balance.isNullOrBlank() -> -1
+                !b.balance.isNullOrBlank() -> 1
+                else -> a.symbol.compareTo(b.symbol)
+            }
+        }
+    }
+}
+
+private fun calculateTokenValue(token: SwapToken): BigDecimal {
+    if (token.balance.isNullOrBlank() || token.price.isNullOrBlank()) {
+        return BigDecimal.ZERO
+    }
+
+    return try {
+        BigDecimal(token.balance).multiply(BigDecimal(token.price))
+    } catch (e: Exception) {
+        BigDecimal.ZERO
+    }
 }

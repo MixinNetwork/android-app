@@ -3,6 +3,7 @@ package one.mixin.android.ui.search
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
@@ -11,16 +12,19 @@ import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.databinding.ItemSearchChatBinding
 import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
+import one.mixin.android.databinding.ItemSearchMaoUserBinding
 import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
 import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
 import one.mixin.android.ui.search.holder.HeaderHolder
+import one.mixin.android.ui.search.holder.MaoUserHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -55,6 +59,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     ) {
         val context = holder.itemView.context
         when (getItemViewType(position)) {
+            TypeMaoUser.index -> holder.bind(context.getText(R.string.MAO).toString(), false)
             TypeAsset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
             TypeUser.index -> holder.bind(context.getText(R.string.CONTACTS).toString(), data.userShowMore())
             TypeChat.index -> holder.bind(context.getText(R.string.CHATS).toString(), data.chatShowMore())
@@ -73,7 +78,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
             TypeUser.index -> if (data.userShowMore()) data.userList else null
             TypeChat.index -> if (data.chatShowMore()) data.chatList else null
-            else -> if (data.messageShowMore()) data.messageList else null
+            TypeMessage.index -> if (data.messageShowMore()) data.messageList else null
+            else -> null // bot, mao, tip, market, dapp no more
         }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -139,6 +145,11 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         notifyDataSetChanged()
     }
 
+    fun setMaoUser(maoUser: MaoUser?) {
+        data.maoUser = maoUser
+        notifyDataSetChanged()
+    }
+
     private fun shouldTips(keyword: String): Boolean {
         if (data.url != null) {
             return true
@@ -162,24 +173,34 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         position: Int,
     ) {
         when (getItemViewType(position)) {
-            0 -> {
+            TypeTip.index -> {
                 (holder as TipHolder).bind(query, searchingId, data.url, onItemClickListener)
             }
+
+            TypeMaoUser.index -> {
+                data.getItem(position).let {
+                    (holder as MaoUserHolder).bind(it as MaoUser, onItemClickListener)
+                }
+            }
+
             TypeAsset.index -> {
                 data.getItem(position).let {
                     (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener)
                 }
             }
+
             TypeUser.index -> {
                 data.getItem(position).let {
                     (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                 }
             }
+
             TypeChat.index -> {
                 data.getItem(position).let {
                     (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                 }
             }
+
             TypeMessage.index -> {
                 data.getItem(position).let {
                     (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
@@ -195,21 +216,30 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         viewType: Int,
     ): RecyclerView.ViewHolder =
         when (viewType) {
-            0 -> {
+            TypeTip.index -> {
                 TipHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
+            TypeMaoUser.index -> {
+                MaoUserHolder(ItemSearchMaoUserBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
+
             TypeAsset.index -> {
                 AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             TypeUser.index -> {
                 ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             TypeChat.index -> {
                 ChatHolder(ItemSearchChatBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             TypeMessage.index -> {
                 MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+
             else -> {
                 ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
@@ -217,7 +247,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     override fun getItemViewType(position: Int) =
         when (data.getItem(position)) {
-            is TipItem -> 0
+            is TipItem -> TypeTip.index
+            is MaoUser -> TypeMaoUser.index
             is TokenItem -> TypeAsset.index
             is User -> TypeUser.index
             is ChatMinimal -> TypeChat.index

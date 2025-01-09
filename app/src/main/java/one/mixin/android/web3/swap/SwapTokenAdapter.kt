@@ -11,7 +11,7 @@ import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.util.getChainNetwork
 
-class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = tokens.isEmpty()
 
     var tokens: List<SwapToken> = ArrayList(0)
@@ -37,6 +37,10 @@ class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         this.onClickListener = onClickListener
     }
 
+    fun onClick(token: SwapToken) {
+        onClickListener?.invoke(token, false)
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -52,7 +56,7 @@ class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        (holder as Web3Holder).bind(tokens[position], onClickListener)
+        (holder as Web3Holder).bind(tokens[position], onClickListener, selectUnique)
     }
 }
 
@@ -61,6 +65,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
     fun bind(
         token: SwapToken,
         onClickListener: ((SwapToken, Boolean) -> Unit)?,
+        selectUnique: String? = null,
     ) {
         binding.apply {
             root.setOnClickListener {
@@ -77,11 +82,13 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             }
             if (!token.inMixin()) {
                 alert.isVisible = true
+                select.isVisible = false
                 alert.setOnClickListener {
                     onClickListener?.invoke(token, true)
                 }
             } else {
                 alert.isVisible = false
+                select.isVisible = token.getUnique() == selectUnique
                 alert.setOnClickListener(null)
             }
         }

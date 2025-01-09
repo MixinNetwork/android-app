@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 

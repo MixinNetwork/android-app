@@ -41,8 +41,6 @@ import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
-import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
@@ -108,6 +106,8 @@ class AccountRepository
         fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
             accountService.update(request)
 
+        suspend fun insertUserSuspend(user: User) = userDao.insertSuspend(user)
+
         fun updateSession(request: SessionRequest) = accountService.updateSession(request)
 
         fun deviceCheck() = accountService.deviceCheck()
@@ -161,7 +161,7 @@ class AccountRepository
 
         fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
-        suspend fun logout(sessionId: String) = accountService.logout(LogoutRequest(sessionId))
+        suspend fun logout(sessionId: String, pinBase64: String) = accountService.logout(LogoutRequest(sessionId, pinBase64))
 
         fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 

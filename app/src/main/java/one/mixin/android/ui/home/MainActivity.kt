@@ -34,7 +34,6 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -149,6 +148,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -171,7 +171,6 @@ import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.reportException
@@ -309,7 +308,6 @@ class MainActivity : BlazeBaseActivity() {
         val account = Session.getAccount()
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
-            AppCenter.setUserId(it.userId)
         }
 
         initView()
@@ -1044,7 +1042,7 @@ class MainActivity : BlazeBaseActivity() {
             openMarket()
         } else {
             defaultSharedPreferences.putLong(
-                PREF_NEW_VERSION,
+                ReminderBottomSheetDialogFragment.PREF_NEW_VERSION,
                 System.currentTimeMillis(),
             )
         }
@@ -1132,17 +1130,6 @@ class MainActivity : BlazeBaseActivity() {
         val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
         val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
-    }
-
-    override fun onResumeFragments() {
-        super.onResumeFragments()
-        val fragments = supportFragmentManager.fragments
-        if (fragments.size > 0) {
-            fragments.filter { it != null && it is Web3Fragment && it.isVisible }
-                .forEach {
-                    (it as Web3Fragment).updateUI()
-                }
-        }
     }
 
     companion object {

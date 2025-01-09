@@ -33,9 +33,9 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
@@ -54,7 +54,11 @@
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
         android:largeHeap="true"
-        tools:ignore="LockedOrientationActivity,UnusedAttribute" >
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/backup_config"
+        android:fullBackupContent="false"
+        tools:ignore="LockedOrientationActivity,UnusedAttribute"
+        tools:replace="android:fullBackupContent,android:allowBackup,android:dataExtractionRules">
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -502,6 +506,9 @@
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
+
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
     </application>
 
     <queries>

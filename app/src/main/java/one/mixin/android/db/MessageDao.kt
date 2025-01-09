@@ -133,6 +133,14 @@ interface MessageDao : BaseDao<Message> {
         messageId: String,
     ): Int
 
+    @Query(
+        """
+        SELECT count(1) FROM messages 
+        WHERE conversation_id = :conversationId
+        AND category IN ($IMAGES, $VIDEOS, $LIVES) 
+        """)
+    suspend fun countIndexMediaMessages(conversationId: String): Int
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
@@ -154,16 +162,23 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($IMAGES, $VIDEOS)
-        AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
+        AND (created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
         """,
     )
     suspend fun indexMediaMessagesExcludeLive(
         conversationId: String,
         messageId: String,
     ): Int
+
+    @Query(
+        """
+        SELECT count(1) FROM messages 
+        WHERE conversation_id = :conversationId
+        AND category IN ($IMAGES, $VIDEOS) 
+        """)
+    suspend fun countIndexMediaMessagesExcludeLive(conversationId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -590,7 +605,6 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($DATA) 
         AND media_mime_type LIKE 'audio%'

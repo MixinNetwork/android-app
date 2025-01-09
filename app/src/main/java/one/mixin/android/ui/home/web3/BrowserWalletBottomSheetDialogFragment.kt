@@ -498,9 +498,13 @@ fun showBrowserBottomSheetDialogFragment(
     currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
+    onDismiss: (() -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
 ) {
     val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
+    onDismiss?.let {
+        wcBottomSheet.setOnDismiss(onDismiss)
+    }
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)
     }

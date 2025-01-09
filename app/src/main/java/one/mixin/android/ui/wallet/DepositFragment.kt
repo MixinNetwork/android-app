@@ -47,27 +47,26 @@ import one.mixin.android.vo.safe.TokenItem
 class DepositFragment : BaseFragment() {
     companion object {
         const val TAG = "DepositFragment"
+        val usdcAssets =
+            mapOf(
+                "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
+                "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
+                "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
+                "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
+                "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
+            )
+
+        val usdtAssets =
+            mapOf(
+                "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
+                "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
+                "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
+                "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
+                "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
+            )
     }
 
     private val notSupportDepositAssets = arrayOf(OMNI_USDT_ASSET_ID, BYTOM_CLASSIC_ASSET_ID, MGD_ASSET_ID)
-
-    private val usdcAssets =
-        mapOf(
-            "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
-            "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
-            "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
-            "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
-            "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
-        )
-
-    private val usdtAssets =
-        mapOf(
-            "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
-            "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
-            "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
-            "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
-            "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
-        )
 
     private var _binding: FragmentDepositBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -105,7 +104,7 @@ class DepositFragment : BaseFragment() {
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
+                rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit), asset.symbol)
             if (notSupport) {
@@ -113,7 +112,7 @@ class DepositFragment : BaseFragment() {
                 sv.isVisible = false
                 val symbol = if (asset.assetId == OMNI_USDT_ASSET_ID) "OMNI-USDT" else asset.symbol
                 val info = getString(R.string.not_supported_deposit, symbol, symbol)
-                val url = Constants.HelpLink.DEPOSIT_NOT_SUPPORT
+                val url = getString(R.string.not_supported_deposit_url)
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
                 if (usdtAssets.contains(asset.assetId)) {

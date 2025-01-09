@@ -1,6 +1,5 @@
 package one.mixin.android.vo.market
 
-import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -101,7 +100,10 @@ data class Market(
     @SerializedName("sparkline_in_7d")
     @ColumnInfo(name = "sparkline_in_7d")
     val sparklineIn7d: String,
+    @SerializedName("sparkline_in_24h")
+    @ColumnInfo(name = "sparkline_in_24h")
+    val sparklineIn24h: String,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String
-):Parcelable
+) : Parcelable

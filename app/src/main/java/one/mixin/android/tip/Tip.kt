@@ -22,6 +22,7 @@ import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toCompleteMnemonic
@@ -168,30 +169,36 @@ class Tip
             }
 
         suspend fun checkSalt(context: Context, pin: String, tipPriv: ByteArray) {
-            if (!Session.hasPhone()){
-                val saltAESKey = generateSaltAESKey(pin, tipPriv)
-                val encryptedSalt = this@Tip.getEncryptedSalt(context)
-                val salt = aesDecrypt(saltAESKey, encryptedSalt)
+            val saltAESKey = generateSaltAESKey(pin, tipPriv)
+            val encryptedSalt = this@Tip.getEncryptedSalt(context)
+            val salt = aesDecrypt(saltAESKey, encryptedSalt)
+            if (Session.isAnonymous()) {
                 if (!salt.contentEquals(ByteArray(16))) {
                     throw TipNullException("Salt not matched")
+                }
+            } else {
+                var local = getMnemonicFromEncryptedPreferences(context)
+                if (local != null && !salt.contentEquals(local)) {
+                    // Clear local mnemonic if salt not matched
+                    removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
                 }
             }
         }
 
-        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, force: Boolean = false): String {
-            val rawSalt = if (Session.hasPhone() || force) {
-                var local = getMnemonicFromEncryptedPreferences(context)
-                if (local == null) {
-                    val saltAESKey = generateSaltAESKey(pin, tipPriv)
-                    val encryptedSalt = this@Tip.getEncryptedSalt(context)
-                    local = aesDecrypt(saltAESKey, encryptedSalt)
-                }
-                local
-            } else {
+        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, isAnonymous: Boolean): String {
+            val rawSalt = if (isAnonymous) {
                 ByteArray(16)
+            } else {
+                requireNotNull(getMnemonicFromEncryptedPreferences(context)) // Only register safe
             }
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
             val encryptedSalt = aesEncrypt(saltAESKey, rawSalt)
+            val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+            return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
+        }
+
+        suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray): String {
+            val encryptedSalt = getEncryptedSalt(context)
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
             return aesEncrypt(pinToken, encryptedSalt).base64RawURLEncode()
         }
@@ -274,6 +281,9 @@ class Tip
         fun getSpendPriv(context: Context, seed: ByteArray): ByteArray {
             var entropy = getMnemonicFromEncryptedPreferences(context)
             if (entropy == null) { // Register safe must generate mnemonic, Only once
+                if (Session.getAccount() != null && !Session.hasPhone() && !Session.saltExported()) {
+                    throw IllegalStateException("Entropy lost")
+                }
                 entropy = generateEntropyAndStore(context)
             }
             return getSpendPriv(seed, entropy)

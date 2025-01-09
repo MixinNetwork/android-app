@@ -102,6 +102,7 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
+    <string name="MAO">MAO</string>
     <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
     <string name="Audios">Audios</string>
@@ -192,7 +193,7 @@
         <item quantity="one">Delete %1$d message?</item>
         <item quantity="other">Delete %1$d messages?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
+    <string name="chat_delete_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8</string>
     <string name="chat_group_add">%1$s added %2$s</string>
     <string name="chat_group_call_did_not_answer">%1$s did not answer group call</string>
     <string name="chat_group_call_self_did_not_answer">You did not answer group call</string>
@@ -208,7 +209,7 @@
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
     <string name="chat_list_empty_info">You can chat with contacts who have Mixin installed on their phone.</string>
     <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
+    <string name="chat_not_support_url">https://support.mixin.one/en/article/how-to-do-when-you-receive-a-message-like-this-this-type-of-message-is-not-supported-please-upgrade-mixin-17j1t3p</string>
     <string name="chat_on_mixin_content">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search @%1$s to add me as a friend.</string>
     <string name="chat_pin_message">%1$s pinned %2$s</string>
     <string name="Chat_pinned">Chat pinned</string>
@@ -363,7 +364,7 @@
     <string name="Disabled">Disabled</string>
     <string name="disappearing_message">Disappearing Messages</string>
     <string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after they have been seen, read the document to **learn more**.</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
+    <string name="disappearing_message_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8</string>
     <string name="disappearing_option_1">30 seconds</string>
     <string name="disappearing_option_2">10 minutes</string>
     <string name="disappearing_option_3">2 hours</string>
@@ -576,7 +577,7 @@
     <string name="Joined_in">Joined on %1$s</string>
     <string name="Label">Label</string>
     <string name="Landing_back">Landing back</string>
-    <string name="landing_delete_content">Your account will be deleted on %1$s, if you continue to log in, the request to delete your account will be cancelled.</string>
+    <string name="landing_delete_content">You requested to delete your account on %1$s. The account will be deleted on %2$s. If you continue to login, your account deletion will be cancelled.</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="landing_introduction">By proceeding, you agree to the %1$s and %2$s.</string>
     <string name="landing_desc">An open source crypto wallet with Signal messaging.</string>
@@ -585,7 +586,7 @@
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Enter the 4-digit code sent to you at %1$s</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
+    <string name="landing_verification_tip_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
     <string name="Language">Language</string>
     <string name="Large_Amount_Confirmation">Large Amount Confirmation</string>
     <string name="Large_Amount_Confirmation_with_symbol">Large Amount Confirmation(%1$s)</string>
@@ -721,12 +722,14 @@
     <string name="Not_recognized">Not recognized</string>
     <string name="Not_support">Not support</string>
     <string name="not_supported_deposit">Mixin ceases support for deposit service on the %1$s. You can continue to withdraw and transfer %2$s in the wallet balance. Read the document to **learn more**.</string>
+    <string name="not_supported_deposit_url">https://support.mixin.one/en/article/the-explanation-about-mixin-stopped-support-for-some-assets-deposits-1im32px</string>
     <string name="suspended_deposit">The deposit for %1$s has been temporarily suspended. This action has been taken due to potential factors such as low utilization, node failure, blockchain network hard fork, or congestion. We kindly request your attention to the fact that the %2$s assets already stored in the wallet remain transferable.</string>
     <string name="Notice">Notice</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
-    <string name="notification_content">Don\'t miss messages from your friends.</string>
+    <string name="notification_content">Enable push notifications to stay updated on price alerts and messages in real time.</string>
     <string name="Notifications">Notifications</string>
+    <string name="Enable_Notifications">Enable Notifications</string>
     <string name="Now_Playing">Now Playing</string>
     <string name="number_reached_limit">The number has reached the limit</string>
     <string name="Off">Off</string>
@@ -899,6 +902,7 @@
     <string name="search_placeholder_explore">Name, Symbol, URL</string>
     <string name="search_placeholder_collectible">Name</string>
     <string name="search_placeholder_number">Search Mixin ID or phone number: </string>
+    <string name="search_mao">Search MAO name: </string>
     <plurals name="search_related_message">
         <item quantity="one">%1$d related message</item>
         <item quantity="other">%1$d related messages</item>
@@ -952,12 +956,12 @@
     <string name="setting_delete_anonymous_account_pin_content">If you continue, your profile and account details will be delete on %1$s.</string>
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
     <string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be abandoned along with the wallet and cannot be recovered.</string>
-    <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
+    <string name="setting_delete_account_url">https://support.mixin.one/en/article/how-to-delete-my-account-19fkagl</string>
     <string name="setting_desktop_confirm">Confirm login to Mixin Messenger Desktop</string>
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
-    <string name="setting_emergency_content">The recovery contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number or mnemonic phrase.</string>
+    <string name="setting_emergency_content">The Recovery Contact is designed to help you log in to your account if you are lost and cannot retrieve your mobile number.</string>
     <string name="setting_emergency_create_success">Create recovery contact successfully</string>
     <string name="setting_emergency_desc">When you lose your mobile number, please contact your recovery contact by phone or other means to get the Mixin ID and verification code. Visit the support center to **learn more**.</string>
     <string name="setting_emergency_pin_tip">Your recovery contact is protected by PIN</string>
@@ -1075,7 +1079,7 @@
     <string name="Trying_connect_tip_network">Connecting the TIP network</string>
     <string name="Trying_connect_tip_node">Trying connect TIP node</string>
     <string name="Tuesday">Tuesday</string>
-    <string name="Turn_On_Notifications">Turn On Notifications</string>
+    <string name="Turn_On_Notifications">Enable push notification</string>
     <string name="Type_message">Type message</string>
     <string name="Unblock">Unblock</string>
     <string name="UNDO">UNDO</string>
@@ -1562,6 +1566,9 @@
     <string name="balance_max">MAX</string>
     <string name="balance_half">HALF</string>
     <string name="Failed">Failed</string>
+    <string name="single_transaction_should_be_greater_than">Minimum amount %1$s %2$s</string>
+    <string name="single_transaction_should_be_less_than">Maximum amount %1$s %2$s</string>
+    <string name="single_transaction_should_be_between">Amount range be %1$s %2$s ~ %3$s %4$s</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>
@@ -1687,7 +1694,6 @@
     <string name="watchlist_empty">Your watchlist is empty</string>
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
-    <string name="week_percentage">7d %</string>
     <string name="Watchlist">Watchlist</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
@@ -1757,7 +1763,7 @@
     <string name="Create_Account">Create Account</string>
     <string name="Mobile_Phone">Mobile Phone</string>
     <string name="Mnemonic_Phrase">Mnemonic Phrase</string>
-    <string name="create_introduction">MPC Wallet, %1$s, Self-custody, Social Recovery</string>
+    <string name="create_introduction">MPC Wallet, 2FA, %1$s, Self-custody, Social Recovery</string>
     <string name="Convenience">Convenience</string>
     <string name="Create_Mnemonic_Phrase">Create Mnemonic Phrase</string>
     <string name="mnemonic_phrase_instruction_1">The 13 mnemonic phrases generated when creating an account are intended only for Mixin Network-related products.</string>
@@ -1829,4 +1835,16 @@
     <string name="Export_mnemonic_phrase">Export mnemonic phrase</string>
     <string name="Export">Export</string>
     <string name="Upgrade_safe">Upgrade safe</string>
+    <string name="mixin_support">Mixin Support</string>
+    <string name="ask_me_anything">Ask me anything</string>
+    <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
+    <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
+    <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
+    <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
+    <string name="Deposits_Pending_Confirmation">%1$d Deposits Pending Confirmation</string>
+    <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
+    <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
+    <string name="Manage">Manage</string>
+    <string name="Select_More_Photos">Select More Photos</string>
+    <string name="Change_Permissions">Change Permissions</string>
 </resources>

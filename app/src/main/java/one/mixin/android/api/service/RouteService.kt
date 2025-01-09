@@ -15,7 +15,7 @@ import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeResponse
@@ -119,7 +119,7 @@ interface RouteService {
         @Query("amount") amount: String,
         @Query("slippage") slippage: String,
         @Query("source") source: String,
-    ): MixinResponse<QuoteResponse>
+    ): MixinResponse<QuoteResult>
 
     @POST("web3/swap")
     suspend fun web3Swap(
@@ -149,6 +149,7 @@ interface RouteService {
     @GET("web3/tokens/search/{query}")
     suspend fun searchTokens(
         @Path("query") query: String,
+        @Query("source") source: String?
     ): MixinResponse<List<SwapToken>>
 
     @POST("web3/stake")

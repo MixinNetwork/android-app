@@ -198,6 +198,7 @@ class WebFragment : BaseFragment() {
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
         const val ARGS_SAVE_NAME = "args_save_name"
+        const val ARGS_INJECTABLE = "args_injectable"
         const val themeColorScript =
             """
             (function() {
@@ -231,6 +232,10 @@ class WebFragment : BaseFragment() {
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
+    }
+
+    private val injectable: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_INJECTABLE, true)
     }
 
     private var currentUrl: String? = null
@@ -396,6 +401,15 @@ class WebFragment : BaseFragment() {
         binding.webControl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = requireContext().dpToPx(6f)
         }
+        if (!injectable) {
+            binding.titleVa.displayedChild = 1
+            binding.webControl.isVisible = false
+            binding.webClose.isVisible = true
+        } else {
+            binding.titleVa.displayedChild = 0
+            binding.webControl.isVisible = true
+            binding.webClose.isVisible = false
+        }
         registerForContextMenu(webView)
 
         WebView.setWebContentsDebuggingEnabled(
@@ -496,6 +510,9 @@ class WebFragment : BaseFragment() {
                     requireActivity().finish()
                 }
             }
+        binding.webClose.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.useWideViewPort = true
@@ -519,6 +536,7 @@ class WebFragment : BaseFragment() {
                 this,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
+                injectable,
                 lifecycleScope,
                 { url ->
                     currentUrl = url
@@ -872,7 +890,7 @@ class WebFragment : BaseFragment() {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleLl.isGone = immersive
+            binding.titleVa.isGone = immersive
 
             webAppInterface =
                 WebAppInterface(
@@ -1633,7 +1651,7 @@ class WebFragment : BaseFragment() {
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
-        binding.titleLl.setBackgroundColor(color)
+        binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
 
@@ -1645,6 +1663,7 @@ class WebFragment : BaseFragment() {
         private val fragment: Fragment,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
+        private val inject: Boolean = true,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
@@ -1665,7 +1684,7 @@ class WebFragment : BaseFragment() {
             view ?: return
             view.clearCache(true)
             Timber.e("onPageStarted ${JsSigner.currentChain.name}")
-            if (!redirect) {
+            if (!redirect && inject) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
                 view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }

@@ -1,6 +1,7 @@
 package org.sol4k
 
 import org.sol4k.Constants.ASSOCIATED_TOKEN_PROGRAM_ID
+import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.tweetnacl.TweetNaclFast
 import org.sol4k.tweetnacl.TweetNaclFast.Signature
@@ -83,8 +84,9 @@ class PublicKey {
         fun findProgramDerivedAddress(
             holderAddress: PublicKey,
             tokenMintAddress: PublicKey,
+            tokenProgramId: PublicKey = TOKEN_PROGRAM_ID,
         ): ProgramDerivedAddress = findProgramAddress(
-            listOf(holderAddress, TOKEN_PROGRAM_ID, tokenMintAddress),
+            listOf(holderAddress, tokenProgramId, tokenMintAddress),
             ASSOCIATED_TOKEN_PROGRAM_ID,
         )
     }

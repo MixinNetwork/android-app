@@ -535,6 +535,15 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `market_cap_ranks` (`coin_id` TEXT NOT NULL, `market_cap_rank` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))")
                 }
             }
+
+        val MIGRATION_62_63: Migration =
+            object : Migration(62, 63) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `sparkline_in_24h` TEXT NOT NULL DEFAULT ''")
+                    db.execSQL("DROP INDEX IF EXISTS `index_pin_messages_conversation_id`")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id_created_at` ON `pin_messages` (`conversation_id`, `created_at`)")
+                }
+            }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
