@@ -1400,7 +1400,9 @@ class BottomSheetViewModel
 
         fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
 
-        suspend fun checkMarketById(id: String): MarketItem? = tokenRepository.checkMarketById(id)
+        suspend fun checkMarketById(id: String): MarketItem? = withContext(Dispatchers.IO) {
+            tokenRepository.checkMarketById(id)
+        }
 
         fun syncAsset(assetId: String) {
             jobManager.addJobInBackground(RefreshAssetsJob(assetId))

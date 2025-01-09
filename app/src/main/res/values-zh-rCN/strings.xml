@@ -1809,4 +1809,8 @@
     <string name="asset_changes">资产变动</string>
     <string name="asset_changes_estimate">资产变动（预估）</string>
     <string name="Confirm_Transfer_in_Batches">批量转账确认</string>
+    <string name="Partial_Photo_Access_Permission">您向 Mixin Messenger 授予了仅访问部分照片的权限。管理</string>
+    <string name="Manage">管理</string>
+    <string name="Select_More_Photos">选择更多照片</string>
+    <string name="Change_Permissions">更改权限</string>
 </resources>

@@ -1847,4 +1847,8 @@
     <string name="asset_changes">Asset changes</string>
     <string name="asset_changes_estimate">Asset changes (estimate)</string>
     <string name="Confirm_Transfer_in_Batches">Confirm Transfer in Batches</string>
+    <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
+    <string name="Manage">Manage</string>
+    <string name="Select_More_Photos">Select More Photos</string>
+    <string name="Change_Permissions">Change Permissions</string>
 </resources>
