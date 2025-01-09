@@ -6,12 +6,12 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.renderscript.RSRuntimeException
 import androidx.core.graphics.createBitmap
-import coil.size.Size
-import coil.transform.Transformation
+import coil3.size.Size
+import coil3.transform.Transformation
 import jp.wasabeef.glide.transformations.internal.FastBlur
 import jp.wasabeef.glide.transformations.internal.RSBlur
 
-class BlurTransformation(val context: Context, val radius: Int = 25) : Transformation {
+class BlurTransformation(val context: Context, val radius: Int = 25) : Transformation() {
     companion object {
         private val MAX_RADIUS: Int = 25
         private val DEFAULT_DOWN_SAMPLING: Int = 1

@@ -27,9 +27,6 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.VelocityTracker
 import android.view.View
-import android.view.View.OnClickListener
-import android.view.View.OnKeyListener
-import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
