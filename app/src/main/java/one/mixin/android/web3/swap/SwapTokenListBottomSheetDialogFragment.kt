@@ -56,11 +56,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             SwapTokenListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_KEY, key)
                 putString(ARGS_UNIQUE, selectUnique)
-            }.apply {
-                this@Companion.tempTokens = tokens
+            }.also { fragment ->
+                fragment.setTokens(tokens)
             }
-
-        private var tempTokens: ArrayList<SwapToken>? = null
     }
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
@@ -81,6 +79,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     private var isLoading = false
+
+    fun setTokens(newTokens: List<SwapToken>) {
+        tokens = newTokens
+    }
 
     @SuppressLint("NotifyDataSetChanged")
     fun setLoading(loading: Boolean, list: List<SwapToken>? = null) {
@@ -157,7 +159,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         dialog.setViewTreeOwners()
         super.setupDialog(dialog, style)
         contentView = binding.root
-        tokens = tempTokens ?: emptyList()
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
         }
@@ -316,6 +317,5 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     override fun onDestroy() {
         super.onDestroy()
-        tempTokens = null
     }
 }
