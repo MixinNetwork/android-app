@@ -2,7 +2,6 @@ package one.mixin.android.web3.swap
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
@@ -32,8 +31,6 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
@@ -42,7 +39,6 @@ import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -314,8 +310,4 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var onDepositListener: (() -> Unit)? = null
 
     private fun inMixin(): Boolean = key == Constants.Account.PREF_TO_SWAP || key == Constants.Account.PREF_FROM_SWAP
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 }
