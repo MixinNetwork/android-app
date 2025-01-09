@@ -1803,5 +1803,11 @@
     <string name="help_link">https://support.mixin.one/zh/category/mixin-messenger-1hmc388</string>
     <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
     <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
+    <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
+    <string name="Deposits_Pending_Confirmation">有 %1$d 笔充值确认中</string>
     <string name="open_source">版权所有 Mixin Messenger\n根据 GPL-3.0 授权许可</string>
+    <string name="Partial_Photo_Access_Permission">您向 Mixin Messenger 授予了仅访问部分照片的权限。管理</string>
+    <string name="Manage">管理</string>
+    <string name="Select_More_Photos">选择更多照片</string>
+    <string name="Change_Permissions">更改权限</string>
 </resources>

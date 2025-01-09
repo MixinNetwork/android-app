@@ -737,44 +737,15 @@ fun AssetChanges(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
-            modifier =
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CoilImage(
-                model = outAsset.icon,
-                modifier =
-                Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder,
-            )
-            Box(modifier = Modifier.width(12.dp))
-            Text(
-                text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
-                color = MixinAppTheme.colors.green,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W600
-            )
-            Box(modifier = Modifier.weight(1f))
-            Text(
-                text = outAsset.chain.name,
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 14.sp,
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier =
-            Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
                 model = inAsset.icon,
                 modifier =
-                Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))
@@ -787,6 +758,33 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = inAsset.chain.name,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 14.sp,
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CoilImage(
+                model = outAsset.icon,
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
+                placeholder = R.drawable.ic_avatar_place_holder,
+            )
+            Box(modifier = Modifier.width(12.dp))
+            Text(
+                text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
+                color = MixinAppTheme.colors.green,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W600
+            )
+            Box(modifier = Modifier.weight(1f))
+            Text(
+                text = outAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )

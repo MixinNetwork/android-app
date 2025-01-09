@@ -359,7 +359,7 @@ class TokenRepository
 
         private suspend fun simpleAsset(id: String) = tokenDao.simpleAsset(id)
 
-        suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = safeSnapshotDao.insertListSuspend(snapshot)
+        suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = safeSnapshotDao.insertPendingDeposit(snapshot)
 
         @ExperimentalPagingApi
         fun snapshots(
@@ -497,6 +497,8 @@ class TokenRepository
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
+
+        fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
 
         suspend fun pendingDeposits(
             asset: String,

@@ -12,6 +12,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.CheckBox
+import androidx.compose.foundation.layout.Box
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -23,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isWideScreen
@@ -108,20 +110,32 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
-                    RxPermissions(activity!!)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                        arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES).any { RxPermissions(requireActivity()).isGranted(it) }
+                    ) {
+                        openGalleryFromSticker()
+                        return
+                    }
+                    RxPermissions(requireActivity())
                         .request(
-                            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                            *(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                                mutableListOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES)
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES)
                             } else {
                                 mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            }.apply {
+                            }).apply {
                                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            }.toTypedArray(),
+                            }.toTypedArray()
                         )
                         .autoDispose(stopScope)
                         .subscribe(
                             { granted ->
-                                if (granted) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                                    arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES).any { RxPermissions(requireActivity()).isGranted(it) }
+                                ) {
+                                    openGalleryFromSticker()
+                                } else if (granted) {
                                     openGalleryFromSticker()
                                 } else {
                                     context?.openPermissionSetting()
@@ -236,6 +250,7 @@ class StickerManagementFragment : BaseFragment() {
                 cover.visibility = GONE
             }
             if (!editing && position == 0) {
+                imageView.clear()
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {

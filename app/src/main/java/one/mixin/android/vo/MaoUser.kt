@@ -27,8 +27,9 @@ class MaoUser(
         return membership?.isProsperity() == true
     }
 }
-fun User.toMaoUser(maoName: String) :MaoUser{
-    return MaoUser(maoName = maoName, userId, identityNumber, fullName, avatarUrl, isVerified, appId, membership)
+
+fun User.toMaoUser(maoName: String): MaoUser {
+    return MaoUser(maoName = maoName, userId, identityNumber, fullName, avatarUrl, isVerified, appId ?: app?.appId, membership)
 }
 
 fun String.completeMao(): String {

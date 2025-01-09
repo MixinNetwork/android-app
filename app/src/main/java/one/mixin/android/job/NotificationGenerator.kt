@@ -476,7 +476,7 @@ object NotificationGenerator : Injector() {
             } else {
                 NotificationCompat.PRIORITY_HIGH
             }
-
+        notificationBuilder.setVibrate(longArrayOf(0, 500, 1000))
         var person: Person? = null
         supportsR({
             val name = conversation.getConversationName()

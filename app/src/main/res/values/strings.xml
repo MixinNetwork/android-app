@@ -102,6 +102,7 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
+    <string name="MAO">MAO</string>
     <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
     <string name="Audios">Audios</string>
@@ -1839,5 +1840,11 @@
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="deposit_url">https://support.mixin.one/en/article/how-to-deposit-assets-to-mixin-messenger-1usvjod</string>
     <string name="emergency_url">https://support.mixin.one/en/article/how-to-set-up-an-emergency-contact-1kvd6g8</string>
+    <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
+    <string name="Deposits_Pending_Confirmation">%1$d Deposits Pending Confirmation</string>
     <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
+    <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
+    <string name="Manage">Manage</string>
+    <string name="Select_More_Photos">Select More Photos</string>
+    <string name="Change_Permissions">Change Permissions</string>
 </resources>

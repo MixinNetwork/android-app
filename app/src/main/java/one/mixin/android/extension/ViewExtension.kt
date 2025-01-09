@@ -6,11 +6,13 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.Outline
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.util.Property
 import android.view.LayoutInflater
+import android.view.TouchDelegate
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
@@ -512,3 +514,16 @@ var MarginLayoutParams.margin: Int
         topMargin = v
         bottomMargin = v
     }
+
+fun View.expandTouchArea(horizontal: Int = 8.dp, vertical: Int = 8.dp) {
+    val parent = parent as? View ?: return
+    parent.post {
+        val rect = Rect()
+        getHitRect(rect)
+        rect.left -= horizontal * 2
+        rect.right += horizontal
+        rect.top -= vertical * 2
+        rect.bottom += vertical
+        parent.touchDelegate = TouchDelegate(rect, this)
+    }
+}

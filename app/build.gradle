@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 1
-def versionPatch = 0
-def versionBuild = 2
+def versionPatch = 2
+def versionBuild = 3
 
 android {
     compileSdk 35
@@ -135,16 +135,16 @@ android {
     testBuildType "staging"
 
     buildTypes {
-        if (project.hasProperty("RELEASE_STORE_FILE")) {
-            release {
-                ndk {
-                    abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
-                }
-                debuggable false
-                jniDebuggable false
-                shrinkResources true
-                minifyEnabled true
-                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        release {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+            }
+            debuggable false
+            jniDebuggable false
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
                 signingConfig signingConfigs.release
             }
         }
@@ -401,7 +401,7 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:4.11.0" // ⚠️ dependabot unexpected behavior update to version 5.0.0
     implementation "org.web3j:crypto:4.11.0"
-    implementation platform("com.reown:android-bom:1.0.4")
+    implementation platform("com.reown:android-bom:1.1.0")
     implementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
@@ -523,13 +523,15 @@ task syncStrings {
 }
 
 
+import io.sentry.android.gradle.extensions.InstrumentationFeature
 sentry {
     org = "mcwm"
     projectName = "android"
 
     tracingInstrumentation {
         enabled = true
-
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.OKHTTP
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.FILE_IO
         logcat {
             enabled = false
         }
