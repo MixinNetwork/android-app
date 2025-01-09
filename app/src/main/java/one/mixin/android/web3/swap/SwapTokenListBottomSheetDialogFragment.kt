@@ -265,6 +265,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 binding.rvVa.displayedChild = 0
             }
+            binding.pb.isVisible = false
         }
 
     private suspend fun search(
@@ -274,7 +275,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         inMixin: Boolean,
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
-        if (localTokens.isEmpty()) binding.pb.isVisible = true
+        binding.pb.isVisible = true
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
