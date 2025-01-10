@@ -693,12 +693,29 @@ class BottomSheetViewModel
             if (signedResponse.isSuccess) {
                 withContext(SINGLE_DB_THREAD) {
                     runInTransaction {
+                        Timber.e("Kernel Transaction: sign db begin")
                         signedResponse.data?.forEach {
                             tokenRepository.updateRawTransaction(it.requestId, OutputState.signed.name)
+                        }
+                        Timber.e("Kernel Transaction: sign db end")
+                    }
+                }
+
+                if (invoice.recipient.uuidMembers.size == 1) {
+                    val receiverId = invoice.recipient.uuidMembers.first()
+                    val user = tokenRepository.findUser(receiverId)
+                    if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
+                        val conversationId = generateConversationId(signedResponse.data!!.first().userId, receiverId)
+                        initConversation(conversationId, signedResponse.data!!.first().userId, receiverId)
+                        signedResponse.data?.forEach { t ->
+                            Timber.e("Kernel Transaction(${t.requestId}): innerTransaction insertSnapshotMessage $conversationId")
+                            tokenRepository.insertSnapshotMessage(t, conversationId, null)
                         }
                     }
                 }
             }
+
+            Timber.e("Kernel Invoice Transaction: transaction end")
             return signedResponse
         }
 

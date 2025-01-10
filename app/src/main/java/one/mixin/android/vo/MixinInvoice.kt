@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.toHex
@@ -316,7 +317,7 @@ data class InvoiceEntry(
             }
 
             val hashRefs = hashReferences.map { byteArray ->
-                Reference.HashValue(byteArray.toHex())
+                Reference.HashValue(byteArray.hexString())
             }
 
             return indexRefs + hashRefs
