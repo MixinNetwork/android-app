@@ -225,7 +225,15 @@ fun MnemonicPhraseInput(
                                     ),
                                     keyboardActions = KeyboardActions(
                                         onNext = {
-                                            if ((index + 1) % 3 == 0) {
+                                            if (!legacy && index == 12) {
+                                                repeat(4) {
+                                                    focusManager.moveFocus(FocusDirection.Up)
+                                                }
+                                            } else if (index == 24) {
+                                                repeat(8) {
+                                                    focusManager.moveFocus(FocusDirection.Up)
+                                                }
+                                            } else if ((index + 1) % 3 == 0) {
                                                 focusManager.moveFocus(FocusDirection.Down)
                                                 focusManager.moveFocus(FocusDirection.Left)
                                                 focusManager.moveFocus(FocusDirection.Left)
