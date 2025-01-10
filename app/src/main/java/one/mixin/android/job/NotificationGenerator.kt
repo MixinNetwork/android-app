@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
@@ -22,6 +21,7 @@ import androidx.core.graphics.drawable.IconCompat
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.transformations
+import coil3.toBitmap
 import coil3.transform.CircleCropTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -620,9 +620,8 @@ object NotificationGenerator : Injector() {
                 .size(width, height)
                 .transformations(CircleCropTransformation())
                 .target(
-                    onSuccess = { drawable ->
-                        val bitmap = (drawable as? BitmapDrawable)?.bitmap
-                        onComplete(bitmap)
+                    onSuccess = { image ->
+                        onComplete(image.toBitmap(width,height))
                     },
                     onError = {
                         onComplete(null)
