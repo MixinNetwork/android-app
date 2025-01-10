@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -76,8 +75,6 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.lifecycle.liveData
-import androidx.lifecycle.switchMap
 
 @Singleton
 class ConversationRepository

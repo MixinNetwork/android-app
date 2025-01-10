@@ -7,7 +7,7 @@ buildscript {
         ext.lifecycleVersion = '2.8.7'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.5'
-        ext.coilVersion = '2.7.0'
+        ext.coilVersion = '3.0.4'
         ext.collectionx = '1.4.5'
         ext.roomVersion = '2.6.1'
         ext.navigationVersion = '2.8.5'
@@ -105,7 +105,7 @@ buildscript {
         ext.markdownVersion = '0.7.3'
 
         ext.bcVersion = '1.70'
-        ext.jsonVersion = '20241224'
+        ext.jsonVersion = '20250107'
         ext.composeVersion = '1.7.6'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
@@ -130,7 +130,7 @@ buildscript {
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.3'
+        classpath 'com.android.tools.build:gradle:8.8.0'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.2'
@@ -140,8 +140,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.7.3' apply false
-    id 'com.android.library' version '8.7.3' apply false
+    id 'com.android.application' version '8.8.0' apply false
+    id 'com.android.library' version '8.8.0' apply false
     id 'org.jetbrains.kotlin.android' version "${kotlinVersion}" apply false
     id "org.jetbrains.kotlin.kapt" version "${kotlinVersion}" apply false
     id 'com.google.dagger.hilt.android' version '2.54' apply false

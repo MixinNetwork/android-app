@@ -19,9 +19,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.LocusIdCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.transform.CircleCropTransformation
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import coil3.transform.CircleCropTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -475,7 +476,7 @@ object NotificationGenerator : Injector() {
             } else {
                 NotificationCompat.PRIORITY_HIGH
             }
-
+        notificationBuilder.setVibrate(longArrayOf(0, 500, 1000))
         var person: Person? = null
         supportsR({
             val name = conversation.getConversationName()

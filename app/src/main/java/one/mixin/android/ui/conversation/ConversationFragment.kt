@@ -37,6 +37,7 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -286,8 +287,7 @@ import kotlin.math.abs
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class
-ConversationFragment() :
+class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,
@@ -1042,6 +1042,7 @@ ConversationFragment() :
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Triple<String, Boolean, Int>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
     private lateinit var getShareMediaResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var pickFileLauncher: ActivityResultLauncher<Array<String>>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
@@ -1054,6 +1055,11 @@ ConversationFragment() :
         getMediaResult = registerForActivityResult(MediaPagerActivity.MediaContract(), resultRegistry, ::callbackChatHistory)
         getShareMediaResult = registerForActivityResult(SharedMediaActivity.SharedMediaContract(), resultRegistry, ::callbackChatHistory)
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
+        pickFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                handleFile(uri)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -2525,10 +2531,38 @@ ConversationFragment() :
     }
 
     private fun clickGallery() {
-        val galleryAlbumFragment = parentFragmentManager.findFragmentByTag(GalleryAlbumFragment.TAG)
-        if (galleryAlbumFragment == null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+            arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO).any { RxPermissions(requireActivity()).isGranted(it) }
+        ) {
             initGalleryLayout()
+            return
         }
+        RxPermissions(requireActivity())
+            .request(
+                *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                } else {
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                },
+            )
+            .autoDispose(stopScope)
+            .subscribe(
+                { granted ->
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                        arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO).any { RxPermissions(requireActivity()).isGranted(it) }
+                    ) {
+                        initGalleryLayout()
+                    } else if (granted) {
+                        initGalleryLayout()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                },
+                {
+                },
+            )
     }
 
     private fun initGalleryLayout() {
@@ -2604,30 +2638,30 @@ ConversationFragment() :
                             openCamera()
                         }
                         MenuType.File -> {
-                            RxPermissions(requireActivity())
-                                .request(
-                                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO)
-                                    } else {
-                                        mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    }.apply {
-                                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                                            add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                        }
-                                    }.toTypedArray(),
-                                )
-                                .autoDispose(stopScope)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            selectDocument()
-                                        } else {
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                    },
-                                )
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                pickFileLauncher.launch(arrayOf("*/*"))
+                            } else {
+                                RxPermissions(requireActivity())
+                                    .request(
+                                        *mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE).apply {
+                                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                                                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                            }
+                                        }.toTypedArray(),
+                                    )
+                                    .autoDispose(stopScope)
+                                    .subscribe(
+                                        { granted ->
+                                            if (granted) {
+                                                selectDocument()
+                                            } else {
+                                                context?.openPermissionSetting()
+                                            }
+                                        },
+                                        {
+                                        },
+                                    )
+                            }
                         }
                         MenuType.Transfer -> {
                             binding.chatControl.reset()
@@ -2822,38 +2856,42 @@ ConversationFragment() :
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            val attachment = context?.getAttachment(uri)
-            if (attachment != null) {
-                alertDialogBuilder()
-                    .setMessage(
-                        if (isGroup) {
-                            requireContext().getString(
-                                R.string.send_file_group,
-                                attachment.filename,
-                                groupName,
-                            )
-                        } else {
-                            requireContext().getString(
-                                R.string.send_file_group,
-                                attachment.filename,
-                                recipient?.fullName,
-                            )
-                        },
-                    )
-                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.Send) { dialog, _ ->
-                        sendAttachmentMessage(attachment)
-                        dialog.dismiss()
-                    }.show()
-            } else {
-                toast(R.string.File_does_not_exist)
-            }
+            handleFile(uri)
         } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
             val intent = data ?: return
             val location = LocationActivity.getResult(intent) ?: return
             sendLocation(location)
         } else {
             super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    private fun handleFile(uri: Uri) {
+        val attachment = context?.getAttachment(uri)
+        if (attachment != null) {
+            alertDialogBuilder()
+                .setMessage(
+                    if (isGroup) {
+                        requireContext().getString(
+                            R.string.send_file_group,
+                            attachment.filename,
+                            groupName,
+                        )
+                    } else {
+                        requireContext().getString(
+                            R.string.send_file_group,
+                            attachment.filename,
+                            recipient?.fullName,
+                        )
+                    },
+                )
+                .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                .setPositiveButton(R.string.Send) { dialog, _ ->
+                    sendAttachmentMessage(attachment)
+                    dialog.dismiss()
+                }.show()
+        } else {
+            toast(R.string.File_does_not_exist)
         }
     }
 

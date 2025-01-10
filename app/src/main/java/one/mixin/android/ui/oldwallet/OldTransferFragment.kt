@@ -8,7 +8,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.text.Editable
 import android.text.InputFilter
-import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -22,8 +21,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.text.bold
-import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -42,17 +39,12 @@ import one.mixin.android.databinding.FragmentOldTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
-import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -85,7 +77,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
-import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight

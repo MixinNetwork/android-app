@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.protobuf.Mixin
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -74,7 +73,6 @@ import one.mixin.android.util.uniqueObjectId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
-import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
