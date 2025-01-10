@@ -597,6 +597,7 @@ class BottomSheetViewModel
             val senderIds = listOf(Session.getAccountId()!!)
             val verifyTransactions = mutableListOf<TransactionResponse>()
             val signedTransactions = mutableListOf<SignedTransaction>()
+            Timber.e("Kernel Invoice Transaction(${invoice.entries.map { it.traceId }.joinToString(",")}): begin")
             invoice.entries.forEach { entry ->
                 val amount = entry.amountString()
                 val assetId = entry.assetId
@@ -605,14 +606,14 @@ class BottomSheetViewModel
                 val data = if (recipient.uuidMembers.isNotEmpty()) {
                     val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(recipient.uuidMembers, senderIds, trace))
                     if (ghostKeyResponse.error != null) {
-                        Timber.e("Kernel Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        Timber.e("Kernel Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
                         return ghostKeyResponse
                     }
                     ghostKeyResponse.data!!
                 } else if (recipient.xinMembers.isNotEmpty()) {
                     val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderIds.first(), trace))
                     if (ghostKeyResponse.error != null) {
-                        Timber.e("Kernel Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        Timber.e("Kernel Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
                         return ghostKeyResponse
                     }
                     ghostKeyResponse.data!!
@@ -620,7 +621,7 @@ class BottomSheetViewModel
                     throw IllegalArgumentException("Transfer has no recipient")
                     null
                 } ?: throw IllegalArgumentException("Transfer has no recipient")
-                Timber.e("Kernel Transaction UtxoWrapper: $amount $assetId $asset")
+                Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
                 val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
@@ -641,23 +642,22 @@ class BottomSheetViewModel
                 val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
                 val verifyTransaction = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
                 if (verifyTransaction.error != null) {
-                    Timber.e("Kernel Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
+                    Timber.e("Kernel Invoice Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
                     return verifyTransaction
                 } else if ((verifyTransaction.data?.size ?: 0) > 1) {
-                    Timber.e("Kernel Transaction($trace): Parameter exception")
+                    Timber.e("Kernel Invoice Transaction($trace): Parameter exception")
                     throw IllegalArgumentException("Parameter exception")
                 } else if (verifyTransaction.data?.first()?.state != OutputState.unspent.name) {
-                    Timber.e("Kernel Transaction($trace): Transfer is already paid")
+                    Timber.e("Kernel Invoice Transaction($trace): Transfer is already paid")
                     throw IllegalArgumentException("Transfer is already paid")
                 }
-                verifyTransaction.data?.first() ?: throw IllegalArgumentException("Kernel Transaction($trace): Verify transaction is null")
+                verifyTransaction.data?.first() ?: throw IllegalArgumentException("Kernel Invoice Transaction($trace): Verify transaction is null")
                 verifyTransactions.add(verifyTransaction.data!!.first())
 
                 val views = verifyTransaction.data!!.first().views!!.joinToString(",")
                 val keys = utxoWrapper.formatKeys
                 val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
                 val signResult = SignResult(sign.raw, sign.change)
-                Timber.e("Kernel Transaction($trace): db begin")
                 signedTransactions.add(SignedTransaction(trace, signResult, utxoWrapper.ids, asset, assetId, sign.hash, changeMask, data.last().keys, utxoWrapper.lastOutput, amount, String(entry.extra), reference))
             }
             withContext(SINGLE_DB_THREAD) {
@@ -665,14 +665,14 @@ class BottomSheetViewModel
                     signedTransactions.forEach { t->
                         if (t.signResult.change != null) {
                             val changeOutput = changeToOutput(t.signResult.change, t.asset, t.changeMask, t.keys, t.lastOutput)
-                            Timber.e("Kernel Transaction($t.trace): sign db insert change")
+                            Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert change")
                             tokenRepository.insertOutput(changeOutput)
                         }
                         val transactionHash = t.transactionHash
                         val opponentId = invoice.recipient.uuidMembers.firstOrNull() ?: ""
-                        Timber.e("Kernel Transaction($t.trace): sign db insert snapshot, memo${t.memo}")
+                        Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert snapshot, memo${t.memo}")
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, t.trace, t.assetId, t.amount, t.memo, SafeSnapshotType.snapshot, reference = t.reference)
-                        Timber.e("Kernel Transaction($t.trace): sign db insert raw transaction")
+                        Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert raw transaction")
                         tokenRepository.insetRawTransaction(
                             RawTransaction(
                                 t.trace, t.signResult.raw,
@@ -683,9 +683,9 @@ class BottomSheetViewModel
                                 }, RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), null
                             )
                         )
-                        Timber.e("Kernel Transaction($t.trace): sign db mark utxo ${t.utxoWrapperIds.joinToString(", ")}")
+                        Timber.e("Kernel Invoice Transaction(${t.trace}): sign db mark utxo ${t.utxoWrapperIds.joinToString(", ")}")
                         tokenRepository.updateUtxoToSigned(t.utxoWrapperIds)
-                        Timber.e("Kernel Transaction: sign end")
+                        Timber.e("Kernel Invoice Transaction(${t.trace}): sign db end")
                     }
                 }
             }
@@ -693,11 +693,11 @@ class BottomSheetViewModel
             if (signedResponse.isSuccess) {
                 withContext(SINGLE_DB_THREAD) {
                     runInTransaction {
-                        Timber.e("Kernel Transaction: sign db begin")
+                        Timber.e("Kernel Invoice Transaction: sign db begin")
                         signedResponse.data?.forEach {
                             tokenRepository.updateRawTransaction(it.requestId, OutputState.signed.name)
                         }
-                        Timber.e("Kernel Transaction: sign db end")
+                        Timber.e("Kernel Invoice Transaction: sign db end")
                     }
                 }
 
@@ -708,7 +708,7 @@ class BottomSheetViewModel
                         val conversationId = generateConversationId(signedResponse.data!!.first().userId, receiverId)
                         initConversation(conversationId, signedResponse.data!!.first().userId, receiverId)
                         signedResponse.data?.forEach { t ->
-                            Timber.e("Kernel Transaction(${t.requestId}): innerTransaction insertSnapshotMessage $conversationId")
+                            Timber.e("Kernel Invoice Transaction(${t.requestId}): innerTransaction insertSnapshotMessage $conversationId")
                             tokenRepository.insertSnapshotMessage(t, conversationId, null)
                         }
                     }
