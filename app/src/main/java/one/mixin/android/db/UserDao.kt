@@ -76,7 +76,11 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL ORDER BY full_name, identity_number ASC")
     suspend fun findFriendsNotBot(): List<User>
 
-    @Query("SELECT u.* FROM users u LEFT JOIN apps a ON a.app_id = u.app_id WHERE (u.relationship = 'FRIEND' AND u.app_id IS NULL) OR a.creator_id = :selfId ORDER BY u.full_name, u.identity_number ASC")
+    @Query("""
+    SELECT * FROM users u 
+    WHERE (u.relationship = 'FRIEND' AND app_id IS NULL) OR user_id IN (SELECT app_id FROM apps WHERE creator_id = :selfId) 
+    ORDER BY full_name, identity_number ASC
+    """)
     suspend fun findFriendsAndMyBot(selfId: String): List<User>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
