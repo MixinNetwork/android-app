@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 1
-def versionPatch = 2
-def versionBuild = 3
+def versionPatch = 3
+def versionBuild = 1
 
 android {
     compileSdk 35
@@ -243,10 +243,11 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
-    implementation "io.coil-kt:coil-compose:${coilVersion}"
-    implementation "io.coil-kt:coil-svg:${coilVersion}"
-    implementation "io.coil-kt:coil-video:${coilVersion}"
-    implementation "io.coil-kt:coil-gif:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-compose:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-okhttp:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-svg:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-video:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-gif:${coilVersion}"
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
     implementation "androidx.paging:paging-common-ktx:${pagingVersion}"

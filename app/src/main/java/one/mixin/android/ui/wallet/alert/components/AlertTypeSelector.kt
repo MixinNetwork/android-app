@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.AlertType
 
 @Composable

@@ -8,15 +8,20 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import coil3.dispose
+import coil3.load
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.request.bitmapConfig
+import coil3.request.error
+import coil3.request.placeholder
+import coil3.request.transformations
+import coil3.transform.Transformation
 import androidx.core.widget.TextViewCompat
-import coil.dispose
-import coil.imageLoader
-import coil.load
-import coil.request.CachePolicy
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import coil.transform.Transformation
+import coil3.asDrawable
+import coil3.imageLoader
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -420,7 +425,8 @@ fun TextView.loadImage(data: Any?, size: Int, @DrawableRes placeholder: Int? = n
     val request = ImageRequest.Builder(context).data(data).apply {
         placeholder?.let { placeholder(it) }
         transformations(CoilRoundedHexagonTransformation())
-    }.target { drawable ->
+    }.target { image ->
+        val drawable = image.asDrawable(this.context.resources)
         drawable.setBounds(0, 0, size, size)
         TextViewCompat.setCompoundDrawablesRelative(this, drawable, null, null, null)
     }.build()

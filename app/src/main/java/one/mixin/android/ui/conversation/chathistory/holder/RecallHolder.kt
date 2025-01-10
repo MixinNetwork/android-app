@@ -4,7 +4,6 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 

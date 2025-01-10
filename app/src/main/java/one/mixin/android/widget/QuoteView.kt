@@ -2,7 +2,6 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -33,7 +32,6 @@ import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.membershipIcon
 import timber.log.Timber
 import java.io.File
 

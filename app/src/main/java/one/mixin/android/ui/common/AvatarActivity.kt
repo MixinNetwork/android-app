@@ -16,6 +16,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnPreDraw
+import coil3.toBitmap
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
@@ -80,7 +81,7 @@ class AvatarActivity : BaseActivity() {
 
         binding.avatar.loadImage(url, onSuccess = { _, result ->
             binding.avatar.doOnPreDraw {
-                val bitmap = (result.drawable as BitmapDrawable).bitmap
+                val bitmap = result.image.toBitmap()
                 val avatarTransform = AvatarTransform(bitmap).apply { addTarget(binding.avatar) }
                 window.sharedElementEnterTransition = avatarTransform
                 startPostponedEnterTransition()

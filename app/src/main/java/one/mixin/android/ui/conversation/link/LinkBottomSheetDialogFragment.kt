@@ -53,7 +53,6 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -103,7 +102,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
