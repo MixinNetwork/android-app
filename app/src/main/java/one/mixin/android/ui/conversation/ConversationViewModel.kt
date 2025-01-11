@@ -507,6 +507,8 @@ class ConversationViewModel
 
         suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 
+        suspend fun findFriendsAndMyBot() = userRepository.findFriendsAndMyBot()
+
         suspend fun successConversationList(): List<ConversationMinimal> =
             conversationRepository.successConversationList()
 
