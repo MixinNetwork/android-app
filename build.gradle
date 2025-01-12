@@ -21,7 +21,7 @@ buildscript {
         ext.mdcVersion = '1.12.0'
         ext.exifinterfaceVersion = '1.3.7'
         ext.preferenceVersion = '1.2.1'
-        ext.hiltVersion = '2.54'
+        ext.hiltVersion = '2.55'
         ext.hiltAndroidxVersion = '1.2.0'
         ext.androidxVersion = '1.15.0'
         ext.viewpagerVersion = '1.1.0'
