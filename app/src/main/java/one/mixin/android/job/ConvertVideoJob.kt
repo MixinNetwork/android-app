@@ -147,7 +147,6 @@ class ConvertVideoJob(
             val mediaItem = mediaItemBuilder.build()
             val editedMediaItem =
                 EditedMediaItem.Builder(mediaItem)
-                    .setFrameRate(25)
                     .build()
             val videoSequence = EditedMediaItemSequence.Builder().addItem(editedMediaItem).build()
             val composition = Composition.Builder(ImmutableList.of(videoSequence))
