@@ -8,6 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.DefaultEncoderFactory
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
@@ -16,6 +17,7 @@ import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.PROGRESS_STATE_NOT_STARTED
 import androidx.media3.transformer.VideoEncoderSettings
 import com.birbit.android.jobqueue.Params
+import com.google.common.collect.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -48,6 +50,7 @@ import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.widget.ConvertEvent
 import timber.log.Timber
 import java.io.File
+import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 
 class ConvertVideoJob(
@@ -147,16 +150,16 @@ class ConvertVideoJob(
                 EditedMediaItem.Builder(mediaItem)
                     .setFrameRate(25)
                     .build()
-            val transformationRequest =
-                TransformationRequest.Builder()
-                    .setAudioMimeType(MimeTypes.AUDIO_AAC)
-                    .setVideoMimeType(MimeTypes.VIDEO_H264)
-                    .build()
+            val videoSequence = EditedMediaItemSequence.Builder().addItem(editedMediaItem).build()
+            val composition = Composition.Builder(ImmutableList.of(videoSequence))
+                .setHdrMode(Composition.HDR_MODE_KEEP_HDR)
+                .build()
+
             var error: ExportException?
             val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
             val videoEncoderSettings =
                 VideoEncoderSettings.Builder()
-                    .setBitrate(video.bitrate)
+                    .setBitrate(min(video.bitrate, 4_000_000))
                     .build()
             val encoderFactory =
                 DefaultEncoderFactory.Builder(MixinApplication.get())
@@ -165,7 +168,8 @@ class ConvertVideoJob(
             val transformer =
                 Transformer.Builder(MixinApplication.get())
                     .setEncoderFactory(encoderFactory)
-                    .setTransformationRequest(transformationRequest)
+                    .setAudioMimeType(MimeTypes.AUDIO_AAC)
+                    .setVideoMimeType(MimeTypes.VIDEO_H264)
                     .build()
 
             val progressHolder = ProgressHolder()
@@ -208,7 +212,7 @@ class ConvertVideoJob(
                 }
             withContext(Dispatchers.Main) {
                 transformer.addListener(listener)
-                transformer.start(editedMediaItem, videoFile.absolutePath)
+                transformer.start(composition, videoFile.absolutePath)
             }
         }
 
