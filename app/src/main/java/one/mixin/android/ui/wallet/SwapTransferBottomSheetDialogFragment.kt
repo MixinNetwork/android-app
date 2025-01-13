@@ -98,6 +98,7 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.User
@@ -475,6 +476,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     )
                     context?.updatePinCheck()
                     step = Step.Done
+                    AnalyticsTracker.trackSwapSend()
                 } else {
                     errorInfo = handleError(response.error) ?: response.errorDescription
                     step = Step.Error
