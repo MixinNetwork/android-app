@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.NumberedText
 
 @Composable
@@ -61,7 +62,7 @@ fun AddRecoveryContactBeforePage(back: () -> Unit, next: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
                 NumberedText(
                     modifier = Modifier
-                        .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.add_recovery_contact_before_instruction_3),
+                        .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.add_recovery_contact_before_instruction_3, Session.getAccount()!!.identityNumber),
                     color = MixinAppTheme.colors.red
                 )
 
