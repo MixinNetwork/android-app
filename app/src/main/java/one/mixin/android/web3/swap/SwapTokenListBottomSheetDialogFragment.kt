@@ -36,6 +36,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
@@ -207,6 +208,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         id = View.generateViewId()
                         setContent {
                             RecentTokens(key) {
+                                AnalyticsTracker.trackSwapCoinSwitch(AnalyticsTracker.SwapCoinSwitchMethod.RECENT_CLICK)
                                 adapter.onClick(it)
                             }
                         }
@@ -234,11 +236,15 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var searchJob: Job? = null
 
     private var currentChain: String? = null
+        set(value) {
+            adapter.all = currentChain == null
+        }
 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null) {
                 adapter.tokens = tokens
+                adapter.isSearch = false
                 if (isLoading) {
                     binding.rvVa.displayedChild = 3
                 } else if (tokens.isEmpty()) {
@@ -255,6 +261,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
             val total = search(s, assetList, currentChain, inMixin())
             adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
+            adapter.isSearch = true
             if (!isAdded) {
                 return@launch
             }
