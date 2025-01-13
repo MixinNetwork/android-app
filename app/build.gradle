@@ -246,6 +246,7 @@ dependencies {
     implementation "io.coil-kt.coil3:coil-compose:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-network-okhttp:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-svg:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-cache-control:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-video:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-gif:${coilVersion}"
     // Architecture components
