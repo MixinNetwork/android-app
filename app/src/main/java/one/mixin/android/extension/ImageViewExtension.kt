@@ -123,9 +123,7 @@ fun ImageView.loadSvgWithTint(url: String, isRising: Boolean, isColorReversed: B
         else -> R.color.wallet_green
     }
     setColorFilter(ContextCompat.getColor(context, colorRes))
-    load(url) {
-        memoryCacheKey("$url$isRising$isColorReversed")
-    }
+    load(url)
 }
 
 fun ImageView.clear() {
