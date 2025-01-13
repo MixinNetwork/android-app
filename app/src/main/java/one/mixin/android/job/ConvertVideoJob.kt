@@ -12,7 +12,6 @@ import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
-import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.Transformer.PROGRESS_STATE_NOT_STARTED
 import androidx.media3.transformer.VideoEncoderSettings
@@ -152,7 +151,6 @@ class ConvertVideoJob(
                     .build()
             val videoSequence = EditedMediaItemSequence.Builder().addItem(editedMediaItem).build()
             val composition = Composition.Builder(ImmutableList.of(videoSequence))
-                .setHdrMode(Composition.HDR_MODE_KEEP_HDR)
                 .build()
 
             var error: ExportException?
