@@ -14,13 +14,14 @@ import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
-import androidx.startup.AppInitializer
 import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
+import coil3.network.cachecontrol.CacheControlCacheStrategy
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.svg.SvgDecoder
 import coil3.util.DebugLogger
@@ -46,6 +47,7 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
@@ -478,19 +480,22 @@ open class MixinApplication :
         return false
     }
 
+    @ExperimentalCoilApi
     @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(context: PlatformContext): ImageLoader {
         return ImageLoader.Builder(this)
             .components {
-                add(OkHttpNetworkFetcherFactory(callFactory = OkHttpClient.Builder().addInterceptor { chain ->
-                    val original = chain.request()
-                    val requestBuilder =
-                        original.newBuilder()
-                            .header("User-Agent", API_UA)
-                            .method(original.method, original.body)
-                    val request = requestBuilder.build()
-                    chain.proceed(request)
-                }.build()))
+                add(OkHttpNetworkFetcherFactory(callFactory = {
+                    OkHttpClient.Builder().addInterceptor { chain ->
+                        val original = chain.request()
+                        val requestBuilder =
+                            original.newBuilder()
+                                .header("User-Agent", API_UA)
+                                .method(original.method, original.body)
+                        val request = requestBuilder.build()
+                        chain.proceed(request)
+                    }.build()
+                }, cacheStrategy = { CacheControlCacheStrategy() }))
                 if (SDK_INT >= Build.VERSION_CODES.P) {
                     add(AnimatedImageDecoder.Factory())
                 } else {
