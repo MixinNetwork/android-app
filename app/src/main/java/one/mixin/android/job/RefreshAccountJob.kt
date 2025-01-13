@@ -33,6 +33,10 @@ class RefreshAccountJob(
             if (response != null && response.isSuccess && response.data != null) {
                 val account = response.data ?: return@runBlocking
                 updateAccount(account)
+                if (checkTip) { // from home page
+                    AnalyticsTracker.setHasEmergencyContact(account)
+                    AnalyticsTracker.setMembership(account)
+                }
 
                 if (checkTip && !tipCounterSynced.synced) {
                     tip.checkCounter(
@@ -55,10 +59,6 @@ fun updateAccount(account: Account) {
     val db = MixinDatabase.getDatabase(MixinApplication.appContext)
     val u = account.toUser()
     db.userDao().insertUpdate(u, db.appDao())
-    if (checkTip){
-        AnalyticsTracker.setHasEmergencyContact(account)
-        AnalyticsTracker.setMembership(account)
-    }
     Session.storeAccount(account)
     val receive =
         MixinApplication.appContext.defaultSharedPreferences
