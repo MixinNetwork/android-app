@@ -98,6 +98,7 @@ fun SwapPage(
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onSwap: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
+    onDeposit: (SwapToken) -> Unit,
     pop: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -215,6 +216,7 @@ fun SwapPage(
                     },
                     headerCompose = {
                         InputArea(
+                            modifier = Modifier,
                             token = fromToken,
                             text = inputText,
                             title = stringResource(id = R.string.swap_send),
@@ -223,16 +225,19 @@ fun SwapPage(
                             onInputChanged = { inputText = it },
                             onMax = {
                                 inputText = fromToken?.balance ?: "0"
-                            }
+                            },
+                            onDeposit = onDeposit,
                         )
                     },
                     bottomCompose = {
                         InputArea(
+                            modifier = Modifier,
                             token = toToken,
                             text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                             title = stringResource(id = R.string.swap_receive),
                             readOnly = true,
-                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
+                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) },
+                            onDeposit = null,
                         )
                     },
                     margin = 6.dp,
@@ -344,17 +349,19 @@ fun SwapPage(
 
 @Composable
 fun InputArea(
+    modifier: Modifier = Modifier,
     token: SwapToken?,
     text: String,
     title: String,
-    readOnly: Boolean = false,
+    readOnly: Boolean,
     selectClick: () -> Unit,
-    onMax: (() -> Unit)? = null,
     onInputChanged: ((String) -> Unit)? = null,
+    onMax: (() -> Unit)? = null,
+    onDeposit: ((SwapToken) -> Unit)? = null,
 ) {
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(8.dp))
@@ -390,6 +397,17 @@ fun InputArea(
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             token?.let {
+                if (!readOnly && onDeposit != null &&  token?.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0 == 0) {
+                    Text(
+                        text = stringResource(id = R.string.Deposit),
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textBlue,
+                        ),
+                        modifier = Modifier.clickable { onDeposit(it) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Text(
                     text = "${it.balance ?: "0"} ${it.symbol}",
                     style = TextStyle(
@@ -397,8 +415,7 @@ fun InputArea(
                         color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.End,
                     ),
-
-                    )
+                )
             } ?: run {
                 Text(
                     text = "0",
@@ -409,7 +426,7 @@ fun InputArea(
                     ),
                 )
             }
-            if (!readOnly) {
+            if (!readOnly && token?.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0 > 0) {
                 Spacer(modifier = Modifier.width(8.dp))
                 InputAction(text = stringResource(id = R.string.balance_max)) {
                     onMax?.invoke()
@@ -615,13 +632,13 @@ private fun InputAction(
                 ) {
                     onAction.invoke()
                 }
-                .padding(6.dp, 3.dp),
+                .padding(6.dp, 1.5.dp),
     ) {
         Text(
             text = text,
             style =
                 TextStyle(
-                    fontSize = 10.sp,
+                    fontSize = 9.sp,
                     color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
                 ),
         )
