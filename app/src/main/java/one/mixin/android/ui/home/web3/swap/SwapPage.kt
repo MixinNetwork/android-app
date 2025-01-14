@@ -188,11 +188,10 @@ fun SwapPage(
                     centerCompose = {
                         Box(
                             modifier = Modifier
-                                .width(40.dp)
-                                .height(40.dp)
+                                .width(26.dp)
+                                .height(26.dp)
                                 .clip(CircleShape)
-                                .border(width = 6.dp, color = MixinAppTheme.colors.background, shape = CircleShape)
-                                .background(MixinAppTheme.colors.backgroundGrayLight)
+                                .background(MixinAppTheme.colors.accent)
                                 .clickable {
                                     isLoading = true
                                     isReverse = !isReverse
@@ -210,7 +209,7 @@ fun SwapPage(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_switch),
                                 contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary,
+                                tint = Color.White,
                             )
                         }
                     },
@@ -218,7 +217,7 @@ fun SwapPage(
                         InputArea(
                             token = fromToken,
                             text = inputText,
-                            title = stringResource(id = R.string.Token_From),
+                            title = stringResource(id = R.string.swap_send),
                             readOnly = false,
                             selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                             onInputChanged = { inputText = it },
@@ -231,7 +230,7 @@ fun SwapPage(
                         InputArea(
                             token = toToken,
                             text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
-                            title = stringResource(id = R.string.To),
+                            title = stringResource(id = R.string.swap_receive),
                             readOnly = true,
                             selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) }
                         )
@@ -358,17 +357,17 @@ fun InputArea(
             Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(MixinAppTheme.colors.backgroundGrayLight)
-                .padding(20.dp, 20.dp, 20.dp, if (readOnly) 20.dp else 10.dp),
+                .padding(16.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
-                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
+                Spacer(modifier = Modifier.weight(1f))
                 token?.let { 
                     CoilImage(
                         model = it.chain.icon,
@@ -381,49 +380,42 @@ fun InputArea(
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 token?.let { 
-                    Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                    Text(text = it.chain.name, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
                 } ?: run {
-                    Text(text = stringResource(id = R.string.select_token), fontSize = 12.sp, color = MixinAppTheme.colors.textMinor)
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_web3_wallet),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                token?.let { 
-                    Text(
-                        text = it.balance ?: "0",
-                        style =
-                            TextStyle(
-                                fontSize = 12.sp,
-                                color = MixinAppTheme.colors.textAssist,
-                                textAlign = TextAlign.End,
-                            ),
-                    )
-                } ?: run {
-                    Text(
-                        text = "0",
-                        style =
-                            TextStyle(
-                                fontSize = 12.sp,
-                                color = MixinAppTheme.colors.textAssist,
-                                textAlign = TextAlign.End,
-                            ),
-                    )
-                }
-                if (!readOnly) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    InputAction(text = stringResource(id = R.string.balance_max)) {
-                        onMax?.invoke()
-                    }
+                    Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
                 }
             }
         }
-        Box(modifier = Modifier.height(16.dp))
+        Box(modifier = Modifier.height(10.dp))
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            token?.let {
+                Text(
+                    text = "${it.balance ?: "0"} ${it.symbol}",
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        textAlign = TextAlign.End,
+                    ),
+
+                    )
+            } ?: run {
+                Text(
+                    text = "0",
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        textAlign = TextAlign.End,
+                    ),
+                )
+            }
+            if (!readOnly) {
+                Spacer(modifier = Modifier.width(8.dp))
+                InputAction(text = stringResource(id = R.string.balance_max)) {
+                    onMax?.invoke()
+                }
+            }
+        }
     }
 }
 
@@ -717,7 +709,7 @@ fun SwapLayoutPreview() {
                         .background(color = Color.Blue),
             )
         },
-        margin = 20.dp,
+        margin = 2.dp,
     )
 }
 

@@ -58,22 +58,21 @@ fun InputContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Left(token, selectClick)
-
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = text,
-                            style =
-                                TextStyle(
-                                    fontSize = 20.sp,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontWeight = FontWeight.Black,
-                                    textAlign = TextAlign.End,
-                                ),
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontWeight = FontWeight.Black,
+                                textAlign = TextAlign.Start,
+                            ),
                         )
                     }
                 }
+
+                Right(token, selectClick)
             }
             Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
@@ -94,54 +93,45 @@ fun InputContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Left(token, selectClick)
                 BasicTextField(
                     value = text,
                     onValueChange = {
-                        val v =
-                            try {
-                                if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
-                            } catch (e: Exception) {
-                                return@BasicTextField
-                            }
+                        val v = try {
+                            if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
+                        } catch (e: Exception) {
+                            return@BasicTextField
+                        }
                         onInputChanged?.invoke(it)
                     },
                     maxLines = 1,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .onFocusChanged {
-                                if (it.isFocused) {
-                                    keyboardController?.show()
-                                }
-                            },
+                    modifier = Modifier
+                        .weight(1f)
+                        .focusRequester(focusRequester)
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                keyboardController?.show()
+                            }
+                        },
+                    textStyle = TextStyle(
+                        fontSize = 24.sp,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Start,
+                    ),
+                    cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     interactionSource = interactionSource,
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    textStyle =
-                        TextStyle(
-                            fontSize = 20.sp,
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End,
-                        ),
-                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                ) { innerTextField ->
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                            innerTextField()
-                        }
-                    }
-                }
+                )
+
+                Right(token, selectClick)
             }
-            Box(modifier = Modifier.width(8.dp))
             Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
     }
 }
 
 @Composable
-private fun Left(
+private fun Right(
     token: SwapToken?,
     selectClick: () -> Unit,
 ) {
@@ -151,33 +141,32 @@ private fun Left(
                 model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
                 placeholder = R.drawable.ic_inscription_icon,
                 modifier = Modifier
-                    .size(32.dp),
+                    .size(24.dp),
             )
         } else {
             CoilImage(
                 model = token?.icon ?: "",
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(24.dp)
                     .clip(CircleShape),
             )
         }
-        Box(modifier = Modifier.width(10.dp))
+        Box(modifier = Modifier.width(8.dp))
         Text(
             text = token?.symbol ?: "",
             style =
                 TextStyle(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary,
                 ),
         )
-        Box(modifier = Modifier.width(4.dp))
+        Box(modifier = Modifier.width(8.dp))
         Icon(
             painter = painterResource(id = R.drawable.ic_web3_drop_down),
             contentDescription = null,
-            tint = MixinAppTheme.colors.icon,
+            tint = MixinAppTheme.colors.iconGray,
         )
-        Box(modifier = Modifier.width(10.dp))
     }
 }
