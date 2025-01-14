@@ -28,7 +28,7 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsViewHolder>(), Fri
 
     override fun getTitleResId() = R.string.Send_to_Contact
 
-    override suspend fun getFriends() = viewModel.findFriendsNotBot()
+    override suspend fun getFriends() = viewModel.findFriendsAndMyBot()
 
     private val viewModel by viewModels<ConversationViewModel>()
 

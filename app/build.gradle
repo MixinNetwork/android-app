@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 1
-def versionPatch = 2
-def versionBuild = 3
+def versionPatch = 4
+def versionBuild = 0
 
 android {
     compileSdk 35
@@ -246,6 +246,7 @@ dependencies {
     implementation "io.coil-kt.coil3:coil-compose:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-network-okhttp:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-svg:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-cache-control:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-video:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-gif:${coilVersion}"
     // Architecture components
