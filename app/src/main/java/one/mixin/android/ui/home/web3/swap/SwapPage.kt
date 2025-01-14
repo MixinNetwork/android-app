@@ -96,7 +96,7 @@ fun SwapPage(
     source: String,
     slippageBps: Int,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
-    onSwap: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
+    onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     onDeposit: (SwapToken) -> Unit,
     pop: () -> Unit,
@@ -202,6 +202,10 @@ fun SwapPage(
                                             context.defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, if (isReverse) "${t.getUnique()} ${f.getUnique()}" else "${f.getUnique()} ${t.getUnique()}")
                                         }
                                     }
+                                    quoteResult?.let {
+                                        inputText = it.outAmount
+                                        quoteResult = null
+                                    }
                                     context.clickVibrate()
                                 }
                                 .rotate(rotation),
@@ -304,7 +308,7 @@ fun SwapPage(
                         onClick = {
                             if (isButtonEnabled) {
                                 isButtonEnabled = false
-                                quoteResult?.let { onSwap(it, fromToken!!, toToken!!, inputText) }
+                                quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
                                 scope.launch{

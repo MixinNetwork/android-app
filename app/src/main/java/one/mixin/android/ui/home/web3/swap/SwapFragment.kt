@@ -194,9 +194,9 @@ class SwapFragment : BaseFragment() {
                                 onSelectToken = { isReverse, type ->
                                     selectCallback(swapTokens, isReverse, type)
                                 },
-                                onSwap = { quote, from, to, amount ->
+                                onReview = { quote, from, to, amount ->
                                     lifecycleScope.launch {
-                                        handleSwap(quote, from, to, amount, navController)
+                                        handleReview(quote, from, to, amount, navController)
                                     }
                                 },
                                 source = getSource(),
@@ -367,7 +367,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
+    private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
         val inputMint = from.getUnique()
         val outputMint = to.getUnique()
 
