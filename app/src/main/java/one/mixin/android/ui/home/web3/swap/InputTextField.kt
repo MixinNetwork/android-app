@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
 import coil3.request.transformations
+import kotlinx.coroutines.delay
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
@@ -76,8 +79,16 @@ fun InputContent(
         }
     } else {
         val focusRequester = remember { FocusRequester() }
-        val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+        val keyboardController = LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
+
+        LaunchedEffect(Unit) {
+            if (text.isBlank()) {
+                delay(100)
+                focusRequester.requestFocus()
+            }
+        }
+
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
