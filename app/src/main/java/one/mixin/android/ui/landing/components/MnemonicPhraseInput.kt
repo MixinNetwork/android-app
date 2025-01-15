@@ -89,6 +89,7 @@ fun MnemonicPhraseInput(
     onComplete: (List<String>) -> Unit,
     tip: Tip? = null,
     pin: String? = null,
+    onQrCode: ((List<String>) -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
@@ -312,7 +313,7 @@ fun MnemonicPhraseInput(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .alpha(if (state == MnemonicState.Input) 1f else 0f)
+                                .alpha(if (state == MnemonicState.Input || state == MnemonicState.Display) 1f else 0f)
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
                                     if (state == MnemonicState.Input) {
@@ -329,21 +330,37 @@ fun MnemonicPhraseInput(
                                                 errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                             }
                                         }
+                                    } else if (state == MnemonicState.Display) {
+                                        onQrCode?.invoke(mnemonicList)
                                     }
                                 }
                                 .padding(8.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_paste),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary,
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                stringResource(R.string.Paste), fontSize = 12.sp,
-                                fontWeight = W500,
-                                color = MixinAppTheme.colors.textPrimary,
-                            )
+                            if (state == MnemonicState.Input) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_paste),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.Paste), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_mnemonic_qrcode),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.QR_Code), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            }
                         }
                     } else if (index == if (legacy) 26 else 14) {
                         Row(
