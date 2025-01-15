@@ -212,20 +212,22 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         okText: String? = null,
         action: (Uri, Float, Float) -> Unit,
     ) {
-        try {
-            super.showNow(
-                fragmentManager,
-                if (isVideo) {
-                    "PreviewVideoDialogFragment"
-                } else {
-                    "PreviewDialogFragment"
-                },
-            )
-        } catch (ignored: IllegalStateException) {
+        if (fragmentManager.isDestroyed) {
+            return
         }
+
         this.uri = uri
         this.okText = okText
         this.action = action
+
+        val tag = if (isVideo) "PreviewVideoDialogFragment" else "PreviewDialogFragment"
+        try {
+            if (!isAdded && !isStateSaved) {
+                show(fragmentManager, tag)
+            }
+        } catch (e: IllegalStateException) {
+            Timber.e(e)
+        }
     }
 
     private val videoListener =
