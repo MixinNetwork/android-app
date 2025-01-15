@@ -3,7 +3,7 @@ buildscript {
     ext {
         ext.bitcoinVersion ='0.16.3'
         ext.fragmentVersion = '1.8.5'
-        ext.activity_version = '1.9.3'
+        ext.activity_version = '1.10.0'
         ext.lifecycleVersion = '2.8.7'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.5'
