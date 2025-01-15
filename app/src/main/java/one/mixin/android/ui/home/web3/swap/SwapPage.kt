@@ -11,11 +11,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -101,8 +105,9 @@ fun SwapPage(
     onDeposit: (SwapToken) -> Unit,
     pop: () -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     val viewModel = hiltViewModel<SwapViewModel>()
 
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
@@ -181,170 +186,208 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                SwapLayout(
-                    centerCompose = {
-                        Box(
-                            modifier = Modifier
-                                .width(26.dp)
-                                .height(26.dp)
-                                .clip(CircleShape)
-                                .background(MixinAppTheme.colors.accent)
-                                .clickable {
-                                    isLoading = true
-                                    isReverse = !isReverse
-                                    invalidFlag = !invalidFlag
-                                    fromToken?.let { f ->
-                                        toToken?.let { t ->
-                                            context.defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, if (isReverse) "${t.getUnique()} ${f.getUnique()}" else "${f.getUnique()} ${t.getUnique()}")
-                                        }
-                                    }
-                                    quoteResult?.let {
-                                        inputText = it.outAmount
-                                        quoteResult = null
-                                    }
-                                    context.clickVibrate()
-                                }
-                                .rotate(rotation),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_switch),
-                                contentDescription = null,
-                                tint = Color.White,
-                            )
-                        }
-                    },
-                    headerCompose = {
-                        InputArea(
-                            modifier = Modifier,
-                            token = fromToken,
-                            text = inputText,
-                            title = stringResource(id = R.string.swap_send),
-                            readOnly = false,
-                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
-                            onInputChanged = { inputText = it },
-                            onMax = {
-                                inputText = fromToken?.balance ?: "0"
-                            },
-                            onDeposit = onDeposit,
-                        )
-                    },
-                    bottomCompose = {
-                        InputArea(
-                            modifier = Modifier,
-                            token = toToken,
-                            text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
-                            title = stringResource(id = R.string.swap_receive),
-                            readOnly = true,
-                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From  else SelectTokenType.To) },
-                            onDeposit = null,
-                        )
-                    },
-                    margin = 6.dp,
-                )
-
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    if (errorInfo.isNullOrBlank()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .alpha(if (quoteResult == null) 0f else 1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MixinAppTheme.colors.backgroundGrayLight)
-                                .padding(20.dp),
-                        ) {
-                            quoteResult?.let { quote ->
-                                val rate = quote.rate(fromToken, toToken)
-                                if (rate != BigDecimal.ZERO) {
-                                    PriceInfo(
-                                        fromToken = fromToken!!,
-                                        toToken = toToken,
-                                        isLoading = isLoading,
-                                        exchangeRate = rate,
-                                        onPriceExpired = {
+            KeyboardAwareBox(
+                modifier = Modifier.fillMaxHeight(),
+                content = {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                            .imePadding(),
+                    ) {
+                        SwapLayout(
+                            centerCompose = {
+                                Box(
+                                    modifier = Modifier
+                                        .width(26.dp)
+                                        .height(26.dp)
+                                        .clip(CircleShape)
+                                        .background(MixinAppTheme.colors.accent)
+                                        .clickable {
+                                            isLoading = true
+                                            isReverse = !isReverse
                                             invalidFlag = !invalidFlag
+                                            fromToken?.let { f ->
+                                                toToken?.let { t ->
+                                                    context.defaultSharedPreferences.putString(
+                                                        PREF_SWAP_LAST_SELECTED_PAIR,
+                                                        if (isReverse) "${t.getUnique()} ${f.getUnique()}" else "${f.getUnique()} ${t.getUnique()}"
+                                                    )
+                                                }
+                                            }
+                                            quoteResult?.let {
+                                                inputText = it.outAmount
+                                                quoteResult = null
+                                            }
+                                            context.clickVibrate()
                                         }
+                                        .rotate(rotation),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_switch),
+                                        contentDescription = null,
+                                        tint = Color.White,
                                     )
                                 }
-                                if (!from.inMixin()) {
-                                    SlippageInfo(slippageBps, rate != BigDecimal.ZERO, onShowSlippage)
+                            },
+                            headerCompose = {
+                                InputArea(
+                                    modifier = Modifier,
+                                    token = fromToken,
+                                    text = inputText,
+                                    title = stringResource(id = R.string.swap_send),
+                                    readOnly = false,
+                                    selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
+                                    onInputChanged = { inputText = it },
+                                    onDeposit = onDeposit,
+                                )
+                            },
+                            bottomCompose = {
+                                InputArea(
+                                    modifier = Modifier,
+                                    token = toToken,
+                                    text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
+                                    title = stringResource(id = R.string.swap_receive),
+                                    readOnly = true,
+                                    selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
+                                    onDeposit = null,
+                                )
+                            },
+                            margin = 6.dp,
+                        )
+
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            if (errorInfo.isNullOrBlank()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .alpha(if (quoteResult == null) 0f else 1f)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MixinAppTheme.colors.backgroundGrayLight)
+                                        .padding(20.dp),
+                                ) {
+                                    quoteResult?.let { quote ->
+                                        val rate = quote.rate(fromToken, toToken)
+                                        if (rate != BigDecimal.ZERO) {
+                                            PriceInfo(
+                                                fromToken = fromToken!!,
+                                                toToken = toToken,
+                                                isLoading = isLoading,
+                                                exchangeRate = rate,
+                                                onPriceExpired = {
+                                                    invalidFlag = !invalidFlag
+                                                }
+                                            )
+                                        }
+                                        if (!from.inMixin()) {
+                                            SlippageInfo(slippageBps, rate != BigDecimal.ZERO, onShowSlippage)
+                                        }
+                                    }
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                                        .background(MixinAppTheme.colors.backgroundGrayLight)
+                                        .padding(20.dp),
+                                ) {
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Text(
+                                        text = errorInfo ?: "",
+                                        style = TextStyle(
+                                            fontSize = 14.sp,
+                                            color = MixinAppTheme.colors.tipError,
+                                        ),
+                                    )
                                 }
                             }
-                        }
-                    } else {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .clip(RoundedCornerShape(12.dp))
-                                .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                                .background(MixinAppTheme.colors.backgroundGrayLight)
-                                .padding(20.dp),
-                        ) {
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Text(
-                                text = errorInfo?:"",
-                                style =
-                                TextStyle(
-                                    fontSize = 14.sp,
-                                    color = MixinAppTheme.colors.tipError,
+                            Spacer(modifier = Modifier.height(20.dp))
+                            val keyboardController = LocalSoftwareKeyboardController.current
+                            val focusManager = LocalFocusManager.current
+                            val checkBalance = checkBalance(inputText, fromToken?.balance)
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                onClick = {
+                                    if (isButtonEnabled) {
+                                        isButtonEnabled = false
+                                        quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus()
+                                        scope.launch {
+                                            delay(1000)
+                                            isButtonEnabled = true
+                                        }
+                                    }
+                                },
+                                enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                                 ),
-                            )
+                                shape = RoundedCornerShape(32.dp),
+                                elevation = ButtonDefaults.elevation(
+                                    pressedElevation = 0.dp,
+                                    defaultElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp,
+                                ),
+                            ) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
+                                    )
+                                } else {
+                                    Text(
+                                        text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                        color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
+                                    )
+                                }
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
-                    val keyboardController = LocalSoftwareKeyboardController.current
-                    val focusManager = LocalFocusManager.current
-                    val checkBalance = checkBalance(inputText, fromToken?.balance)
-                    Button(
+                },
+                floating = {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
-                        onClick = {
-                            if (isButtonEnabled) {
-                                isButtonEnabled = false
-                                quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                                scope.launch{
-                                    delay(1000)
-                                    isButtonEnabled = true
-                                }
-                            }
-                        },
-                        enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                            ),
-                        shape = RoundedCornerShape(32.dp),
-                        elevation =
-                            ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
+                            .background(MixinAppTheme.colors.backgroundWindow)
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
-                            )
-                        } else {
-                            Text(
-                                text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
-                            )
+                        val keyboardController = LocalSoftwareKeyboardController.current
+                        val focusManager = LocalFocusManager.current
+
+                        InputAction("25%", showBorder = true) {
+                            val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            if (balance > BigDecimal.ZERO) {
+                                inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
+                            }
+                        }
+                        InputAction("50%", showBorder = true) {
+                            val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            if (balance > BigDecimal.ZERO) {
+                                inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
+                            }
+                        }
+                        InputAction(stringResource(R.string.Max), showBorder = true) {
+                            val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            if (balance > BigDecimal.ZERO) {
+                                inputText = balance.stripTrailingZeros().toPlainString()
+                            }
+                        }
+                        InputAction(stringResource(R.string.Done), showBorder = false) {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
                         }
                     }
                 }
-            }
+            )
         } ?: run {
             Loading()
         }
@@ -360,7 +403,6 @@ fun InputArea(
     readOnly: Boolean,
     selectClick: () -> Unit,
     onInputChanged: ((String) -> Unit)? = null,
-    onMax: (() -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
 ) {
     Column(
@@ -379,7 +421,7 @@ fun InputArea(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.weight(1f))
-                token?.let { 
+                token?.let {
                     CoilImage(
                         model = it.chain.icon,
                         modifier =
@@ -390,7 +432,7 @@ fun InputArea(
                     )
                 }
                 Spacer(modifier = Modifier.width(4.dp))
-                token?.let { 
+                token?.let {
                     Text(text = it.chain.name, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
                 } ?: run {
                     Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
@@ -429,12 +471,6 @@ fun InputArea(
                         textAlign = TextAlign.End,
                     ),
                 )
-            }
-            if (!readOnly && token?.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0 > 0) {
-                Spacer(modifier = Modifier.width(8.dp))
-                InputAction(text = stringResource(id = R.string.balance_max)) {
-                    onMax?.invoke()
-                }
             }
         }
     }
@@ -620,31 +656,46 @@ private fun SlippageInfo(
 @Composable
 private fun InputAction(
     text: String,
+    showBorder: Boolean = true,
     onAction: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+
     Box(
-        modifier =
+        modifier = if (showBorder) {
             Modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
-                .border(0.7.dp, color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(20.dp))
+                .background(MixinAppTheme.colors.background)
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
                 ) {
                     onAction.invoke()
                 }
-                .padding(6.dp, 1.5.dp),
+                .padding(24.dp, 8.dp)
+        } else {
+            Modifier
+                .wrapContentWidth()
+                .wrapContentHeight()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                ) {
+                    onAction.invoke()
+                }
+                .padding(16.dp, 8.dp)
+        },
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
-            style =
-                TextStyle(
-                    fontSize = 9.sp,
-                    color = if (isPressed) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
-                ),
+            style = TextStyle(
+                fontSize = 14.sp,
+                color = if (isPressed) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.textPrimary,
+            ),
         )
     }
 }
