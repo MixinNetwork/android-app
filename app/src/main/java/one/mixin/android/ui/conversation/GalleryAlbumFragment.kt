@@ -58,7 +58,6 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
     override fun onResume() {
         super.onResume()
         binding.permissionTv.isVisible = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_IMAGES) && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_VIDEO) -> false
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) -> true
             else -> false
         }
@@ -144,12 +143,10 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         }
         viewBinding.select.setOnClickListener {
             RxPermissions(requireActivity()).request(
-                *arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+                *arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
             ).autoDispose(stopScope).subscribe(
                 { granted ->
-                    if (RxPermissions(requireActivity()).isGranted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)) {
-                        albumAdapter.getFragment(binding.viewPager.currentItem)?.reloadAlbum()
-                    } else if (granted) {
+                    if (granted) {
                         albumAdapter.getFragment(binding.viewPager.currentItem)?.reloadAlbum()
                     } else {
                         requireActivity().openPermissionSetting()
@@ -201,7 +198,7 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
                     val album = Album.valueOf(cursor)
                     albums.add(album)
                 }
-                if (albums.isNullOrEmpty()) return@post
+                if (albums.isEmpty()) return@post
 
                 if (albumTl.tabCount == 0) {
                     albums.forEach { album ->
