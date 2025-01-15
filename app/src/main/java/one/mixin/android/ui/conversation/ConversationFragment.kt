@@ -2548,62 +2548,6 @@ class ConversationFragment() :
         }
     }
 
-    private fun initGalleryLayout() {
-        val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
-        galleryAlbumFragment.callback =
-            object : GalleryCallback {
-                override fun onItemClick(
-                    pos: Int,
-                    item: Item,
-                    send: Boolean,
-                ) {
-                    val uri = item.uri
-                    if (item.isVideo) {
-                        if (send) {
-                            sendVideoMessage(uri, 0f, 1f)
-                        } else {
-                            showPreview(uri, getString(R.string.Send), true) { uri, start, end -> sendVideoMessage(uri, start, end) }
-                        }
-                    } else if (item.isGif || item.isWebp) {
-                        if (send) {
-                            sendImageMessage(uri)
-                        } else {
-                            showPreview(uri, getString(R.string.Send), false) { uri, _, _ -> sendImageMessage(uri) }
-                        }
-                    } else {
-                        if (send) {
-                            sendImageMessage(uri)
-                        } else {
-                            getEditorResult.launch(Pair(uri, getString(R.string.Send)))
-                        }
-                    }
-                    releaseChatControl(FLING_DOWN)
-                }
-
-                override fun onCameraClick() {
-                    openCamera()
-                }
-            }
-        galleryAlbumFragment.rvCallback =
-            object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    val currentContainer = binding.chatControl.getDraggableContainer()
-                    if (currentContainer != null) {
-                        dragChatControl(dis)
-                    }
-                }
-
-                override fun onRelease(fling: Int) {
-                    releaseChatControl(fling)
-                }
-            }
-        activity?.replaceFragment(
-            galleryAlbumFragment,
-            R.id.gallery_container,
-            GalleryAlbumFragment.TAG,
-        )
-    }
-
     private fun initMenuLayout(isSelfCreatedBot: Boolean = false) {
         val menuFragment = MenuFragment.newInstance(isGroup, isBot, isSelfCreatedBot)
         activity?.replaceFragment(menuFragment, R.id.menu_container, MenuFragment.TAG)
