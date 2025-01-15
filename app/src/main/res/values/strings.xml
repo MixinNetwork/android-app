@@ -1848,4 +1848,6 @@
     <string name="Manage">Manage</string>
     <string name="Select_More_Photos">Select More Photos</string>
     <string name="Change_Permissions">Change Permissions</string>
+    <string name="Swap_Orders">Orders</string>
+    <string name="Swap_Order_Detail">Order detail</string>
 </resources>

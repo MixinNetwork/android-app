@@ -115,6 +115,7 @@ import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RestoreTransactionJob
@@ -436,6 +437,8 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(RefreshAssetsJob())
             sendSafetyNetRequest()
             checkBatteryOptimization()
+            //Todo remove
+            jobManager.addJobInBackground(RefreshOrdersJob())
 
             if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
                 jobManager.addJobInBackground(RefreshCircleJob())

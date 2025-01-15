@@ -113,6 +113,8 @@ class SwapFragment : BaseFragment() {
 
     enum class SwapDestination {
         Swap,
+        OrderList,
+        OrderDetail
     }
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
@@ -215,10 +217,34 @@ class SwapFragment : BaseFragment() {
                                         navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                                     }
                                 },
+                                onOrderList = {
+                                    navController.navigate(SwapDestination.OrderList.name)
+                                },
                                 pop = {
                                     navigateUp(navController)
                                 }
                             )
+                        }
+
+                        composable(SwapDestination.OrderList.name) {
+                            SwapOrderListPage(
+                                pop = {
+                                    navigateUp(navController)
+                                },
+                                onOrderClick = { orderId ->
+                                    navController.navigate("${SwapDestination.OrderDetail.name}/$orderId")
+                                }
+                            )
+                        }
+                        composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
+                            navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
+                                SwapOrderDetailPage(
+                                    orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
+                                    pop = {
+                                        navigateUp(navController)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

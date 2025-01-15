@@ -5,13 +5,11 @@ package one.mixin.android.ui.home.web3.swap
 import PageScaffold
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,7 +49,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -104,6 +101,7 @@ fun SwapPage(
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     onDeposit: (SwapToken) -> Unit,
+    onOrderList: () -> Unit,
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -175,6 +173,17 @@ fun SwapPage(
         verticalScrollable = true,
         pop = pop,
         actions = {
+            if (source != "") {
+                IconButton(onClick = {
+                    onOrderList()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_order),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            }
             IconButton(onClick = {
                 context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }) {
