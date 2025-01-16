@@ -357,28 +357,32 @@ fun SwapPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MixinAppTheme.colors.backgroundWindow)
-                            .padding(16.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         val keyboardController = LocalSoftwareKeyboardController.current
                         val focusManager = LocalFocusManager.current
+                        val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
                         InputAction("25%", showBorder = true) {
-                            val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             if (balance > BigDecimal.ZERO) {
                                 inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
+                            } else {
+                                inputText = ""
                             }
                         }
                         InputAction("50%", showBorder = true) {
-                            val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             if (balance > BigDecimal.ZERO) {
                                 inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
+                            } else {
+                                inputText = ""
                             }
                         }
                         InputAction(stringResource(R.string.Max), showBorder = true) {
-                            val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             if (balance > BigDecimal.ZERO) {
                                 inputText = balance.stripTrailingZeros().toPlainString()
+                            } else {
+                                inputText = ""
                             }
                         }
                         InputAction(stringResource(R.string.Done), showBorder = false) {
@@ -442,20 +446,23 @@ fun InputArea(
         Box(modifier = Modifier.height(10.dp))
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            token?.let {
-                if (!readOnly && onDeposit != null &&  token?.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0 == 0) {
-                    Text(
-                        text = stringResource(id = R.string.Deposit),
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textBlue,
-                        ),
-                        modifier = Modifier.clickable { onDeposit(it) }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
+            token?.let { t->
                 Text(
-                    text = "${it.balance ?: "0"} ${it.symbol}",
+                    text = stringResource(id = R.string.Deposit),
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textBlue,
+                    ),
+                    modifier = Modifier
+                        .alpha(
+                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0) 1f
+                            else 0f
+                        )
+                        .clickable { onDeposit?.invoke(t) },
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${t.balance ?: "0"} ${t.symbol}",
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,
@@ -675,7 +682,7 @@ private fun InputAction(
                 ) {
                     onAction.invoke()
                 }
-                .padding(24.dp, 8.dp)
+                .padding(32.dp, 6.dp)
         } else {
             Modifier
                 .wrapContentWidth()
@@ -686,7 +693,7 @@ private fun InputAction(
                 ) {
                     onAction.invoke()
                 }
-                .padding(16.dp, 8.dp)
+                .padding(8.dp, 6.dp)
         },
         contentAlignment = Alignment.Center,
     ) {
@@ -694,6 +701,7 @@ private fun InputAction(
             text = text,
             style = TextStyle(
                 fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
                 color = if (isPressed) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.textPrimary,
             ),
         )
