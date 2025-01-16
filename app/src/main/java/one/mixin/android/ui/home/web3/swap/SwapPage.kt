@@ -240,6 +240,14 @@ fun SwapPage(
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                     onInputChanged = { inputText = it },
                                     onDeposit = onDeposit,
+                                    onMax = {
+                                        val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                        if (balance > BigDecimal.ZERO) {
+                                            inputText = balance.stripTrailingZeros().toPlainString()
+                                        } else {
+                                            inputText = ""
+                                        }
+                                    }
                                 )
                             },
                             bottomCompose = {
@@ -408,6 +416,7 @@ fun InputArea(
     selectClick: () -> Unit,
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
+    onMax: (() -> Unit)? = null,
 ) {
     Column(
         modifier =
@@ -457,6 +466,7 @@ fun InputArea(
                         color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.End,
                     ),
+                    modifier = Modifier.clickable { onMax?.invoke() }
                 )
             } ?: run {
                 Text(
