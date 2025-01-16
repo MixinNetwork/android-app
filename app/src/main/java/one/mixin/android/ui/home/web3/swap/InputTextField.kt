@@ -174,7 +174,8 @@ private fun Right(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .size(13.dp)
-                        .border(1.dp, MixinAppTheme.colors.background, CircleShape),
+                        .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                        .clip(CircleShape),
                 )
             }
         }

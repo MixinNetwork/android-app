@@ -451,7 +451,7 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "${t.balance ?: "0"} ${t.symbol}",
+                    text = "${t.balance?.numberFormat8() ?: "0"} ${t.symbol}",
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,
