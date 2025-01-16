@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
@@ -77,6 +78,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.home.web3.swap.KeyboardAwareBox
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 
@@ -95,12 +97,16 @@ fun MnemonicPhraseInput(
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val walletViewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
     MixinAppTheme {
+        KeyboardAwareBox(
+            modifier = Modifier
+                .fillMaxSize(), content = {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -518,11 +524,25 @@ fun MnemonicPhraseInput(
                 Spacer(modifier = Modifier.height(30.dp))
             }
         }
-        if (state == MnemonicState.Input || state == MnemonicState.Verify) {
-            InputBar(currentText) { word ->
-                inputs = inputs.toMutableList().also { it[focusIndex] = word }
-            }
-        }
+    }, floating = {
+                if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                    InputBar(currentText) { word ->
+                        inputs = inputs.toMutableList().also { it[focusIndex] = word }
+                        if (!legacy && focusIndex == 12) {
+                            keyboardController?.hide()
+                            focusManager.moveFocus(FocusDirection.Right)
+                        } else if (focusIndex == 24) {
+                            keyboardController?.hide()
+                        } else if ((focusIndex + 1) % 3 == 0) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            focusManager.moveFocus(FocusDirection.Left)
+                            focusManager.moveFocus(FocusDirection.Left)
+                        } else {
+                            focusManager.moveFocus(FocusDirection.Right)
+                        }
+                    }
+                }
+            })
     }
 }
 
@@ -587,63 +607,29 @@ fun WordCountButton(onClick: () -> Unit, border: BorderStroke, content: @Composa
 }
 
 @Composable
-fun KeyboardFloatingView(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val density = LocalDensity.current
-    val windowInsets = WindowInsets.ime
-    var keyboardHeight by remember { mutableStateOf(0.dp) }
-    val keyboardHeightDp = with(density) {
-        windowInsets
-            .getBottom(density)
-            .toDp()
-    }
-
-    LaunchedEffect(keyboardHeightDp) {
-        keyboardHeight = keyboardHeightDp
-    }
-
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .offset(y = -keyboardHeight)
-        ) {
-            content()
-        }
-    }
-}
-
-@Composable
 fun InputBar(string: String, callback: (String) -> Unit) {
     if (string.isBlank()) return
     val list = getMatchingWords(string.trim()) ?: return
-    KeyboardFloatingView {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            items(list.size) { index ->
-                val word = list[index]
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(MixinAppTheme.colors.background)
-                        .clickable { callback(word) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    text = word,
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-            }
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items(list.size) { index ->
+            val word = list[index]
+            Text(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MixinAppTheme.colors.background)
+                    .clickable { callback(word) }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                text = word,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.width(12.dp))
         }
     }
 }
