@@ -95,36 +95,49 @@ fun InputContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BasicTextField(
-                    value = text,
-                    onValueChange = {
-                        val v = try {
-                            if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
-                        } catch (e: Exception) {
-                            return@BasicTextField
-                        }
-                        onInputChanged?.invoke(it)
-                    },
-                    maxLines = 1,
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(focusRequester)
-                        .onFocusChanged {
-                            if (it.isFocused) {
-                                keyboardController?.show()
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                ) {
+                    BasicTextField(
+                        value = text,
+                        onValueChange = {
+                            val v = try {
+                                if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
+                            } catch (e: Exception) {
+                                return@BasicTextField
                             }
+                            onInputChanged?.invoke(it)
                         },
-                    textStyle = TextStyle(
-                        fontSize = 24.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Start,
-                    ),
-                    cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    interactionSource = interactionSource,
-                )
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    keyboardController?.show()
+                                }
+                            },
+                        textStyle = TextStyle(
+                            fontSize = 24.sp,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Start,
+                        ),
+                        cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        interactionSource = interactionSource,
+                    )
 
+                    if (text.isEmpty()) {
+                        Text(
+                            text = "0",
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
+                    }
+                }
                 Right(token, selectClick)
             }
             Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
