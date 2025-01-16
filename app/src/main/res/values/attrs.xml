@@ -100,6 +100,9 @@
         <attr name="android:text" format="string"/>
         <attr name="android:checked" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="BadgeCircleImageView">
+        <attr name="badge_size" format="dimension" />
+    </declare-styleable>
     <declare-styleable name="RoundTitleView">
         <attr name="title_text" format="string" />
         <attr name="right_icon" format="reference" />
