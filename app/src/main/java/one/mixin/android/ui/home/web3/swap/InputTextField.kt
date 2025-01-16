@@ -1,11 +1,13 @@
 package one.mixin.android.ui.home.web3.swap
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,7 +66,7 @@ fun InputContent(
                             text = text,
                             style = TextStyle(
                                 fontSize = 24.sp,
-                                color = MixinAppTheme.colors.textPrimary,
+                                color = if (text == "0") MixinAppTheme.colors.textAssist else MixinAppTheme.colors.textPrimary,
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Start,
                             ),
@@ -141,16 +143,27 @@ private fun Right(
                 model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
                 placeholder = R.drawable.ic_inscription_icon,
                 modifier = Modifier
-                    .size(24.dp),
+                    .size(30.dp),
             )
         } else {
-            CoilImage(
-                model = token?.icon ?: "",
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
-            )
+            Box {
+                CoilImage(
+                    model = token?.icon ?: "",
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                )
+
+                CoilImage(
+                    model = token?.chain?.icon ?: "",
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .size(13.dp)
+                        .border(1.dp, MixinAppTheme.colors.background, CircleShape),
+                )
+            }
         }
         Box(modifier = Modifier.width(8.dp))
         Text(

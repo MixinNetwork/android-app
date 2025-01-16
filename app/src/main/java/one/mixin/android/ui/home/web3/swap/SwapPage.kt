@@ -426,18 +426,7 @@ fun InputArea(
                 Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
                 Spacer(modifier = Modifier.weight(1f))
                 token?.let {
-                    CoilImage(
-                        model = it.chain.icon,
-                        modifier =
-                            Modifier
-                                .size(14.dp)
-                                .clip(CircleShape),
-                        placeholder = R.drawable.ic_avatar_place_holder,
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))
-                token?.let {
-                    Text(text = it.chain.name, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
+                    Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 } ?: run {
                     Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
                 }
