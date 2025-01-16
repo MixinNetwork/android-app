@@ -219,6 +219,8 @@ class UserRepository
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 
+        suspend fun findFriendsAndMyBot() = userDao.findFriendsAndMyBot(Session.getAccountId()!!)
+
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
         suspend fun findBotsByIds(appIds: Set<String>) = userDao.findMultiUsersByIds(appIds)

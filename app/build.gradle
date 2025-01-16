@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 1
-def versionPatch = 3
-def versionBuild = 1
+def versionPatch = 4
+def versionBuild = 0
 
 android {
     compileSdk 35
@@ -246,6 +246,7 @@ dependencies {
     implementation "io.coil-kt.coil3:coil-compose:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-network-okhttp:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-svg:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-cache-control:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-video:${coilVersion}"
     implementation "io.coil-kt.coil3:coil-gif:${coilVersion}"
     // Architecture components
@@ -390,7 +391,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
-    implementation 'androidx.activity:activity-compose:1.9.3'
+    implementation 'androidx.activity:activity-compose:1.10.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     
     // accompanist

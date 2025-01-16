@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.swap
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -42,17 +43,20 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.getList
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.safe.TokenItem
@@ -190,9 +194,9 @@ class SwapFragment : BaseFragment() {
                                 onSelectToken = { isReverse, type ->
                                     selectCallback(swapTokens, isReverse, type)
                                 },
-                                onSwap = { quote, from, to, amount ->
+                                onReview = { quote, from, to, amount ->
                                     lifecycleScope.launch {
-                                        handleSwap(quote, from, to, amount, navController)
+                                        handleReview(quote, from, to, amount, navController)
                                     }
                                 },
                                 source = getSource(),
@@ -203,6 +207,13 @@ class SwapFragment : BaseFragment() {
                                             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
                                         }
                                         .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
+                                },
+                                onDeposit = { token ->
+                                    if (inMixin()) {
+                                        deposit(token.getUnique())
+                                    } else {
+                                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                                    }
                                 },
                                 pop = {
                                     navigateUp(navController)
@@ -294,6 +305,41 @@ class SwapFragment : BaseFragment() {
         }
     }
 
+    private val dialog: Dialog by lazy {
+        indeterminateProgressDialog(
+            message = R.string.Please_wait_a_bit,
+        ).apply {
+            setCancelable(false)
+        }
+    }
+
+    private fun deposit(tokenId: String) {
+        lifecycleScope.launch {
+            val token = swapViewModel.findToken(tokenId)
+            if (token == null) {
+                dialog.show()
+                runCatching {
+                    swapViewModel.checkAndSyncTokens(listOf(tokenId))
+                    val t = swapViewModel.findToken(tokenId)
+                    if (t != null)
+                        navTo(DepositFragment.newInstance(t), DepositFragment.TAG)
+                    else
+                        toast(R.string.Not_found)
+                }.onFailure {
+                    ErrorHandler.handleError(it)
+                }.getOrNull()
+
+                dialog.dismiss()
+            } else {
+                runCatching {
+                    navTo(DepositFragment.newInstance(token), DepositFragment.TAG)
+                }.onFailure {
+                    Timber.e(it)
+                }
+            }
+        }
+    }
+
     private fun saveQuoteToken(
         token: SwapToken,
         isReverse: Boolean,
@@ -321,7 +367,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun handleSwap(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
+    private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
         val inputMint = from.getUnique()
         val outputMint = to.getUnique()
 
