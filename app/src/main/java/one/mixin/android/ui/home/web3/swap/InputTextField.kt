@@ -66,7 +66,7 @@ fun InputContent(
                             text = text,
                             style = TextStyle(
                                 fontSize = 24.sp,
-                                color = if (text == "0") MixinAppTheme.colors.textAssist else MixinAppTheme.colors.textPrimary,
+                                color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Start,
                             ),
@@ -131,7 +131,7 @@ fun InputContent(
                     if (text.isEmpty()) {
                         Text(
                             text = "0",
-                            color = MixinAppTheme.colors.textAssist,
+                            color = MixinAppTheme.colors.textRemarks,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.align(Alignment.CenterStart)

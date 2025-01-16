@@ -198,8 +198,8 @@ fun SwapPage(
                             centerCompose = {
                                 Box(
                                     modifier = Modifier
-                                        .width(26.dp)
-                                        .height(26.dp)
+                                        .width(32.dp)
+                                        .height(32.dp)
                                         .clip(CircleShape)
                                         .background(MixinAppTheme.colors.accent)
                                         .clickable {
