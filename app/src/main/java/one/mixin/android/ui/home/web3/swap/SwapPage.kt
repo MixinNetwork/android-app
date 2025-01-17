@@ -459,8 +459,14 @@ fun InputArea(
                         .clickable { onDeposit?.invoke(t) },
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_web3_wallet),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "${t.balance?.numberFormat8() ?: "0"} ${t.symbol}",
+                    text = t.balance?.numberFormat8() ?: "0",
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,
