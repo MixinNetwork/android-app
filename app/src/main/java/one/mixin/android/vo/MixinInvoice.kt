@@ -4,20 +4,14 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
-import one.mixin.android.extension.hmacSha256
-import one.mixin.android.extension.sha256
-import one.mixin.android.extension.toHex
 import one.mixin.android.util.UUIDUtils
-import one.mixin.android.util.encodeToBase58String
 import java.math.BigInteger
 import java.nio.ByteBuffer
-import java.security.MessageDigest
-import java.util.UUID
 
 const val MixinInvoicePrefix = "MIN"
 
 const val MIXIN_INVOICE_VERSION: Byte = 0
-const val REFERENCES_COUNT_LIMIT = 64
+const val REFERENCES_COUNT_LIMIT = 2
 const val EXTRA_SIZE_STORAGE_CAPACITY = 512
 
 data class MixinInvoice(
@@ -188,7 +182,7 @@ data class MixinInvoice(
                     } else {
                         amountStr.toBigInteger()
                     }
-                } catch (e: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     throw IllegalArgumentException("invalid amount: $amountStr")
                 }
 

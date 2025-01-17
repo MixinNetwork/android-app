@@ -50,7 +50,7 @@ data class MixAddress(
     }
 
     fun members(): List<String> {
-        return if (uuidMembers.size > 0) {
+        return if (uuidMembers.isNotEmpty()) {
             uuidMembers
         } else {
             xinMembers.map { it.string() }
