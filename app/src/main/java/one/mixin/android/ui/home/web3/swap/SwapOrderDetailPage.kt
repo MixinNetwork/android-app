@@ -1,23 +1,27 @@
 package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -47,6 +52,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun SwapOrderDetailPage(
     orderId: String,
+    onShare: (String) -> Unit,
+    onTryAgain: (String, String) -> Unit,
     pop: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
@@ -62,15 +69,12 @@ fun SwapOrderDetailPage(
             pop = pop,
             verticalScrollable = true
         ) {
-            order?.let { swapOrder ->
-                Column(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(16.dp)
-                ) {
+            Column {
+                order?.let { swapOrder ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
                             .cardBackground(
                                 MixinAppTheme.colors.background,
                                 MixinAppTheme.colors.borderColor
@@ -96,11 +100,12 @@ fun SwapOrderDetailPage(
                                     .offset(x = 16.dp, y = 16.dp)
                                     .width(54.dp)
                                     .height(54.dp)
+                                    .background(MixinAppTheme.colors.background)
                                     .border(3.dp, MixinAppTheme.colors.background, CircleShape),
                                 placeholder = R.drawable.ic_avatar_place_holder,
                             )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(26.dp))
                         Text(
                             text = "${swapOrder.assetSymbol} -> ${swapOrder.receiveAssetSymbol}",
                             fontSize = 24.sp,
@@ -108,29 +113,40 @@ fun SwapOrderDetailPage(
                             color = MixinAppTheme.colors.textPrimary,
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(MixinAppTheme.colors.backgroundWindow)
+                                .padding(horizontal = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            Text(swapOrder.state, color = MixinAppTheme.colors.walletGreen)
+                        }
                         Spacer(modifier = Modifier.height(20.dp))
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(44.dp)
-                                .padding(horizontal = 16.dp)
+                                .padding(horizontal = 20.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MixinAppTheme.colors.backgroundWindow),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
+                            Button(
+                                onClick = {
+                                    onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
+                                },
+                                shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
+                                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
-                                    .clickable {
-
-                                    }
                             ) {
                                 Text(
-                                    "Swap Again",
+                                    "Try Again",
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontWeight = FontWeight.W500,
-                                    modifier = Modifier.align(Alignment.Center)
                                 )
                             }
                             Box(
@@ -139,19 +155,21 @@ fun SwapOrderDetailPage(
                                     .height(24.dp)
                                     .background(Color(0x0D000000))
                             )
-                            Box(
+
+                            Button(
+                                onClick = {
+                                    onShare.invoke("${Constants.Scheme.HTTPS_SWAP}?input=${swapOrder.payAssetId}&output${swapOrder.receiveAssetId}")
+                                },
+                                shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
+                                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                                    .clickable {
-
-                                    }
                             ) {
                                 Text(
                                     "Share Pair",
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontWeight = FontWeight.W500,
-                                    modifier = Modifier.align(Alignment.Center)
                                 )
                             }
                         }
@@ -161,7 +179,8 @@ fun SwapOrderDetailPage(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .padding(horizontal = 16.dp)
+                            .wrapContentHeight()
                             .cardBackground(
                                 MixinAppTheme.colors.background,
                                 MixinAppTheme.colors.borderColor
@@ -237,7 +256,7 @@ private fun DetailItem(
     value: String,
     color: Color,
     icon: String?,
-    chain: String
+    chain: String,
 ) {
     Column(
         modifier = Modifier

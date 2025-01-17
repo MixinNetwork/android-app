@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.swap
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -247,6 +248,36 @@ class SwapFragment : BaseFragment() {
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
                                     orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
+                                    onShare = { share ->
+                                        val sendIntent = Intent()
+                                        sendIntent.action = Intent.ACTION_SEND
+                                        sendIntent.putExtra(
+                                            Intent.EXTRA_TEXT,
+                                            share,
+                                        )
+                                        sendIntent.type = "text/plain"
+                                        startActivity(
+                                            Intent.createChooser(
+                                                sendIntent,
+                                                resources.getText(R.string.Share),
+                                            ),
+                                        )
+                                    },
+                                    onTryAgain = { fromAssetId, toAssetId ->
+                                        lifecycleScope.launch {
+                                            val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
+                                            val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
+                                            if (fromToken != null && toToken != null) {
+                                                this@SwapFragment.fromToken = fromToken
+                                                this@SwapFragment.toToken = toToken
+                                                navController.navigate(SwapDestination.Swap.name) {
+                                                    popUpTo(SwapDestination.Swap.name) {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
                                     pop = {
                                         navigateUp(navController)
                                     }
