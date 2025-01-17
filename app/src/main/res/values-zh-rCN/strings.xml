@@ -879,7 +879,7 @@
     <string name="Search_GIPHY">搜索 GIPHY</string>
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="SEARCH_MESSAGES">搜索消息</string>
-    <string name="search_placeholder_asset">名称, 符号</string>
+    <string name="search_placeholder_asset">搜索名称, 符号</string>
     <string name="search_placeholder_explore">名称, 符号, 链接</string>
     <string name="search_placeholder_collectible">名称</string>
     <string name="search_placeholder_number">搜索 Mixin ID 或手机号码：</string>
