@@ -1,6 +1,8 @@
 package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -34,11 +36,15 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.hashForDate
+import one.mixin.android.extension.dayTime
 import one.mixin.android.vo.route.SwapOrderItem
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwapOrderListPage(
     pop: () -> Unit,
@@ -63,14 +69,37 @@ fun SwapOrderListPage(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                items(orders) { order ->
-                    OrderItem(
-                        order = order,
-                        onClick = { onOrderClick(order.orderId) }
-                    )
+                val groupedOrders = orders.groupBy { it.createdAt.hashForDate() }
+                groupedOrders.forEach { (date, ordersInGroup) ->
+                    stickyHeader {
+                        DateHeader(date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: "")
+                    }
+                    items(ordersInGroup) { order ->
+                        OrderItem(
+                            order = order,
+                            onClick = { onOrderClick(order.orderId) }
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DateHeader(date: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.background)
+            .padding(vertical = 8.dp, horizontal = 20.dp)
+    ) {
+        Text(
+            text = date,
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 14.sp,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -89,16 +118,16 @@ private fun OrderItem(
             CoilImage(
                 order.assetIconUrl,
                 modifier = Modifier
-                    .width(44.dp)
-                    .height(44.dp),
+                    .width(30.dp)
+                    .height(30.dp),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             CoilImage(
                 order.receiveAssetIconUrl,
                 modifier = Modifier
                     .offset(x = 10.dp, y = 10.dp)
-                    .width(46.dp)
-                    .height(46.dp)
+                    .width(34.dp)
+                    .height(34.dp)
                     .border(2.dp, MixinAppTheme.colors.background, CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
@@ -126,7 +155,7 @@ private fun OrderItem(
         Spacer(modifier = Modifier.weight(1f))
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = formatDateTime(order.createdAt),
+                text = order.createdAt.fullDate(),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
                 textAlign = TextAlign.End
@@ -140,12 +169,6 @@ private fun OrderItem(
     }
 }
 
-private fun formatDateTime(dateTime: String): String {
-    val instant = Instant.parse(dateTime)
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        .withZone(ZoneId.systemDefault())
-    return formatter.format(instant)
-}
 
 private fun formatOrderState(state: String): String {
     return when (state) {

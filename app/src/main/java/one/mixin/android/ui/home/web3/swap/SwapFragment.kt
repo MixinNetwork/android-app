@@ -52,6 +52,8 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
@@ -67,6 +69,7 @@ import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -130,6 +133,9 @@ class SwapFragment : BaseFragment() {
     private var reviewing: Boolean by mutableStateOf(false)
     private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     private val swapViewModel by viewModels<SwapViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,6 +145,7 @@ class SwapFragment : BaseFragment() {
             slippage = DefaultSlippage
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
+        jobManager.addJobInBackground(RefreshOrdersJob())
     }
 
     override fun onCreateView(

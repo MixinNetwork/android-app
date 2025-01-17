@@ -21,6 +21,7 @@ interface OrderDao : BaseDao<SwapOrder> {
         SELECT o.*, t.icon_url as asset_icon_url, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, t.symbol as asset_symbol FROM swap_orders o
         LEFT JOIN tokens t ON o.pay_asset_id = t.asset_id
         LEFT JOIN tokens rt ON o.receive_asset_id = rt.asset_id
+        ORDER BY o.created_at DESC
     """)
     suspend fun orders(): List<SwapOrderItem>
 

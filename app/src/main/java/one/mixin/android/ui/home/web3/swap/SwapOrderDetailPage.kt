@@ -142,7 +142,7 @@ fun SwapOrderDetailPage(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    clip (RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
+                                    .clip(RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
                                     .clickable {
 
                                     }
