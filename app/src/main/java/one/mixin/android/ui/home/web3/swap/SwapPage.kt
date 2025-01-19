@@ -432,7 +432,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
+                Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
                 Spacer(modifier = Modifier.weight(1f))
                 token?.let {
                     Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
