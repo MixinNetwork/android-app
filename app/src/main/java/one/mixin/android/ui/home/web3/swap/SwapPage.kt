@@ -86,6 +86,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -268,11 +269,10 @@ fun SwapPage(
                             if (errorInfo.isNullOrBlank()) {
                                 Column(
                                     modifier = Modifier
+                                        .alpha(if (quoteResult == null) 0f else 1f)
+                                        .cardBackground(MixinAppTheme.colors.backgroundGrayLight, MixinAppTheme.colors.borderColor)
                                         .fillMaxWidth()
                                         .wrapContentHeight()
-                                        .alpha(if (quoteResult == null) 0f else 1f)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MixinAppTheme.colors.backgroundGrayLight)
                                         .padding(20.dp),
                                 ) {
                                     quoteResult?.let { quote ->
@@ -298,12 +298,8 @@ fun SwapPage(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .wrapContentHeight()
-                                        .clip(RoundedCornerShape(12.dp))
                                         .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                                        .background(MixinAppTheme.colors.backgroundGrayLight)
-                                        .padding(20.dp),
                                 ) {
-                                    Spacer(modifier = Modifier.height(24.dp))
                                     Text(
                                         text = errorInfo ?: "",
                                         style = TextStyle(
@@ -311,6 +307,7 @@ fun SwapPage(
                                             color = MixinAppTheme.colors.tipError,
                                         ),
                                     )
+                                    Spacer(modifier = Modifier.height(42.dp))
                                 }
                             }
                             Spacer(modifier = Modifier.height(20.dp))
@@ -424,7 +421,7 @@ fun InputArea(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(8.dp))
-                .background(MixinAppTheme.colors.backgroundGrayLight)
+                .cardBackground(MixinAppTheme.colors.backgroundGrayLight, MixinAppTheme.colors.borderColor)
                 .padding(16.dp),
     ) {
         Row(
