@@ -301,9 +301,11 @@ class SendMessageHelper
                     val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
                     if (appCardData.canShare) {
                         content
-                    } else { // remove actions
+                    } else if (appCardData?.actionShareable != true){ // remove actions
                         val data = appCardData.copy(actions = null)
                         gson.toJson(data)
+                    } else { // remove actions
+                        content
                     }
                 } catch (e: Exception) {
                     content

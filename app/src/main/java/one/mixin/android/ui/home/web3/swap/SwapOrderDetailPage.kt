@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
+import android.content.Context
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,10 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,8 +49,13 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.getChainNetwork
+import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.SwapOrderItem
 import java.time.Instant
 import java.time.ZoneId
@@ -52,10 +64,11 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun SwapOrderDetailPage(
     orderId: String,
-    onShare: (String) -> Unit,
+    onShare: (String, String) -> Unit,
     onTryAgain: (String, String) -> Unit,
     pop: () -> Unit,
 ) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
     var order by remember { mutableStateOf<SwapOrderItem?>(null) }
 
@@ -65,11 +78,23 @@ fun SwapOrderDetailPage(
 
     MixinAppTheme {
         PageScaffold(
-            title = stringResource(id = R.string.Swap_Order_Detail),
+            title = stringResource(id = R.string.Order_Details),
             pop = pop,
-            verticalScrollable = true
+            actions = {
+                IconButton(onClick = {
+                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_support),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            }
         ) {
-            Column {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
                 order?.let { swapOrder ->
                     Column(
                         modifier = Modifier
@@ -100,14 +125,14 @@ fun SwapOrderDetailPage(
                                     .offset(x = 16.dp, y = 16.dp)
                                     .width(54.dp)
                                     .height(54.dp)
-                                    .background(MixinAppTheme.colors.background)
+                                    .clip(CircleShape)
                                     .border(3.dp, MixinAppTheme.colors.background, CircleShape),
                                 placeholder = R.drawable.ic_avatar_place_holder,
                             )
                         }
                         Spacer(modifier = Modifier.height(26.dp))
                         Text(
-                            text = "${swapOrder.assetSymbol} -> ${swapOrder.receiveAssetSymbol}",
+                            text = "${swapOrder.assetSymbol} → ${swapOrder.receiveAssetSymbol}",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.W500,
                             color = MixinAppTheme.colors.textPrimary,
@@ -116,12 +141,24 @@ fun SwapOrderDetailPage(
                         Spacer(modifier = Modifier.height(10.dp))
                         Box(
                             modifier = Modifier
-                                .background(MixinAppTheme.colors.backgroundWindow)
-                                .padding(horizontal = 8.dp)
                                 .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    when (swapOrder.state) {
+                                        OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
+                                        OrderState.FAILED.value -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
+                                        else -> MixinAppTheme.colors.textMinor
+                                    }
+                                )
+                                .padding(horizontal = 8.dp)
                                 .align(Alignment.CenterHorizontally)
                         ) {
-                            Text(swapOrder.state, color = MixinAppTheme.colors.walletGreen)
+                            Text(
+                                swapOrder.state, color = when (swapOrder.state) {
+                                    OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen
+                                    OrderState.FAILED.value -> MixinAppTheme.colors.walletRed
+                                    else -> MixinAppTheme.colors.textPrimary
+                                }
+                            )
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                         Row(
@@ -137,14 +174,14 @@ fun SwapOrderDetailPage(
                                 onClick = {
                                     onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
                                 },
-                                shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
+                                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp),
                                 colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
                                 elevation = ButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
                                 modifier = Modifier
                                     .weight(1f)
                             ) {
                                 Text(
-                                    "Try Again",
+                                    stringResource(R.string.Swap_Again),
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontWeight = FontWeight.W500,
                                 )
@@ -158,7 +195,7 @@ fun SwapOrderDetailPage(
 
                             Button(
                                 onClick = {
-                                    onShare.invoke("${Constants.Scheme.HTTPS_SWAP}?input=${swapOrder.payAssetId}&output${swapOrder.receiveAssetId}")
+                                    onShare.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
                                 },
                                 shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
                                 colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
@@ -167,7 +204,7 @@ fun SwapOrderDetailPage(
                                     .weight(1f)
                             ) {
                                 Text(
-                                    "Share Pair",
+                                    stringResource(R.string.Share_Pair),
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontWeight = FontWeight.W500,
                                 )
@@ -179,7 +216,7 @@ fun SwapOrderDetailPage(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 20.dp)
                             .wrapContentHeight()
                             .cardBackground(
                                 MixinAppTheme.colors.background,
@@ -207,16 +244,25 @@ fun SwapOrderDetailPage(
                             ) ?: ""
                         )
                         DetailItem(
-                            label = "订单状态",
-                            value = formatOrderState(swapOrder.state)
+                            label = stringResource(R.string.Status),
+                            value = formatOrderState(context, swapOrder.state)
                         )
                         DetailItem(
-                            label = "创建时间",
-                            value = formatDateTime(swapOrder.createdAt)
+                            label = stringResource(R.string.Order_Created),
+                            value = swapOrder.createdAt.fullDate()
                         )
                         DetailItem(
-                            label = "订单ID",
-                            value = swapOrder.orderId
+                            label = stringResource(R.string.Order_ID),
+                            value = swapOrder.orderId,
+                            onCopy = {
+                                context.getClipboardManager().setPrimaryClip(
+                                    android.content.ClipData.newPlainText(
+                                        null,
+                                        swapOrder.orderId
+                                    )
+                                )
+                                toast(R.string.copied_to_clipboard)
+                            }
                         )
                     }
                 }
@@ -229,24 +275,47 @@ fun SwapOrderDetailPage(
 private fun DetailItem(
     label: String,
     value: String,
+    onCopy: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 20.dp)
     ) {
-        Text(
-            text = label.uppercase(),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label.uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            onCopy?.let { onCopy ->
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_copy_gray),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = LocalIndication.current,
+                            onClick = {
+                                onCopy.invoke()
+                            }
+                        )
+                        .padding(start = 4.dp)
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = value,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary,
         )
+
     }
 }
 
@@ -287,25 +356,20 @@ private fun DetailItem(
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = chain,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
         }
     }
 }
 
-private fun formatDateTime(dateTime: String): String {
-    val instant = Instant.parse(dateTime)
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-        .withZone(ZoneId.systemDefault())
-    return formatter.format(instant)
-}
-
-private fun formatOrderState(state: String): String {
+fun formatOrderState(context: Context, state: String): String {
     return when (state) {
-        "pending" -> "等待中"
-        "success" -> "已完成"
-        "failed" -> "失败"
+        OrderState.CREATED.value -> context.getString(R.string.State_Created)
+        OrderState.PENDING.value -> context.getString(R.string.State_Pending)
+        OrderState.SUCCESS.value -> context.getString(R.string.State_Success)
+        OrderState.FAILED.value -> context.getString(R.string.State_Failed)
+        OrderState.REFUNDED.value -> context.getString(R.string.State_Refunded)
         else -> state
     }
 }

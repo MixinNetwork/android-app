@@ -2,9 +2,11 @@ package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,26 +21,34 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.hashForDate
+import one.mixin.android.extension.openUrl
 import one.mixin.android.vo.route.SwapOrderItem
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -47,6 +57,7 @@ fun SwapOrderListPage(
     pop: () -> Unit,
     onOrderClick: (String) -> Unit,
 ) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
     val scope = rememberCoroutineScope()
     val orders by viewModel.orders.collectAsState()
@@ -61,6 +72,17 @@ fun SwapOrderListPage(
         PageScaffold(
             title = stringResource(id = R.string.Swap_Orders),
             pop = pop,
+            actions = {
+                IconButton(onClick = {
+                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_support),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            }
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -105,10 +127,15 @@ private fun OrderItem(
     order: SwapOrderItem,
     onClick: () -> Unit,
 ) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(
+                onClick = onClick,
+                indication = LocalIndication.current,
+                interactionSource = remember { MutableInteractionSource() }
+            )
             .padding(vertical = 12.dp, horizontal = 20.dp)
     ) {
         Box(modifier = Modifier.wrapContentSize()) {
@@ -125,6 +152,7 @@ private fun OrderItem(
                     .offset(x = 10.dp, y = 10.dp)
                     .width(34.dp)
                     .height(34.dp)
+                    .clip(CircleShape)
                     .border(2.dp, MixinAppTheme.colors.background, CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
@@ -134,7 +162,7 @@ private fun OrderItem(
 
         Column {
             Text(
-                text = "${order.assetSymbol ?: ""} -> ${order.receiveAssetSymbol ?: ""}",
+                text = "${order.assetSymbol ?: ""} → ${order.receiveAssetSymbol ?: ""}",
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary,
             )
@@ -158,7 +186,7 @@ private fun OrderItem(
                 textAlign = TextAlign.End
             )
             Text(
-                text = formatOrderState(order.state),
+                text = formatOrderState(context, order.state),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
@@ -166,12 +194,3 @@ private fun OrderItem(
     }
 }
 
-
-private fun formatOrderState(state: String): String {
-    return when (state) {
-        "pending" -> "等待中"
-        "success" -> "已完成"
-        "failed" -> "失败"
-        else -> state
-    }
-}

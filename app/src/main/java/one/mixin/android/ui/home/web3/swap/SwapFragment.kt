@@ -55,13 +55,23 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
+import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.forward.ForwardFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.ActionButtonData
+import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ForwardAction
+import one.mixin.android.vo.ForwardCategories
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -147,6 +157,7 @@ class SwapFragment : BaseFragment() {
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
         jobManager.addJobInBackground(RefreshOrdersJob())
+        jobManager.addJobInBackground(RefreshPendingOrdersJob())
     }
 
     override fun onCreateView(
@@ -248,20 +259,10 @@ class SwapFragment : BaseFragment() {
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
                                     orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
-                                    onShare = { share ->
-                                        val sendIntent = Intent()
-                                        sendIntent.action = Intent.ACTION_SEND
-                                        sendIntent.putExtra(
-                                            Intent.EXTRA_TEXT,
-                                            share,
-                                        )
-                                        sendIntent.type = "text/plain"
-                                        startActivity(
-                                            Intent.createChooser(
-                                                sendIntent,
-                                                resources.getText(R.string.Share),
-                                            ),
-                                        )
+                                    onShare = { payAssetId, receiveAssetId ->
+                                        lifecycleScope.launch {
+                                            shareSwap(payAssetId, receiveAssetId)
+                                        }
                                     },
                                     onTryAgain = { fromAssetId, toAssetId ->
                                         lifecycleScope.launch {
@@ -402,6 +403,63 @@ class SwapFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    private suspend fun shareSwap(payAssetId: String, receiveAssetId: String) {
+        dialog.show()
+        runCatching {
+            val payAssetMarket = swapViewModel.checkMarketById(payAssetId)
+            val receiveAssetMarket = swapViewModel.checkMarketById(receiveAssetId)
+            if (payAssetMarket == null || receiveAssetMarket == null) {
+                toast(R.string.Data_error)
+                return@runCatching
+            }
+
+            val description = buildString {
+                append("🔥 ${receiveAssetMarket.name} (${receiveAssetMarket.symbol})\n")
+                append("📈 ${getString(R.string.Market_Cap)}: ${receiveAssetMarket.marketCap}\n")
+                append("🏷️ ${getString(R.string.Price)}: ${receiveAssetMarket.currentPrice}\n")
+                append("💰 ${getString(R.string.price_change_24h)}: ${receiveAssetMarket.marketCapChange24h}%")
+            }
+
+            val actions = listOf(
+                ActionButtonData(
+                    label = "${getString(R.string.buy_token, receiveAssetMarket.symbol)}",
+                    color = "#50BD5C",
+                    action = "mixin://mixin.one/swap?input=$payAssetId&output=$receiveAssetId"
+                ),
+                ActionButtonData(
+                    label = "${getString(R.string.sell_token, receiveAssetMarket.symbol)}",
+                    color = "#DB454F",
+                    action = "mixin://mixin.one/swap?input=$receiveAssetId&output=$payAssetId"
+                ),
+                ActionButtonData(
+                    label = "${receiveAssetMarket.symbol} ${getString(R.string.Market)}",
+                    color = "#3D75E3",
+                    action = "mixin://mixin.one/markets/$receiveAssetId"
+                )
+            )
+
+            val appCard = AppCardData(
+                appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
+                iconUrl = null,
+                coverUrl = null,
+                cover = null,
+                title = "${getString(R.string.Swap)} ${payAssetMarket.symbol}/${receiveAssetMarket.symbol}",
+                description = description,
+                action = null,
+                updatedAt = null,
+                shareable = true,
+                actions = actions,
+                actionShareable = true
+            )
+
+            val forwardMessage = ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
+            ForwardActivity.show(requireContext(), arrayListOf(forwardMessage), ForwardAction.App.Resultless(null, getString(R.string.Share)))
+        }.onFailure { e ->
+            ErrorHandler.handleError(e)
+        }
+        dialog.dismiss()
     }
 
     private fun saveQuoteToken(

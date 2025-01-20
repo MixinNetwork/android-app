@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -30,6 +31,7 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.market.MarketItem
 import javax.inject.Inject
 
 @HiltViewModel
@@ -145,7 +147,7 @@ class SwapViewModel
         return tokenRepository.getOrderById(orderId)
     }
 
-    private fun addRouteBot(){
+    private fun addRouteBot() {
         viewModelScope.launch(Dispatchers.IO) {
             val bot = userRepository.getUserById(ROUTE_BOT_USER_ID)
             if (bot == null || bot.relationship != "FRIEND") {
@@ -153,4 +155,9 @@ class SwapViewModel
             }
         }
     }
+
+    suspend fun checkMarketById(assetId: String): MarketItem? = withContext(Dispatchers.IO) {
+        return@withContext tokenRepository.checkMarketById(assetId)
+    }
+
 }
