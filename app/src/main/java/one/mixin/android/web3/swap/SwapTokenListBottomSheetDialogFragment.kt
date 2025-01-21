@@ -120,8 +120,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         R.id.radio_solana -> {
                             SOLANA_CHAIN_ID
                         }
-                        
-                        R.id.radio_base->{
+
+                        R.id.radio_base -> {
                             Base
                         }
 
