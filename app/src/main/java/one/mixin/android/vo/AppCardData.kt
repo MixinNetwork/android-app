@@ -31,7 +31,6 @@ data class AppCardData(
     val updatedAt: String?,
     val shareable: Boolean?,
     val actions: List<ActionButtonData>? = null,
-    val actionShareable: Boolean? = null,
 ) : Parcelable {
     init {
         title = title?.take(36)

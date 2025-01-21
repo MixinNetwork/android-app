@@ -439,17 +439,17 @@ class SwapFragment : BaseFragment() {
                 ActionButtonData(
                     label = "${getString(R.string.buy_token, receiveAssetMarket.symbol)}",
                     color = "#50BD5C",
-                    action = "mixin://mixin.one/swap?input=$payAssetId&output=$receiveAssetId"
+                    action = "https://mixin.one/swap?input=$payAssetId&output=$receiveAssetId"
                 ),
                 ActionButtonData(
                     label = "${getString(R.string.sell_token, receiveAssetMarket.symbol)}",
                     color = "#DB454F",
-                    action = "mixin://mixin.one/swap?input=$receiveAssetId&output=$payAssetId"
+                    action = "https://mixin.one/swap?input=$receiveAssetId&output=$payAssetId"
                 ),
                 ActionButtonData(
                     label = "${receiveAssetMarket.symbol} ${getString(R.string.Market)}",
                     color = "#3D75E3",
-                    action = "mixin://mixin.one/markets/$receiveAssetId"
+                    action = "https://mixin.one/markets/$receiveAssetId"
                 )
             )
 
@@ -464,7 +464,6 @@ class SwapFragment : BaseFragment() {
                 updatedAt = null,
                 shareable = true,
                 actions = actions,
-                actionShareable = true
             )
 
             val forwardMessage = ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
