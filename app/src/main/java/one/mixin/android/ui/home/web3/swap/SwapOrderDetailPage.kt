@@ -227,8 +227,8 @@ fun SwapOrderDetailPage(
                             swapOrder.receiveChainName ?: ""
                         )
                         DetailItem(
-                            label = stringResource(R.string.Status).uppercase(),
-                            value = formatOrderState(context, swapOrder.state)
+                            label = stringResource(R.string.Type).uppercase(),
+                            value = if (swapOrder.type == "swap") context.getString(R.string.order_type_swap) else if (swapOrder.type == "limit") context.getString(R.string.order_type_limit) else swapOrder.type,
                         )
                         DetailItem(
                             label = stringResource(R.string.Order_Created).uppercase(),
