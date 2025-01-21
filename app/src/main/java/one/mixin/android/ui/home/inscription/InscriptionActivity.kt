@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
@@ -128,7 +129,6 @@ class InscriptionActivity : BaseActivity() {
     private var inScreenshot by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        skipSystemUi = true
         super.onCreate(savedInstanceState)
         getSendResult =
             registerForActivityResult(
@@ -137,7 +137,7 @@ class InscriptionActivity : BaseActivity() {
                 ::callbackSend,
             )
         SystemUIManager.lightUI(window, false)
-        window.statusBarColor = Color.TRANSPARENT
+        window.setBackgroundDrawable(ColorDrawable(Color.BLACK))
         binding = ActivityInscriptionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first

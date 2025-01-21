@@ -1015,6 +1015,24 @@ fun supportsOreo(
     }
 }
 
+
+inline fun supportsIceCream(code: () -> Unit) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        code()
+    }
+}
+
+fun supportsIceCream(
+    code: () -> Unit,
+    elseAction: (() -> Unit),
+) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        code()
+    } else {
+        elseAction.invoke()
+    }
+}
+
 @SuppressLint("ObsoleteSdkInt")
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

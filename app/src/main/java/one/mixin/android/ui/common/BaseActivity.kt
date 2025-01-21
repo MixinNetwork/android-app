@@ -21,7 +21,6 @@ open class BaseActivity : AppCompatActivity() {
 
     lateinit var lastLang: String
     var lastThemeId: Int = defaultThemeId
-    protected var skipSystemUi: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,17 +29,13 @@ open class BaseActivity : AppCompatActivity() {
         } else {
             setTheme(getDefaultThemeId())
         }
-        if (!skipSystemUi) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
-        }
+        window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
     }
 
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
-        if (!skipSystemUi) {
-            window.decorView.doOnPreDraw {
-                SystemUIManager.lightUI(window, !(isNightMode()))
-            }
+        window.decorView.doOnPreDraw {
+            SystemUIManager.lightUI(window, !(isNightMode()))
         }
     }
 
@@ -49,19 +44,15 @@ open class BaseActivity : AppCompatActivity() {
         params: ViewGroup.LayoutParams?,
     ) {
         super.setContentView(view, params)
-        if (!skipSystemUi) {
-            view?.doOnPreDraw {
-                SystemUIManager.lightUI(window, !(isNightMode()))
-            }
+        view?.doOnPreDraw {
+            SystemUIManager.lightUI(window, !(isNightMode()))
         }
     }
 
     override fun setContentView(view: View?) {
         super.setContentView(view)
-        if (!skipSystemUi) {
-            view?.doOnPreDraw {
-                SystemUIManager.lightUI(window, !(isNightMode()))
-            }
+        view?.doOnPreDraw {
+            SystemUIManager.lightUI(window, !(isNightMode()))
         }
     }
 

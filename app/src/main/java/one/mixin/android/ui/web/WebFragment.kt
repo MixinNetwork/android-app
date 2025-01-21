@@ -15,7 +15,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.net.http.SslError
@@ -1648,7 +1647,7 @@ class WebFragment : BaseFragment() {
 
         requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
-            SystemUIManager.setAppearanceLightStatusBars(it, !dark)
+            SystemUIManager.lightUI(it, !dark)
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)

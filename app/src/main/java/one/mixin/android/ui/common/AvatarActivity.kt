@@ -67,7 +67,6 @@ class AvatarActivity : BaseActivity() {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         postponeEnterTransition()
-        window.statusBarColor = Color.TRANSPARENT
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {

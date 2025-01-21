@@ -122,7 +122,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     private lateinit var binding: ActivityMediaPagerBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        skipSystemUi = true
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -136,7 +135,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        SystemUIManager.fitsSystem(window)
         binding.root.doOnPreDraw {
             SystemUIManager.lightUI(window, false)
         }

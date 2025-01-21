@@ -75,7 +75,6 @@ class MarketShareActivity : BaseActivity() {
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             )
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
         binding.test.round(8.dp)
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
