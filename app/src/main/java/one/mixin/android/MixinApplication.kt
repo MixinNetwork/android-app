@@ -179,6 +179,9 @@ open class MixinApplication :
     }
 
     private fun initSentry() {
+        if (BuildConfig.SENTRYDSN.isBlank()) {
+            return
+        }
         SentryAndroid.init(this) { options ->
             options.dsn = BuildConfig.SENTRYDSN
             options.isEnableUserInteractionTracing = false
@@ -196,6 +199,9 @@ open class MixinApplication :
     }
 
     private fun initAppsFlyer() {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
         AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
                 Timber.d("AppsFlyer Conversion Data: $conversionData")
