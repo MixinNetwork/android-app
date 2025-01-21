@@ -214,14 +214,14 @@ fun SwapOrderDetailPage(
                     ) {
                         DetailItem(
                             context.getString(R.string.swap_order_paid).uppercase(),
-                            "${swapOrder.payAmount} ${swapOrder.assetSymbol}",
+                            "-${swapOrder.payAmount} ${swapOrder.assetSymbol}",
                             MixinAppTheme.colors.walletRed,
                             swapOrder.assetIconUrl,
                             swapOrder.payChainName ?: ""
                         )
                         DetailItem(
                             context.getString(R.string.swap_order_received).uppercase(),
-                            "${swapOrder.receiveAmount} ${swapOrder.receiveAssetSymbol}",
+                            "+${swapOrder.receiveAmount} ${swapOrder.receiveAssetSymbol}",
                             MixinAppTheme.colors.walletGreen,
                             swapOrder.receiveAssetIconUrl,
                             swapOrder.receiveChainName ?: ""

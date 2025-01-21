@@ -458,7 +458,7 @@ class SwapFragment : BaseFragment() {
                 iconUrl = null,
                 coverUrl = null,
                 cover = null,
-                title = "${getString(R.string.Swap)} ${payAssetMarket.symbol}/${receiveAssetMarket.symbol}",
+                title = "${getString(R.string.Swap)} ${payAssetMarket.symbol} -> ${receiveAssetMarket.symbol}",
                 description = description,
                 action = null,
                 updatedAt = null,
