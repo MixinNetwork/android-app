@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -104,6 +105,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             radioAll.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = true
+            radioBase.isVisible = true
             radioBsc.isVisible = true
             radioPolygon.isVisible = true
             radioGroup.setOnCheckedChangeListener { _, id ->
@@ -114,6 +116,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                     R.id.radio_solana -> {
                         SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_base -> {
+                        Base
                     }
 
                     R.id.radio_tron -> {
