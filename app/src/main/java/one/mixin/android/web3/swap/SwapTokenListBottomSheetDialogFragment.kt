@@ -25,6 +25,7 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -98,6 +99,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioSolana.isChecked = true
                 radioAll.isVisible = false
                 radioEth.isVisible = false
+                radioBase.isVisible = false
                 radioTron.isVisible = false
                 radioBsc.isVisible = false
                 radioPolygon.isVisible = false
@@ -105,6 +107,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioAll.isChecked = true
                 radioAll.isVisible = true
                 radioEth.isVisible = true
+                radioBase.isVisible = true
                 radioTron.isVisible = true
                 radioBsc.isVisible = true
                 radioPolygon.isVisible = true
@@ -116,6 +119,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                         R.id.radio_solana -> {
                             SOLANA_CHAIN_ID
+                        }
+
+                        R.id.radio_base -> {
+                            Base
                         }
 
                         R.id.radio_tron -> {
