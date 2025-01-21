@@ -46,6 +46,15 @@ data class SwapOrderItem(
     @ColumnInfo(name = "state")
     @SerializedName("state")
     val state: String,
+    @ColumnInfo(name = "order_type")
+    @SerializedName("order_type")
+    val type: String,
+    @ColumnInfo(name = "pay_chain_name")
+    @SerializedName("pay_chain_name")
+    val payChainName: String?,
+    @ColumnInfo(name = "receive_chain_name")
+    @SerializedName("receive_chain_name")
+    val receiveChainName: String?,
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
     val createdAt: String,

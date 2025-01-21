@@ -140,7 +140,7 @@ fun SwapPage(
             .collectLatest { text ->
                 fromToken?.let { from ->
                     toToken?.let { to ->
-                        if (text.isNotBlank() && !reviewing) {
+                        if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
                             isLoading = true
                             errorInfo = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text

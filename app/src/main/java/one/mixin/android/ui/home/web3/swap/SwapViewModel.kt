@@ -29,9 +29,9 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.market.MarketItem
 import javax.inject.Inject
 
 @HiltViewModel

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.swap
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,7 +46,9 @@ import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
@@ -59,7 +60,6 @@ import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.forward.ForwardFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
@@ -68,8 +68,8 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardCategories
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.safe.TokenItem
@@ -80,6 +80,7 @@ import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -405,6 +406,18 @@ class SwapFragment : BaseFragment() {
         }
     }
 
+    private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
+        val formatVol = try {
+            BigDecimal(vol).multiply(rate).numberFormatCompact()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        if (formatVol != null) {
+            return "$symbol$formatVol"
+        }
+        return requireContext().getString(R.string.N_A)
+    }
+
     private suspend fun shareSwap(payAssetId: String, receiveAssetId: String) {
         dialog.show()
         runCatching {
@@ -416,10 +429,10 @@ class SwapFragment : BaseFragment() {
             }
 
             val description = buildString {
-                append("🔥 ${receiveAssetMarket.name} (${receiveAssetMarket.symbol})\n")
-                append("📈 ${getString(R.string.Market_Cap)}: ${receiveAssetMarket.marketCap}\n")
-                append("🏷️ ${getString(R.string.Price)}: ${receiveAssetMarket.currentPrice}\n")
-                append("💰 ${getString(R.string.price_change_24h)}: ${receiveAssetMarket.marketCapChange24h}%")
+                append("🔥 ${receiveAssetMarket.name} (${receiveAssetMarket.symbol})\n\n")
+                append("📈 ${getString(R.string.Market_Cap)}: ${capFormat(receiveAssetMarket.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())}\n")
+                append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(receiveAssetMarket.currentPrice).priceFormat()}\n")
+                append("💰 ${getString(R.string.price_change_24h)}: ${receiveAssetMarket.marketCapChangePercentage24h}%")
             }
 
             val actions = listOf(

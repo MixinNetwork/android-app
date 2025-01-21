@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -24,8 +23,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -56,12 +53,8 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.SwapOrderItem
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun SwapOrderDetailPage(
@@ -148,14 +141,14 @@ fun SwapOrderDetailPage(
                                     when (swapOrder.state) {
                                         OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
                                         OrderState.FAILED.value -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
-                                        else -> MixinAppTheme.colors.textMinor
+                                        else -> MixinAppTheme.colors.textMinor.copy(alpha = 0.2f)
                                     }
                                 )
                                 .padding(horizontal = 8.dp)
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                swapOrder.state, color = when (swapOrder.state) {
+                                formatOrderState(context, swapOrder.state), color = when (swapOrder.state) {
                                     OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen
                                     OrderState.FAILED.value -> MixinAppTheme.colors.walletRed
                                     else -> MixinAppTheme.colors.textPrimary
@@ -179,7 +172,6 @@ fun SwapOrderDetailPage(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .weight(1f)
-
                                     .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
                                     .clickable() {
                                         onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
@@ -221,34 +213,29 @@ fun SwapOrderDetailPage(
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
                         DetailItem(
-                            "PAID",
+                            context.getString(R.string.swap_order_paid).uppercase(),
                             "${swapOrder.payAmount} ${swapOrder.assetSymbol}",
                             MixinAppTheme.colors.walletRed,
                             swapOrder.assetIconUrl,
-                            getChainNetwork(swapOrder.payAssetId, swapOrder.payChainId ?: "", null)
-                                ?: ""
+                            swapOrder.payChainName ?: ""
                         )
                         DetailItem(
-                            "RECEIVED",
+                            context.getString(R.string.swap_order_received).uppercase(),
                             "${swapOrder.receiveAmount} ${swapOrder.receiveAssetSymbol}",
                             MixinAppTheme.colors.walletGreen,
                             swapOrder.receiveAssetIconUrl,
-                            getChainNetwork(
-                                swapOrder.receiveAssetId,
-                                swapOrder.receiveChainId ?: "",
-                                null
-                            ) ?: ""
+                            swapOrder.receiveChainName ?: ""
                         )
                         DetailItem(
-                            label = stringResource(R.string.Status),
+                            label = stringResource(R.string.Status).uppercase(),
                             value = formatOrderState(context, swapOrder.state)
                         )
                         DetailItem(
-                            label = stringResource(R.string.Order_Created),
+                            label = stringResource(R.string.Order_Created).uppercase(),
                             value = swapOrder.createdAt.fullDate()
                         )
                         DetailItem(
-                            label = stringResource(R.string.Order_ID),
+                            label = stringResource(R.string.Order_ID).uppercase(),
                             value = swapOrder.orderId,
                             onCopy = {
                                 context.getClipboardManager().setPrimaryClip(

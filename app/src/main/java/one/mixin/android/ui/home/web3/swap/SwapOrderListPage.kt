@@ -2,11 +2,13 @@ package one.mixin.android.ui.home.web3.swap
 
 import PageScaffold
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +51,7 @@ import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.openUrl
+import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.SwapOrderItem
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -84,20 +87,42 @@ fun SwapOrderListPage(
                 }
             }
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                val groupedOrders = orders.groupBy { it.createdAt.hashForDate() }
-                groupedOrders.forEach { (date, ordersInGroup) ->
-                    stickyHeader {
-                        DateHeader(date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: "")
-                    }
-                    items(ordersInGroup) { order ->
-                        OrderItem(
-                            order = order,
-                            onClick = { onOrderClick(order.orderId) }
-                        )
+            if (orders.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Image(
+                        painter = painterResource(R.drawable.ic_empty_file),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = stringResource(R.string.NO_ORDERS),
+                        color = MixinAppTheme.colors.textRemarks
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    val groupedOrders = orders.groupBy { it.createdAt.hashForDate() }
+                    groupedOrders.forEach { (_, ordersInGroup) ->
+                        stickyHeader {
+                            DateHeader(
+                                date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: ""
+                            )
+                        }
+                        items(ordersInGroup) { order ->
+                            OrderItem(
+                                order = order,
+                                onClick = { onOrderClick(order.orderId) }
+                            )
+                        }
                     }
                 }
             }
@@ -161,35 +186,53 @@ private fun OrderItem(
         Spacer(modifier = Modifier.width(22.dp))
 
         Column {
-            Text(
-                text = "${order.assetSymbol ?: ""} → ${order.receiveAssetSymbol ?: ""}",
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary,
-            )
-            Text(
-                text = "-${order.payAmount} ${order.assetSymbol}",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.walletRed,
-            )
-            Text(
-                text = "+${order.receiveAmount} ${order.receiveAssetSymbol}",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.walletGreen,
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = order.createdAt.fullDate(),
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-                textAlign = TextAlign.End
-            )
-            Text(
-                text = formatOrderState(context, order.state),
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "${order.assetSymbol ?: ""} → ${order.receiveAssetSymbol ?: ""}",
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = order.createdAt.fullDate(),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.End
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "-${order.payAmount} ${order.assetSymbol}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.walletRed,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = order.type,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "+${order.receiveAmount} ${order.receiveAssetSymbol}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.walletGreen,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = formatOrderState(context, order.state),
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                    color = when (order.state) {
+                        OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen
+                        OrderState.FAILED.value -> MixinAppTheme.colors.walletRed
+                        else -> MixinAppTheme.colors.textAssist
+                    }
+                )
+            }
         }
     }
 }
