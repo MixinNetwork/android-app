@@ -69,6 +69,7 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
@@ -702,6 +703,8 @@ class TokenRepository
             }
         }
 
+        suspend fun transactionsFetch(traceIds: List<String>) = utxoService.transactionsFetch(traceIds)
+
         suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
 
         suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
@@ -886,7 +889,7 @@ class TokenRepository
             withdrawal: SafeWithdrawal? = null,
             reference: String? = null,
         ) {
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toByteArray()?.hexString() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
             safeSnapshotDao.insert(snapshot)
         }
 
