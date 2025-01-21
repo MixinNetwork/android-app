@@ -209,7 +209,7 @@ private fun OrderItem(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = order.type,
+                    text = if (order.type == "swap") context.getString(R.string.order_type_swap) else if (order.type == "limit") context.getString(R.string.order_type_limit) else order.type,
                     fontSize = 14.sp,
                     textAlign = TextAlign.End,
                     color = MixinAppTheme.colors.textAssist,
