@@ -55,6 +55,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.SwapOrderItem
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun SwapOrderDetailPage(
@@ -220,11 +222,14 @@ fun SwapOrderDetailPage(
                             swapOrder.payChainName ?: ""
                         )
                         DetailItem(
-                            context.getString(R.string.swap_order_received).uppercase(),
+                            if (swapOrder.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
                             "+${swapOrder.receiveAmount} ${swapOrder.receiveAssetSymbol}",
                             MixinAppTheme.colors.walletGreen,
                             swapOrder.receiveAssetIconUrl,
                             swapOrder.receiveChainName ?: ""
+                        )
+                        DetailPriceItem(
+                            swapOrder
                         )
                         DetailItem(
                             label = stringResource(R.string.Type).uppercase(),
@@ -251,6 +256,43 @@ fun SwapOrderDetailPage(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DetailPriceItem(
+    orderItem: SwapOrderItem
+) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 20.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = if (orderItem.state == OrderState.SUCCESS.value) context.getString(R.string.Price) else context.getString(R.string.Estimated_Price).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = runCatching { "1 ${orderItem.receiveAssetSymbol} ≈ ${BigDecimal(orderItem.payAmount).divide(BigDecimal(orderItem.receiveAmount), 8, RoundingMode.HALF_UP)} ${orderItem.assetSymbol}" }.getOrDefault("N/A"),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = runCatching { "1 ${orderItem.assetSymbol} ≈ ${BigDecimal(orderItem.receiveAmount).divide(BigDecimal(orderItem.payAmount), 8, RoundingMode.HALF_UP)} ${orderItem.receiveAmount}" }.getOrDefault("N/A"),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Normal,
+            color = MixinAppTheme.colors.textPrimary,
+        )
     }
 }
 
