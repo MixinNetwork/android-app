@@ -11,7 +11,6 @@ import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okio.internal.commonToUtf8String
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -90,7 +89,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
-import one.mixin.android.vo.VerifyTransactionData
+import one.mixin.android.vo.VerifiedTransactionData
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
@@ -596,7 +595,7 @@ class BottomSheetViewModel
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val recipient = invoice.recipient
             val senderIds = listOf(Session.getAccountId()!!)
-            val verifyTransactionDatas = mutableListOf<VerifyTransactionData>()
+            val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
             val signedTransactions = mutableListOf<SignedTransaction>()
             Timber.e("Kernel Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
             invoice.entries.forEach { entry ->
@@ -632,7 +631,7 @@ class BottomSheetViewModel
                 val changeMask = data.last().mask
                 val reference = entry.references.joinToString(",") { reference ->
                     if (reference is Reference.IndexValue) {
-                        verifyTransactionDatas.getOrNull(reference.value)?.hash ?: throw IllegalArgumentException("Reference not found")
+                        verifiedTransactions.getOrNull(reference.value)?.hash ?: throw IllegalArgumentException("Reference not found")
                     } else if (reference is Reference.HashValue) {
                         reference.value
                     } else {
@@ -641,13 +640,13 @@ class BottomSheetViewModel
                     }
                 }
                 val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
-                verifyTransactionDatas.add(VerifyTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference))
+                verifiedTransactions.add(VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference))
             }
-            val verifyTransaction = tokenRepository.transactionRequest(verifyTransactionDatas.map { TransactionRequest(it.raw, it.trace) })
+            val verifyTransaction = tokenRepository.transactionRequest(verifiedTransactions.map { TransactionRequest(it.raw, it.trace) })
             if (verifyTransaction.error != null) {
                 Timber.e("Kernel Invoice Transaction: request transaction error ${verifyTransaction.errorDescription}")
                 return verifyTransaction
-            } else if ((verifyTransaction.data?.size ?: 0) != verifyTransactionDatas.size) {
+            } else if ((verifyTransaction.data?.size ?: 0) != verifiedTransactions.size) {
                 Timber.e("Kernel Invoice Transaction: Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
             } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
@@ -656,7 +655,7 @@ class BottomSheetViewModel
             }
 
             verifyTransaction.data!!.forEachIndexed { index, data ->
-                val verifyTransactionData = verifyTransactionDatas[index]
+                val verifyTransactionData = verifiedTransactions[index]
                 val views = data.views!!.joinToString(",")
                 val keys = verifyTransactionData.utxoWrapper.formatKeys
                 val sign = Kernel.signTx(verifyTransactionData.raw, keys, views, spendKey.toHex(), false)

@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import one.mixin.android.vo.safe.UtxoWrapper
 
-class VerifyTransactionData(
+class VerifiedTransactionData(
     val trace: String,
     val raw: String,
     val hash: String,
