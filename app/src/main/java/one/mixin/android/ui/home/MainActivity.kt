@@ -169,6 +169,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
@@ -375,6 +376,7 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                    AnalyticsTracker.trackLoginVerifyPin("verify_pin")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
                             if (success) {

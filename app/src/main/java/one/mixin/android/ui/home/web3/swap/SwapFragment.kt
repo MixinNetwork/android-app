@@ -72,6 +72,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -533,11 +534,13 @@ class SwapFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
+            AnalyticsTracker.trackSwapPreview()
             openSwapTransfer(resp, from, to)
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
             reviewing = true
+            AnalyticsTracker.trackSwapPreview()
             showBrowserBottomSheetDialogFragment(requireActivity(), signMessage, onDismiss = {
                 reviewing = false
             }, onTxhash = { hash, serializedTx ->

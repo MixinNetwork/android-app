@@ -50,6 +50,7 @@ import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -132,6 +133,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ID
                     }
+                    AnalyticsTracker.trackSwapStart("mixin", "market")
                     navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }

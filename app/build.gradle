@@ -209,7 +209,7 @@ dependencies {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
-    implementation platform("com.google.firebase:firebase-bom:33.7.0")
+    implementation platform("com.google.firebase:firebase-bom:33.8.0")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
@@ -402,7 +402,7 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:4.11.0" // ⚠️ dependabot unexpected behavior update to version 5.0.0
     implementation "org.web3j:crypto:4.11.0"
-    implementation platform("com.reown:android-bom:1.1.0")
+    implementation platform("com.reown:android-bom:1.1.2")
     implementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 

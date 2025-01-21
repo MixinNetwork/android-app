@@ -64,6 +64,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.generateConversationId
@@ -316,6 +317,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         }
                     }
                     sendReceiveView.swap.setOnClickListener {
+                        AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
