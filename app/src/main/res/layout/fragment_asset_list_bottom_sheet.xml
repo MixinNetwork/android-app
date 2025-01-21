@@ -121,6 +121,17 @@
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_base"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Base"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_tron"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
