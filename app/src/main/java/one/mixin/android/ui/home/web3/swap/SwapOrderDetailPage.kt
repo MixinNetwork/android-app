@@ -295,7 +295,7 @@ private fun DetailItem(
         Text(
             text = value,
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
         )
 
