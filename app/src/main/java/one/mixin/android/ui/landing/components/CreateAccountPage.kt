@@ -26,13 +26,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.checkout.threedsobfuscation.fa
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.widget.components.MaterialWindowButton
 
 @Composable
 fun CreateAccountPage(
-    toMobile: () -> Unit,
+    toMobile: (Boolean) -> Unit,
     toMnemonic: () -> Unit,
     onConvenienceClick: () -> Unit,
     onPrivacyClick: () -> Unit,
@@ -42,7 +43,9 @@ fun CreateAccountPage(
     MixinAppTheme {
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             Spacer(modifier = Modifier.height(10.dp))
-            CreateItem(R.drawable.ic_create_mobile, R.string.Mobile_Phone, R.string.create_introduction, R.string.Convenience, toMobile) { onConvenienceClick.invoke() }
+            CreateItem(R.drawable.ic_create_mobile, R.string.Mobile_Phone, R.string.create_introduction, R.string.Convenience, onClick = {
+                toMobile.invoke(true)
+            }) { onConvenienceClick.invoke() }
             Spacer(modifier = Modifier.height(10.dp))
             CreateItem(R.drawable.ic_create_mnemonic_phrase, R.string.Mnemonic_Phrase, R.string.create_introduction, R.string.Privacy, toMnemonic) { onPrivacyClick.invoke() }
             Spacer(modifier = Modifier.height(10.dp))
@@ -63,7 +66,7 @@ fun CreateAccountPage(
                     }
                 })
             Spacer(modifier = Modifier.weight(1f))
-            MaterialWindowButton(onClick = { toMobile.invoke() }, title = stringResource(R.string.sign_up_have_account))
+            MaterialWindowButton(onClick = { toMobile.invoke(false) }, title = stringResource(R.string.sign_up_have_account))
             Spacer(modifier = Modifier.height(30.dp))
         }
     }
