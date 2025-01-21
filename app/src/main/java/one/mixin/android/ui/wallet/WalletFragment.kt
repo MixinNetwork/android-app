@@ -98,8 +98,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
-    private val sendBottomSheet = SendBottomSheet(this, -1, -1)
-
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
@@ -299,7 +297,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                sendBottomSheet.show(it)
+                                navTo(TransferDestinationSelectionFragment.newInstance(it), TransferDestinationSelectionFragment.TAG)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }
@@ -493,7 +491,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _binding = null
         _headBinding = null
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 

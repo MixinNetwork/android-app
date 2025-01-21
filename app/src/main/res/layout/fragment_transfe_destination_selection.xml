@@ -1,37 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/bg_upper_round"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="24dp">
-
-        <ImageView
-            android:id="@+id/send_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:contentDescription="@null"
-            android:foreground="@drawable/play_ripple"
-            android:src="@drawable/ic_circle_close" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginTop="16dp"
-            android:text="@string/Send_transfer"
-            android:textColor="?attr/text_primary"
-            android:textSize="18sp" />
-    </RelativeLayout>
+        app:need_divider="false"
+        app:titleText="@string/Destination" />
 
     <RelativeLayout
         android:id="@+id/address"

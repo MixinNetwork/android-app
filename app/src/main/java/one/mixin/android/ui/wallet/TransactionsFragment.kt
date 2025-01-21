@@ -78,7 +78,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     @Inject
     lateinit var tip: Tip
@@ -266,7 +265,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     override fun onDestroyView() {
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 
@@ -374,7 +372,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                sendBottomSheet.show(asset)
+                navTo(TransferDestinationSelectionFragment.newInstance(asset).apply {
+                    navContactAction = R.id.action_transactions_to_single_friend_select
+                    navAddressAction = R.id.action_transactions_to_address_management
+                }, TransferDestinationSelectionFragment.TAG)
             }
             sendReceiveView.receive.setOnClickListener {
                 if (!Session.saltExported() && Session.isAnonymous()) {

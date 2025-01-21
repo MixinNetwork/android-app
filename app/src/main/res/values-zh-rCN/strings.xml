@@ -1839,4 +1839,5 @@
     <string name="sell_token">卖出 %1$s</string>
     <string name="buy_token">买入 %1$s</string>
     <string name="NO_ORDERS">没有订单</string>
+    <string name="Destination">Destination</string>
 </resources>
