@@ -1833,7 +1833,7 @@
     <string name="State_Failed">失败</string>
     <string name="State_Refunded">已退款</string>
     <string name="price_change_24h">24 小时价格变化</string>
-    <string name="sell_token">售出 %1$s</string>
+    <string name="sell_token">卖出 %1$s</string>
     <string name="buy_token">买入 %1$s</string>
     <string name="NO_ORDERS">没有订单</string>
 </resources>

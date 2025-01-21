@@ -439,17 +439,17 @@ class SwapFragment : BaseFragment() {
                 ActionButtonData(
                     label = "${getString(R.string.buy_token, receiveAssetMarket.symbol)}",
                     color = "#50BD5C",
-                    action = "https://mixin.one/swap?input=$payAssetId&output=$receiveAssetId"
+                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$payAssetId&output=$receiveAssetId"
                 ),
                 ActionButtonData(
                     label = "${getString(R.string.sell_token, receiveAssetMarket.symbol)}",
                     color = "#DB454F",
-                    action = "https://mixin.one/swap?input=$receiveAssetId&output=$payAssetId"
+                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveAssetId&output=$payAssetId"
                 ),
                 ActionButtonData(
                     label = "${receiveAssetMarket.symbol} ${getString(R.string.Market)}",
                     color = "#3D75E3",
-                    action = "https://mixin.one/markets/$receiveAssetId"
+                    action = "${Constants.Scheme.HTTPS_MARKET}/$receiveAssetId"
                 )
             )
 
