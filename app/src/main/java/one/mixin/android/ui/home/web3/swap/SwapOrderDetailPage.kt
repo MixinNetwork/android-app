@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -42,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -164,51 +166,45 @@ fun SwapOrderDetailPage(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(44.dp)
+                                .wrapContentHeight()
                                 .padding(horizontal = 20.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MixinAppTheme.colors.backgroundWindow),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Button(
-                                onClick = {
-                                    onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
-                                },
-                                shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
-                                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
+                            Text(
+                                text = stringResource(R.string.Swap_Again),
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontWeight = FontWeight.W500,
+                                textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .weight(1f)
-                            ) {
-                                Text(
-                                    stringResource(R.string.Swap_Again),
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontWeight = FontWeight.W500,
-                                )
-                            }
+
+                                    .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
+                                    .clickable() {
+                                        onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
+                                    }
+                                    .padding(vertical = 10.dp)
+                            )
                             Box(
                                 modifier = Modifier
                                     .width(2.dp)
                                     .height(24.dp)
                                     .background(Color(0x0D000000))
                             )
-
-                            Button(
-                                onClick = {
-                                    onShare.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
-                                },
-                                shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
-                                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
+                            Text(
+                                text = stringResource(R.string.Share_Pair),
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontWeight = FontWeight.W500,
+                                textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .weight(1f)
-                            ) {
-                                Text(
-                                    stringResource(R.string.Share_Pair),
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontWeight = FontWeight.W500,
-                                )
-                            }
+                                    .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
+                                    .clickable() {
+                                        onShare.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
+                                    }
+                                    .padding(vertical = 10.dp)
+                            )
                         }
                         Spacer(modifier = Modifier.height(30.dp))
                     }
