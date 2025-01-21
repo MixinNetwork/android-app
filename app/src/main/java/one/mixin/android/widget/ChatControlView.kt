@@ -27,9 +27,6 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.VelocityTracker
 import android.view.View
-import android.view.View.OnClickListener
-import android.view.View.OnKeyListener
-import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -758,24 +755,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     @SuppressLint("CheckResult")
     private val onChatImgClickListener =
         OnClickListener {
-            RxPermissions(activity!! as FragmentActivity)
-                .request(
-                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-                    } else {
-                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    },
-                )
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            clickGallery()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
-                    {},
-                )
+            clickGallery()
         }
 
     private fun clickGallery() {

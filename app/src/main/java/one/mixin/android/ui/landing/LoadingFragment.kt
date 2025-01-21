@@ -115,7 +115,8 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 if (deviceId == null) {
                     deviceId = requireActivity().getStringDeviceId()
                 }
-                TipActivity.show(requireActivity(), TipBundle(TipType.Create, deviceId, TryConnecting, null))
+                val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+                TipActivity.show(requireActivity(), tipType, shouldWatch = true)
             }
             activity?.finish()
         }

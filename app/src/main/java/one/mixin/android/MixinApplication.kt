@@ -14,15 +14,18 @@ import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
-import androidx.startup.AppInitializer
 import androidx.work.Configuration
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import coil.decode.SvgDecoder
-import coil.decode.VideoFrameDecoder
-import coil.util.DebugLogger
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.network.cachecontrol.CacheControlCacheStrategy
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.svg.SvgDecoder
+import coil3.util.DebugLogger
+import coil3.video.VideoFrameDecoder
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
@@ -44,11 +47,12 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.di.ApplicationScope
@@ -98,7 +102,7 @@ open class MixinApplication :
     Application.ActivityLifecycleCallbacks,
     Configuration.Provider,
     CameraXConfig.Provider,
-    ImageLoaderFactory {
+    SingletonImageLoader.Factory {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface MixinJobManagerEntryPoint {
@@ -175,6 +179,9 @@ open class MixinApplication :
     }
 
     private fun initSentry() {
+        if (BuildConfig.SENTRYDSN.isBlank()) {
+            return
+        }
         SentryAndroid.init(this) { options ->
             options.dsn = BuildConfig.SENTRYDSN
             options.isEnableUserInteractionTracing = false
@@ -192,6 +199,9 @@ open class MixinApplication :
     }
 
     private fun initAppsFlyer() {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
         AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
                 Timber.d("AppsFlyer Conversion Data: $conversionData")
@@ -476,12 +486,13 @@ open class MixinApplication :
         return false
     }
 
+    @ExperimentalCoilApi
     @RequiresApi(Build.VERSION_CODES.P)
-    override fun newImageLoader(): ImageLoader {
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
         return ImageLoader.Builder(this)
-            .okHttpClient(
-                OkHttpClient.Builder()
-                    .addInterceptor { chain ->
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = {
+                    OkHttpClient.Builder().addInterceptor { chain ->
                         val original = chain.request()
                         val requestBuilder =
                             original.newBuilder()
@@ -489,23 +500,21 @@ open class MixinApplication :
                                 .method(original.method, original.body)
                         val request = requestBuilder.build()
                         chain.proceed(request)
-                    }
-                    .build(),
-            )
-            .components {
+                    }.build()
+                }, cacheStrategy = { CacheControlCacheStrategy() }))
                 if (SDK_INT >= Build.VERSION_CODES.P) {
-                    add(ImageDecoderDecoder.Factory())
+                    add(AnimatedImageDecoder.Factory())
                 } else {
                     add(GifDecoder.Factory())
                 }
-                add(VideoFrameDecoder.Factory())
                 add(SvgDecoder.Factory())
-            }
-            .apply {
+                add(VideoFrameDecoder.Factory())
+            }.apply {
                 if (BuildConfig.DEBUG) {
                     logger(DebugLogger())
                 }
             }
             .build()
     }
+
 }

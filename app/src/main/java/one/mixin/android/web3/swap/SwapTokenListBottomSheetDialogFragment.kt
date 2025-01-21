@@ -25,14 +25,13 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
@@ -41,22 +40,21 @@ import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val ARGS_TOKENS = "args_tokens"
         const val ARGS_KEY = "args_key"
         const val ARGS_UNIQUE = "args_unique"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
         fun newInstance(key: String, tokens: ArrayList<SwapToken>, selectUnique: String? = null) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
-                putParcelableArrayList(ARGS_TOKENS, tokens)
                 putString(ARGS_KEY, key)
                 putString(ARGS_UNIQUE, selectUnique)
+            }.also { fragment ->
+                fragment.setTokens(tokens)
             }
     }
 
@@ -79,6 +77,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private var isLoading = false
 
+    fun setTokens(newTokens: List<SwapToken>) {
+        tokens = newTokens
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     fun setLoading(loading: Boolean, list: List<SwapToken>? = null) {
         if (isLoading == loading) return
@@ -97,6 +99,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioSolana.isChecked = true
                 radioAll.isVisible = false
                 radioEth.isVisible = false
+                radioBase.isVisible = false
                 radioTron.isVisible = false
                 radioBsc.isVisible = false
                 radioPolygon.isVisible = false
@@ -104,6 +107,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioAll.isChecked = true
                 radioAll.isVisible = true
                 radioEth.isVisible = true
+                radioBase.isVisible = true
                 radioTron.isVisible = true
                 radioBsc.isVisible = true
                 radioPolygon.isVisible = true
@@ -115,6 +119,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                         R.id.radio_solana -> {
                             SOLANA_CHAIN_ID
+                        }
+
+                        R.id.radio_base -> {
+                            Base
                         }
 
                         R.id.radio_tron -> {
@@ -153,7 +161,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ) {
         dialog.setViewTreeOwners()
         super.setupDialog(dialog, style)
-        tokens = requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)!!
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
@@ -265,6 +272,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 binding.rvVa.displayedChild = 0
             }
+            binding.pb.isVisible = false
         }
 
     private suspend fun search(
@@ -274,7 +282,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         inMixin: Boolean,
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
-        if (localTokens.isEmpty()) binding.pb.isVisible = true
+        binding.pb.isVisible = true
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->

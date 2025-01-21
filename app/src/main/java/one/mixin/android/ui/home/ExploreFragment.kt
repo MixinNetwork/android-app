@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +23,6 @@ import one.mixin.android.databinding.FragmentExploreBinding
 import one.mixin.android.databinding.ItemFavoriteBinding
 import one.mixin.android.databinding.ItemFavoriteEditBinding
 import one.mixin.android.databinding.ItemFavoriteTitleBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.FavoriteEvent

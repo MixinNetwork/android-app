@@ -502,7 +502,8 @@
     <string name="fourth_pin_confirm_hint">这是最后一次确认 PIN，记住：PIN 丢失将永远无法找回！</string>
     <string name="Friday">星期五</string>
     <string name="From">来自</string>
-    <string name="Token_From">从</string>
+    <string name="swap_send">支付</string>
+    <string name="swap_receive">获得</string>
     <string name="Generating_keys">正在创建密钥…</string>
     <string name="Get_a_new_wallet">创建钱包</string>
     <string name="Go">导航</string>
@@ -1806,4 +1807,8 @@
     <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
     <string name="Deposits_Pending_Confirmation">有 %1$d 笔充值确认中</string>
     <string name="open_source">版权所有 Mixin Messenger\n根据 GPL-3.0 授权许可</string>
+    <string name="Partial_Photo_Access_Permission">您向 Mixin Messenger 授予了仅访问部分照片的权限。管理</string>
+    <string name="Manage">管理</string>
+    <string name="Select_More_Photos">选择更多照片</string>
+    <string name="Change_Permissions">更改权限</string>
 </resources>

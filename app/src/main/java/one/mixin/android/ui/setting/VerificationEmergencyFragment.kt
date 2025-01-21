@@ -131,6 +131,9 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                             ),
                         )
                         .setPositiveButton(R.string.OK) { dialog, _ ->
+                            if (requireActivity() is SettingActivity) {
+                                requireActivity().finish()
+                            }
                             parentFragmentManager.popBackStackImmediate()
                             parentFragmentManager.popBackStackImmediate()
                             dialog.dismiss()

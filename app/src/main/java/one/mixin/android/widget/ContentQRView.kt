@@ -15,6 +15,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewContentQrBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
@@ -22,9 +23,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.extension.dp
 import kotlin.math.max
-
 
 class ContentQRView : ViewAnimator {
     constructor(context: Context) : this(context, null)

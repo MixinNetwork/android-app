@@ -514,7 +514,8 @@
     <string name="fourth_pin_confirm_hint">Yes, there is a fourth PIN confirmation, and I promise it\'s the last one to ensure you have remembered your PIN. The PIN is unrecoverable if lost.</string>
     <string name="Friday">Friday</string>
     <string name="From">From</string>
-    <string name="Token_From">From</string>
+    <string name="swap_send">Send</string>
+    <string name="swap_receive">Receive</string>
     <string name="Generating_keys">Generating keys…</string>
     <string name="Get_a_new_wallet">Get a new wallet</string>
     <string name="GIF">GIF</string>
@@ -1486,6 +1487,7 @@
     <string name="Polygon">Polygon</string>
     <string name="BSC">BSC</string>
     <string name="Solana">Solana</string>
+    <string name="Base">Base</string>
     <string name="Tron">Tron</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
@@ -1843,4 +1845,8 @@
     <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
     <string name="Deposits_Pending_Confirmation">%1$d Deposits Pending Confirmation</string>
     <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
+    <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
+    <string name="Manage">Manage</string>
+    <string name="Select_More_Photos">Select More Photos</string>
+    <string name="Change_Permissions">Change Permissions</string>
 </resources>

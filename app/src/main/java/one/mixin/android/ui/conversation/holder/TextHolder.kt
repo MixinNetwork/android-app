@@ -15,7 +15,6 @@ import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.doubleClickVibrate
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage

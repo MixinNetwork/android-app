@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAccountBinding
 import one.mixin.android.extension.alert
@@ -11,12 +10,10 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

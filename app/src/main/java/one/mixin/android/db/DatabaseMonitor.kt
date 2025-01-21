@@ -28,12 +28,12 @@ object DatabaseMonitor {
         sqlQuery: String,
         args: List<Any?>,
     ) {
-        if (!BuildConfig.DEBUG || !enable) return
+        if (!enable) return
         MonitorPrinter.print(sqlQuery, args)
     }
 
     fun log(log: String) {
-        if (!BuildConfig.DEBUG || !enable) return
+        if (!enable) return
         Timber.wtf(log)
     }
 }
