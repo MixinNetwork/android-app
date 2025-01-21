@@ -123,7 +123,7 @@ class NewSchemeParser(
                 }
                 val traces = invoice.entries.map { it.traceId }
                 val response = linkViewModel.transactionsFetch(traces)
-                if (response.isSuccess && response.data != null) {
+                if (response.isSuccess && response.data.isNullOrEmpty().not()) {
                     return if ((response.data?.size ?: 0) == traces.size) {
                         Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
                     } else {

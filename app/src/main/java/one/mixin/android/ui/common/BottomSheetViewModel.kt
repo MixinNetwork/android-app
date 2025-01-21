@@ -90,6 +90,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
+import one.mixin.android.vo.VerifyTransactionData
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
@@ -240,7 +241,7 @@ class BottomSheetViewModel
                     val feeChangeKeys = data[2].keys.joinToString(",")
                     val feeChangeMask = data[2].mask
                     val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold.toInt(), feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
-                    withdrawalRequests.add(TransactionRequest(feeTx, feeTraceId))
+                    withdrawalRequests.add(TransactionRequest(feeTx.raw, feeTraceId))
                     feeTx
                 } else {
                     null
@@ -267,7 +268,7 @@ class BottomSheetViewModel
                     feeUtxos ?: throw NullPointerException("Lost fee UTXO")
                     feeData ?: throw NullPointerException("Lost fee fee data")
                     val feeViews = feeData.views!!.joinToString(",")
-                    val signFee = Kernel.signTx(feeTx, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
+                    val signFee = Kernel.signTx(feeTx!!.raw, feeUtxos.formatKeys, feeViews, spendKey.toHex(), false)
                     val signFeeResult = SignResult(signFee.raw, signFee.change)
                     rawRequest.add(TransactionRequest(signFeeResult.raw, feeTraceId))
                     Timber.e("Kernel Withdrawal($traceId): db begin")
@@ -409,7 +410,7 @@ class BottomSheetViewModel
 
             val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo, reference ?: "")
             Timber.e("Kernel Address Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
-            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
+            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx.raw, trace)))
             if (transactionResponse.error != null) {
                 Timber.e("Kernel Address Transaction($trace): request transaction error ${transactionResponse.errorDescription}")
                 return transactionResponse
@@ -423,7 +424,7 @@ class BottomSheetViewModel
             // Workaround with only the case of a single transfer
             val views = transactionResponse.data!!.first().views!!.joinToString(",")
             val keys = utxoWrapper.formatKeys
-            val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
+            val sign = Kernel.signTx(tx.raw, keys, views, spendKey.toHex(), false)
             val signResult = SignResult(sign.raw, sign.change)
             Timber.e("Kernel Address Transaction($trace): db begin")
             withContext(SINGLE_DB_THREAD) {
@@ -492,7 +493,7 @@ class BottomSheetViewModel
             val tx = Kernel.buildTx(asset, amount, threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, memo, reference ?: "")
 
             Timber.e("Kernel Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
-            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
+            val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx.raw, trace)))
             if (transactionResponse.error != null) {
                 Timber.e("Kernel Transaction($trace): request transaction error ${transactionResponse.errorDescription}")
                 return transactionResponse
@@ -506,7 +507,7 @@ class BottomSheetViewModel
             // Workaround with only the case of a single transfer
             val views = transactionResponse.data!!.first().views!!.joinToString(",")
             val keys = utxoWrapper.formatKeys
-            val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
+            val sign = Kernel.signTx(tx.raw, keys, views, spendKey.toHex(), false)
             val signResult = SignResult(sign.raw, sign.change)
             Timber.e("Kernel Transaction($trace): db begin")
             withContext(SINGLE_DB_THREAD) {
@@ -595,9 +596,9 @@ class BottomSheetViewModel
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val recipient = invoice.recipient
             val senderIds = listOf(Session.getAccountId()!!)
-            val verifyTransactions = mutableListOf<TransactionResponse>()
+            val verifyTransactionDatas = mutableListOf<VerifyTransactionData>()
             val signedTransactions = mutableListOf<SignedTransaction>()
-            Timber.e("Kernel Invoice Transaction(${invoice.entries.map { it.traceId }.joinToString(",")}): begin")
+            Timber.e("Kernel Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
             invoice.entries.forEach { entry ->
                 val amount = entry.amountString()
                 val assetId = entry.assetId
@@ -631,7 +632,7 @@ class BottomSheetViewModel
                 val changeMask = data.last().mask
                 val reference = entry.references.joinToString(",") { reference ->
                     if (reference is Reference.IndexValue) {
-                        verifyTransactions.getOrNull(reference.value)?.transactionHash ?: throw IllegalArgumentException("Reference not found")
+                        verifyTransactionDatas.getOrNull(reference.value)?.hash ?: throw IllegalArgumentException("Reference not found")
                     } else if (reference is Reference.HashValue) {
                         reference.value
                     } else {
@@ -640,29 +641,32 @@ class BottomSheetViewModel
                     }
                 }
                 val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
-                val verifyTransaction = tokenRepository.transactionRequest(listOf(TransactionRequest(tx, trace)))
-                if (verifyTransaction.error != null) {
-                    Timber.e("Kernel Invoice Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
-                    return verifyTransaction
-                } else if ((verifyTransaction.data?.size ?: 0) > 1) {
-                    Timber.e("Kernel Invoice Transaction($trace): Parameter exception")
-                    throw IllegalArgumentException("Parameter exception")
-                } else if (verifyTransaction.data?.first()?.state != OutputState.unspent.name) {
-                    Timber.e("Kernel Invoice Transaction($trace): Transfer is already paid")
-                    throw IllegalArgumentException("Transfer is already paid")
-                }
-                verifyTransaction.data?.first() ?: throw IllegalArgumentException("Kernel Invoice Transaction($trace): Verify transaction is null")
-                verifyTransactions.add(verifyTransaction.data!!.first())
-
-                val views = verifyTransaction.data!!.first().views!!.joinToString(",")
-                val keys = utxoWrapper.formatKeys
-                val sign = Kernel.signTx(tx, keys, views, spendKey.toHex(), false)
-                val signResult = SignResult(sign.raw, sign.change)
-                signedTransactions.add(SignedTransaction(trace, signResult, utxoWrapper.ids, asset, assetId, sign.hash, changeMask, data.last().keys, utxoWrapper.lastOutput, amount, String(entry.extra), reference))
+                verifyTransactionDatas.add(VerifyTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference))
             }
+            val verifyTransaction = tokenRepository.transactionRequest(verifyTransactionDatas.map { TransactionRequest(it.raw, it.trace) })
+            if (verifyTransaction.error != null) {
+                Timber.e("Kernel Invoice Transaction: request transaction error ${verifyTransaction.errorDescription}")
+                return verifyTransaction
+            } else if ((verifyTransaction.data?.size ?: 0) != verifyTransactionDatas.size) {
+                Timber.e("Kernel Invoice Transaction: Parameter exception")
+                throw IllegalArgumentException("Parameter exception")
+            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+                Timber.e("Kernel Invoice Transaction: Transfer is already paid")
+                throw IllegalArgumentException("Transfer is already paid")
+            }
+
+            verifyTransaction.data!!.forEachIndexed { index, data ->
+                val verifyTransactionData = verifyTransactionDatas[index]
+                val views = data.views!!.joinToString(",")
+                val keys = verifyTransactionData.utxoWrapper.formatKeys
+                val sign = Kernel.signTx(verifyTransactionData.raw, keys, views, spendKey.toHex(), false)
+                val signResult = SignResult(sign.raw, sign.change)
+                signedTransactions.add(SignedTransaction(verifyTransactionData.trace, signResult, verifyTransactionData.utxoWrapper.ids, verifyTransactionData.asset, verifyTransactionData.assetId, sign.hash, verifyTransactionData.changeMask, verifyTransactionData.keys, verifyTransactionData.utxoWrapper.lastOutput, verifyTransactionData.amount, String(verifyTransactionData.extra), verifyTransactionData.reference))
+            }
+
             withContext(SINGLE_DB_THREAD) {
                 runInTransaction {
-                    signedTransactions.forEach { t->
+                    signedTransactions.forEach { t ->
                         if (t.signResult.change != null) {
                             val changeOutput = changeToOutput(t.signResult.change, t.asset, t.changeMask, t.keys, t.lastOutput)
                             Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert change")
