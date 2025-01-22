@@ -3,6 +3,7 @@ package one.mixin.android.vo.route
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
@@ -11,7 +12,10 @@ import one.mixin.android.db.converter.ListConverter
 
 @Parcelize
 @TypeConverters(ListConverter::class)
-@Entity(tableName = "swap_orders")
+@Entity(
+    tableName = "swap_orders",
+    indices = [Index(value = ["created_at"], orders = [Index.Order.DESC])],
+)
 data class SwapOrder(
     @PrimaryKey
     @ColumnInfo(name = "order_id")

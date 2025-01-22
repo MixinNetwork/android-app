@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 64,
-    "identityHash": "106caa381209f157889543b7c3c1559e",
+    "identityHash": "fa61c437b1e1a4215707dc9266ec2b0c",
     "entities": [
       {
         "tableName": "users",
@@ -3512,14 +3512,26 @@
             "order_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_swap_orders_created_at",
+            "unique": false,
+            "columnNames": [
+              "created_at"
+            ],
+            "orders": [
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_swap_orders_created_at` ON `${TABLE_NAME}` (`created_at` DESC)"
+          }
+        ],
         "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '106caa381209f157889543b7c3c1559e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fa61c437b1e1a4215707dc9266ec2b0c')"
     ]
   }
 }
