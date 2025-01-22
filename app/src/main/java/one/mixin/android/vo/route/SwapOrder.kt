@@ -14,7 +14,9 @@ import one.mixin.android.db.converter.ListConverter
 @TypeConverters(ListConverter::class)
 @Entity(
     tableName = "swap_orders",
-    indices = [Index(value = ["created_at"], orders = [Index.Order.DESC])],
+    indices = [
+        Index(value = ["state", "created_at"])
+    ],
 )
 data class SwapOrder(
     @PrimaryKey
