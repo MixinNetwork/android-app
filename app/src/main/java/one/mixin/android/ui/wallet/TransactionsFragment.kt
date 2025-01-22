@@ -52,6 +52,7 @@ import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -278,6 +279,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             handleMixinResponse(
                 invokeNetwork = {
                     walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
+                },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
                 },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
