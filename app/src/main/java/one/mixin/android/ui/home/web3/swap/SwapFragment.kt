@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
@@ -162,6 +163,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
+    @FlowPreview
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -307,7 +309,7 @@ class SwapFragment : BaseFragment() {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
                 val data = if (list.isEmpty()) {
-                    ArrayList(tokenItems?.map { it.toSwapToken() })
+                    ArrayList(tokenItems?.map { it.toSwapToken() } ?: emptyList())
                 } else {
                     ArrayList(list)
                 }
@@ -416,7 +418,7 @@ class SwapFragment : BaseFragment() {
     private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
         val formatVol = try {
             BigDecimal(vol).multiply(rate).numberFormatCompact()
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             null
         }
         if (formatVol != null) {
@@ -639,7 +641,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
+    private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
             setOnDone {
                 initialAmount = null
