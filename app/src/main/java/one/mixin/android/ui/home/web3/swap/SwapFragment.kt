@@ -462,7 +462,7 @@ class SwapFragment : BaseFragment() {
                 ActionButtonData(
                     label = "${receiveAssetMarket.symbol} ${getString(R.string.Market)}",
                     color = "#3D75E3",
-                    action = "${Constants.Scheme.HTTPS_MARKET}/$receiveId"
+                    action = "${Constants.Scheme.HTTPS_MARKET}/${receiveAssetMarket.coinId}"
                 )
             )
 
