@@ -23,6 +23,7 @@ import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highLightMao
 import one.mixin.android.extension.spToPx
+import one.mixin.android.util.UserBatchProcessor
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -388,6 +389,7 @@ class NameTextView : LinearLayoutCompat {
 
     fun setMessageName(message: MessageItem) {
         this.textView.text = message.userFullName
+        UserBatchProcessor.getInstance().addUser(message.userId)
         if (message.isProsperity()) {
             iconView.isVisible = true
             iconView.setImageDrawable(
@@ -556,6 +558,9 @@ class NameTextView : LinearLayoutCompat {
 
     fun setName(conversationItem: ConversationItem) {
         this.textView.text = conversationItem.getConversationName()
+        if (!conversationItem.isGroupConversation()) {
+            UserBatchProcessor.getInstance().addUser(conversationItem.ownerId)
+        }
         if (conversationItem.isProsperity()) {
             iconView.isVisible = true
             iconView.setImageDrawable(

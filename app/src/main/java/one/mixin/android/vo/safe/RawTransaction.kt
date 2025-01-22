@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey
     tableName = "raw_transactions",
     indices = [
         Index(value = arrayOf("state", "type")),
+        Index(value = arrayOf("transaction_hash")),
     ],
 )
 data class RawTransaction(
@@ -27,6 +28,8 @@ data class RawTransaction(
     val createdAt: String,
     @ColumnInfo(name = "inscription_hash")
     val inscriptionHash: String?,
+    @ColumnInfo(name = "transaction_hash")
+    val transactionHash: String?
 )
 
 fun formatDestination(

@@ -2,6 +2,8 @@ package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
@@ -12,6 +14,7 @@ import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
+import one.mixin.android.vo.UserFetchTime
 import one.mixin.android.vo.UserItem
 
 @Dao
@@ -29,6 +32,7 @@ interface UserDao : BaseDao<User> {
             user.relationship = relationship
             update(user)
         }
+        insertFetch(UserFetchTime(user.userId, System.currentTimeMillis()))
     }
 
     @Transaction
@@ -45,6 +49,10 @@ interface UserDao : BaseDao<User> {
         }
         appDao.insertList(apps)
         insertList(users)
+        val currentTime = System.currentTimeMillis()
+        insertAllFetch(users.map { user ->
+            UserFetchTime(user.userId, currentTime)
+        })
     }
 
     @Transaction
@@ -62,7 +70,21 @@ interface UserDao : BaseDao<User> {
         } else {
             update(user)
         }
+        insertFetch(UserFetchTime(user.userId, System.currentTimeMillis()))
     }
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertFetch(userFetchTime: UserFetchTime)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAllFetch(userFetchTimes: List<UserFetchTime>)
+
+    @Query("""
+        SELECT user_id FROM user_fetch_times 
+        WHERE user_id IN (:userIds) 
+        AND (strftime('%s','now') - last_fetch_at) < 24 * 60 * 60 * 1000
+    """)
+    suspend fun filterUserIdsNotFetchedIn24Hours(userIds: List<String>): List<String>
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, identity_number ASC")
     fun findFriends(): LiveData<List<User>>

@@ -83,6 +83,7 @@ import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
+import one.mixin.android.util.UserBatchProcessor
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.mlkit.entityInitialize
@@ -307,7 +308,7 @@ open class MixinApplication :
             activity.shouldLogout = true
             return
         }
-
+        UserBatchProcessor.getInstance().shutdown()
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
