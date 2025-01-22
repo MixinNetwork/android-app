@@ -46,6 +46,7 @@ import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.priceFormat
@@ -73,6 +74,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -427,64 +429,129 @@ class SwapFragment : BaseFragment() {
         dialog.show()
         runCatching {
             var payId = payAssetId
-            var receiveId = if (receiveAssetId in DepositFragment.usdcAssets || receiveAssetId in DepositFragment.usdtAssets) {
-                payId = receiveAssetId
-                payAssetId
-            } else {
-                receiveAssetId
-            }
+            var receiveId =
+                if (receiveAssetId in DepositFragment.usdcAssets || receiveAssetId in DepositFragment.usdtAssets) {
+                    payId = receiveAssetId
+                    payAssetId
+                } else {
+                    receiveAssetId
+                }
 
-            val payAssetMarket = swapViewModel.checkMarketById(payId)
-            val receiveAssetMarket = swapViewModel.checkMarketById(receiveId)
-            if (payAssetMarket == null || receiveAssetMarket == null) {
+            var forwardMessage: ForwardMessage? = null
+            swapViewModel.checkMarketById(receiveId)?.let { market ->
+                forwardMessage = buildForwardMessage(market, payId, receiveId)
+            }
+            if (forwardMessage == null) {
+                swapViewModel.syncAsset(receiveId)?.let { token ->
+                    forwardMessage = buildForwardMessage(token, payId, receiveId)
+                }
+            }
+            if (forwardMessage == null) {
                 toast(R.string.Data_error)
                 return@runCatching
             }
-
-            val description = buildString {
-                append("🔥 ${receiveAssetMarket.name} (${receiveAssetMarket.symbol})\n\n")
-                append("📈 ${getString(R.string.Market_Cap)}: ${capFormat(receiveAssetMarket.marketCap, BigDecimal(Fiats.getRate()), Fiats.getSymbol())}\n")
-                append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(receiveAssetMarket.currentPrice).priceFormat()}\n")
-                append("💰 ${getString(R.string.price_change_24h)}: ${receiveAssetMarket.marketCapChangePercentage24h}%")
-            }
-
-            val actions = listOf(
-                ActionButtonData(
-                    label = "${getString(R.string.buy_token, receiveAssetMarket.symbol)}",
-                    color = "#50BD5C",
-                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
-                ),
-                ActionButtonData(
-                    label = "${getString(R.string.sell_token, receiveAssetMarket.symbol)}",
-                    color = "#DB454F",
-                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
-                ),
-                ActionButtonData(
-                    label = "${receiveAssetMarket.symbol} ${getString(R.string.Market)}",
-                    color = "#3D75E3",
-                    action = "${Constants.Scheme.HTTPS_MARKET}/${receiveAssetMarket.coinId}"
-                )
-            )
-
-            val appCard = AppCardData(
-                appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
-                iconUrl = null,
-                coverUrl = null,
-                cover = null,
-                title = "${getString(R.string.Swap)} ${receiveAssetMarket.symbol}",
-                description = description,
-                action = null,
-                updatedAt = null,
-                shareable = true,
-                actions = actions,
-            )
-
-            val forwardMessage = ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
             ForwardActivity.show(requireContext(), arrayListOf(forwardMessage), ForwardAction.App.Resultless(null, getString(R.string.Share)))
         }.onFailure { e ->
             ErrorHandler.handleError(e)
         }
         dialog.dismiss()
+    }
+
+    private fun buildForwardMessage(marketItem: MarketItem, payId: String, receiveId: String): ForwardMessage {
+        val description = buildString {
+            append("🔥 ${marketItem.name} (${marketItem.symbol})\n\n")
+            append(
+                "📈 ${getString(R.string.Market_Cap)}: ${
+                    capFormat(
+                        marketItem.marketCap,
+                        BigDecimal(Fiats.getRate()),
+                        Fiats.getSymbol()
+                    )
+                }\n"
+            )
+            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(marketItem.currentPrice).priceFormat()}\n")
+            append("💰 ${getString(R.string.price_change_24h)}: ${marketItem.priceChangePercentage24H}%")
+        }
+
+        val actions = listOf(
+            ActionButtonData(
+                label = "${getString(R.string.buy_token, marketItem.symbol)}",
+                color = "#50BD5C",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+            ),
+            ActionButtonData(
+                label = "${getString(R.string.sell_token, marketItem.symbol)}",
+                color = "#DB454F",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
+            ),
+            ActionButtonData(
+                label = "${marketItem.symbol} ${getString(R.string.Market)}",
+                color = "#3D75E3",
+                action = "${Constants.Scheme.HTTPS_MARKET}/${marketItem.coinId}"
+            )
+        )
+
+        val appCard = AppCardData(
+            appId = ROUTE_BOT_USER_ID,
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = "${getString(R.string.Swap)} ${marketItem.symbol}",
+            description = description,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = actions,
+        )
+
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
+    }
+
+    private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String):ForwardMessage {
+        val description = buildString {
+            append("🔥 ${token.name} (${token.symbol})\n\n")
+            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
+            append(
+                "💰 ${getString(R.string.price_change_24h)}: ${
+                    runCatching { "${(BigDecimal(token.changeUsd) * BigDecimal(100)).numberFormat2()}%" }.getOrDefault(
+                        "N/A"
+                    )
+                }"
+            )
+        }
+
+        val actions = listOf(
+            ActionButtonData(
+                label = "${getString(R.string.buy_token, token.symbol)}",
+                color = "#50BD5C",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+            ),
+            ActionButtonData(
+                label = "${getString(R.string.sell_token, token.symbol)}",
+                color = "#DB454F",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
+            ),
+            ActionButtonData(
+                label = "${token.symbol} ${getString(R.string.Market)}",
+                color = "#3D75E3",
+                action = "${Constants.Scheme.HTTPS_MARKET}/${token.assetId}"
+            )
+        )
+
+        val appCard = AppCardData(
+            appId = ROUTE_BOT_USER_ID,
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = "${getString(R.string.Swap)} ${token.symbol}",
+            description = description,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = actions,
+        )
+
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
     }
 
     private fun saveQuoteToken(

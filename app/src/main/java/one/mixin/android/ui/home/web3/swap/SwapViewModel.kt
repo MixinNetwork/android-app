@@ -126,6 +126,10 @@ class SwapViewModel
        return tokenRepository.findAssetItemById(assetId)
     }
 
+    suspend fun syncAsset(assetId: String): TokenItem? = withContext(Dispatchers.IO) {
+        tokenRepository.syncAsset(assetId)
+    }
+
     suspend fun allAssetItems() = tokenRepository.allAssetItems()
 
     fun swapOrders() = tokenRepository.swapOrders()
@@ -142,7 +146,7 @@ class SwapViewModel
     }
 
     suspend fun checkMarketById(assetId: String): MarketItem? = withContext(Dispatchers.IO) {
-        return@withContext tokenRepository.checkMarketById(assetId)
+        return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
 }
