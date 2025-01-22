@@ -244,6 +244,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private var currentChain: String? = null
         set(value) {
+            field = value
             adapter.all = currentChain == null
         }
 
