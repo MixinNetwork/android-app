@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -277,48 +278,52 @@ fun SwapPage(
                         )
 
                         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            if (errorInfo.isNullOrBlank()) {
-                                Column(
-                                    modifier = Modifier
-                                        .alpha(if (quoteResult == null) 0f else 1f)
-                                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .padding(20.dp),
-                                ) {
-                                    quoteResult?.let { quote ->
-                                        val rate = quote.rate(fromToken, toToken)
-                                        if (rate != BigDecimal.ZERO) {
-                                            PriceInfo(
-                                                fromToken = fromToken!!,
-                                                toToken = toToken,
-                                                isLoading = isLoading,
-                                                exchangeRate = rate,
-                                                onPriceExpired = {
-                                                    invalidFlag = !invalidFlag
-                                                }
-                                            )
-                                        }
-                                        if (!from.inMixin()) {
-                                            SlippageInfo(slippageBps, rate != BigDecimal.ZERO, onShowSlippage)
+                            Box(modifier = Modifier.heightIn(min = 72.dp)) {
+                                if (errorInfo.isNullOrBlank()) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(horizontal = 20.dp)
+                                            .alpha(if (quoteResult == null) 0f else 1f),
+                                    ) {
+                                        quoteResult?.let { quote ->
+                                            val rate = quote.rate(fromToken, toToken)
+                                            if (rate != BigDecimal.ZERO) {
+                                                PriceInfo(
+                                                    fromToken = fromToken!!,
+                                                    toToken = toToken,
+                                                    isLoading = isLoading,
+                                                    exchangeRate = rate,
+                                                    onPriceExpired = {
+                                                        invalidFlag = !invalidFlag
+                                                    }
+                                                )
+                                            }
+                                            if (!from.inMixin()) {
+                                                SlippageInfo(
+                                                    slippageBps,
+                                                    rate != BigDecimal.ZERO,
+                                                    onShowSlippage
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            } else {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                                ) {
-                                    Text(
-                                        text = errorInfo ?: "",
-                                        style = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = MixinAppTheme.colors.tipError,
-                                        ),
-                                    )
-                                    Spacer(modifier = Modifier.height(42.dp))
+                                } else {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                                    ) {
+                                        Text(
+                                            text = errorInfo ?: "",
+                                            style = TextStyle(
+                                                fontSize = 14.sp,
+                                                color = MixinAppTheme.colors.tipError,
+                                            ),
+                                        )
+                                    }
                                 }
                             }
                             Spacer(modifier = Modifier.height(20.dp))
@@ -461,7 +466,9 @@ fun InputArea(
                     ),
                     modifier = Modifier
                         .alpha(
-                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0) 1f
+                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()
+                                    ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
+                            ) 1f
                             else 0f
                         )
                         .clickable { onDeposit?.invoke(t) },
