@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.session.Session
@@ -16,18 +17,21 @@ import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
+import one.mixin.android.ui.common.biometric.buildInvoiceBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.CollectionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferInvoiceBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
+import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -105,6 +109,35 @@ class NewSchemeParser(
                     val addressTransferBiometricItem = AddressTransferBiometricItem(urlQueryParser.lastPath, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                     checkRawTransaction(addressTransferBiometricItem)
                 }
+            } else if (payType  == PayType.Invoice) {
+                val invoice = urlQueryParser.mixInvoice
+                invoice.recipient.members().filter {
+                    it.isUUID()
+                }.forEach {
+                    linkViewModel.refreshUser(it) ?: return Result.failure(ParserError(FAILURE))
+                }
+                val rawTransaction = linkViewModel.firstUnspentTransaction()
+                if (rawTransaction != null) {
+                    WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+                    return Result.success(SUCCESS)
+                }
+                val traces = invoice.entries.map { it.traceId }
+                val response = linkViewModel.transactionsFetch(traces)
+                if (response.isSuccess && response.data.isNullOrEmpty().not()) {
+                    return if ((response.data?.size ?: 0) == traces.size) {
+                        Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
+                    } else {
+                        Result.failure(ParserError(FAILURE))
+                    }
+                }
+                invoice.entries.forEach { entry ->
+                    if (!checkUtxo(entry.assetId, entry.amountString())) {
+                        return Result.success(SUCCESS)
+                    }
+                }
+                val bottom = TransferInvoiceBottomSheetDialogFragment.newInstance(invoice.toString())
+                bottom.show(bottomSheet.parentFragmentManager, TransferInvoiceBottomSheetDialogFragment.TAG)
+                return Result.success(SUCCESS)
             } else {
                 val token: TokenItem? =
                     if (asset != null) {
@@ -323,6 +356,17 @@ class NewSchemeParser(
         } else {
             callback.invoke()
         }
+    }
+
+    private suspend fun checkUtxo(assetId: String, amount: String): Boolean {
+        val consolidationAmount = linkViewModel.checkUtxoSufficiency(assetId, amount)
+        if (consolidationAmount != null) {
+            val asset = checkToken(assetId) ?: return false
+            UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+            return false
+        }
+        return true
     }
 
     private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {

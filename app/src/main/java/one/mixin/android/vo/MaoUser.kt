@@ -33,15 +33,16 @@ fun User.toMaoUser(maoName: String): MaoUser {
 }
 
 fun String.completeMao(): String {
-    return if (isMao())
-        this
+    val text = this.lowercase()
+    return if (text.isMao())
+        text
     else {
         when {
-            endsWith(".mao") -> this
-            endsWith(".") -> "${this}mao"
-            endsWith(".m") -> "${this}ao"
-            endsWith(".ma") -> "${this}o"
-            else -> "${this}.mao"
+            endsWith(".mao") -> text
+            endsWith(".") -> "${text}mao"
+            endsWith(".m") -> "${text}ao"
+            endsWith(".ma") -> "${text}o"
+            else -> "${text}.mao"
         }
     }
 }

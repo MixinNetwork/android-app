@@ -86,6 +86,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -148,10 +149,12 @@ fun SwapPage(
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
                             viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
                                 .onSuccess { value ->
+                                    AnalyticsTracker.trackSwapQuote("success")
                                     quoteResult = value
                                     isLoading = false
                                 }
                                 .onFailure { exception ->
+                                    AnalyticsTracker.trackSwapQuote("failure")
                                     if (exception is CancellationException) return@onFailure
                                     errorInfo = exception.message
                                     quoteResult = null

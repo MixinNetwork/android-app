@@ -102,6 +102,7 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
+    <string name="ASSET_CHANGES">ASSET CHANGES</string>
     <string name="MAO">MAO</string>
     <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
@@ -1845,6 +1846,9 @@
     <string name="Deposit_Pending_Confirmation">%1$s Pending Confirmation</string>
     <string name="Deposits_Pending_Confirmation">%1$d Deposits Pending Confirmation</string>
     <string name="open_source"> Copyright Mixin Messenger\nLicensed under the GPLv3</string>
+    <string name="asset_changes">Asset changes</string>
+    <string name="asset_changes_estimate">Asset changes (estimate)</string>
+    <string name="Confirm_Transfer_in_Batches">Confirm Transfer in Batches</string>
     <string name="Partial_Photo_Access_Permission">You have granted Mixin Messenger permission to access only part of your photos. Manage</string>
     <string name="Manage">Manage</string>
     <string name="Select_More_Photos">Select More Photos</string>

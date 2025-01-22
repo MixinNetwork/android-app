@@ -99,6 +99,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -1021,6 +1022,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (input != null && input.isUUID()) {
             checkToken(input)
         }
+        AnalyticsTracker.trackSwapStart("mixin", "url")
         SwapActivity.show(requireContext(), input, output, amount)
         dismiss()
     }
