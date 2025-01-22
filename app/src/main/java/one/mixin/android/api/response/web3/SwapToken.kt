@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
+import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -91,61 +92,58 @@ interface Swappable : Parcelable {
     fun getUnique(): String
 }
 
-fun List<SwapToken>.sortByKeywordAndBalance(keyword: String?): List<SwapToken> {
-    return sortedWith { a, b ->
-        when {
-            !keyword.isNullOrBlank() -> {
-                val aMatchLevel = getMatchLevel(a, keyword)
-                val bMatchLevel = getMatchLevel(b, keyword)
+fun List<SwapToken>.sortByKeywordAndBalance(query: String?): List<SwapToken> {
+    return this.sortedWith(
+        Comparator { o1, o2 ->
+            if (o1 == null && o2 == null) return@Comparator 0
+            if (o1 == null) return@Comparator 1
+            if (o2 == null) return@Comparator -1
 
-                when {
-                    aMatchLevel != bMatchLevel -> bMatchLevel.compareTo(aMatchLevel)
-                    else -> a.symbol.compareTo(b.symbol)
+            val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
+            val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
+            if (equal2Keyword1 && !equal2Keyword2) {
+                return@Comparator -1
+            } else if (!equal2Keyword1 && equal2Keyword2) {
+                return@Comparator 1
+            }
+
+            val priceFiat1 = calculateTokenValue(o1)
+            val priceFiat2 = calculateTokenValue(o2)
+            val capitalization1 = priceFiat1 * BigDecimal(o1.balance)
+            val capitalization2 = priceFiat2 * BigDecimal(o2.balance)
+            if (capitalization1 != capitalization2) {
+                if (capitalization2 > capitalization1) {
+                    return@Comparator 1
+                } else if (capitalization2 < capitalization1) {
+                    return@Comparator -1
                 }
             }
 
-            else -> {
-                compareByBalanceAndPrice(a, b)
+            if (priceFiat1 == BigDecimal.ZERO && priceFiat2 != BigDecimal.ZERO) {
+                return@Comparator 1
+            } else if (priceFiat1 != BigDecimal.ZERO && priceFiat2 == BigDecimal.ZERO) {
+                return@Comparator -1
             }
-        }
-    }
-}
 
-private fun getMatchLevel(token: SwapToken, keyword: String): Int {
-    val symbolLower = token.symbol.lowercase()
-    val keywordLower = keyword.lowercase()
-
-    return when {
-        symbolLower == keywordLower -> 2
-        symbolLower.startsWith(keywordLower) -> 1
-        else -> 0
-    }
-}
-
-private fun compareByBalanceAndPrice(a: SwapToken, b: SwapToken): Int {
-    val aValue = calculateTokenValue(a)
-    val bValue = calculateTokenValue(b)
-
-    return when {
-        aValue != BigDecimal.ZERO || bValue != BigDecimal.ZERO -> bValue.compareTo(aValue)
-        else -> {
-            when {
-                !a.balance.isNullOrBlank() && !b.balance.isNullOrBlank() ->
-                    b.balance!!.compareTo(a.balance!!)
-
-                !a.balance.isNullOrBlank() -> -1
-                !b.balance.isNullOrBlank() -> 1
-                else -> a.symbol.compareTo(b.symbol)
+            val hasIcon1 = o1.icon != defaultIcon
+            val hasIcon2 = o2.icon != defaultIcon
+            if (hasIcon1 && !hasIcon2) {
+                return@Comparator -1
+            } else if (!hasIcon1 && hasIcon2) {
+                return@Comparator 1
             }
+
+            return@Comparator o1.name.compareTo(o2.name)
         }
-    }
+    )
 }
+
+private const val defaultIcon = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
 
 private fun calculateTokenValue(token: SwapToken): BigDecimal {
     if (token.balance.isNullOrBlank() || token.price.isNullOrBlank()) {
         return BigDecimal.ZERO
     }
-
     return try {
         BigDecimal(token.balance).multiply(BigDecimal(token.price))
     } catch (e: Exception) {
