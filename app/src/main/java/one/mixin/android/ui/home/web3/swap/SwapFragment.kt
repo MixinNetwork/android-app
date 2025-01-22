@@ -427,11 +427,7 @@ class SwapFragment : BaseFragment() {
         dialog.show()
         runCatching {
             var payId = payAssetId
-            var receiveId = if (receiveAssetId in listOf(
-                    Constants.AssetId.USDC_ASSET_ID,
-                    Constants.AssetId.USDC_ASSET_ID
-                )
-            ) {
+            var receiveId = if (receiveAssetId in DepositFragment.usdcAssets || receiveAssetId in DepositFragment.usdtAssets) {
                 payId = receiveAssetId
                 payAssetId
             } else {
