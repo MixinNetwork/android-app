@@ -64,6 +64,8 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
@@ -441,6 +443,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
                 successBlock = {
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {
