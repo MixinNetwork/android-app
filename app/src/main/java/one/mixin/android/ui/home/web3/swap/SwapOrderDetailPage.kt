@@ -27,11 +27,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,13 +63,8 @@ fun SwapOrderDetailPage(
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
-    val viewModel = hiltViewModel<SwapViewModel>()
-    var order by remember { mutableStateOf<SwapOrderItem?>(null) }
-
-    LaunchedEffect(orderId) {
-        order = viewModel.getOrderById(orderId)
-    }
-
+    val viewModel: SwapViewModel = hiltViewModel()
+    val orderItem = viewModel.getOrderById(orderId).collectAsState(null)
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = R.string.Order_Details),
@@ -92,7 +84,7 @@ fun SwapOrderDetailPage(
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
-                order?.let { swapOrder ->
+                orderItem.value?.let { swapOrder ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -279,7 +271,7 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 ${orderItem.receiveAssetSymbol} ≈ ${BigDecimal(orderItem.payAmount).divide(BigDecimal(orderItem.receiveAmount), 8, RoundingMode.HALF_UP)} ${orderItem.assetSymbol}" }.getOrDefault("N/A"),
+            text = runCatching { "1 ${orderItem.assetSymbol} ≈ ${BigDecimal(orderItem.receiveAmount).divide(BigDecimal(orderItem.payAmount), 8, RoundingMode.HALF_UP)} ${orderItem.receiveAssetSymbol}" }.getOrDefault("N/A"),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
@@ -288,7 +280,7 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 ${orderItem.assetSymbol} ≈ ${BigDecimal(orderItem.receiveAmount).divide(BigDecimal(orderItem.payAmount), 8, RoundingMode.HALF_UP)} ${orderItem.receiveAmount}" }.getOrDefault("N/A"),
+            text = runCatching { "1 ${orderItem.receiveAssetSymbol} ≈ ${BigDecimal(orderItem.payAmount).divide(BigDecimal(orderItem.receiveAmount), 8, RoundingMode.HALF_UP)} ${orderItem.assetSymbol}" }.getOrDefault("N/A"),
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,

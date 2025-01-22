@@ -27,11 +27,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,7 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -62,14 +59,7 @@ fun SwapOrderListPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
-    val scope = rememberCoroutineScope()
-    val orders by viewModel.orders.collectAsState()
-
-    LaunchedEffect(Unit) {
-        scope.launch {
-            viewModel.webOrders()
-        }
-    }
+    val orders by viewModel.swapOrders().collectAsState(emptyList())
 
     MixinAppTheme {
         PageScaffold(

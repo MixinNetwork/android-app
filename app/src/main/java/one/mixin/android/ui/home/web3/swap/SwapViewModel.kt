@@ -5,9 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -30,7 +27,6 @@ import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -132,20 +128,9 @@ class SwapViewModel
 
     suspend fun allAssetItems() = tokenRepository.allAssetItems()
 
-    private val _orders = MutableStateFlow<List<SwapOrderItem>>(emptyList())
-    val orders: StateFlow<List<SwapOrderItem>> = _orders.asStateFlow()
+    fun swapOrders() = tokenRepository.swapOrders()
 
-    suspend fun webOrders() {
-        try {
-            _orders.value = tokenRepository.webOrders()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    suspend fun getOrderById(orderId: String): SwapOrderItem? {
-        return tokenRepository.getOrderById(orderId)
-    }
+    fun getOrderById(orderId: String) = tokenRepository.getOrderById(orderId)
 
     private fun addRouteBot() {
         viewModelScope.launch(Dispatchers.IO) {

@@ -5,6 +5,7 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.route.SwapOrder
@@ -25,9 +26,9 @@ interface OrderDao : BaseDao<SwapOrder> {
         LEFT JOIN chains pc ON t.chain_id = pc.chain_id
         LEFT JOIN chains rc ON rt.chain_id = rc.chain_id
         ORDER BY o.created_at DESC
-    """
+"""
     )
-    suspend fun orders(): List<SwapOrderItem>
+    fun orders(): Flow<List<SwapOrderItem>>
 
     @Query(
         """
@@ -40,7 +41,7 @@ interface OrderDao : BaseDao<SwapOrder> {
         WHERE o.order_id = :orderId
     """
     )
-    suspend fun getOrderById(orderId: String): SwapOrderItem?
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?>
 
     @Query("SELECT * FROM swap_orders WHERE state = 'pending'")
     suspend fun getPendingOrders(): List<SwapOrder>

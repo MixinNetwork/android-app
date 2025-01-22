@@ -757,7 +757,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        suspend fun webOrders(): List<SwapOrderItem> = orderDao.orders()
+        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -1269,5 +1269,6 @@ class TokenRepository
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
-    suspend fun getOrderById(orderId: String) = orderDao.getOrderById(orderId)
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
+
 }

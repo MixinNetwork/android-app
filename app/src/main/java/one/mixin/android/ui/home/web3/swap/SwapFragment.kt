@@ -66,13 +66,13 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -158,8 +158,6 @@ class SwapFragment : BaseFragment() {
             slippage = DefaultSlippage
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
-        jobManager.addJobInBackground(RefreshOrdersJob())
-        jobManager.addJobInBackground(RefreshPendingOrdersJob())
     }
 
     override fun onCreateView(
@@ -207,6 +205,8 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapPage(
                                 from = fromToken,
                                 to = toToken,
@@ -248,6 +248,8 @@ class SwapFragment : BaseFragment() {
                         }
 
                         composable(SwapDestination.OrderList.name) {
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapOrderListPage(
                                 pop = {
                                     navigateUp(navController)
@@ -258,6 +260,8 @@ class SwapFragment : BaseFragment() {
                             )
                         }
                         composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
                                     orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
@@ -422,8 +426,20 @@ class SwapFragment : BaseFragment() {
     private suspend fun shareSwap(payAssetId: String, receiveAssetId: String) {
         dialog.show()
         runCatching {
-            val payAssetMarket = swapViewModel.checkMarketById(payAssetId)
-            val receiveAssetMarket = swapViewModel.checkMarketById(receiveAssetId)
+            var payId = payAssetId
+            var receiveId = if (receiveAssetId in listOf(
+                    Constants.AssetId.USDC_ASSET_ID,
+                    Constants.AssetId.USDC_ASSET_ID
+                )
+            ) {
+                payId = receiveAssetId
+                payAssetId
+            } else {
+                receiveAssetId
+            }
+
+            val payAssetMarket = swapViewModel.checkMarketById(payId)
+            val receiveAssetMarket = swapViewModel.checkMarketById(receiveId)
             if (payAssetMarket == null || receiveAssetMarket == null) {
                 toast(R.string.Data_error)
                 return@runCatching
@@ -440,17 +456,17 @@ class SwapFragment : BaseFragment() {
                 ActionButtonData(
                     label = "${getString(R.string.buy_token, receiveAssetMarket.symbol)}",
                     color = "#50BD5C",
-                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$payAssetId&output=$receiveAssetId"
+                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
                 ),
                 ActionButtonData(
                     label = "${getString(R.string.sell_token, receiveAssetMarket.symbol)}",
                     color = "#DB454F",
-                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveAssetId&output=$payAssetId"
+                    action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
                 ),
                 ActionButtonData(
                     label = "${receiveAssetMarket.symbol} ${getString(R.string.Market)}",
                     color = "#3D75E3",
-                    action = "${Constants.Scheme.HTTPS_MARKET}/$receiveAssetId"
+                    action = "${Constants.Scheme.HTTPS_MARKET}/$receiveId"
                 )
             )
 
@@ -459,7 +475,7 @@ class SwapFragment : BaseFragment() {
                 iconUrl = null,
                 coverUrl = null,
                 cover = null,
-                title = "${getString(R.string.Swap)} ${payAssetMarket.symbol} -> ${receiveAssetMarket.symbol}",
+                title = "${getString(R.string.Swap)} ${receiveAssetMarket.symbol}",
                 description = description,
                 action = null,
                 updatedAt = null,

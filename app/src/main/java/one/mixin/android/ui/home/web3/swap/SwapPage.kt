@@ -281,7 +281,7 @@ fun SwapPage(
                                 Column(
                                     modifier = Modifier
                                         .alpha(if (quoteResult == null) 0f else 1f)
-                                        .cardBackground(MixinAppTheme.colors.backgroundGrayLight, MixinAppTheme.colors.borderColor)
+                                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                         .fillMaxWidth()
                                         .wrapContentHeight()
                                         .padding(20.dp),
@@ -432,7 +432,7 @@ fun InputArea(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(8.dp))
-                .cardBackground(MixinAppTheme.colors.backgroundGrayLight, MixinAppTheme.colors.borderColor)
+                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                 .padding(16.dp),
     ) {
         Row(
