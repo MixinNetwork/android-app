@@ -278,7 +278,7 @@ fun SwapPage(
                         )
 
                         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            Box(modifier = Modifier.heightIn(min = 72.dp)) {
+                            Box(modifier = Modifier.heightIn(min = 68.dp)) {
                                 if (errorInfo.isNullOrBlank()) {
                                     Column(
                                         modifier = Modifier
@@ -326,7 +326,7 @@ fun SwapPage(
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
                             val keyboardController = LocalSoftwareKeyboardController.current
                             val focusManager = LocalFocusManager.current
                             val checkBalance = checkBalance(inputText, fromToken?.balance)
