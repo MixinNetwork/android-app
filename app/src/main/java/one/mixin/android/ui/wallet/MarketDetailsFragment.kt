@@ -250,7 +250,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         }
 
                         R.id.radio_ytd -> {
-                            "YTD"
+                            "1Y"
                         }
 
                         else -> {
