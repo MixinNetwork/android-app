@@ -152,8 +152,8 @@ fun MixinAppTheme(
 
     @OptIn(ExperimentalMaterialApi::class)
     val rippleConfiguration = RippleConfiguration(
-        color = Color.White,
-        rippleAlpha = RippleDefaults.rippleAlpha(Color.White, true),
+        color = if (darkTheme) Color.White else Color.LightGray,
+        rippleAlpha = RippleDefaults.rippleAlpha(if (darkTheme) Color.White else Color.LightGray, !darkTheme),
     )
 
     @OptIn(ExperimentalMaterialApi::class)
