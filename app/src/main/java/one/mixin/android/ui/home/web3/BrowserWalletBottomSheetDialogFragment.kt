@@ -65,7 +65,7 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import one.mixin.android.web3.send.InputAddressFragment
+import one.mixin.android.ui.address.InputAddressFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException

@@ -42,22 +42,6 @@
             app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_single_friend_select"
-            app:destination="@id/single_friend_select_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:exitAnim="@anim/stay"
-            app:popEnterAnim="@anim/stay"/>
-
-        <action
-            android:id="@+id/action_transactions_to_address_management"
-            app:destination="@id/address_management_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:exitAnim="@anim/stay"
-            app:popEnterAnim="@anim/stay"/>
-
-        <action
             android:id="@+id/action_transactions_to_utxo"
             app:destination="@id/utxo_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -68,6 +52,14 @@
         <action
             android:id="@+id/action_transactions_to_market_details"
             app:destination="@id/market_fragment_details"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_transactions_to_transfer_destination"
+            app:destination="@id/transfer_destination_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
@@ -234,6 +226,44 @@
             app:popExitAnim="@anim/slide_out_right"
             app:popUpTo="@id/transactions_fragment"
             app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/address_input_fragment"
+        android:name="one.mixin.android.ui.address.InputAddressFragment"
+        tools:layout="@layout/fragment_address_input">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/transfer_destination_fragment"
+        android:name="one.mixin.android.ui.wallet.TransferDestinationSelectionFragment"
+        tools:layout="@layout/fragment_transfe_destination_selection">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+
+        <action
+            android:id="@+id/action_destination_to_single_friend_select"
+            app:destination="@id/single_friend_select_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_destination_to_address_input"
+            app:destination="@id/address_input_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
     </fragment>
 
     <fragment

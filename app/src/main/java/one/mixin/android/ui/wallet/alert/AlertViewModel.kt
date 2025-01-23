@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.alert
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
@@ -19,7 +20,6 @@ import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
-import javax.inject.Inject
 
 @HiltViewModel
 class AlertViewModel
@@ -98,7 +98,7 @@ class AlertViewModel
         }
     }
 
-    private fun addAlertBot(){
+    private fun addAlertBot() {
         viewModelScope.launch(Dispatchers.IO) {
             val bot = userRepository.getUserById(MIXIN_ALERT_USER_ID)
             if (bot == null || bot.relationship != "FRIEND") {

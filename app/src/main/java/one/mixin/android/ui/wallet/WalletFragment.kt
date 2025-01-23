@@ -44,6 +44,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openPermissionSetting
@@ -297,7 +298,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                navTo(TransferDestinationSelectionFragment.newInstance(it), TransferDestinationSelectionFragment.TAG)
+                                navTo(TransferDestinationSelectionFragment.newInstance(it, true), TransferDestinationSelectionFragment.TAG)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }

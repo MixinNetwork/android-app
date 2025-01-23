@@ -16,6 +16,8 @@ import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+import java.io.FileOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -33,15 +35,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
-import java.io.File
-import java.io.FileOutputStream
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_NAME = "name"
         private var cover: Bitmap? = null
-        fun show(context: Context, cover: Bitmap, name:String) {
+        fun show(context: Context, cover: Bitmap, name: String) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, MarketShareActivity::class.java).apply {
@@ -132,7 +132,7 @@ class MarketShareActivity : BaseActivity() {
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
             val bitmap = binding.test.drawToBitmap()
-            val file = File(cacheDir, "${name}.png")
+            val file = File(cacheDir, "$name.png")
             saveBitmapToFile(file, bitmap)
             val uri = FileProvider.getUriForFile(this@MarketShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
             val share = Intent()
@@ -156,7 +156,7 @@ class MarketShareActivity : BaseActivity() {
             val bitmap = binding.test.drawToBitmap()
             val dir = getPublicDownloadPath()
             dir.mkdirs()
-            val file = File(dir, "${name}.png")
+            val file = File(dir, "$name.png")
             saveBitmapToFile(file, bitmap)
             MediaScannerConnection.scanFile(this@MarketShareActivity, arrayOf(file.toString()), null, null)
             finish()

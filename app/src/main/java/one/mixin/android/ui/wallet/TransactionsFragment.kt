@@ -372,10 +372,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                navTo(TransferDestinationSelectionFragment.newInstance(asset).apply {
-                    navContactAction = R.id.action_transactions_to_single_friend_select
-                    navAddressAction = R.id.action_transactions_to_address_management
-                }, TransferDestinationSelectionFragment.TAG)
+                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_transfer_destination, Bundle().apply {
+                    putParcelable(ARGS_ASSET, asset)
+                })
             }
             sendReceiveView.receive.setOnClickListener {
                 if (!Session.saltExported() && Session.isAnonymous()) {

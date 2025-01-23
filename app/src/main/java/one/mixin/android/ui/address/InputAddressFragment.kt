@@ -1,4 +1,4 @@
-package one.mixin.android.web3.send
+package one.mixin.android.ui.address
 
 import android.Manifest
 import android.content.Context
@@ -23,6 +23,7 @@ import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.textColor
@@ -30,23 +31,28 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.component.AddressBottom
+import one.mixin.android.ui.address.component.AddressPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.decodeICAP
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.InputFragment
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint
 class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     companion object {
         const val TAG = "InputAddressFragment"
-        const val ARGS_TOKEN = "args_token"
+        const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
 
@@ -57,29 +63,40 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         ) =
             InputAddressFragment().apply {
                 withArgs {
-                    putParcelable(ARGS_TOKEN, web3Token)
+                    putParcelable(ARGS_WEB3_TOKEN, web3Token)
                     putParcelable(ARGS_CHAIN_TOKEN, chainToken)
                     putString(ARGS_ADDRESS, address)
                 }
             }
+
+    }
+
+    private val token: TokenItem? by lazy {
+        requireArguments().getParcelableCompat(
+            TransactionsFragment.Companion.ARGS_ASSET,
+            TokenItem::class.java
+        )
     }
 
     private val address by lazy {
-        requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+        requireArguments().getString(ARGS_ADDRESS)
     }
-    private val token by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java))
+
+    private val web3Token by lazy {
+        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3Token::class.java)
     }
+
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
+
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
 
     // testing constructor
-    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    @VisibleForTesting(otherwise = VisibleForTesting.Companion.NONE)
     constructor(
         testRegistry: ActivityResultRegistry,
     ) : this() {
@@ -116,10 +133,42 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
+        binding.apply {
+            if (token?.collectionHash != null) {
+                tokenIcon.loadImage(
+                    token?.iconUrl ?: web3Token?.iconUrl,
+                    R.drawable.ic_avatar_place_holder,
+                    transformation = CoilRoundedHexagonTransformation()
+                )
+            } else {
+                tokenIcon.loadImage(
+                    token?.iconUrl ?: web3Token?.iconUrl,
+                    R.drawable.ic_avatar_place_holder,
+                )
+            }
+            tokenName.text = token?.name ?: web3Token?.name
+            token?.let { token ->
+                val networkName = getChainNetwork(token.assetId, token.chainId, token.chainId)
+                tokenNetworkName.isVisible = networkName.isNullOrEmpty().not()
+                tokenNetworkName.text = networkName
+            }
+            balance.text =
+                "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}"
+        }
         binding.continueTv.setOnClickListener {
             val destination = binding.addrEt.text.toString()
             binding.addrEt.hideKeyboard()
-            navTo(InputFragment.newInstance(address, destination, token, chainToken), InputFragment.TAG)
+            // todo
+            address ?: return@setOnClickListener
+            web3Token ?: return@setOnClickListener
+            navTo(
+                InputFragment.Companion.newInstance(
+                    address!!,
+                    destination,
+                    web3Token!!,
+                    chainToken
+                ), InputFragment.Companion.TAG
+            )
         }
         binding.addrVa.setOnClickListener {
             if (binding.addrVa.displayedChild == 0) {
@@ -128,29 +177,58 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 binding.addrEt.setText("")
             }
         }
-        binding.mixinIdTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
+        binding.mixinIdTv.text =
+            getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.toRl.setOnClickListener {
             lifecycleScope.launch {
-                var toAddress = web3ViewModel.findAddres(token)
+                // Todos
+                address ?: return@launch
+                web3Token ?: return@launch
+                var toAddress = web3ViewModel.findAddres(web3Token!!)
                 binding.addrEt.hideKeyboard()
                 if (toAddress != null) {
-                    navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
+                    navTo(
+                        InputFragment.Companion.newInstance(
+                            address!!,
+                            toAddress,
+                            web3Token!!,
+                            chainToken
+                        ), InputFragment.Companion.TAG
+                    )
                 } else {
                     val alertDialog =
                         indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                             show()
                         }
-                    toAddress = web3ViewModel.findAndSyncDepositEntry(token)
+                    toAddress = web3ViewModel.findAndSyncDepositEntry(web3Token!!)
                     alertDialog.dismiss()
                     if (toAddress != null) {
-                        navTo(InputFragment.newInstance(address, toAddress, token, chainToken), InputFragment.TAG)
+                        navTo(
+                            InputFragment.Companion.newInstance(
+                                address!!,
+                                toAddress,
+                                web3Token!!,
+                                chainToken
+                            ), InputFragment.Companion.TAG
+                        )
                     } else {
                         toast(R.string.Not_found)
                     }
                 }
             }
         }
-        binding.walletLl.isVisible = supportDeposit
+        binding.walletLl.isVisible = token == null && supportDeposit
+        token?.let { t ->
+            binding.address.isVisible = true
+            binding.compose.isVisible = true
+            binding.compose.setContent {
+                AddressPage(t)
+            }
+        }
+        binding.bottom.setContent {
+            if (token != null)
+                AddressBottom(token!!)// Todo web3
+        }
         binding.addrEt.addTextChangedListener(mWatcher)
     }
 
@@ -160,7 +238,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    getScanResult.launch(Pair(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT, true))
                 } else {
                     context?.openPermissionSetting()
                 }
@@ -171,7 +249,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         data: Intent?,
         isAddr: Boolean = true,
     ) {
-        val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
+        val text = data?.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isIcapAddress(text)) {
                 binding.addrEt.setText(decodeICAP(text))
@@ -204,16 +282,18 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 if (s.isEmpty()) {
                     binding.addrVa.displayedChild = 0
                     binding.walletLl.isVisible = supportDeposit
+                    binding.compose.isVisible = true
                 } else {
                     binding.addrVa.displayedChild = 1
                     binding.walletLl.isVisible = false
+                    binding.compose.isVisible = false
                 }
                 updateSaveButton()
             }
         }
 
     private val supportDeposit by lazy {
-        token.supportDepositFromMixin()
+        web3Token?.supportDepositFromMixin() == true
     }
 
     private fun updateSaveButton() {
@@ -227,7 +307,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     }
 
     private fun isValidAddress(address: String): Boolean {
-        return if (token.chainName.equals("solana", true)) {
+        return if (web3Token?.chainName.equals("solana", true) == true) {
             // https://github.com/solana-labs/solana-web3.js/blob/afe5602674b2eb8f5e780097d98e1d60ec63606b/packages/addresses/src/address.ts#L36
             if (address.length < 32 || address.length > 44) {
                 return false

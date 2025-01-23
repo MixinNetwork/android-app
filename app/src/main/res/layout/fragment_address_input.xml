@@ -21,11 +21,62 @@
         android:baselineAligned="false"
         android:orientation="vertical">
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingStart="20dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="10dp">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/token_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_avatar_place_holder" />
+
+            <TextView
+                android:id="@+id/token_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:layout_toEndOf="@+id/token_icon"
+                android:textColor="?attr/text_primary" />
+
+            <TextView
+                android:id="@+id/token_network_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:layout_toEndOf="@id/token_name"
+                android:background="@drawable/bg_round_window_4dp"
+                android:paddingStart="4dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="1dp"
+                android:textColor="?attr/text_assist"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/balance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:textColor="?attr/text_primary" />
+
+        </RelativeLayout>
+
         <FrameLayout
             android:id="@+id/addr_rl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:background="@drawable/bg_round_8_solid_gray"
             android:orientation="vertical">
 
@@ -34,27 +85,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
+                android:gravity="start|top"
                 android:hint="@string/hint_address"
+                android:lines="2"
                 android:paddingStart="16dp"
-                android:paddingEnd="16dp"
                 android:paddingTop="16dp"
+                android:paddingEnd="16dp"
                 android:paddingBottom="56dp"
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_assist"
                 android:textSize="14sp"
-                android:lines="2"
-                android:gravity="start|top"
                 tools:ignore="Autofill,TextFields" />
 
             <ViewAnimator
                 android:id="@+id/addr_va"
-                android:padding="6dp"
-                android:layout_gravity="bottom|end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_gravity="bottom|end"
                 android:layout_marginEnd="10dp"
-                android:foreground="@drawable/mixin_ripple">
+                android:layout_marginBottom="10dp"
+                android:foreground="@drawable/mixin_ripple"
+                android:padding="6dp">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -70,7 +121,7 @@
             </ViewAnimator>
 
         </FrameLayout>
-        
+
         <LinearLayout
             android:id="@+id/wallet_ll"
             android:layout_width="match_parent"
@@ -78,71 +129,91 @@
             android:orientation="vertical">
 
             <View
-                android:background="?attr/bg_window"
                 android:layout_width="match_parent"
-                android:layout_height="6dp"/>
+                android:layout_height="6dp"
+                android:background="?attr/bg_window" />
 
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
-                android:layout_width="wrap_content"
                 android:background="@drawable/bg_round_tv"
                 android:enabled="true"
                 android:text="@string/Accounts"
-                android:textColor="@color/colorAccent"
-                android:layout_height="wrap_content" />
+                android:textColor="@color/colorAccent" />
 
             <RelativeLayout
                 android:id="@+id/to_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <one.mixin.android.widget.CircleImageView
                     android:id="@+id/avatar"
                     android:layout_width="42dp"
                     android:layout_height="42dp"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
                     android:layout_alignParentStart="true"
                     android:layout_centerInParent="true"
-                    android:src="@drawable/ic_mixin_logo"/>
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
+                    android:src="@drawable/ic_mixin_logo" />
 
                 <TextView
                     android:id="@+id/name"
-                    android:textColor="?attr/text_primary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignTop="@id/avatar"
-                    android:layout_toEndOf="@id/avatar"
                     android:layout_marginStart="16dp"
-                    android:text="@string/to_mixin_wallet"/>
+                    android:layout_toEndOf="@id/avatar"
+                    android:text="@string/to_mixin_wallet"
+                    android:textColor="?attr/text_primary" />
 
                 <TextView
                     android:id="@+id/mixin_id_tv"
-                    android:textColor="?attr/text_assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignBottom="@id/avatar"
-                    android:layout_toEndOf="@id/avatar"
                     android:layout_marginStart="16dp"
-                    android:text="@string/Mixin_ID"/>
+                    android:layout_toEndOf="@id/avatar"
+                    android:text="@string/Mixin_ID"
+                    android:textColor="?attr/text_assist" />
 
             </RelativeLayout>
 
         </LinearLayout>
-        <View
+
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_round_tv"
+            android:enabled="true"
+            android:text="@string/Address"
+            android:textColor="@color/colorAccent"
+            android:visibility="gone" />
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
+            android:visibility="gone" />
+
+        <View
             android:layout_width="0dp"
-            android:layout_height="0dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <Button
-            style="@style/AppTheme.MaterialButton"
             android:id="@+id/continue_tv"
+            style="@style/AppTheme.MaterialButton"
             android:layout_width="116dp"
             android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
@@ -151,6 +222,14 @@
             android:enabled="false"
             android:text="@string/Continue"
             android:textColor="?attr/text_assist"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:visibility="gone"/>
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+             />
+
     </LinearLayout>
 </LinearLayout>

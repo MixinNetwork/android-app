@@ -8,6 +8,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
@@ -16,7 +17,6 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType.PERCENTAGE_INCREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_DECREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_INCREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
-import java.math.BigDecimal
 
 @Entity("market_alerts")
 @TypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class, AlertStatusConverter::class)
