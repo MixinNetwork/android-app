@@ -109,8 +109,8 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String?): List<SwapToken> {
 
             val priceFiat1 = calculateTokenValue(o1)
             val priceFiat2 = calculateTokenValue(o2)
-            val capitalization1 = priceFiat1 * BigDecimal(o1.balance)
-            val capitalization2 = priceFiat2 * BigDecimal(o2.balance)
+            val capitalization1 = priceFiat1 * runCatching { BigDecimal(o1.balance) }.getOrDefault(BigDecimal.ZERO)
+            val capitalization2 = priceFiat2 * runCatching { BigDecimal(o2.balance) }.getOrDefault(BigDecimal.ZERO)
             if (capitalization1 != capitalization2) {
                 if (capitalization2 > capitalization1) {
                     return@Comparator 1
