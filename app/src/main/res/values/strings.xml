@@ -554,7 +554,7 @@
     <string name="days_count_short" >%1$dD</string>
     <string name="weeks_count_short" >%1$dW</string>
     <string name="months_count_short" >%1$dM</string>
-    <string name="ytd">YTD</string>
+    <string name="ytd">1Y</string>
     <string name="how_are_you">Hi, how are you?</string>
     <string name="i_am_good">I’m good.</string>
     <string name="I_know">I know</string>
