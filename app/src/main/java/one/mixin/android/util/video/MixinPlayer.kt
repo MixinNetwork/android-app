@@ -13,7 +13,6 @@ import androidx.media3.common.Player.STATE_READY
 import androidx.media3.common.Timeline
 import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlaybackException
@@ -36,7 +35,7 @@ import one.mixin.android.util.reportExoPlayerException
 import kotlin.math.max
 import kotlin.math.min
 
-@UnstableApi
+@SuppressLint("UnsafeOptInUsageError")
 @Suppress("unused")
 class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
     val player: ExoPlayer by lazy {
