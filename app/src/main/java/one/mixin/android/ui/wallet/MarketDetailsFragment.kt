@@ -231,7 +231,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
-            radioAll.text = getString(R.string.All)
+            radioAll.text = getString(R.string.All).uppercase()
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
                 typeState.value =
