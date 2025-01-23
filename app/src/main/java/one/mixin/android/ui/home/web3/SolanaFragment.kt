@@ -48,6 +48,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.ChainType
@@ -91,6 +92,7 @@ class SolanaFragment : Web3Fragment() {
                     }
 
                     R.id.swap -> {
+                        AnalyticsTracker.trackSwapStart("solana", "solana")
                         navTo(SwapFragment.newInstance(tokens), SwapFragment.TAG)
                     }
 

@@ -37,8 +37,10 @@ import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
@@ -64,6 +66,10 @@ class DepositFragment : BaseFragment() {
                 "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
                 "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
             )
+
+        fun newInstance(token: TokenItem) = DepositFragment().withArgs {
+            putParcelable(ARGS_ASSET, token)
+        }
     }
 
     private val notSupportDepositAssets = arrayOf(OMNI_USDT_ASSET_ID, BYTOM_CLASSIC_ASSET_ID, MGD_ASSET_ID)
@@ -90,7 +96,7 @@ class DepositFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
+        val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
     }
 

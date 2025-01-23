@@ -12,6 +12,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.components.CreateAccountPage
 import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 
 class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
@@ -43,13 +44,17 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
             navTo(WebFragment.newInstance(bundle), WebFragment.TAG)
         }
         binding.compose.setContent {
-            CreateAccountPage({
+            CreateAccountPage({ create ->
+                if (create) {
+                    AnalyticsTracker.trackSignUpStart("mobile_number")
+                }
                 activity?.addFragment(
                     this@CreateAccountFragment,
                     MobileFragment.newInstance(from = FROM_LANDING),
                     MobileFragment.TAG,
                 )
-            },{
+            }, {
+                AnalyticsTracker.trackSignUpStart("mnemonic_phrase")
                 activity?.addFragment(
                     this@CreateAccountFragment,
                     MnemonicPhraseFragment.newInstance(),

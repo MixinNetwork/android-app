@@ -56,6 +56,7 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -337,6 +338,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var inscriptionCollectionDao: InscriptionCollectionDao
+
+    @Inject
+    @Transient
+    lateinit var orderDao: OrderDao
 
     @Inject
     @Transient

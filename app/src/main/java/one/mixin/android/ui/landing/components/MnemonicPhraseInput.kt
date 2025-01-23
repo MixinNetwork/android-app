@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
@@ -77,6 +78,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.home.web3.swap.KeyboardAwareBox
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 
@@ -87,6 +89,7 @@ fun MnemonicPhraseInput(
     onComplete: (List<String>) -> Unit,
     tip: Tip? = null,
     pin: String? = null,
+    onQrCode: ((List<String>) -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
@@ -94,12 +97,16 @@ fun MnemonicPhraseInput(
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val walletViewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
     MixinAppTheme {
+        KeyboardAwareBox(
+            modifier = Modifier
+                .fillMaxSize(), content = {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -306,7 +313,7 @@ fun MnemonicPhraseInput(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .alpha(if (state == MnemonicState.Input) 1f else 0f)
+                                .alpha(if (state == MnemonicState.Input || state == MnemonicState.Display) 1f else 0f)
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
                                     if (state == MnemonicState.Input) {
@@ -323,21 +330,37 @@ fun MnemonicPhraseInput(
                                                 errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
                                             }
                                         }
+                                    } else if (state == MnemonicState.Display) {
+                                        onQrCode?.invoke(mnemonicList)
                                     }
                                 }
                                 .padding(8.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_paste),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary,
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                stringResource(R.string.Paste), fontSize = 12.sp,
-                                fontWeight = W500,
-                                color = MixinAppTheme.colors.textPrimary,
-                            )
+                            if (state == MnemonicState.Input) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_paste),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.Paste), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_mnemonic_qrcode),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.textPrimary,
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    stringResource(R.string.QR_Code), fontSize = 12.sp,
+                                    fontWeight = W500,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            }
                         }
                     } else if (index == if (legacy) 26 else 14) {
                         Row(
@@ -501,11 +524,25 @@ fun MnemonicPhraseInput(
                 Spacer(modifier = Modifier.height(30.dp))
             }
         }
-        if (state == MnemonicState.Input || state == MnemonicState.Verify) {
-            InputBar(currentText) { word ->
-                inputs = inputs.toMutableList().also { it[focusIndex] = word }
-            }
-        }
+    }, floating = {
+                if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                    InputBar(currentText) { word ->
+                        inputs = inputs.toMutableList().also { it[focusIndex] = word }
+                        if (!legacy && focusIndex == 12) {
+                            keyboardController?.hide()
+                            focusManager.moveFocus(FocusDirection.Right)
+                        } else if (focusIndex == 24) {
+                            keyboardController?.hide()
+                        } else if ((focusIndex + 1) % 3 == 0) {
+                            focusManager.moveFocus(FocusDirection.Down)
+                            focusManager.moveFocus(FocusDirection.Left)
+                            focusManager.moveFocus(FocusDirection.Left)
+                        } else {
+                            focusManager.moveFocus(FocusDirection.Right)
+                        }
+                    }
+                }
+            })
     }
 }
 
@@ -570,63 +607,29 @@ fun WordCountButton(onClick: () -> Unit, border: BorderStroke, content: @Composa
 }
 
 @Composable
-fun KeyboardFloatingView(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val density = LocalDensity.current
-    val windowInsets = WindowInsets.ime
-    var keyboardHeight by remember { mutableStateOf(0.dp) }
-    val keyboardHeightDp = with(density) {
-        windowInsets
-            .getBottom(density)
-            .toDp()
-    }
-
-    LaunchedEffect(keyboardHeightDp) {
-        keyboardHeight = keyboardHeightDp
-    }
-
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .offset(y = -keyboardHeight)
-        ) {
-            content()
-        }
-    }
-}
-
-@Composable
 fun InputBar(string: String, callback: (String) -> Unit) {
     if (string.isBlank()) return
     val list = getMatchingWords(string.trim()) ?: return
-    KeyboardFloatingView {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MixinAppTheme.colors.backgroundWindow)
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            items(list.size) { index ->
-                val word = list[index]
-                Text(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(MixinAppTheme.colors.background)
-                        .clickable { callback(word) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    text = word,
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-            }
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items(list.size) { index ->
+            val word = list[index]
+            Text(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MixinAppTheme.colors.background)
+                    .clickable { callback(word) }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                text = word,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.width(12.dp))
         }
     }
 }
