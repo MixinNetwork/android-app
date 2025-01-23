@@ -57,6 +57,7 @@ import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -108,6 +109,8 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.route.SwapOrder
+import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -159,6 +162,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
+        private val orderDao: OrderDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -206,6 +210,7 @@ class TokenRepository
             val output = outputDao.findOutputByHash(instantiationHash) ?: return null
             if (assetItem == null) {
                 assetItem = syncAssetByKernel(output.asset)
+
             }
             if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
                 val chain = syncAsset(assetItem.chainId)
@@ -752,6 +757,8 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
+        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
+
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
 
@@ -1080,8 +1087,10 @@ class TokenRepository
 
     suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
 
-    suspend fun checkMarketById(id: String): MarketItem? {
-        val marketItem = if (id.isUUID()) {
+    suspend fun checkMarketById(id: String, force: Boolean = false): MarketItem? {
+        val marketItem = if (force) {
+            null
+        } else if (id.isUUID()) {
             findMarketItemByAssetId(id)
         } else {
             findMarketItemByCoinId(id)
@@ -1261,4 +1270,7 @@ class TokenRepository
     }
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
+
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
+
 }

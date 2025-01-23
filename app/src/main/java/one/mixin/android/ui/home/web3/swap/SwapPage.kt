@@ -5,19 +5,18 @@ package one.mixin.android.ui.home.web3.swap
 import PageScaffold
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,7 +50,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -77,7 +75,6 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.rate
-import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
@@ -86,6 +83,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -104,6 +102,7 @@ fun SwapPage(
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onShowSlippage: () -> Unit,
     onDeposit: (SwapToken) -> Unit,
+    onOrderList: () -> Unit,
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -143,7 +142,7 @@ fun SwapPage(
             .collectLatest { text ->
                 fromToken?.let { from ->
                     toToken?.let { to ->
-                        if (text.isNotBlank() && !reviewing) {
+                        if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
                             isLoading = true
                             errorInfo = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
@@ -177,6 +176,17 @@ fun SwapPage(
         verticalScrollable = true,
         pop = pop,
         actions = {
+            if (source != "") {
+                IconButton(onClick = {
+                    onOrderList()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_order),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            }
             IconButton(onClick = {
                 context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }) {
@@ -268,55 +278,55 @@ fun SwapPage(
                         )
 
                         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            if (errorInfo.isNullOrBlank()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .alpha(if (quoteResult == null) 0f else 1f)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(MixinAppTheme.colors.backgroundGrayLight)
-                                        .padding(20.dp),
-                                ) {
-                                    quoteResult?.let { quote ->
-                                        val rate = quote.rate(fromToken, toToken)
-                                        if (rate != BigDecimal.ZERO) {
-                                            PriceInfo(
-                                                fromToken = fromToken!!,
-                                                toToken = toToken,
-                                                isLoading = isLoading,
-                                                exchangeRate = rate,
-                                                onPriceExpired = {
-                                                    invalidFlag = !invalidFlag
-                                                }
-                                            )
-                                        }
-                                        if (!from.inMixin()) {
-                                            SlippageInfo(slippageBps, rate != BigDecimal.ZERO, onShowSlippage)
+                            Box(modifier = Modifier.heightIn(min = 68.dp)) {
+                                if (errorInfo.isNullOrBlank()) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .padding(horizontal = 20.dp)
+                                            .alpha(if (quoteResult == null) 0f else 1f),
+                                    ) {
+                                        quoteResult?.let { quote ->
+                                            val rate = quote.rate(fromToken, toToken)
+                                            if (rate != BigDecimal.ZERO) {
+                                                PriceInfo(
+                                                    fromToken = fromToken!!,
+                                                    toToken = toToken,
+                                                    isLoading = isLoading,
+                                                    exchangeRate = rate,
+                                                    onPriceExpired = {
+                                                        invalidFlag = !invalidFlag
+                                                    }
+                                                )
+                                            }
+                                            if (!from.inMixin()) {
+                                                SlippageInfo(
+                                                    slippageBps,
+                                                    rate != BigDecimal.ZERO,
+                                                    onShowSlippage
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            } else {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                                        .background(MixinAppTheme.colors.backgroundGrayLight)
-                                        .padding(20.dp),
-                                ) {
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    Text(
-                                        text = errorInfo ?: "",
-                                        style = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = MixinAppTheme.colors.tipError,
-                                        ),
-                                    )
+                                } else {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .wrapContentHeight()
+                                            .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                                    ) {
+                                        Text(
+                                            text = errorInfo ?: "",
+                                            style = TextStyle(
+                                                fontSize = 14.sp,
+                                                color = MixinAppTheme.colors.tipError,
+                                            ),
+                                        )
+                                    }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
                             val keyboardController = LocalSoftwareKeyboardController.current
                             val focusManager = LocalFocusManager.current
                             val checkBalance = checkBalance(inputText, fromToken?.balance)
@@ -427,7 +437,7 @@ fun InputArea(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(8.dp))
-                .background(MixinAppTheme.colors.backgroundGrayLight)
+                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                 .padding(16.dp),
     ) {
         Row(
@@ -435,7 +445,7 @@ fun InputArea(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textAssist)
+                Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
                 Spacer(modifier = Modifier.weight(1f))
                 token?.let {
                     Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
@@ -456,7 +466,9 @@ fun InputArea(
                     ),
                     modifier = Modifier
                         .alpha(
-                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0) 1f
+                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()
+                                    ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
+                            ) 1f
                             else 0f
                         )
                         .clickable { onDeposit?.invoke(t) },

@@ -70,7 +70,7 @@ fun Modifier.cardBackground(
     borderWidth: Dp = 0.8.dp,
     cornerRadius: Dp = 8.dp,
 ): Modifier = this
-    .border(width = borderWidth, borderColor, RoundedCornerShape(cornerRadius))
     .background(
-        color = backgroundColor
+        color = backgroundColor, RoundedCornerShape(cornerRadius)
     )
+    .border(width = borderWidth, borderColor, RoundedCornerShape(cornerRadius))

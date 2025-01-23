@@ -166,7 +166,7 @@ private fun Custom(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(20.dp, 10.dp)
-                .border(1.dp, color = MixinAppTheme.colors.textPrimary)
+                .border(1.dp, color = MixinAppTheme.colors.borderColor, shape = RoundedCornerShape(8.dp))
                 .padding(20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
@@ -221,7 +221,7 @@ private fun Custom(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .border(1.dp, color = if (focused.value) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor, RoundedCornerShape(8.dp))
+                        .border(1.dp, color = MixinAppTheme.colors.borderColor, RoundedCornerShape(8.dp))
                         .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
