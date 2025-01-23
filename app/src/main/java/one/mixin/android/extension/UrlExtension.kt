@@ -40,6 +40,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
+import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 
 fun String.openAsUrlOrWeb(
@@ -169,7 +170,7 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
-    } else if(isConversationScheme()) {
+    } else if (isConversationScheme()) {
         checkConversation(context, scope) {
             if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
                 LinkBottomSheetDialogFragment.newInstance(this)
@@ -255,7 +256,7 @@ fun String.checkUserOrApp(
 fun String.checkConversation(
     context: Context,
     scope: CoroutineScope,
-    elseAction: () -> Unit
+    elseAction: () -> Unit,
 ) {
     val uri = Uri.parse(this)
     val segments = uri.pathSegments
@@ -413,8 +414,22 @@ fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap =
             @Suppress("DEPRECATION")
             MediaStore.Images.Media.getBitmap(contentResolver, this)
         }
+
         else -> {
             val source = ImageDecoder.createSource(contentResolver, this)
             ImageDecoder.decodeBitmap(source)
         }
     }
+
+fun Uri.isVideo(context: Context) : Boolean{
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.MPEG.toString())
+        || mimeType.equals(MimeType.MP4.toString())
+        || mimeType.equals(MimeType.QUICKTIME.toString())
+        || mimeType.equals(MimeType.THREEGPP.toString())
+        || mimeType.equals(MimeType.THREEGPP2.toString())
+        || mimeType.equals(MimeType.MKV.toString())
+        || mimeType.equals(MimeType.WEBM.toString())
+        || mimeType.equals(MimeType.TS.toString())
+        || mimeType.equals(MimeType.AVI.toString())
+}

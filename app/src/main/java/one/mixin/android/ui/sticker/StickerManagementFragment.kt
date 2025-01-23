@@ -43,6 +43,9 @@ import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.lottie.RLottieImageView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 
 @AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {
@@ -65,6 +68,16 @@ class StickerManagementFragment : BaseFragment() {
     private val stickers = mutableListOf<Sticker>()
     private val stickerAdapter: StickerAdapter by lazy {
         StickerAdapter(stickers)
+    }
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let {
+            requireActivity().addFragment(
+                this@StickerManagementFragment,
+                StickerAddFragment.newInstance(it.toString(), true),
+                StickerAddFragment.TAG,
+            )
+        }
     }
 
     override fun onCreateView(
@@ -109,41 +122,7 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
-                        arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES).any { RxPermissions(requireActivity()).isGranted(it) }
-                    ) {
-                        openGalleryFromSticker()
-                        return
-                    }
-                    RxPermissions(requireActivity())
-                        .request(
-                            *(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                mutableListOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES)
-                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES)
-                            } else {
-                                mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            }).apply {
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            }.toTypedArray()
-                        )
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
-                                    arrayOf(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.READ_MEDIA_IMAGES).any { RxPermissions(requireActivity()).isGranted(it) }
-                                ) {
-                                    openGalleryFromSticker()
-                                } else if (granted) {
-                                    openGalleryFromSticker()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                                reportException(it)
-                            },
-                        )
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
 
                 override fun onDelete() {
@@ -186,15 +165,6 @@ class StickerManagementFragment : BaseFragment() {
         data: Intent?,
     ) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
-            data?.data?.let {
-                requireActivity().addFragment(
-                    this@StickerManagementFragment,
-                    StickerAddFragment.newInstance(it.toString(), true),
-                    StickerAddFragment.TAG,
-                )
-            }
-        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
