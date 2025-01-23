@@ -2,6 +2,8 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -106,6 +108,28 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val transferViewModel by viewModels<TransferViewModel>()
 
     private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("transfer_status", transferViewModel.status.value.name)
+        outState.putBoolean("can_retry", canRetry)
+        outState.putBoolean("is_success", isSuccess)
+        outState.putString("error_message", transferViewModel.errorMessage)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        savedInstanceState?.let { bundle ->
+            canRetry = bundle.getBoolean("can_retry", true)
+            isSuccess = bundle.getBoolean("is_success", false)
+            bundle.getString("error_message")?.let { errorMessage ->
+                transferViewModel.errorMessage = errorMessage
+            }
+            bundle.getString("transfer_status")?.let { status ->
+                transferViewModel.updateStatus(TransferStatus.valueOf(status))
+            }
+        }
+    }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(
