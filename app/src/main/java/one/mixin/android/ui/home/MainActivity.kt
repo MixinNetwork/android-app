@@ -936,7 +936,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
-            bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
+            bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
                 lifecycleScope.launch {
                     channel.send(it.itemId)

@@ -317,7 +317,7 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_SWAP,
                     ArrayList(data), if (isReverse) toToken?.getUnique() else fromToken?.getUnique()
                 ).apply {
-                    if (data.isEmpty()) {
+                    if (data.isEmpty) {
                         setLoading(true)
                     }
                     setOnDeposit {
@@ -477,12 +477,12 @@ class SwapFragment : BaseFragment() {
 
         val actions = listOf(
             ActionButtonData(
-                label = "${getString(R.string.buy_token, marketItem.symbol)}",
+                label = getString(R.string.buy_token, marketItem.symbol),
                 color = "#50BD5C",
                 action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
             ),
             ActionButtonData(
-                label = "${getString(R.string.sell_token, marketItem.symbol)}",
+                label = getString(R.string.sell_token, marketItem.symbol),
                 color = "#DB454F",
                 action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
             ),
@@ -524,12 +524,12 @@ class SwapFragment : BaseFragment() {
 
         val actions = listOf(
             ActionButtonData(
-                label = "${getString(R.string.buy_token, token.symbol)}",
+                label = getString(R.string.buy_token, token.symbol),
                 color = "#50BD5C",
                 action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
             ),
             ActionButtonData(
-                label = "${getString(R.string.sell_token, token.symbol)}",
+                label = getString(R.string.sell_token, token.symbol),
                 color = "#DB454F",
                 action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
             ),

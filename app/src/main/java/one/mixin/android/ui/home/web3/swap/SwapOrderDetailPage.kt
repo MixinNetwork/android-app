@@ -167,7 +167,7 @@ fun SwapOrderDetailPage(
                                 modifier = Modifier
                                     .weight(1f)
                                     .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
-                                    .clickable() {
+                                    .clickable {
                                         onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
                                     }
                                     .padding(vertical = 10.dp)
@@ -186,7 +186,7 @@ fun SwapOrderDetailPage(
                                 modifier = Modifier
                                     .weight(1f)
                                     .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                                    .clickable() {
+                                    .clickable {
                                         onShare.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
                                     }
                                     .padding(vertical = 10.dp)
