@@ -120,9 +120,11 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isAuto
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
+import one.mixin.android.extension.isGif
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.isVideo
+import one.mixin.android.extension.isWebp
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
@@ -1067,8 +1069,10 @@ class ConversationFragment() :
             uri?.let {
                 if (it.isVideo(requireContext())) {
                     showPreview(it, isVideo = true) { videoUri, start, end -> sendVideoMessage(videoUri, start, end) }
+                } else if (it.isGif(requireContext()) || it.isWebp(requireContext())) {
+                    showPreview(uri, getString(R.string.Send), false) { uri, _, _ -> sendImageMessage(uri) }
                 } else {
-                    sendImageMessage(it)
+                    getEditorResult.launch(Pair(uri, getString(R.string.Send)))
                 }
             }
         }
