@@ -372,7 +372,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_transfer_destination, Bundle().apply {
+                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_address_input, Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
                 })
             }

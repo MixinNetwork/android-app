@@ -5,17 +5,23 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.supportDepositFromMixin
@@ -25,7 +31,10 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openEmail
+import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -69,6 +78,14 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
                 }
             }
 
+        fun newInstance(
+            token: TokenItem,
+        ) =
+            InputAddressFragment().apply {
+                withArgs {
+                    putParcelable(TransactionsFragment.Companion.ARGS_ASSET, token)
+                }
+            }
     }
 
     private val token: TokenItem? by lazy {
@@ -121,19 +138,25 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             )
     }
 
+    private var contentText by mutableStateOf("")
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.rightAnimator.isEnabled = false
-        binding.titleView.leftIb.setOnClickListener {
-            if (viewDestroyed()) return@setOnClickListener
-
-            if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
-            activity?.onBackPressedDispatcher?.onBackPressed()
-        }
         binding.apply {
+            titleView.apply {
+                leftIb.setOnClickListener {
+                    if (viewDestroyed()) return@setOnClickListener
+
+                    if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }
+                rightIb.setOnClickListener {
+                    requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }
+            }
             if (token?.collectionHash != null) {
                 tokenIcon.loadImage(
                     token?.iconUrl ?: web3Token?.iconUrl,
@@ -154,82 +177,33 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             }
             balance.text =
                 "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}"
-        }
-        binding.continueTv.setOnClickListener {
-            val destination = binding.addrEt.text.toString()
-            binding.addrEt.hideKeyboard()
-            // todo
-            address ?: return@setOnClickListener
-            web3Token ?: return@setOnClickListener
-            navTo(
-                InputFragment.Companion.newInstance(
-                    address!!,
-                    destination,
-                    web3Token!!,
-                    chainToken
-                ), InputFragment.Companion.TAG
-            )
-        }
-        binding.addrVa.setOnClickListener {
-            if (binding.addrVa.displayedChild == 0) {
-                handleClick()
-            } else {
-                binding.addrEt.setText("")
+
+            compose.setContent {
+                AddressPage(contentText, token, web3Token, chainToken)
             }
-        }
-        binding.mixinIdTv.text =
-            getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
-        binding.toRl.setOnClickListener {
-            lifecycleScope.launch {
-                // Todos
-                address ?: return@launch
-                web3Token ?: return@launch
-                var toAddress = web3ViewModel.findAddres(web3Token!!)
-                binding.addrEt.hideKeyboard()
-                if (toAddress != null) {
-                    navTo(
-                        InputFragment.Companion.newInstance(
-                            address!!,
-                            toAddress,
-                            web3Token!!,
-                            chainToken
-                        ), InputFragment.Companion.TAG
-                    )
+
+            binding.addrVa.setOnClickListener {
+                if (binding.addrVa.displayedChild == 0) {
+                    handleClick()
                 } else {
-                    val alertDialog =
-                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                            show()
-                        }
-                    toAddress = web3ViewModel.findAndSyncDepositEntry(web3Token!!)
-                    alertDialog.dismiss()
-                    if (toAddress != null) {
-                        navTo(
-                            InputFragment.Companion.newInstance(
-                                address!!,
-                                toAddress,
-                                web3Token!!,
-                                chainToken
-                            ), InputFragment.Companion.TAG
-                        )
-                    } else {
-                        toast(R.string.Not_found)
-                    }
+                    binding.addrEt.setText("")
                 }
             }
         }
-        binding.walletLl.isVisible = token == null && supportDeposit
-        token?.let { t ->
-            binding.address.isVisible = true
-            binding.compose.isVisible = true
-            binding.compose.setContent {
-                AddressPage(t)
+
+        binding.addrEt.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (viewDestroyed()) return
+                if (s.isNullOrEmpty()) {
+                    binding.addrVa.displayedChild = 0
+                } else {
+                    binding.addrVa.displayedChild = 1
+                }
+                contentText = s?.toString() ?: ""
             }
-        }
-        binding.bottom.setContent {
-            if (token != null)
-                AddressBottom(token!!)// Todo web3
-        }
-        binding.addrEt.addTextChangedListener(mWatcher)
+        })
     }
 
     private fun handleClick() {
@@ -259,51 +233,8 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         }
     }
 
-    private val mWatcher: TextWatcher =
-        object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int,
-            ) {
-            }
-
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int,
-            ) {
-            }
-
-            override fun afterTextChanged(s: Editable) {
-                if (viewDestroyed()) return
-                if (s.isEmpty()) {
-                    binding.addrVa.displayedChild = 0
-                    binding.walletLl.isVisible = supportDeposit
-                    binding.compose.isVisible = true
-                } else {
-                    binding.addrVa.displayedChild = 1
-                    binding.walletLl.isVisible = false
-                    binding.compose.isVisible = false
-                }
-                updateSaveButton()
-            }
-        }
-
     private val supportDeposit by lazy {
         web3Token?.supportDepositFromMixin() == true
-    }
-
-    private fun updateSaveButton() {
-        if (binding.addrEt.text.isNotEmpty() && isValidAddress(binding.addrEt.text.toString())) {
-            binding.continueTv.isEnabled = true
-            binding.continueTv.textColor = requireContext().getColor(R.color.white)
-        } else {
-            binding.continueTv.isEnabled = false
-            binding.continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-        }
     }
 
     private fun isValidAddress(address: String): Boolean {

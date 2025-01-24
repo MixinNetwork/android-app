@@ -11,12 +11,13 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:rightIcon="@drawable/ic_support"
         app:need_divider="false"
-        app:titleText="@string/Address" />
+        app:titleText="@string/Send" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:background="?attr/bg_white"
         android:baselineAligned="false"
         android:orientation="vertical">
@@ -122,114 +123,10 @@
 
         </FrameLayout>
 
-        <LinearLayout
-            android:id="@+id/wallet_ll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="6dp"
-                android:background="?attr/bg_window" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/bg_round_tv"
-                android:enabled="true"
-                android:text="@string/Accounts"
-                android:textColor="@color/colorAccent" />
-
-            <RelativeLayout
-                android:id="@+id/to_rl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp">
-
-                <one.mixin.android.widget.CircleImageView
-                    android:id="@+id/avatar"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerInParent="true"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
-                    android:src="@drawable/ic_mixin_logo" />
-
-                <TextView
-                    android:id="@+id/name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignTop="@id/avatar"
-                    android:layout_marginStart="16dp"
-                    android:layout_toEndOf="@id/avatar"
-                    android:text="@string/to_mixin_wallet"
-                    android:textColor="?attr/text_primary" />
-
-                <TextView
-                    android:id="@+id/mixin_id_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBottom="@id/avatar"
-                    android:layout_marginStart="16dp"
-                    android:layout_toEndOf="@id/avatar"
-                    android:text="@string/Mixin_ID"
-                    android:textColor="?attr/text_assist" />
-
-            </RelativeLayout>
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/address"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_round_tv"
-            android:enabled="true"
-            android:text="@string/Address"
-            android:textColor="@color/colorAccent"
-            android:visibility="gone" />
-
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/compose"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/continue_tv"
-            style="@style/AppTheme.MaterialButton"
-            android:layout_width="116dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/margin16"
-            android:layout_marginBottom="20dp"
-            android:enabled="false"
-            android:text="@string/Continue"
-            android:textColor="?attr/text_assist"
-            android:textSize="14sp"
-            android:visibility="gone"/>
-
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/bottom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-             />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 </LinearLayout>

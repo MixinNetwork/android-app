@@ -46,10 +46,11 @@ fun AddressBottom(token: TokenItem) {
                 modifier = Modifier
                     .size(40.dp)
                     .padding(8.dp)
+                    .clip(CircleShape)
                     .clickable {
 
                     }
-                    .clip(CircleShape)
+
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -65,10 +66,11 @@ fun AddressBottom(token: TokenItem) {
                 modifier = Modifier
                     .size(40.dp)
                     .padding(8.dp)
+                    .clip(CircleShape)
                     .clickable {
 
                     }
-                    .clip(CircleShape)
+
             )
         }
     }

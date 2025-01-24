@@ -19,6 +19,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,15 +33,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun AddressPage(token: TokenItem) {
+fun AddressPage(
+    contentText: String,
+    token: TokenItem?,
+    web3Token: Web3Token?,
+    web3Chain: Web3Token?,
+) {
     val viewModel: AddressViewModel = hiltViewModel()
-    val addresses by viewModel.addressesFlow(token.assetId).collectAsState(initial = null)
+    val addresses by viewModel.addressesFlow(token?.assetId?:"").collectAsState(initial = null)
     MixinAppTheme {
         Box(modifier = Modifier.fillMaxWidth()) {
             when {
