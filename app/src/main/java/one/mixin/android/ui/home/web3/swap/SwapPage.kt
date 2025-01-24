@@ -87,7 +87,6 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
