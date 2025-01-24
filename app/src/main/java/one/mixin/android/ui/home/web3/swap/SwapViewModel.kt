@@ -156,5 +156,5 @@ class SwapViewModel
         return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
-    fun swapTokenFlow(assetId: String) = tokenRepository.swapTokenFlow(assetId).map { it?.toSwapToken() }
+    fun tokenExtraFlow(assetId: String) = tokenRepository.tokenExtraFlow(assetId)
 }

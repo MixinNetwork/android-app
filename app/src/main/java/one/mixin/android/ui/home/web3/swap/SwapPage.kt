@@ -40,8 +40,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,12 +61,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -87,6 +87,7 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -422,15 +423,6 @@ fun SwapPage(
 }
 
 @Composable
-fun swapTokenFlow(token: SwapToken?): State<SwapToken?> {
-    val viewModel = hiltViewModel<SwapViewModel>()
-    if (token == null || token.assetId.isBlank()) {
-        return remember { mutableStateOf<SwapToken?>(token) }
-    }
-    return viewModel.swapTokenFlow(token.assetId).collectAsState(null)
-}
-
-@Composable
 fun InputArea(
     modifier: Modifier = Modifier,
     token: SwapToken?,
@@ -442,7 +434,9 @@ fun InputArea(
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
 ) {
-    val t = swapTokenFlow(token).value
+    val viewModel = hiltViewModel<SwapViewModel>()
+    val balance = viewModel.tokenExtraFlow(token?.assetId ?: "").map { it?.balance }
+        .collectAsStateWithLifecycle(token?.balance).value
     Column(
         modifier =
             modifier
@@ -459,7 +453,7 @@ fun InputArea(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
                 Spacer(modifier = Modifier.weight(1f))
-                t?.let {
+                token?.let {
                     Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 } ?: run {
                     Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
@@ -467,9 +461,9 @@ fun InputArea(
             }
         }
         Box(modifier = Modifier.height(10.dp))
-        InputContent(token = t, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
+        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            t?.let { t->
+            token?.let { t->
                 Text(
                     text = stringResource(id = R.string.Deposit),
                     style = TextStyle(
@@ -478,7 +472,7 @@ fun InputArea(
                     ),
                     modifier = Modifier
                         .alpha(
-                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()
+                            if (!readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()
                                     ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
                             ) 1f
                             else 0f
@@ -493,7 +487,7 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = t.balance?.numberFormat8() ?: "0",
+                    text = balance?.numberFormat8() ?: "0",
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,

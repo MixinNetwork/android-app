@@ -1274,6 +1274,6 @@ class TokenRepository
 
     fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
 
-    fun swapTokenFlow(asseId: String) = tokenDao.tokenFlow(asseId)
+    fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
 }
