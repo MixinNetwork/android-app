@@ -421,7 +421,7 @@ fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap =
         }
     }
 
-fun Uri.isVideo(context: Context) : Boolean{
+fun Uri.isVideo(context: Context): Boolean {
     val mimeType = context.contentResolver.getType(this)
     return mimeType.equals(MimeType.MPEG.toString())
         || mimeType.equals(MimeType.MP4.toString())
@@ -432,4 +432,14 @@ fun Uri.isVideo(context: Context) : Boolean{
         || mimeType.equals(MimeType.WEBM.toString())
         || mimeType.equals(MimeType.TS.toString())
         || mimeType.equals(MimeType.AVI.toString())
+}
+
+fun Uri.isWebp(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.WEBP.toString(), true)
+}
+
+fun Uri.isGif(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.GIF.toString(), true)
 }
