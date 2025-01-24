@@ -40,6 +40,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -420,6 +422,15 @@ fun SwapPage(
 }
 
 @Composable
+fun swapTokenFlow(token: SwapToken?): State<SwapToken?> {
+    val viewModel = hiltViewModel<SwapViewModel>()
+    if (token == null || token.assetId.isBlank()) {
+        return remember { mutableStateOf<SwapToken?>(token) }
+    }
+    return viewModel.swapTokenFlow(token.assetId).collectAsState(null)
+}
+
+@Composable
 fun InputArea(
     modifier: Modifier = Modifier,
     token: SwapToken?,
@@ -431,6 +442,7 @@ fun InputArea(
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
 ) {
+    val t = swapTokenFlow(token).value
     Column(
         modifier =
             modifier
@@ -447,7 +459,7 @@ fun InputArea(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
                 Spacer(modifier = Modifier.weight(1f))
-                token?.let {
+                t?.let {
                     Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
                 } ?: run {
                     Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
@@ -455,9 +467,9 @@ fun InputArea(
             }
         }
         Box(modifier = Modifier.height(10.dp))
-        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
+        InputContent(token = t, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            token?.let { t->
+            t?.let { t->
                 Text(
                     text = stringResource(id = R.string.Deposit),
                     style = TextStyle(

@@ -1,10 +1,17 @@
 package one.mixin.android.ui.home.web3.swap
 
 import android.content.Context
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -149,4 +156,5 @@ class SwapViewModel
         return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
+    fun swapTokenFlow(assetId: String) = tokenRepository.swapTokenFlow(assetId).map { it?.toSwapToken() }
 }
