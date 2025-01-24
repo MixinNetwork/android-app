@@ -146,7 +146,7 @@
                             <androidx.appcompat.widget.AppCompatRadioButton
                                 android:id="@+id/radio_ytd"
                                 style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="YTD" />
+                                android:text="1Y" />
 
                             <androidx.appcompat.widget.AppCompatRadioButton
                                 android:id="@+id/radio_all"
