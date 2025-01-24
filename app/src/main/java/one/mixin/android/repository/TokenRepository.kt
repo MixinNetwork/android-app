@@ -132,6 +132,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.flow
 
 @Singleton
 class TokenRepository
@@ -1272,5 +1273,7 @@ class TokenRepository
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
     fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
+
+    fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
 }

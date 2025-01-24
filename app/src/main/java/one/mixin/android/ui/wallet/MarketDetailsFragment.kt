@@ -89,7 +89,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 rightExtraIb.setOnClickListener {
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
-                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    marketItem.isFavored = marketItem.isFavored != true
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
@@ -416,7 +416,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } else {
                             "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                         }
-                    } catch (ignored: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE

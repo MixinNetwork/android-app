@@ -61,12 +61,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -431,6 +433,9 @@ fun InputArea(
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
 ) {
+    val viewModel = hiltViewModel<SwapViewModel>()
+    val balance = viewModel.tokenExtraFlow(token?.assetId ?: "").map { it?.balance }
+        .collectAsStateWithLifecycle(token?.balance).value
     Column(
         modifier =
             modifier
@@ -466,7 +471,7 @@ fun InputArea(
                     ),
                     modifier = Modifier
                         .alpha(
-                            if (!readOnly && onDeposit != null && (t.balance?.toBigDecimalOrNull()
+                            if (!readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()
                                     ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
                             ) 1f
                             else 0f
@@ -481,7 +486,7 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = t.balance?.numberFormat8() ?: "0",
+                    text = balance?.numberFormat8() ?: "0",
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,

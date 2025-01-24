@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.vo.safe.TokensExtra
 
 @Dao
@@ -24,4 +25,7 @@ interface TokensExtraDao : BaseDao<TokensExtra> {
         balance: String,
         updatedAt: String,
     )
+
+    @Query("SELECT * FROM tokens_extra WHERE asset_id = :assetId")
+    fun tokenExtraFlow(assetId: String): Flow<TokensExtra?>
 }
