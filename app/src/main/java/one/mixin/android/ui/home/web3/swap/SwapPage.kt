@@ -434,7 +434,7 @@ fun InputArea(
     onMax: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
-    val balance = viewModel.tokenExtraFlow(token?.assetId ?: "").map { it?.balance }
+    val balance = viewModel.tokenExtraFlow(token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
         .collectAsStateWithLifecycle(token?.balance).value
     Column(
         modifier =
