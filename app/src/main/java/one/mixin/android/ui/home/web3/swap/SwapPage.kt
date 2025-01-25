@@ -201,6 +201,8 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
+            val fromBalance = viewModel.tokenExtraFlow(from.assetId ?: "").map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
+                .collectAsStateWithLifecycle(from.balance).value
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
                 content = {
@@ -256,7 +258,7 @@ fun SwapPage(
                                     onInputChanged = { inputText = it },
                                     onDeposit = onDeposit,
                                     onMax = {
-                                        val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                        val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                         if (balance > BigDecimal.ZERO) {
                                             inputText = balance.stripTrailingZeros().toPlainString()
                                         } else {
@@ -331,7 +333,7 @@ fun SwapPage(
                             Spacer(modifier = Modifier.height(14.dp))
                             val keyboardController = LocalSoftwareKeyboardController.current
                             val focusManager = LocalFocusManager.current
-                            val checkBalance = checkBalance(inputText, fromToken?.balance)
+                            val checkBalance = checkBalance(inputText, fromBalance)
                             Button(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -385,7 +387,7 @@ fun SwapPage(
                     ) {
                         val keyboardController = LocalSoftwareKeyboardController.current
                         val focusManager = LocalFocusManager.current
-                        val balance = fromToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
                         InputAction("25%", showBorder = true) {
                             if (balance > BigDecimal.ZERO) {
