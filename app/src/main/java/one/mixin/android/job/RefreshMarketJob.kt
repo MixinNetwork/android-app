@@ -15,10 +15,11 @@ class RefreshMarketJob(private val id: String, private val isCoinId: Boolean = f
         const val GROUP = "RefreshMarketJob"
     }
 
-    override fun onRun() = runBlocking {
-        val response = routeService.market(id) // asset id or coin id
+    override fun onRun(): Unit = runBlocking {
+        val response = routeService.market(id)
         if (response.isSuccess && response.data != null) {
             response.data?.let { market ->
+                val previousCoinId = if (isCoinId) null else marketCoinDao.findCoinIdByTokenId(id)
                 marketDao.insert(market)
                 val remoteAssetIds = market.assetIds ?: emptyList()
                 val localAssetIds = marketCoinDao.findTokenIdsByCoinId(market.coinId)
@@ -44,6 +45,12 @@ class RefreshMarketJob(private val id: String, private val isCoinId: Boolean = f
                             Timber.e(error, "Failed to sync market asset: $assetId")
                         }
                     }
+
+                previousCoinId?.takeIf { it != market.coinId }?.let { coinId ->
+                    marketCoinDao.deleteByCoinId(coinId)
+                    marketFavoredDao.deleteByCoinId(coinId)
+                    marketDao.deleteByCoinId(coinId)
+                }
             }
         } else if (response.errorCode == 404 && isCoinId) {
             marketCoinDao.deleteByCoinId(id)
