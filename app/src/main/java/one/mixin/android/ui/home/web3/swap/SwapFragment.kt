@@ -61,7 +61,7 @@ import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
@@ -72,7 +72,6 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
@@ -452,7 +451,8 @@ class SwapFragment : BaseFragment() {
                 toast(R.string.Data_error)
                 return@runCatching
             }
-            ForwardActivity.show(requireContext(), arrayListOf(forwardMessage), ForwardAction.App.Resultless(null, getString(R.string.Share)))
+            ShareMessageBottomSheetDialogFragment.newInstance(forwardMessage, null)
+                .showNow(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
         }.onFailure { e ->
             ErrorHandler.handleError(e)
         }
