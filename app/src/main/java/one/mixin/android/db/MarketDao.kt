@@ -86,4 +86,7 @@ interface MarketDao : BaseDao<Market> {
 
     @Query("SELECT m.* FROM markets m LEFT JOIN market_coins mc on mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     suspend fun simpleCoinItemByAssetId(assetId: String): CoinItem?
+
+    @Query("DELETE FROM markets WHERE coin_id = :coinId")
+    suspend fun deleteByCoinId(coinId: String)
 }

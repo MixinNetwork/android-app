@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.market.MarketCoin
 
-class RefreshMarketJob(private val assetId: String) : BaseJob(
+class RefreshMarketJob(private val id: String, private val isCoinId: Boolean) : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .addTags(GROUP).requireNetwork(),
 ) {
@@ -15,9 +15,9 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
     }
 
     override fun onRun() = runBlocking {
-        val response = routeService.market(assetId)
+        val response = routeService.market(id) // asset id or coin id
         if (response.isSuccess && response.data != null) {
-            response.data?.let { market->
+            response.data?.let { market ->
                 marketDao.insert(market)
                 marketCoinDao.insertList(market.assetIds?.map { assetId ->
                     MarketCoin(
@@ -26,7 +26,16 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
                         createdAt = nowInUtc()
                     )
                 } ?: emptyList())
+                if (market.assetIds.isNullOrEmpty()) {
+                    marketCoinDao.deleteByCoinId(market.coinId)
+                } else {
+                    marketCoinDao.deleteMarketCoinsNotInAssetIds(market.coinId, market.assetIds)
+                }
             }
+        } else if (response.errorCode == 404 && isCoinId) {
+            marketCoinDao.deleteByCoinId(id)
+            marketFavoredDao.deleteByCoinId(id)
+            marketDao.deleteByCoinId(id)
         }
     }
 }
