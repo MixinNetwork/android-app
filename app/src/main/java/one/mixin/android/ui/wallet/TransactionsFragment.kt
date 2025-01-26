@@ -196,7 +196,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     }
                     var market = walletViewModel.findMarketItemByAssetId(asset.assetId)
                     if (market == null) {
-                        jobManager.addJobInBackground(RefreshMarketJob(asset.assetId))
+                        jobManager.addJobInBackground(RefreshMarketJob(asset.assetId, false))
                         market = MarketItem(
                             "", asset.name, asset.symbol, asset.iconUrl, asset.priceUsd,
                             "", "", "", "", "", runCatching {
