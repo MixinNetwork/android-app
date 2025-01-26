@@ -4,57 +4,34 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.supportDepositFromMixin
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navTo
-import one.mixin.android.extension.openEmail
-import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.textColor
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
-import one.mixin.android.ui.address.component.AddressBottom
 import one.mixin.android.ui.address.component.AddressPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.decodeBase58
-import one.mixin.android.util.decodeICAP
-import one.mixin.android.util.getChainNetwork
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.InputFragment
-import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint
@@ -138,72 +115,40 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             )
     }
 
-    private var contentText by mutableStateOf("")
-
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleView.apply {
-                leftIb.setOnClickListener {
-                    if (viewDestroyed()) return@setOnClickListener
-
-                    if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
-                    activity?.onBackPressedDispatcher?.onBackPressed()
-                }
-                rightIb.setOnClickListener {
-                    requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
-                }
-            }
-            if (token?.collectionHash != null) {
-                tokenIcon.loadImage(
-                    token?.iconUrl ?: web3Token?.iconUrl,
-                    R.drawable.ic_avatar_place_holder,
-                    transformation = CoilRoundedHexagonTransformation()
-                )
-            } else {
-                tokenIcon.loadImage(
-                    token?.iconUrl ?: web3Token?.iconUrl,
-                    R.drawable.ic_avatar_place_holder,
-                )
-            }
-            tokenName.text = token?.name ?: web3Token?.name
-            token?.let { token ->
-                val networkName = getChainNetwork(token.assetId, token.chainId, token.chainId)
-                tokenNetworkName.isVisible = networkName.isNullOrEmpty().not()
-                tokenNetworkName.text = networkName
-            }
-            balance.text =
-                "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}"
-
             compose.setContent {
-                AddressPage(contentText, token, web3Token, chainToken)
-            }
-
-            binding.addrVa.setOnClickListener {
-                if (binding.addrVa.displayedChild == 0) {
-                    handleClick()
-                } else {
-                    binding.addrEt.setText("")
-                }
+                AddressPage(
+                    token = token,
+                    web3Token = web3Token,
+                    web3Chain = chainToken,
+                    pop = {
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                    },
+                    onScan = { key ->
+                        getScanResult.launch(Pair(key, true))
+                    }
+                )
             }
         }
+    }
 
-        binding.addrEt.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                if (viewDestroyed()) return
-                if (s.isNullOrEmpty()) {
-                    binding.addrVa.displayedChild = 0
-                } else {
-                    binding.addrVa.displayedChild = 1
-                }
-                contentText = s?.toString() ?: ""
+    private fun callbackScan(
+        data: Intent?,
+        isAddr: Boolean = true,
+    ) {
+        val text = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
+        if (text != null) {
+            if (isIcapAddress(text)) {
+                // handleScanResult(decodeICAP(text))
+            } else {
+                // handleScanResult(text)
             }
-        })
+        }
     }
 
     private fun handleClick() {
@@ -219,21 +164,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             }
     }
 
-    private fun callbackScan(
-        data: Intent?,
-        isAddr: Boolean = true,
-    ) {
-        val text = data?.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)
-        if (text != null) {
-            if (isIcapAddress(text)) {
-                binding.addrEt.setText(decodeICAP(text))
-            } else {
-                binding.addrEt.setText(text)
-            }
-        }
-    }
-
-    private val supportDeposit by lazy {
+        private val supportDeposit by lazy {
         web3Token?.supportDepositFromMixin() == true
     }
 

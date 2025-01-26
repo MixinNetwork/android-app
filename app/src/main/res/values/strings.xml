@@ -1396,6 +1396,7 @@
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
     <string name="FREE">FREE</string>
     <string name="Send_crypto_to_contact">Send crypto to Mixin contact</string>
+    <string name="Send_crypto_to_account">Send to my %1$s account using a crypto network. </string>
     <string name="Send_crypto_to_address">Send crypto to a wallet or exchange</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
