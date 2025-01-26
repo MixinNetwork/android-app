@@ -58,8 +58,8 @@
             app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_address_input"
-            app:destination="@id/address_input_fragment"
+            android:id="@+id/action_transactions_to_transfer_destination_input"
+            app:destination="@id/transfer_destination_input_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
@@ -229,8 +229,8 @@
     </fragment>
 
     <fragment
-        android:id="@+id/address_input_fragment"
-        android:name="one.mixin.android.ui.address.InputAddressFragment"
+        android:id="@+id/transfer_destination_input_fragment"
+        android:name="one.mixin.android.ui.address.TransferDestinationInputFragment"
         tools:layout="@layout/fragment_address_input">
 
         <argument

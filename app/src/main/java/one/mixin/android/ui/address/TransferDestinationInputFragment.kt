@@ -8,26 +8,26 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
-import androidx.core.view.isVisible
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.supportDepositFromMixin
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.address.component.AddressPage
+import one.mixin.android.ui.address.component.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.util.decodeBase58
+import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
@@ -35,9 +35,9 @@ import one.mixin.android.vo.safe.TokenItem
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint
-class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
+class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_address_input) {
     companion object {
-        const val TAG = "InputAddressFragment"
+        const val TAG = "TransferDestinationInputFragment"
         const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
@@ -47,7 +47,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             web3Token: Web3Token,
             chainToken: Web3Token?,
         ) =
-            InputAddressFragment().apply {
+            TransferDestinationInputFragment().apply {
                 withArgs {
                     putParcelable(ARGS_WEB3_TOKEN, web3Token)
                     putParcelable(ARGS_CHAIN_TOKEN, chainToken)
@@ -58,7 +58,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         fun newInstance(
             token: TokenItem,
         ) =
-            InputAddressFragment().apply {
+            TransferDestinationInputFragment().apply {
                 withArgs {
                     putParcelable(TransactionsFragment.Companion.ARGS_ASSET, token)
                 }
@@ -97,6 +97,9 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         resultRegistry = testRegistry
     }
 
+    private val viewModel: AddressViewModel by viewModels()
+    private var contentText by mutableStateOf("")
+
     lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressInputBinding::bind)
 
@@ -122,15 +125,19 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             compose.setContent {
-                AddressPage(
+                TransferDestinationInputPage(
                     token = token,
                     web3Token = web3Token,
                     web3Chain = chainToken,
                     pop = {
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     },
-                    onScan = { key ->
-                        getScanResult.launch(Pair(key, true))
+                    onScan = {
+                        handleClick()
+                    },
+                    contentText = contentText,
+                    onContentTextChange = { text ->
+                        contentText = text
                     }
                 )
             }
@@ -143,10 +150,10 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
     ) {
         val text = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
         if (text != null) {
-            if (isIcapAddress(text)) {
-                // handleScanResult(decodeICAP(text))
+            contentText = if (isIcapAddress(text)) {
+                decodeICAP(text)
             } else {
-                // handleScanResult(text)
+                text
             }
         }
     }
@@ -164,7 +171,7 @@ class InputAddressFragment() : BaseFragment(R.layout.fragment_address_input) {
             }
     }
 
-        private val supportDeposit by lazy {
+    private val supportDeposit by lazy {
         web3Token?.supportDepositFromMixin() == true
     }
 

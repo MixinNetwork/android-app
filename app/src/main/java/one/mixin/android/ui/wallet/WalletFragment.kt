@@ -44,7 +44,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openPermissionSetting
@@ -56,7 +55,7 @@ import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
-import one.mixin.android.ui.address.InputAddressFragment
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.MainActivity
@@ -66,7 +65,6 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -149,8 +147,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                navTo(InputAddressFragment.newInstance(it),
-                                    InputAddressFragment.TAG)
+                                navTo(TransferDestinationInputFragment.newInstance(it),
+                                    TransferDestinationInputFragment.TAG)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }

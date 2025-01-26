@@ -65,7 +65,7 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import one.mixin.android.ui.address.InputAddressFragment
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
@@ -343,7 +343,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         parentFragmentManager.apply {
             if (step == Step.Done) {
-                findFragmentByTag(InputAddressFragment.TAG)?.let {
+                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
                     beginTransaction().remove(it).commit()
                 }
                 findFragmentByTag(InputFragment.TAG)?.let {
