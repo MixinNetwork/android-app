@@ -21,4 +21,7 @@ interface MarketCoinDao : BaseDao<MarketCoin> {
 
     @Query("DELETE FROM market_coins WHERE coin_id = :coinId AND asset_id IN (:assetIds)")
     suspend fun deleteByCoinIdAndAssetIds(coinId: String, assetIds: List<String>)
+
+    @Query("DELETE FROM market_coins WHERE coin_id = :coinId")
+    suspend fun deleteByCoinId(coinId: String)
 }
