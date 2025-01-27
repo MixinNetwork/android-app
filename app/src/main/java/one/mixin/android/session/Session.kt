@@ -8,6 +8,8 @@ import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
+import io.sentry.Sentry
+import io.sentry.protocol.User
 import jwt.Jwt
 import okhttp3.Request
 import okio.ByteString.Companion.encode
@@ -69,6 +71,12 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))
 
+        val user = User().apply {
+            id = account.userId
+            username = account.identityNumber
+        }
+        Sentry.setUser(user)
+
         val salt = account.salt
         if (salt.isNullOrEmpty()) {
             return
@@ -105,6 +113,10 @@ object Session {
         return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)
     }
 
+    fun isAnonymous(): Boolean {
+        return !hasPhone()
+    }
+
     fun saltExported(): Boolean {
         val account = getAccount()
         val exportedSaltAt = account?.saltExportedAt ?: return false
@@ -116,6 +128,10 @@ object Session {
         self = null
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
+        
+        Sentry.configureScope { scope ->
+            scope.user = null
+        }
     }
 
     fun storeEd25519Seed(token: String) {

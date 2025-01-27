@@ -36,7 +36,6 @@ import com.google.android.play.core.integrity.IntegrityTokenRequest
 import com.google.android.play.core.integrity.IntegrityTokenResponse
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -148,6 +147,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -169,9 +169,9 @@ import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.NewVersionBulletin.Companion.PREF_NEW_VERSION
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
@@ -307,7 +307,6 @@ class MainActivity : BlazeBaseActivity() {
         val account = Session.getAccount()
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
-            AppCenter.setUserId(it.userId)
         }
 
         initView()
@@ -379,6 +378,7 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                    AnalyticsTracker.trackLoginVerifyPin("verify_pin")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
                             if (success) {
@@ -952,7 +952,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun initView() {
         binding.apply {
             bottomNav.itemIconTintList = null
-            bottomNav.menu.findItem(R.id.nav_chat).setChecked(true)
+            bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
                 lifecycleScope.launch {
                     channel.send(it.itemId)
@@ -1056,7 +1056,7 @@ class MainActivity : BlazeBaseActivity() {
             openMarket()
         } else {
             defaultSharedPreferences.putLong(
-                PREF_NEW_VERSION,
+                ReminderBottomSheetDialogFragment.PREF_NEW_VERSION,
                 System.currentTimeMillis(),
             )
         }

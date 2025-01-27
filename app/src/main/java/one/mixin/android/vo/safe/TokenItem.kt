@@ -23,7 +23,7 @@ data class TokenItem(
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
-    val changeUsd: String,
+    var changeUsd: String,
     val changeBtc: String,
     var hidden: Boolean?,
     val confirmations: Int,
@@ -115,6 +115,8 @@ data class TokenItem(
                     oldItem == newItem
             }
     }
+
+
 }
 
 fun TokenItem.toPriceAndChange(): PriceAndChange {

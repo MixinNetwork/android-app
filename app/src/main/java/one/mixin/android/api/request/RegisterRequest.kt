@@ -12,7 +12,7 @@ data class RegisterRequest(
     @SerializedName("salt_base64")
     val salt: String,
     @SerializedName("master_public_hex")
-    val saltPublicHex: String,
+    val masterPublicHex: String,
     @SerializedName("master_signature_hex")
-    val saltSignatureHex: String,
+    val masterSignatureHex: String,
 )

@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -76,8 +75,6 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.lifecycle.liveData
-import androidx.lifecycle.switchMap
 
 @Singleton
 class ConversationRepository
@@ -201,6 +198,16 @@ class ConversationRepository
                 messageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
             } else {
                 messageDao.indexMediaMessages(conversationId, messageId)
+            }
+
+        suspend fun countIndexMediaMessages(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): Int =
+            if (excludeLive) {
+                messageDao.countIndexMediaMessagesExcludeLive(conversationId)
+            } else {
+                messageDao.countIndexMediaMessages(conversationId)
             }
 
         fun getMediaMessages(
@@ -471,7 +478,9 @@ class ConversationRepository
 
         suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-        fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
+        fun countUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.countUnreadMentionMessageByConversationId(conversationId)
+
+        suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getFirstUnreadMentionMessageByConversationId(conversationId)
 
         suspend fun updateCircles(
             conversationId: String?,

@@ -100,6 +100,9 @@
         <attr name="android:text" format="string"/>
         <attr name="android:checked" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="BadgeCircleImageView">
+        <attr name="badge_size" format="dimension" />
+    </declare-styleable>
     <declare-styleable name="RoundTitleView">
         <attr name="title_text" format="string" />
         <attr name="right_icon" format="reference" />
@@ -124,6 +127,9 @@
         <attr name="avatar_group_size" format="dimension" />
         <attr name="avatar_group_margin" format="dimension" />
         <attr name="avatar_group_border_color" format="color" />
+    </declare-styleable>
+    <declare-styleable name="AssetIconGroup">
+        <attr name="asset_group_border_color" format="color" />
     </declare-styleable>
     <declare-styleable name="PlayerView">
         <attr name="use_controller" format="boolean"/>

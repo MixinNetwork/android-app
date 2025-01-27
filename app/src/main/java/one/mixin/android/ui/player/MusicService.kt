@@ -1,5 +1,6 @@
 package one.mixin.android.ui.player
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -15,7 +16,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Player.DISCONTINUITY_REASON_INTERNAL
 import androidx.media3.common.Player.DISCONTINUITY_REASON_REMOVE
 import androidx.media3.common.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.paging.PagedList
@@ -36,7 +36,7 @@ import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
-@UnstableApi @AndroidEntryPoint
+@AndroidEntryPoint
 class MusicService : MediaSessionService(), LifecycleOwner {
     private lateinit var mediaSession: MediaSession
 
@@ -265,7 +265,8 @@ class MusicService : MediaSessionService(), LifecycleOwner {
 
     private inner class MediaSessionCallback : MediaSession.Callback
 
-    @UnstableApi private inner class PlayerEventListener : Player.Listener {
+    private inner class PlayerEventListener : Player.Listener {
+        @SuppressLint("UnsafeOptInUsageError")
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,

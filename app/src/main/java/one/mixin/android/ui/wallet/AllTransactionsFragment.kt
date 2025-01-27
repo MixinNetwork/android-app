@@ -39,6 +39,7 @@ import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -233,11 +234,14 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
                 successBlock = {
-                    walletViewModel.clearAllPendingDeposits()
-
                     val pendingDeposits = it.data
                     if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
                         return@handleMixinResponse
                     }
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
@@ -247,13 +251,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                                 dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
                             }
                         }
-                        .chunked(100) { chunk ->
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
                             lifecycleScope.launch {
-                                chunk.map { pd ->
-                                    pd.toSnapshot()
-                                }.let { list ->
-                                    walletViewModel.insertPendingDeposit(list)
-                                }
+                                walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
                 },

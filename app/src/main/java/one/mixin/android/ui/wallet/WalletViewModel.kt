@@ -23,7 +23,6 @@ import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
@@ -146,6 +145,8 @@ class WalletViewModel
         assetId: String,
         depositEntry: DepositEntry,
     ) = tokenRepository.pendingDeposits(assetId, requireNotNull(depositEntry.destination) { "refreshPendingDeposit required destination not null" }, depositEntry.tag)
+
+    fun getPendingDisplays() = tokenRepository.getPendingDisplays()
 
     suspend fun clearAllPendingDeposits() = tokenRepository.clearAllPendingDeposits()
 

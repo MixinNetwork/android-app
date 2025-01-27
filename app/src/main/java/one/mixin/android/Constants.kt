@@ -24,10 +24,6 @@ object Constants {
     }
 
     object HelpLink {
-        const val CENTER = "https://mixinmessenger.zendesk.com"
-        const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
-        const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
-        const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
         const val INSCRIPTION = "https://mixin.one/inscriptions/"
         const val MARKETPLACE = "https://rune.fan/items/"
@@ -97,7 +93,14 @@ object Constants {
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
-        const val PREF_HAS_USED_MARKET = "pref_has_used_market" 
+        const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+
+        const val PREF_TO_SWAP = "pref_to_swap"
+        const val PREF_FROM_SWAP = "pref_from_swap"
+        const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
+        const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
+        const val PREF_WALLET_SEND = "pref_wallet_send"
+        const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -164,7 +167,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 63
+        const val CURRENT_VERSION = 64
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

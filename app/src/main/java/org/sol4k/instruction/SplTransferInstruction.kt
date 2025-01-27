@@ -2,6 +2,7 @@ package org.sol4k.instruction
 
 import okio.Buffer
 import org.sol4k.AccountMeta
+import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
 
@@ -13,6 +14,7 @@ class SplTransferInstruction(
     signers: List<PublicKey>,
     private val amount: Long,
     private val decimals: Int,
+    tokenProgramId: PublicKey = TOKEN_PROGRAM_ID,
 ) : Instruction {
     companion object {
         @Suppress("unused")
@@ -37,5 +39,5 @@ class SplTransferInstruction(
         *signers.map { s -> AccountMeta.signer(s) }.toTypedArray()
     )
 
-    override val programId: PublicKey = TOKEN_PROGRAM_ID
+    override val programId: PublicKey = tokenProgramId
 }

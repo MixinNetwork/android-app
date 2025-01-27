@@ -2,13 +2,12 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.db.insertUnspentOutputs
 import one.mixin.android.session.Session
 import one.mixin.android.session.buildHashMembers
 import timber.log.Timber
 
 class SyncOutputJob() : BaseJob(
-    Params(PRIORITY_UI_HIGH).addTags(TAG).groupBy(TAG).requireNetwork(),
+    Params(PRIORITY_UI_HIGH).addTags(TAG).persist().groupBy(TAG).requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

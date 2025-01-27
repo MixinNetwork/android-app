@@ -22,9 +22,11 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
+import org.kethereum.model.Token
 import java.math.BigDecimal
 
 class TransferContent : LinearLayout {
@@ -62,6 +64,15 @@ class TransferContent : LinearLayout {
                 renderAddressManage(transferItem)
             }
         }
+    }
+
+    fun render(
+        invoice: MixinInvoice,
+        tokens: List<TokenItem>,
+        receivers: List<User>?,
+        userClick: (User) -> Unit,
+    ) {
+        renderInvoice(invoice, tokens, receivers, userClick)
     }
 
     fun render(
@@ -159,6 +170,58 @@ class TransferContent : LinearLayout {
 
             val tokenItem = transferBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderInvoice(
+        invoice: MixinInvoice,
+        tokens: List<TokenItem>,
+        receivers: List<User>?,
+        userClick: (User) -> Unit,
+    ) {
+        _binding.apply {
+            val amounts = invoice.entries.map { it.amountString() }
+            val assetIds = invoice.entries.map { it.assetId }
+            amount.isVisible = true
+
+            sender.isVisible = true
+            total.isVisible = false
+
+            val totalFiat = amounts.mapIndexed { index, amount ->
+                val token = tokens.find { it.assetId == assetIds[index] }
+                try {
+                    if (token != null) {
+                        BigDecimal(amount) * token.priceFiat()
+                    } else {
+                        BigDecimal.ZERO
+                    }
+                } catch (e: Exception) {
+                    BigDecimal.ZERO
+                }
+            }.sumOf { it }
+
+            amount.setContent(
+                R.string.Total,
+                "${Fiats.getSymbol()}${totalFiat.numberFormat2()}",
+                null,
+            )
+            
+            sender.setContent(R.plurals.Sender_title, listOf(Session.getAccount()!!.toUser()), 1, {})
+            if (receivers.isNullOrEmpty()) {
+                address.isVisible = true
+                receive.isVisible = false
+                address.setContent(R.string.Receiver, invoice.recipient.xinMembers.first().toString())
+            } else {
+                address.isVisible = false
+                receive.isVisible = true
+                receive.setContent(R.plurals.Receiver_title, receivers, receivers.size, userClick)
+            }
+
+            networkFee.isVisible = true
+            networkFee.setContent(R.string.Fee, "0", "")
+
+            assetContainer.isVisible = true
+            assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens)
         }
     }
 

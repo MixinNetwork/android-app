@@ -48,6 +48,7 @@ import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -332,6 +333,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 val failedSigners = tipBundle.tipEvent?.failedSigners
                 if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
                     // for fix tipCounter > nodeCounter
+                    AnalyticsTracker.trackLoginVerifyPin("change_pin")
                     showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                         tipBundle.oldPin = pin
                         tipBundle.pin = pin
@@ -340,6 +342,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 } else {
                     // We should always input old PIN to decrypt encryptedSalt
                     // even if there are no failed signers.
+                    AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
                     showInputPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
                         tipBundle.oldPin = oldPin
                         showInputPin { pin ->
@@ -350,6 +353,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
             TipType.Upgrade -> {
+                AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
                 showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
                     tipBundle.oldPin = pin // as legacy pin
                     tipBundle.pin = pin
@@ -357,6 +361,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
             TipType.Create -> {
+                AnalyticsTracker.trackSignUpSetPin()
                 showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                     tipBundle.pin = pin
                     processTip()
@@ -538,7 +543,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     return@runCatching false
                 }
             val spendSeed = tip.getSpendPriv(requireContext(), seed)
-            val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed)
+            val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed, Session.isAnonymous())
             val spendKeyPair = newKeyPairFromSeed(spendSeed)
             val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
             val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
@@ -550,8 +555,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                             signature = Session.getRegisterSignature(selfAccountId, spendSeed),
                             pin = viewModel.getEncryptedTipBody(selfAccountId, spendKeyPair.publicKey.toHex(), pin),
                             salt = saltBase64,
-                            saltPublicHex = edKey.publicKey.hexString(),
-                            saltSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString()
+                            masterPublicHex = edKey.publicKey.hexString(),
+                            masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString()
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {

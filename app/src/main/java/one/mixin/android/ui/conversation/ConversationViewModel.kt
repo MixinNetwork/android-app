@@ -507,6 +507,8 @@ class ConversationViewModel
 
         suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 
+        suspend fun findFriendsAndMyBot() = userRepository.findFriendsAndMyBot()
+
         suspend fun successConversationList(): List<ConversationMinimal> =
             conversationRepository.successConversationList()
 
@@ -802,7 +804,9 @@ class ConversationViewModel
             }
         }
 
-        fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
+        fun countUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.countUnreadMentionMessageByConversationId(conversationId)
+
+        suspend fun getFirstUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getFirstUnreadMentionMessageByConversationId(conversationId)
 
         suspend fun findLatestTrace(
             opponentId: String?,

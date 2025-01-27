@@ -12,6 +12,24 @@ import one.mixin.android.vo.StickerAlbumOrder
 
 @Dao
 interface StickerAlbumDao : BaseDao<StickerAlbum> {
+
+    @Transaction
+    suspend fun updateOrderedAt(stickerAlbumOrders: List<StickerAlbumOrder>) {
+        stickerAlbumOrders.forEach { o -> updateOrderedAt(o) }
+    }
+
+    @Transaction
+    suspend fun insertUpdate(
+        album: StickerAlbum,
+    ) {
+        val a = findAlbumById(album.albumId)
+        if (a == null) {
+            insert(album)
+        } else {
+            update(album)
+        }
+    }
+
     @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' AND added = 1 ORDER BY ordered_at DESC, created_at DESC")
     fun observeSystemAddedAlbums(): LiveData<List<StickerAlbum>>
 

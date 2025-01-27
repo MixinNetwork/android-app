@@ -71,6 +71,7 @@ import one.mixin.android.ui.wallet.alert.components.AlertFrequencySelector
 import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.components.AlertTypeSelector
 import one.mixin.android.ui.wallet.alert.components.PercentagesRow
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
@@ -165,7 +166,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 10.dp)
+                            .padding(horizontal = 12.dp)
                             .verticalScroll(rememberScrollState())
                             .imePadding(),
                         horizontalAlignment = Alignment.Start,
@@ -196,14 +197,14 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                 expandType = true
                                 coroutineScope.launch { bottomSheetState.show() }
                             }
+                            Spacer(modifier = Modifier.height(6.dp))
 
                             Spacer(modifier = Modifier.height(2.dp))
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
-                                    .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard),
+                                    .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -373,7 +374,7 @@ fun AlertEditPage(coin: CoinItem?, alert: Alert?, onAdd: (CoinItem) -> Unit, pop
                                     )
                                 }
                             }
-
+                            Spacer(modifier = Modifier.height(6.dp))
                             if (inputError != null) {
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Column(modifier = Modifier.padding(horizontal = 10.dp)) {

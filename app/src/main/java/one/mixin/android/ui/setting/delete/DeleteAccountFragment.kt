@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -59,7 +58,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             deleteRl.setOnClickListener {
                 verifyDeleteAccount()
             }

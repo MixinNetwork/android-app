@@ -13,6 +13,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatGalleryBinding
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
@@ -57,6 +58,7 @@ class GalleryItemAdapter(
                 width = ctx.dpToPx(42f)
                 height = ctx.dpToPx(42f)
             }
+            imageView.clear()
             imageView.setImageResource(R.drawable.ic_gallery_camera)
             holder.binding.bg.setBackgroundResource(R.drawable.bg_gray_black_round_8dp)
             imageView.setOnClickListener { listener?.onCameraClick() }

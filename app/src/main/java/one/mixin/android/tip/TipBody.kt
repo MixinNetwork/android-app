@@ -24,6 +24,7 @@ object TipBody {
     private const val TIPBodyForSequencerRegister = "SEQUENCER:REGISTER:"
     private const val TIPBodyForExport = "TIP:USER:EXPORT:PRIVATE:"
     private const val TIPBodyForDeactivate = "TIP:USER:DEACTIVATE:"
+    private const val TIPSessionLogout = "TIP:SESSION:LOGOUT:"
 
     fun forVerify(timestamp: Long): ByteArray =
         String.format("%s%032d", TIPVerify, timestamp).toByteArray()
@@ -114,6 +115,9 @@ object TipBody {
 
     fun forDeactivate(userId: String): ByteArray =
         (TIPBodyForDeactivate + userId).hashToBody()
+
+    fun forLogout(sessionId: String): ByteArray =
+        (TIPSessionLogout + sessionId).hashToBody()
 
     fun forProvisioningCreate(
         id: String,

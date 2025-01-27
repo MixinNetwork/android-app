@@ -24,12 +24,8 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
-import one.mixin.android.db.insertUpdateList
-import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
-import one.mixin.android.db.updateRelationship
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.putString
@@ -82,7 +78,9 @@ class UserRepository
         ): List<SearchBot> =
             DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
-        suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
+        suspend fun searchSuspend(query: String): MixinResponse<User> {
+            return userService.searchSuspend(query)
+        }
 
         suspend fun fuzzySearchGroupUser(
             conversationId: String,
@@ -220,6 +218,8 @@ class UserRepository
         fun allRecipients(): LiveData<List<UserItem>> = userDao.allRecipients()
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
+
+        suspend fun findFriendsAndMyBot() = userDao.findFriendsAndMyBot(Session.getAccountId()!!)
 
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 

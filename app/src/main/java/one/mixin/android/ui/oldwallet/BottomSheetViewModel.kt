@@ -31,7 +31,6 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
@@ -232,11 +231,17 @@ class BottomSheetViewModel
             pin: String,
         ): String = pinCipher.encryptPin(pin, TipBody.forDeactivate(userId))
 
+        suspend fun getLogoutTipBody(
+            sessionId: String,
+            pin: String,
+        ): String = pinCipher.encryptPin(pin, TipBody.forLogout(sessionId))
+
         suspend fun deactivate(request: DeactivateRequest) = accountRepository.deactivate(request)
 
-        suspend fun logout(sessionId: String) =
+        suspend fun logout(sessionId: String, pin: String) =
             withContext(Dispatchers.IO) {
-                accountRepository.logout(sessionId)
+                val pinBase64 = getLogoutTipBody(sessionId, pin)
+                accountRepository.logout(sessionId, pinBase64)
             }
 
         suspend fun findAddressById(

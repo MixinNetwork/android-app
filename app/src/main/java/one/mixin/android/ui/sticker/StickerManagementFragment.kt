@@ -23,6 +23,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isWideScreen
@@ -42,6 +43,9 @@ import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.lottie.RLottieImageView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 
 @AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {
@@ -64,6 +68,16 @@ class StickerManagementFragment : BaseFragment() {
     private val stickers = mutableListOf<Sticker>()
     private val stickerAdapter: StickerAdapter by lazy {
         StickerAdapter(stickers)
+    }
+
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let {
+            requireActivity().addFragment(
+                this@StickerManagementFragment,
+                StickerAddFragment.newInstance(it.toString(), true),
+                StickerAddFragment.TAG,
+            )
+        }
     }
 
     override fun onCreateView(
@@ -108,29 +122,7 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
-                    RxPermissions(activity!!)
-                        .request(
-                            *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-                            } else {
-                                mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            }.apply {
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            }.toTypedArray(),
-                        )
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    openGalleryFromSticker()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                                reportException(it)
-                            },
-                        )
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
 
                 override fun onDelete() {
@@ -173,15 +165,6 @@ class StickerManagementFragment : BaseFragment() {
         data: Intent?,
     ) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
-            data?.data?.let {
-                requireActivity().addFragment(
-                    this@StickerManagementFragment,
-                    StickerAddFragment.newInstance(it.toString(), true),
-                    StickerAddFragment.TAG,
-                )
-            }
-        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -236,6 +219,7 @@ class StickerManagementFragment : BaseFragment() {
                 cover.visibility = GONE
             }
             if (!editing && position == 0) {
+                imageView.clear()
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {

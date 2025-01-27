@@ -1,4 +1,3 @@
-
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
@@ -10,14 +9,16 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'kotlinx-serialization'
     id "com.google.protobuf" version "0.9.1"
-    id "org.jetbrains.kotlin.plugin.compose" version "2.0.21"
+    id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
+
+    id 'io.sentry.android.gradle' version '4.14.1'
 }
 
 def versionMajor = 2
-def versionMinor = 0
-def versionPatch = 1
-def versionBuild = 1
+def versionMinor = 2
+def versionPatch = 0
+def versionBuild = 4
 
 android {
     compileSdk 35
@@ -134,16 +135,16 @@ android {
     testBuildType "staging"
 
     buildTypes {
-        if (project.hasProperty("RELEASE_STORE_FILE")) {
-            release {
-                ndk {
-                    abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
-                }
-                debuggable false
-                jniDebuggable false
-                shrinkResources true
-                minifyEnabled true
-                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        release {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+            }
+            debuggable false
+            jniDebuggable false
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
                 signingConfig signingConfigs.release
             }
         }
@@ -154,6 +155,7 @@ android {
                 abiFilters "arm64-v8a", "x86_64"
             }
         }
+
         staging {
             initWith debug
             applicationIdSuffix ".test"
@@ -206,8 +208,8 @@ dependencies {
     implementation("org.bitcoinj:bitcoinj-core:${bitcoinVersion}") {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
-    implementation platform("com.google.firebase:firebase-bom:33.6.0")
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+    implementation platform("com.google.firebase:firebase-bom:33.8.0")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
@@ -241,10 +243,12 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
-    implementation "io.coil-kt:coil-compose:${coilVersion}"
-    implementation "io.coil-kt:coil-svg:${coilVersion}"
-    implementation "io.coil-kt:coil-video:${coilVersion}"
-    implementation "io.coil-kt:coil-gif:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-compose:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-okhttp:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-svg:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-cache-control:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-video:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-gif:${coilVersion}"
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
     implementation "androidx.paging:paging-common-ktx:${pagingVersion}"
@@ -368,12 +372,9 @@ dependencies {
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
     implementation "androidx.startup:startup-runtime:${startupVersion}"
     implementation "dnsjava:dnsjava:${dnsVersion}"
-    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
     implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
     implementation "com.github.skydoves:balloon:$balloonVersion"
-    implementation "com.mapbox.maps:android:${mapboxSdkVersion}"
-    implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
+    implementation "org.osmdroid:osmdroid-android:$streetMapVersion"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.SeniorZhai:IndicatorSeekBar:${indicatorseekbarVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
@@ -390,7 +391,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
-    implementation 'androidx.activity:activity-compose:1.9.3'
+    implementation 'androidx.activity:activity-compose:1.10.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     
     // accompanist
@@ -401,7 +402,7 @@ dependencies {
     // wallet connect && web3j
     implementation "org.web3j:core:4.11.0" // ⚠️ dependabot unexpected behavior update to version 5.0.0
     implementation "org.web3j:crypto:4.11.0"
-    implementation platform("com.reown:android-bom:1.0.2")
+    implementation platform("com.reown:android-bom:1.1.2")
     implementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
@@ -467,8 +468,14 @@ dependencies {
     implementation "com.google.android.gms:play-services-wallet:$playWalletVersion"
     implementation "com.google.android.gms:play-services-pay:$playPayVersion"
 
-    //Jetpack Datastore - Proto Datastore
+    // Jetpack Datastore - Proto Datastore
     implementation "androidx.datastore:datastore:$datastoreVersion"
+
+    // AppsFlyer
+    implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {
+        exclude group: 'com.squareup.leakcanary', module: 'leakcanary-android-process'
+    }
+    implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
 }
 
 composeCompiler {
@@ -512,6 +519,22 @@ task syncStrings {
                     dest "src/main/res/values-$lang"
                 }
             }
+        }
+    }
+}
+
+
+import io.sentry.android.gradle.extensions.InstrumentationFeature
+sentry {
+    org = "mcwm"
+    projectName = "android"
+
+    tracingInstrumentation {
+        enabled = true
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.OKHTTP
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.FILE_IO
+        logcat {
+            enabled = false
         }
     }
 }

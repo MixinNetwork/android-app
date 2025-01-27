@@ -28,8 +28,8 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
-import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.setQuoteText
+import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -89,11 +89,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 rightExtraIb.setOnClickListener {
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
-                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    marketItem.isFavored = marketItem.isFavored != true
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol)
+                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol, marketItem.coinId)
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
@@ -122,7 +122,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                     val assets = walletViewModel.allAssetItems()
                     if (nowTokens.size == 1) {
-                        val output = if (nowTokens.first().assetId == USDT_ASSET_ID) {
+                        val input = if (nowTokens.first().assetId == USDT_ASSET_ID) {
                             XIN_ASSET_ID
                         } else {
                             USDT_ASSET_ID
@@ -130,8 +130,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                         view.navigate(R.id.action_market_details_to_swap,
                             Bundle().apply {
-                                putString(ARGS_INPUT, nowTokens.first().assetId)
-                                putString(ARGS_OUTPUT, output)
+                                putString(ARGS_INPUT, input)
+                                putString(ARGS_OUTPUT, nowTokens.first().assetId)
                                 putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
                             })
                     } else {
@@ -231,7 +231,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
-            radioAll.text = getString(R.string.All)
+            radioAll.text = getString(R.string.All).uppercase()
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
                 typeState.value =
@@ -250,7 +250,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         }
 
                         R.id.radio_ytd -> {
-                            "YTD"
+                            "1Y"
                         }
 
                         else -> {
@@ -416,7 +416,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } else {
                             "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                         }
-                    } catch (ignored: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE

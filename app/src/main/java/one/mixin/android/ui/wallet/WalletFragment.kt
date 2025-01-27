@@ -25,30 +25,19 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.RouteConfig.GOOGLE_PAY
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.MixinResponseException
-import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -57,12 +46,9 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
@@ -73,22 +59,19 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment
-import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
-import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
-import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
-import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
-import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.reportException
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -323,7 +306,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                             .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
-                        if (!Session.saltExported() && !Session.hasPhone()) {
+                        if (!Session.saltExported() && Session.isAnonymous()) {
                             BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
                                 .apply {
                                     laterCallback = {
@@ -336,6 +319,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                         }
                     }
                     sendReceiveView.swap.setOnClickListener {
+                        AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
@@ -420,6 +404,24 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
             migrateEnable = it
         }
+
+        walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
+            _headBinding?.apply {
+                pendingView.isVisible = it.isNotEmpty()
+                pendingView.updateTokens(it)
+                pendingView.setOnClickListener { v ->
+                    if (it.size == 0) {
+                        lifecycleScope.launch {
+                            val token = walletViewModel.simpleAssetItem(it[0].assetId) ?: return@launch
+                            WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
+                        }
+                    } else {
+                        WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+                    }
+                }
+            }
+        }
+
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
@@ -431,6 +433,42 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
         _headBinding?.sendReceiveView?.badge?.isVisible = swap
     }
+
+    override fun onResume() {
+        super.onResume()
+        refreshAllPendingDeposit()
+    }
+
+    private fun refreshAllPendingDeposit() =
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { walletViewModel.allPendingDeposit() },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
+                successBlock = {
+                    val pendingDeposits = it.data
+                    if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
+                        return@handleMixinResponse
+                    }
+                    val destinationTags = walletViewModel.findDepositEntryDestinations()
+                    pendingDeposits
+                        .filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            lifecycleScope.launch {
+                                walletViewModel.insertPendingDeposit(snapshots)
+                            }
+                        }
+                },
+            )
+        }
+
 
     private var migrateEnable = false
 

@@ -71,7 +71,7 @@ class Web3TokenHeader : ConstraintLayout {
             } catch (ignored: Exception) {
                 token.balance
             }
-        _binding.value.text = "≈ ${Fiats.getSymbol()}${(BigDecimal(token.price).multiply(BigDecimal(token.balance)).multiply(BigDecimal(Fiats.getRate())).numberFormat2())}"
+        _binding.value.text = runCatching { "≈ ${Fiats.getSymbol()}${(BigDecimal(token.price).multiply(BigDecimal(token.balance)).multiply(BigDecimal(Fiats.getRate())).numberFormat2())}" }.getOrDefault("N/A")
         _binding.symbol.text = token.symbol
         _binding.stake.root.isVisible = token.isSolToken()
     }

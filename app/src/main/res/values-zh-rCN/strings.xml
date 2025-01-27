@@ -186,6 +186,7 @@
     <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
         <item quantity="other">删除 %1$d 条消息吗？</item>
     </plurals>
+    <string name="chat_delete_url">https://support.mixin.one/zh/article/5aac5l2v5bya5zcv6zmq5pe25rai5ogv77yf-18dzv5i</string>
     <string name="chat_group_add">%1$s添加了%2$s</string>
     <string name="chat_group_call_did_not_answer">%1$s未接听群组语音</string>
     <string name="chat_group_call_self_did_not_answer">你未接听群组语音</string>
@@ -201,6 +202,7 @@
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
     <string name="chat_list_empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
+    <string name="chat_not_support_url">https://support.mixin.one/zh/article/mixin-h92cxa</string>
     <string name="chat_on_mixin_content">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 @%1$s 加我好友。</string>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
     <string name="Chat_pinned">会话已置顶</string>
@@ -351,6 +353,7 @@
     <string name="Disabled">已停用</string>
     <string name="disappearing_message">限时消息</string>
     <string name="disappearing_message_hint">启用后，在此聊天中发送和接收的新信息在被看到后会消失，阅读文档以**了解更多**。</string>
+    <string name="disappearing_message_url">https://support.mixin.one/zh/article/5aac5l2v5bya5zcv6zmq5pe25rai5ogv77yf-18dzv5i</string>
     <string name="disappearing_option_1">30 秒</string>
     <string name="disappearing_option_2">10 分</string>
     <string name="disappearing_option_3">2 小时</string>
@@ -499,7 +502,8 @@
     <string name="fourth_pin_confirm_hint">这是最后一次确认 PIN，记住：PIN 丢失将永远无法找回！</string>
     <string name="Friday">星期五</string>
     <string name="From">来自</string>
-    <string name="Token_From">从</string>
+    <string name="swap_send">支付</string>
+    <string name="swap_receive">获得</string>
     <string name="Generating_keys">正在创建密钥…</string>
     <string name="Get_a_new_wallet">创建钱包</string>
     <string name="Go">导航</string>
@@ -536,7 +540,7 @@
     <string name="days_count_short">%1$d天</string>
     <string name="weeks_count_short">%1$d周</string>
     <string name="months_count_short">%1$d月</string>
-    <string name="ytd">今年</string>
+    <string name="ytd">一年</string>
     <string name="how_are_you">嗨，你好吗？</string>
     <string name="i_am_good">我很好。</string>
     <string name="I_know">我知道了</string>
@@ -567,6 +571,7 @@
     <string name="landing_invitation_dialog_content">我们将发送4位验证码到手机 %1$s, 请在下一个页面输入</string>
     <string name="landing_anonymous_dialog_content">我们将发送4位验证码到匿名号码 %1$s, 请在下一个页面输入</string>
     <string name="landing_validation_title">请输入发送至以下号码的 4 位验证码：%1$s</string>
+    <string name="landing_verification_tip_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
     <string name="Language">语言</string>
     <string name="Large_Amount_Confirmation">大额转账确认</string>
     <string name="Large_Amount_Confirmation_with_symbol">大额转账确认（%1$s）</string>
@@ -699,12 +704,14 @@
     <string name="Not_recognized">无法识别</string>
     <string name="Not_support">不支持备份</string>
     <string name="not_supported_deposit">Mixin 已停止支持 %1$s 的充值服务。您可以继续提现和转账钱包余额中的 %2$s。**了解更多**请阅读文档。</string>
+    <string name="not_supported_deposit_url">https://support.mixin.one/zh/article/5ywz5lqo5pq56en6lwe5lqn5lin5psv5oyb5ywf5yc855qe6k05pio-1sh1z50</string>
     <string name="suspended_deposit">%1$s 充值已暂停，可能的原因是因为使用率太低、节点故障、区块链网络硬分叉或者拥堵，注意已转入的 %2$s 资产可以继续转账。</string>
     <string name="Notice">注意</string>
     <string name="Notification_and_Confirmation">通知和确认</string>
     <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>
-    <string name="notification_content">不再遗漏好友的消息。</string>
+    <string name="notification_content">启用推送通知以实时更新价格警报和消息。</string>
     <string name="Notifications">通知</string>
+    <string name="Enable_Notifications">启用通知</string>
     <string name="Now_Playing">正在播放</string>
     <string name="number_reached_limit">已达到上限</string>
     <string name="Off">关闭</string>
@@ -872,10 +879,11 @@
     <string name="Search_GIPHY">搜索 GIPHY</string>
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="SEARCH_MESSAGES">搜索消息</string>
-    <string name="search_placeholder_asset">名称, 符号</string>
+    <string name="search_placeholder_asset">搜索名称, 符号</string>
     <string name="search_placeholder_explore">名称, 符号, 链接</string>
     <string name="search_placeholder_collectible">名称</string>
     <string name="search_placeholder_number">搜索 Mixin ID 或手机号码：</string>
+    <string name="search_mao">搜索 MAO：</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
         <item quantity="one">%1$d 条相关的消息</item>
         <item quantity="other">%1$d 条相关的消息</item>
@@ -928,6 +936,7 @@
     <string name="setting_delete_anonymous_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。</string>
     <string name="setting_delete_account_send">我们将发送 4 位验证码到手机 %1$s</string>
     <string name="setting_delete_account_tip">你的 Mixin 钱包还有一些资产，可以提现至其他钱包或交易所，账户一旦注销，这些资产将和钱包一起被弃用无法找回。</string>
+    <string name="setting_delete_account_url">https://support.mixin.one/zh/article/5aac5l2v5yig6zmk6lsm5y377yf-1uteq30</string>
     <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗。</string>
@@ -955,7 +964,7 @@
     <string name="setting_transfer_large_summary_greater">当转账金额大于 %1$s 时显示确认弹窗。</string>
     <string name="Settings">设置</string>
     <string name="Share">分享</string>
-    <string name="Share_Contact">分享他的名片</string>
+    <string name="Share_Contact">分享名片</string>
     <string name="Share_error">分享出错</string>
     <string name="Share_Link">分享邀请链接</string>
     <string name="Share_Logs">分享日志文件</string>
@@ -1049,7 +1058,7 @@
     <string name="Trying_connect_tip_network">正在连接 TIP 网络</string>
     <string name="Trying_connect_tip_node">正在连接节点…</string>
     <string name="Tuesday">星期二</string>
-    <string name="Turn_On_Notifications">打开通知</string>
+    <string name="Turn_On_Notifications">启用推送通知</string>
     <string name="Type_message">输入消息</string>
     <string name="Unblock">解除屏蔽</string>
     <string name="UNDO">撤销</string>
@@ -1521,6 +1530,9 @@
     <string name="balance_max">最大</string>
     <string name="balance_half">取半</string>
     <string name="Failed">失败</string>
+    <string name="single_transaction_should_be_greater_than">最低金额 %1$s %2$s</string>
+    <string name="single_transaction_should_be_less_than">最高金额 %1$s %2$s</string>
+    <string name="single_transaction_should_be_between">金额范围 %1$s %2$s ~ %3$s %4$s</string>
     <!-- Web3 -->
     <string name="web3_approve">批准</string>
     <string name="web3_borrow">借款</string>
@@ -1715,8 +1727,8 @@
     <string name="Create_Account">创建帐户</string>
     <string name="Mobile_Phone">手机</string>
     <string name="Mnemonic_Phrase">助记词</string>
-    <string name="create_introduction">MPC 钱包，%1$s，自我保管，社交恢复</string>
     <string name="Convenience">便利</string>
+    <string name="create_introduction">MPC 钱包，2FA，%1$s，自我保管，社交恢复</string>
     <string name="Creating_your_account">正在创建账户…</string>
     <string name="Signing_in_to_your_account">正在登录账户…</string>
     <string name="Set_up_Pin">设置 PIN</string>
@@ -1789,4 +1801,42 @@
     <string name="Upgrade_safe">升级 Safe</string>
     <string name="mixin_support">Mixin 客服</string>
     <string name="ask_me_anything">向我提问</string>
+    <string name="help_link">https://support.mixin.one/zh/category/mixin-messenger-1hmc388</string>
+    <string name="deposit_url">https://support.mixin.one/zh/article/mixin-messenger-5ynqjm</string>
+    <string name="emergency_url">https://support.mixin.one/zh/article/5aac5l2v6k6572u57sn5ocl6igu57o75lq6-d2nssy</string>
+    <string name="Deposit_Pending_Confirmation">%1$s 充值确认中</string>
+    <string name="Deposits_Pending_Confirmation">有 %1$d 笔充值确认中</string>
+    <string name="open_source">版权所有 Mixin Messenger\n根据 GPL-3.0 授权许可</string>
+    <string name="asset_changes">资产变动</string>
+    <string name="asset_changes_estimate">资产变动（预估）</string>
+    <string name="Confirm_Transfer_in_Batches">批量转账确认</string>
+    <string name="Partial_Photo_Access_Permission">您向 Mixin Messenger 授予了仅访问部分照片的权限。管理</string>
+    <string name="Manage">管理</string>
+    <string name="Select_More_Photos">选择更多照片</string>
+    <string name="Change_Permissions">更改权限</string>
+    <string name="order_type_swap">闪兑</string>
+    <string name="order_type_limit">限价</string>
+    <string name="Swap_Again">再来一笔</string>
+    <string name="Share_Pair">分享交易对</string>
+    <string name="Completed">已完成</string>
+    <string name="Refunded">已退款</string>
+    <string name="Order">订单</string>
+    <string name="Order_Details">订单详情</string>
+    <string name="Paid">已支付</string>
+    <string name="Estimated_Receive">预计收到</string>
+    <string name="Estimated_Price">预计价格</string>
+    <string name="swap_order_paid">已支付</string>
+    <string name="swap_order_received">已收到</string>
+    <string name="Type">类型</string>
+    <string name="Order_Created">创建日期</string>
+    <string name="Order_ID">订单 ID</string>
+    <string name="State_Created">已创建</string>
+    <string name="State_Pending">待处理</string>
+    <string name="State_Success">已完成</string>
+    <string name="State_Failed">失败</string>
+    <string name="State_Refunded">已退款</string>
+    <string name="price_change_24h">24 小时价格变化</string>
+    <string name="sell_token">卖出 %1$s</string>
+    <string name="buy_token">买入 %1$s</string>
+    <string name="NO_ORDERS">没有订单</string>
 </resources>

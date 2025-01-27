@@ -1,8 +1,8 @@
 package one.mixin.android.util
 
+import android.annotation.SuppressLint
 import android.media.AudioManager
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
@@ -42,7 +42,7 @@ import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-@UnstableApi class AudioPlayer private constructor() {
+class AudioPlayer private constructor() {
     companion object {
         @Synchronized
         private fun get(): AudioPlayer {
@@ -167,6 +167,7 @@ import java.util.concurrent.TimeUnit
                         }
                     }
 
+                    @SuppressLint("UnsafeOptInUsageError")
                     override fun onPlayerError(error: ExoPlaybackException) {
                         if (error.cause is UnrecognizedInputFormatException) {
                             status = STATUS_ERROR

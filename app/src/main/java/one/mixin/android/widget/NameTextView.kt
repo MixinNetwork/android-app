@@ -3,7 +3,8 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.os.Build.*
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.text.InputFilter
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -20,6 +21,7 @@ import one.mixin.android.databinding.ViewNameTextBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.highLightMao
 import one.mixin.android.extension.spToPx
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
@@ -28,6 +30,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.QuoteMessageItem
@@ -137,6 +140,30 @@ class NameTextView : LinearLayoutCompat {
     }
 
     fun setName(user: User) {
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
+    }
+
+    fun setName(user: MaoUser) {
         this.textView.text = user.fullName
         if (user.isProsperity()) {
             iconView.isVisible = true
@@ -620,6 +647,23 @@ class NameTextView : LinearLayoutCompat {
     }
 
     private fun getBadge(user: User): Drawable? {
+        val resources = if (user.isMembership()) {
+            user.membership.membershipIcon()
+        } else if (user.isVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (user.isBot()) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
+    private fun getBadge(user: MaoUser): Drawable? {
         val resources = if (user.isMembership()) {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {

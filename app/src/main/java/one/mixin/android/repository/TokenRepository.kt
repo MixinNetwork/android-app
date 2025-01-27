@@ -57,6 +57,7 @@ import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -69,6 +70,7 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
@@ -77,14 +79,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionMessageJob
-import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
-import one.mixin.android.ui.wallet.alert.vo.AlertStatus
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
@@ -101,7 +101,6 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
-import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
@@ -110,6 +109,8 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.route.SwapOrder
+import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -131,6 +132,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.flow
 
 @Singleton
 class TokenRepository
@@ -161,6 +163,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
+        private val orderDao: OrderDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -208,6 +211,7 @@ class TokenRepository
             val output = outputDao.findOutputByHash(instantiationHash) ?: return null
             if (assetItem == null) {
                 assetItem = syncAssetByKernel(output.asset)
+
             }
             if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
                 val chain = syncAsset(assetItem.chainId)
@@ -362,7 +366,7 @@ class TokenRepository
 
         private suspend fun simpleAsset(id: String) = tokenDao.simpleAsset(id)
 
-        suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = safeSnapshotDao.insertListSuspend(snapshot)
+        suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = safeSnapshotDao.insertPendingDeposit(snapshot)
 
         @ExperimentalPagingApi
         fun snapshots(
@@ -500,6 +504,8 @@ class TokenRepository
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
+
+        fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
 
         suspend fun pendingDeposits(
             asset: String,
@@ -703,6 +709,8 @@ class TokenRepository
             }
         }
 
+        suspend fun transactionsFetch(traceIds: List<String>) = utxoService.transactionsFetch(traceIds)
+
         suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
 
         suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
@@ -749,6 +757,8 @@ class TokenRepository
         ): MixinResponse<RouteOrderResponse> = routeService.order(id, paymentRequestst)
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
+
+        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -887,7 +897,7 @@ class TokenRepository
             withdrawal: SafeWithdrawal? = null,
             reference: String? = null,
         ) {
-            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toHex() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
+            val snapshot = SafeSnapshot(snapshotId, type.name, assetId, "-$amount", userId, opponentId, memo?.toByteArray()?.hexString() ?: "", transactionHash, nowInUtc(), requestId, null, null, null, null, withdrawal, reference)
             safeSnapshotDao.insert(snapshot)
         }
 
@@ -1078,8 +1088,10 @@ class TokenRepository
 
     suspend fun findMarketItemByCoinId(coinId: String) = marketDao.findMarketItemByCoinId(coinId)
 
-    suspend fun checkMarketById(id: String): MarketItem? {
-        val marketItem = if (id.isUUID()) {
+    suspend fun checkMarketById(id: String, force: Boolean = false): MarketItem? {
+        val marketItem = if (force) {
+            null
+        } else if (id.isUUID()) {
             findMarketItemByAssetId(id)
         } else {
             findMarketItemByCoinId(id)
@@ -1257,4 +1269,11 @@ class TokenRepository
             marketCoinDao.insertIgnoreList(ids)
         }
     }
+
+    suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
+
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
+
+    fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
+
 }

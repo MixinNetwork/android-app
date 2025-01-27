@@ -23,10 +23,8 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.PinMessageItem
-import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.explain
 
 class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :

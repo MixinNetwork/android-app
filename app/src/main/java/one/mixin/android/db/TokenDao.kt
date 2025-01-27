@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
@@ -158,6 +159,9 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("SELECT asset_id FROM tokens WHERE asset_key = :assetKey COLLATE NOCASE")
     suspend fun findAssetIdByAssetKey(assetKey: String): String?
+
+    @Query("SELECT change_usd FROM tokens WHERE asset_id = :assetId")
+    suspend fun findChangeUsdByAssetId(assetId: String): String?
 
     @Query("SELECT a.* FROM tokens a WHERE a.rowid > :rowId ORDER BY a.rowid ASC LIMIT :limit")
     fun getTokenByLimitAndRowId(

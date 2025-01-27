@@ -6,7 +6,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,19 +27,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,7 +45,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -62,7 +57,7 @@ import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import java.math.BigDecimal
 
-@OptIn(ExperimentalLayoutApi::class)
+@ExperimentalLayoutApi
 @Composable
 fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> Unit) {
     val context = LocalContext.current
@@ -150,7 +145,6 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
 fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
-    val coroutineScope = rememberCoroutineScope()
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     var priceChangePercentage24H by remember { mutableStateOf<String?>(null) }
@@ -158,7 +152,7 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
     val screenWidthDp = configuration.screenWidthDp
     val itemWidth = ((screenWidthDp - 48) / 2).dp
     if (search.type == RecentSearchType.MARKET) {
-        coroutineScope.launch {
+        LaunchedEffect(priceChangePercentage24H) {
             val marketItem = search.primaryKey?.let { viewModel.findMarketItemByCoinId(coinId = it) }
             priceChangePercentage24H = marketItem?.priceChangePercentage24H
         }
@@ -167,7 +161,7 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
         modifier = Modifier
             .widthIn(max = itemWidth)
             .border(
-                BorderStroke(1.dp, Color(0x0f000000)),
+                BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)),
                 shape = RoundedCornerShape(32.dp)
             )
             .clip(RoundedCornerShape(32.dp))

@@ -52,7 +52,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -784,4 +783,17 @@ fun BigDecimal.currencyFormat(): String {
     } else {
         "≈ $${this.setScale(2, RoundingMode.HALF_UP)}"
     }
+}
+
+fun String?.isValidMao(): Boolean {
+    if (this.isNullOrBlank()) return false
+    val text = this.trimEnd('.').lowercase()
+    if (text.all { it.isDigit() }) return false
+    val regex = Regex("^[^\\sA-Z]{1,128}$")
+    return regex.matches(text)
+}
+
+fun String.isMao(): Boolean {
+    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
+    return regex.matches(this)
 }

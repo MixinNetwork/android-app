@@ -14,26 +14,31 @@ import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
-import androidx.startup.AppInitializer
 import androidx.work.Configuration
-import coil.ImageLoader
-import coil.ImageLoaderFactory
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import coil.decode.SvgDecoder
-import coil.decode.VideoFrameDecoder
-import coil.util.DebugLogger
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.annotation.ExperimentalCoilApi
+import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
+import coil3.network.cachecontrol.CacheControlCacheStrategy
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.svg.SvgDecoder
+import coil3.util.DebugLogger
+import coil3.video.VideoFrameDecoder
+import com.appsflyer.AppsFlyerConversionListener
+import com.appsflyer.AppsFlyerLib
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
 import com.google.android.gms.net.CronetProviderInstaller
-import com.mapbox.maps.loader.MapboxMapsInitializer
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
+import io.sentry.SentryLevel
+import io.sentry.android.core.SentryAndroid
+import io.sentry.android.timber.SentryTimberIntegration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -42,11 +47,12 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.di.ApplicationScope
@@ -62,7 +68,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.ui.conversation.location.useMapbox
+import one.mixin.android.ui.conversation.location.useOpenStreetMap
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -96,7 +102,7 @@ open class MixinApplication :
     Application.ActivityLifecycleCallbacks,
     Configuration.Provider,
     CameraXConfig.Provider,
-    ImageLoaderFactory {
+    SingletonImageLoader.Factory {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface MixinJobManagerEntryPoint {
@@ -150,16 +156,11 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
-        Analytics.setTransmissionInterval(60)
-        AppCenter.start(
-            this,
-            BuildConfig.APPCENTER_API_KEY,
-            Analytics::class.java,
-            Crashes::class.java,
-        )
-        if (useMapbox()) {
-            AppInitializer.getInstance(this)
-                .initializeComponent(MapboxMapsInitializer::class.java)
+        if (useOpenStreetMap()) {
+            org.osmdroid.config.Configuration.getInstance().load(
+                this,
+                this.getSharedPreferences("osm_prefs", MODE_PRIVATE)
+            )
         }
 
         initNativeLibs(applicationContext)
@@ -172,6 +173,58 @@ open class MixinApplication :
 
         applicationScope.launch {
             entityInitialize()
+        }
+        initSentry()
+        initAppsFlyer()
+    }
+
+    private fun initSentry() {
+        if (BuildConfig.SENTRYDSN.isBlank()) {
+            return
+        }
+        SentryAndroid.init(this) { options ->
+            options.dsn = BuildConfig.SENTRYDSN
+            options.isEnableUserInteractionTracing = false
+            options.isEnableUserInteractionBreadcrumbs = false
+            options.isEnablePerformanceV2 = true
+            options.isEnableAppStartProfiling = true
+
+            options.addIntegration(
+                SentryTimberIntegration(
+                    minEventLevel = SentryLevel.FATAL,
+                    minBreadcrumbLevel = SentryLevel.ERROR
+                )
+            )
+        }
+    }
+
+    private fun initAppsFlyer() {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
+            override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
+                Timber.d("AppsFlyer Conversion Data: $conversionData")
+            }
+
+            override fun onConversionDataFail(error: String) {
+                Timber.e("AppsFlyer Conversion Data Error: $error")
+            }
+
+            override fun onAppOpenAttribution(attributionData: Map<String, String>) {
+                Timber.d("AppsFlyer Attribution Data: $attributionData")
+            }
+
+            override fun onAttributionFailure(error: String) {
+                Timber.e("AppsFlyer Attribution Failure: $error")
+            }
+        }, this)
+        AppsFlyerLib.getInstance().start(this)
+        FirebaseAnalytics.getInstance(this).appInstanceId.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val additionalData = mapOf("app_instance_id" to task.result)
+                AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+            }
         }
     }
 
@@ -433,12 +486,13 @@ open class MixinApplication :
         return false
     }
 
+    @ExperimentalCoilApi
     @RequiresApi(Build.VERSION_CODES.P)
-    override fun newImageLoader(): ImageLoader {
+    override fun newImageLoader(context: PlatformContext): ImageLoader {
         return ImageLoader.Builder(this)
-            .okHttpClient(
-                OkHttpClient.Builder()
-                    .addInterceptor { chain ->
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = {
+                    OkHttpClient.Builder().addInterceptor { chain ->
                         val original = chain.request()
                         val requestBuilder =
                             original.newBuilder()
@@ -446,23 +500,21 @@ open class MixinApplication :
                                 .method(original.method, original.body)
                         val request = requestBuilder.build()
                         chain.proceed(request)
-                    }
-                    .build(),
-            )
-            .components {
+                    }.build()
+                }, cacheStrategy = { CacheControlCacheStrategy() }))
                 if (SDK_INT >= Build.VERSION_CODES.P) {
-                    add(ImageDecoderDecoder.Factory())
+                    add(AnimatedImageDecoder.Factory())
                 } else {
                     add(GifDecoder.Factory())
                 }
-                add(VideoFrameDecoder.Factory())
                 add(SvgDecoder.Factory())
-            }
-            .apply {
+                add(VideoFrameDecoder.Factory())
+            }.apply {
                 if (BuildConfig.DEBUG) {
                     logger(DebugLogger())
                 }
             }
             .build()
     }
+
 }

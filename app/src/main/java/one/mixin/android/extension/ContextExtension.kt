@@ -126,6 +126,10 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     return b
 }
 
+fun Context.isScreenWideColorGamut(): Boolean {
+    return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
+}
+
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
@@ -267,6 +271,43 @@ fun Context.vibrate(
         @Suppress("DEPRECATION")
         vibrator.vibrate(pattern, -1)
     }
+}
+
+
+fun Context.startVibration(
+    effect: VibrationEffect? = null,
+    pattern: LongArray = longArrayOf(0, 1000), 
+) {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
+    }
+}
+
+fun Context.stopVibration() {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    vibrator.cancel()
 }
 
 fun Context.tickVibrate() {
