@@ -2,7 +2,6 @@ package one.mixin.android.ui.sticker
 
 import android.app.Dialog
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
@@ -172,20 +171,26 @@ class StickerAddFragment : BaseFragment() {
                 } catch (e: Exception) {
                     handleBack(R.string.Add_sticker_failed)
                     null
-                } ?: return@launch
-
-            val r =
-                try {
-                    stickerViewModel.addStickerAsync(request).await()
-                } catch (e: Exception) {
-                    ErrorHandler.handleError(e)
-                    dialog?.dismiss()
-                    return@launch
                 }
-            if (r.isSuccess) {
+            if (request == null) {
+                toast(R.string.Data_error)
+                dialog?.dismiss()
+                return@launch
+            }
+
+            val r = runCatching {
+                stickerViewModel.addStickerAsync(request).await()
+            }.onFailure {
+                ErrorHandler.handleError(it)
+                dialog?.dismiss()
+            }.getOrNull()
+
+            if (r?.isSuccess == true) {
                 doAfterStickerAdded(r)
-            } else {
+            } else if (r != null) {
                 ErrorHandler.handleMixinError(r.errorCode, r.errorDescription, getString(R.string.File_error))
+                handleBack()
+            } else {
                 handleBack()
             }
         }
@@ -226,29 +231,26 @@ class StickerAddFragment : BaseFragment() {
                     handleBack(R.string.sticker_add_invalid_size)
                     return@withContext null
                 }
-
                 val byteArray =
                     if (mimeType == MimeType.GIF.toString()) {
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        val result = loader.execute(request).image?.asDrawable(requireContext().resources) ?: return@withContext null
-                        val w = result.intrinsicWidth
-                        val h = result.intrinsicHeight
+                        val resultImage = loader.execute(request).image ?: return@withContext null
+                        val result = resultImage.toBitmap()
+                        val w = result.width
+                        val h = result.height
                         if (min(w, h) >= MIN_SIZE && max(w, h) <= MAX_SIZE) {
-                            loader.diskCache?.openSnapshot(url)?.data?.toFile()?.toByteArray() ?: return@withContext null
+                            f.toByteArray()
                         } else {
                             handleBack(R.string.sticker_add_invalid_size)
                             return@withContext null
                         }
                     } else {
-                        val request = ImageRequest.Builder(requireContext()).data(url).build()
-                        loader.execute(request)
-                        loader.diskCache?.openSnapshot(url)?.data?.toFile()?.toByteArray() ?: return@withContext null
+                        f.toByteArray()
                     }
-
                 StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
             } else {
                 val request = ImageRequest.Builder(requireContext()).data(url).build()
-                var bitmap = (loader.execute(request).request as? SuccessResult)?.image?.toBitmap() ?: return@withContext null
+                var bitmap = loader.execute(request).image?.toBitmap() ?: return@withContext null
 
                 val ratio = bitmap.width / bitmap.height.toFloat()
                 if (ratio in RATIO_MIN_MAX..RATIO_MAX_MIN) {

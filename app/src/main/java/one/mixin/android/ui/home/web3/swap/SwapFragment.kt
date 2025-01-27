@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
@@ -46,19 +47,34 @@ import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshOrdersJob
+import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.ActionButtonData
+import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -67,6 +83,8 @@ import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
+import java.math.BigDecimal
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -113,6 +131,8 @@ class SwapFragment : BaseFragment() {
 
     enum class SwapDestination {
         Swap,
+        OrderList,
+        OrderDetail
     }
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
@@ -128,6 +148,9 @@ class SwapFragment : BaseFragment() {
     private var reviewing: Boolean by mutableStateOf(false)
     private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     private val swapViewModel by viewModels<SwapViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,6 +162,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
+    @FlowPreview
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -184,6 +208,8 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapPage(
                                 from = fromToken,
                                 to = toToken,
@@ -215,10 +241,58 @@ class SwapFragment : BaseFragment() {
                                         navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                                     }
                                 },
+                                onOrderList = {
+                                    navController.navigate(SwapDestination.OrderList.name)
+                                },
                                 pop = {
                                     navigateUp(navController)
                                 }
                             )
+                        }
+
+                        composable(SwapDestination.OrderList.name) {
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            SwapOrderListPage(
+                                pop = {
+                                    navigateUp(navController)
+                                },
+                                onOrderClick = { orderId ->
+                                    navController.navigate("${SwapDestination.OrderDetail.name}/$orderId")
+                                }
+                            )
+                        }
+                        composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
+                                SwapOrderDetailPage(
+                                    orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
+                                    onShare = { payAssetId, receiveAssetId ->
+                                        lifecycleScope.launch {
+                                            shareSwap(payAssetId, receiveAssetId)
+                                        }
+                                    },
+                                    onTryAgain = { fromAssetId, toAssetId ->
+                                        lifecycleScope.launch {
+                                            val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
+                                            val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
+                                            if (fromToken != null && toToken != null) {
+                                                this@SwapFragment.fromToken = fromToken
+                                                this@SwapFragment.toToken = toToken
+                                                navController.navigate(SwapDestination.Swap.name) {
+                                                    popUpTo(SwapDestination.Swap.name) {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    pop = {
+                                        navigateUp(navController)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -234,7 +308,7 @@ class SwapFragment : BaseFragment() {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
                 val data = if (list.isEmpty()) {
-                    ArrayList(tokenItems?.map { it.toSwapToken() })
+                    ArrayList(tokenItems?.map { it.toSwapToken() } ?: emptyList())
                 } else {
                     ArrayList(list)
                 }
@@ -242,7 +316,7 @@ class SwapFragment : BaseFragment() {
                     Constants.Account.PREF_FROM_SWAP,
                     ArrayList(data), if (isReverse) toToken?.getUnique() else fromToken?.getUnique()
                 ).apply {
-                    if (data.isEmpty()) {
+                    if (data.isEmpty) {
                         setLoading(true)
                     }
                     setOnDeposit {
@@ -340,6 +414,148 @@ class SwapFragment : BaseFragment() {
         }
     }
 
+    private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
+        val formatVol = try {
+            BigDecimal(vol).multiply(rate).numberFormatCompact()
+        } catch (_: NumberFormatException) {
+            null
+        }
+        if (formatVol != null) {
+            return "$symbol$formatVol"
+        }
+        return requireContext().getString(R.string.N_A)
+    }
+
+    private suspend fun shareSwap(payAssetId: String, receiveAssetId: String) {
+        dialog.show()
+        runCatching {
+            var payId = payAssetId
+            var receiveId =
+                if (receiveAssetId in DepositFragment.usdcAssets || receiveAssetId in DepositFragment.usdtAssets) {
+                    payId = receiveAssetId
+                    payAssetId
+                } else {
+                    receiveAssetId
+                }
+
+            var forwardMessage: ForwardMessage? = null
+            swapViewModel.checkMarketById(receiveId)?.let { market ->
+                forwardMessage = buildForwardMessage(market, payId, receiveId)
+            }
+            if (forwardMessage == null) {
+                swapViewModel.syncAsset(receiveId)?.let { token ->
+                    forwardMessage = buildForwardMessage(token, payId, receiveId)
+                }
+            }
+            if (forwardMessage == null) {
+                toast(R.string.Data_error)
+                return@runCatching
+            }
+            ShareMessageBottomSheetDialogFragment.newInstance(forwardMessage, null)
+                .showNow(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+        }.onFailure { e ->
+            ErrorHandler.handleError(e)
+        }
+        dialog.dismiss()
+    }
+
+    private fun buildForwardMessage(marketItem: MarketItem, payId: String, receiveId: String): ForwardMessage {
+        val description = buildString {
+            append("🔥 ${marketItem.name} (${marketItem.symbol})\n\n")
+            append(
+                "📈 ${getString(R.string.Market_Cap)}: ${
+                    capFormat(
+                        marketItem.marketCap,
+                        BigDecimal(Fiats.getRate()),
+                        Fiats.getSymbol()
+                    )
+                }\n"
+            )
+            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(marketItem.currentPrice).priceFormat()}\n")
+            append("💰 ${getString(R.string.price_change_24h)}: ${marketItem.priceChangePercentage24H}%")
+        }
+
+        val actions = listOf(
+            ActionButtonData(
+                label = getString(R.string.buy_token, marketItem.symbol),
+                color = "#50BD5C",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+            ),
+            ActionButtonData(
+                label = getString(R.string.sell_token, marketItem.symbol),
+                color = "#DB454F",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
+            ),
+            ActionButtonData(
+                label = "${marketItem.symbol} ${getString(R.string.Market)}",
+                color = "#3D75E3",
+                action = "${Constants.Scheme.HTTPS_MARKET}/${marketItem.coinId}"
+            )
+        )
+
+        val appCard = AppCardData(
+            appId = ROUTE_BOT_USER_ID,
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = "${getString(R.string.Swap)} ${marketItem.symbol}",
+            description = description,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = actions,
+        )
+
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
+    }
+
+    private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String):ForwardMessage {
+        val description = buildString {
+            append("🔥 ${token.name} (${token.symbol})\n\n")
+            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
+            append(
+                "💰 ${getString(R.string.price_change_24h)}: ${
+                    runCatching { "${(BigDecimal(token.changeUsd) * BigDecimal(100)).numberFormat2()}%" }.getOrDefault(
+                        "N/A"
+                    )
+                }"
+            )
+        }
+
+        val actions = listOf(
+            ActionButtonData(
+                label = getString(R.string.buy_token, token.symbol),
+                color = "#50BD5C",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+            ),
+            ActionButtonData(
+                label = getString(R.string.sell_token, token.symbol),
+                color = "#DB454F",
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
+            ),
+            ActionButtonData(
+                label = "${token.symbol} ${getString(R.string.Market)}",
+                color = "#3D75E3",
+                action = "${Constants.Scheme.HTTPS_MARKET}/${token.assetId}"
+            )
+        )
+
+        val appCard = AppCardData(
+            appId = ROUTE_BOT_USER_ID,
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = "${getString(R.string.Swap)} ${token.symbol}",
+            description = description,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = actions,
+        )
+
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
+    }
+
     private fun saveQuoteToken(
         token: SwapToken,
         isReverse: Boolean,
@@ -399,11 +615,13 @@ class SwapFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
+            AnalyticsTracker.trackSwapPreview()
             openSwapTransfer(resp, from, to)
         } else {
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
             JsSigner.useSolana()
             reviewing = true
+            AnalyticsTracker.trackSwapPreview()
             showBrowserBottomSheetDialogFragment(requireActivity(), signMessage, onDismiss = {
                 reviewing = false
             }, onTxhash = { hash, serializedTx ->
@@ -423,7 +641,7 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private suspend fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
+    private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
             setOnDone {
                 initialAmount = null

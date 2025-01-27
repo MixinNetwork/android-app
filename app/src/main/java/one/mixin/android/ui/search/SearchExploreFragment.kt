@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.View
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -80,6 +81,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
     private val binding by viewBinding(FragmentSearchExploreBinding::bind)
 
+    @ExperimentalLayoutApi
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,

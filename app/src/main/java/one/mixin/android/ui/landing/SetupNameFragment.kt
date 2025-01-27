@@ -24,6 +24,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
@@ -63,6 +64,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                                 ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                                 return@subscribe
                             }
+                            AnalyticsTracker.trackSignUpFullName()
                             r.data?.let { data ->
                                 Session.storeAccount(data)
                                 mobileViewModel.insertUser(data.toUser())

@@ -45,7 +45,7 @@ fun NumberedText(modifier: Modifier, numberStr: String, instructionStr: String, 
             },
             color = color,
             fontSize = 14.sp,
-            lineHeight = 14.sp
+            lineHeight = 19.6.sp
         )
     }
 }

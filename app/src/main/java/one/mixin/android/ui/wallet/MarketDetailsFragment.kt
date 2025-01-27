@@ -89,7 +89,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 rightExtraIb.setOnClickListener {
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
-                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    marketItem.isFavored = marketItem.isFavored != true
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
@@ -231,7 +231,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
-            radioAll.text = getString(R.string.All)
+            radioAll.text = getString(R.string.All).uppercase()
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
                 typeState.value =
@@ -250,7 +250,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         }
 
                         R.id.radio_ytd -> {
-                            "YTD"
+                            "1Y"
                         }
 
                         else -> {
@@ -416,7 +416,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } else {
                             "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                         }
-                    } catch (ignored: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE

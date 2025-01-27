@@ -91,7 +91,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         EXPANDED_KEYBOARD, // + ☺ i
         EXPANDED_MENU, // x ☺ i
         EXPANDED_STICKER, // + k i
-        EXPANDED_GALLERY, // + ☺ i[√]
         COLLAPSED, // + ☺ i
     }
 
@@ -154,14 +153,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = true
                     galleryContainer.isVisible = false
-                }
-                STATUS.EXPANDED_GALLERY -> {
-                    menuStatus = MenuStatus.COLLAPSED
-                    stickerStatus = StickerStatus.STICKER
-                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img_checked)
-                    menuContainer.isVisible = false
-                    stickerContainer.isVisible = false
-                    galleryContainer.isVisible = true
                 }
                 STATUS.COLLAPSED -> {
                     menuStatus = MenuStatus.COLLAPSED
@@ -371,9 +362,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     controlState = STATUS.COLLAPSED
                     inputLayout.closeInputArea(binding.chatEt)
                 } else if (controlState == STATUS.EXPANDED_STICKER && !stickerContainer.isVisible) {
-                    controlState = STATUS.COLLAPSED
-                    inputLayout.closeInputArea(binding.chatEt)
-                } else if (controlState == STATUS.EXPANDED_GALLERY && !galleryContainer.isVisible) {
                     controlState = STATUS.COLLAPSED
                     inputLayout.closeInputArea(binding.chatEt)
                 }
@@ -759,14 +747,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         }
 
     private fun clickGallery() {
-        if (controlState == STATUS.EXPANDED_GALLERY) {
-            controlState = STATUS.COLLAPSED
-            inputLayout.closeInputArea(binding.chatEt)
-        } else {
-            controlState = STATUS.EXPANDED_GALLERY
-            inputLayout.openInputArea(binding.chatEt)
-            callback.onGalleryClick()
-        }
+        callback.onGalleryClick()
         remainFocusable()
     }
 

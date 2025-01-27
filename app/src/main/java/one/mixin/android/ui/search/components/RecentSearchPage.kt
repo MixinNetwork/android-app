@@ -33,7 +33,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -59,7 +57,7 @@ import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import java.math.BigDecimal
 
-@OptIn(ExperimentalLayoutApi::class)
+@ExperimentalLayoutApi
 @Composable
 fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> Unit) {
     val context = LocalContext.current
@@ -147,7 +145,6 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
 fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
-    val coroutineScope = rememberCoroutineScope()
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     var priceChangePercentage24H by remember { mutableStateOf<String?>(null) }
@@ -155,7 +152,7 @@ fun RecentSearchComponent(search: RecentSearch, searchClick: (RecentSearch) -> U
     val screenWidthDp = configuration.screenWidthDp
     val itemWidth = ((screenWidthDp - 48) / 2).dp
     if (search.type == RecentSearchType.MARKET) {
-        coroutineScope.launch {
+        LaunchedEffect(priceChangePercentage24H) {
             val marketItem = search.primaryKey?.let { viewModel.findMarketItemByCoinId(coinId = it) }
             priceChangePercentage24H = marketItem?.priceChangePercentage24H
         }

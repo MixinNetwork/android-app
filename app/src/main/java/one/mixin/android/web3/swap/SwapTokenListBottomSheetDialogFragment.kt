@@ -25,6 +25,7 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -36,6 +37,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentTokens
 import one.mixin.android.widget.BottomSheet
@@ -98,6 +100,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioSolana.isChecked = true
                 radioAll.isVisible = false
                 radioEth.isVisible = false
+                radioBase.isVisible = false
                 radioTron.isVisible = false
                 radioBsc.isVisible = false
                 radioPolygon.isVisible = false
@@ -105,6 +108,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 radioAll.isChecked = true
                 radioAll.isVisible = true
                 radioEth.isVisible = true
+                radioBase.isVisible = true
                 radioTron.isVisible = true
                 radioBsc.isVisible = true
                 radioPolygon.isVisible = true
@@ -116,6 +120,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                         R.id.radio_solana -> {
                             SOLANA_CHAIN_ID
+                        }
+
+                        R.id.radio_base -> {
+                            Base
                         }
 
                         R.id.radio_tron -> {
@@ -207,6 +215,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         id = View.generateViewId()
                         setContent {
                             RecentTokens(key) {
+                                AnalyticsTracker.trackSwapCoinSwitch(AnalyticsTracker.SwapCoinSwitchMethod.RECENT_CLICK)
                                 adapter.onClick(it)
                             }
                         }
@@ -234,11 +243,16 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var searchJob: Job? = null
 
     private var currentChain: String? = null
+        set(value) {
+            field = value
+            adapter.all = currentChain == null
+        }
 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null) {
                 adapter.tokens = tokens
+                adapter.isSearch = false
                 if (isLoading) {
                     binding.rvVa.displayedChild = 3
                 } else if (tokens.isEmpty()) {
@@ -255,6 +269,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
             val total = search(s, assetList, currentChain, inMixin())
             adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
+            adapter.isSearch = true
             if (!isAdded) {
                 return@launch
             }

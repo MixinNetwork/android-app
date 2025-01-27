@@ -96,7 +96,7 @@ class DepositFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
+        val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
     }
 

@@ -26,6 +26,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 
@@ -49,6 +50,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
+                            AnalyticsTracker.trackLoginRestore("another_phone")
                             TransferActivity.showRestoreFromPhone(requireContext())
                         } else {
                             requireActivity().openPermissionSetting()
@@ -61,6 +63,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     val count = localData?.first
                     val lastCreatedAt = localData?.second
                     if (count != null && lastCreatedAt != null) {
+                        AnalyticsTracker.trackLoginRestore("local")
                         requireContext().showConfirmDialog(
                             getString(R.string.restore_local_exists, "$count".numberFormat(), lastCreatedAt),
                             cancelable = false,
@@ -73,6 +76,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                 }
             }
             skipTv.setOnClickListener {
+                AnalyticsTracker.trackLoginRestore("skip")
                 InitializeActivity.showLoading(requireContext())
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 requireActivity().finish()
