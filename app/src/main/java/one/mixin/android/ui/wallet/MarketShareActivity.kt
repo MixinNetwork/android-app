@@ -19,6 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarketShareBinding
 import one.mixin.android.extension.blurBitmap
@@ -40,12 +41,14 @@ import java.io.FileOutputStream
 class MarketShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_NAME = "name"
+        private const val ARGS_COIN = "coin"
         private var cover: Bitmap? = null
-        fun show(context: Context, cover: Bitmap, name:String) {
+        fun show(context: Context, cover: Bitmap, name: String, coinId: String) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, MarketShareActivity::class.java).apply {
                 putExtra(ARGS_NAME, name)
+                putExtra(ARGS_COIN, coinId)
             })
         }
     }
@@ -57,6 +60,9 @@ class MarketShareActivity : BaseActivity() {
     private lateinit var binding: ActivityMarketShareBinding
     private val name by lazy {
         intent.getStringExtra(ARGS_NAME)
+    }
+    private val coinId by lazy {
+        intent.getStringExtra(ARGS_COIN)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,8 +88,9 @@ class MarketShareActivity : BaseActivity() {
         if (cover != null) {
             binding.image.setImageBitmap(cropAndScaleBitmap(cover!!, 8.dp, (80 - 24 + 32).dp))
         }
-        Session.getAccount()?.system?.messenger?.releaseUrl?.let {
-            val qrCode = it.generateQRCode(72.dp, 8.dp).first
+        Session.getAccount()?.identityNumber.let {
+            val qrcodeContent = "$HTTPS_MARKET/$coinId?ref=$it"
+            val qrCode = qrcodeContent.generateQRCode(72.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         binding.apply {
@@ -144,9 +151,12 @@ class MarketShareActivity : BaseActivity() {
     }
 
     private val onCopy: () -> Unit = {
-        getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, Session.getAccount()?.system?.messenger?.releaseUrl))
-        finish()
-        toast(R.string.copied_to_clipboard)
+        Session.getAccount()?.identityNumber.let {
+            val link = "$HTTPS_MARKET/$coinId?ref=$it"
+            getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
+            finish()
+            toast(R.string.copied_to_clipboard)
+        }
     }
 
     private val onSave: () -> Unit = {

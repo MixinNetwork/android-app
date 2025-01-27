@@ -93,7 +93,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol)
+                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol, marketItem.coinId)
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
