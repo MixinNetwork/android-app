@@ -16,9 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -59,7 +58,6 @@ fun AddressSearchBottomSheet(
             }
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,59 +68,13 @@ fun AddressSearchBottomSheet(
             .padding(horizontal = 28.dp, vertical = 15.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-            ,
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
+            SearchTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 2.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
-                    textColor = MixinAppTheme.colors.textPrimary,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent,
-                    cursorColor = MixinAppTheme.colors.textBlue
-                ),
-                placeholder = {
-                    Text(
-                        stringResource(R.string.Search),
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.icon
-                    )
-                },
-                trailingIcon = if (searchText.isNotEmpty()) {
-                    {
-                        IconButton(
-                            onClick = { searchText = "" },
-                            modifier = Modifier.size(16.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_close),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.icon,
-                                modifier = Modifier.size(12.dp)
-                            )
-                        }
-                    }
-                } else null,
-                shape = RoundedCornerShape(32.dp),
-                textStyle = androidx.compose.ui.text.TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
-                ),
-                singleLine = true
+                modifier = Modifier.weight(1f)
             )
 
             if (searchText.isNotEmpty() || modalSheetState != null) {

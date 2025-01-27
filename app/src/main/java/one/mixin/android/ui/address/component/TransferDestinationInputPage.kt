@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -81,14 +80,8 @@ fun TransferDestinationInputPage(
             scrimColor = Color.Black.copy(alpha = 0.3f),
             sheetBackgroundColor = Color.Transparent,
             sheetContent = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                ) {
-                    Spacer(modifier = Modifier.height(56.dp))
-                    AddressSearchBottomSheet(addresses = addresses, modalSheetState = modalSheetState)
-                }
+                Spacer(modifier = Modifier.height(56.dp))
+                AddressSearchBottomSheet(addresses = addresses, modalSheetState = modalSheetState)
             }
         ) {
             PageScaffold(

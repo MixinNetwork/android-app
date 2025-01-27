@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import one.mixin.android.R
@@ -59,6 +60,7 @@ fun TokenInfoHeader(
         Text(
             text = token?.name ?: web3Token?.name ?: "",
             color = MixinAppTheme.colors.textPrimary,
+            fontSize = 14.sp,
             modifier = Modifier.padding(start = 4.dp)
         )
 
@@ -69,6 +71,7 @@ fun TokenInfoHeader(
                 Text(
                     text = networkName,
                     color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
                     modifier = Modifier
                         .padding(start = 4.dp)
                         .background(
@@ -84,7 +87,8 @@ fun TokenInfoHeader(
 
         Text(
             text = "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}",
-            color = MixinAppTheme.colors.textPrimary
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist
         )
     }
 }
