@@ -122,11 +122,19 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     private lateinit var binding: ActivityMediaPagerBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
+        colorDrawable = ColorDrawable(Color.BLACK)
+        window.setBackgroundDrawable(colorDrawable)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         binding = ActivityMediaPagerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.decorView.setOnApplyWindowInsetsListener { view, windowInsets ->
+            view.setBackgroundColor(Color.BLACK)
+            windowInsets
+        }
+        SystemUIManager.lightUI(window, false)
         window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         supportsPie {
@@ -138,7 +146,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         binding.root.doOnPreDraw {
             SystemUIManager.lightUI(window, false)
         }
-        colorDrawable = ColorDrawable(Color.BLACK)
         binding.viewPager.backgroundDrawable = colorDrawable
         binding.viewPager.adapter = adapter
         binding.viewPager.registerOnPageChangeCallback(onPageChangeCallback)

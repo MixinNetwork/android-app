@@ -21,6 +21,7 @@ open class BaseActivity : AppCompatActivity() {
 
     lateinit var lastLang: String
     var lastThemeId: Int = defaultThemeId
+    protected var skipSystemUi: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +35,10 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
-        window.decorView.doOnPreDraw {
-            SystemUIManager.lightUI(window, !(isNightMode()))
+        if (!skipSystemUi) {
+            window.decorView.doOnPreDraw {
+                SystemUIManager.lightUI(window, !(isNightMode()))
+            }
         }
     }
 
@@ -44,15 +47,19 @@ open class BaseActivity : AppCompatActivity() {
         params: ViewGroup.LayoutParams?,
     ) {
         super.setContentView(view, params)
-        view?.doOnPreDraw {
-            SystemUIManager.lightUI(window, !(isNightMode()))
+        if (!skipSystemUi) {
+            view?.doOnPreDraw {
+                SystemUIManager.lightUI(window, !(isNightMode()))
+            }
         }
     }
 
     override fun setContentView(view: View?) {
         super.setContentView(view)
-        view?.doOnPreDraw {
-            SystemUIManager.lightUI(window, !(isNightMode()))
+        if (!skipSystemUi) {
+            view?.doOnPreDraw {
+                SystemUIManager.lightUI(window, !(isNightMode()))
+            }
         }
     }
 
