@@ -80,7 +80,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
+        jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId, true))
         binding.apply {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
