@@ -69,7 +69,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -248,10 +247,7 @@ class TokenRepository
                             val signature = it.signature.hexStringToByteArray()
                             verifyCurve25519Signature(message, signature, pub)
                         }?.let { list ->
-                            runInTransaction {
-                                depositDao.deleteByChainId(chainId)
-                                depositDao.insertList(list)
-                            }
+                            depositDao.insertAll(chainId, list)
                             list.find { it.isPrimary }
                         }
                     },

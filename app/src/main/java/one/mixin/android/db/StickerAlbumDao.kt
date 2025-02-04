@@ -6,9 +6,11 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import one.mixin.android.ui.sticker.StoreAlbum
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
+import one.mixin.android.vo.StickerRelationship
 
 @Dao
 interface StickerAlbumDao : BaseDao<StickerAlbum> {

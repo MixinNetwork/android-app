@@ -1,8 +1,8 @@
 package one.mixin.android.db.converter
 
 import androidx.room.TypeConverter
-import one.mixin.android.vo.safe.OutputState
 import java.util.Locale
+import one.mixin.android.vo.safe.OutputState
 
 class OutputStateConverter {
     @TypeConverter

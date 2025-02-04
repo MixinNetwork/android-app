@@ -3,13 +3,13 @@ package one.mixin.android.job
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.isFileUri
 import timber.log.Timber
-import java.io.File
 
 class TranscriptAttachmentUpdateJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {

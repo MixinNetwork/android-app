@@ -25,7 +25,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.putString
@@ -278,11 +277,7 @@ class UserRepository
 
         suspend fun sortCircleConversations(list: List<CircleOrder>?) =
             withContext(Dispatchers.IO) {
-                runInTransaction {
-                    list?.forEach {
-                        circleDao.updateOrderAt(it)
-                    }
-                }
+                circleDao.updateAll(list)
             }
 
         suspend fun deleteCircleConversation(

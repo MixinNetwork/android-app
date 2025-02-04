@@ -1,19 +1,10 @@
 package one.mixin.android.db
 
-import androidx.lifecycle.LiveData
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
-import one.mixin.android.ui.home.web3.components.InscriptionState
-import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.route.SwapOrderItem
-import one.mixin.android.vo.safe.Output
-import one.mixin.android.vo.safe.SafeCollectible
-import one.mixin.android.vo.safe.SafeCollection
-import timber.log.Timber
 
 @Dao
 interface OrderDao : BaseDao<SwapOrder> {

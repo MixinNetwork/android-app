@@ -38,7 +38,6 @@ interface CircleDao : BaseDao<Circle> {
         }
     }
 
-
     @Query(
         """
         SELECT c.* FROM circle_conversations cc
@@ -129,6 +128,13 @@ interface CircleDao : BaseDao<Circle> {
 
     @Update(entity = Circle::class)
     fun updateOrderAt(circleOrder: CircleOrder)
+
+    @Transaction
+    fun updateAll(list: List<CircleOrder>?) {
+        list?.forEach {
+            updateOrderAt(it)
+        }
+    }
 
     @Query(
         """

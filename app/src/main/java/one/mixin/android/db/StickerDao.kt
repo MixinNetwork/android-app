@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerRelationship
 
 @Dao
 interface StickerDao : BaseDao<Sticker> {
@@ -19,7 +20,6 @@ interface StickerDao : BaseDao<Sticker> {
         }
         insert(s)
     }
-
 
     @Query("SELECT * FROM stickers WHERE last_use_at > 0 ORDER BY last_use_at DESC LIMIT 20")
     fun recentUsedStickers(): LiveData<List<Sticker>>

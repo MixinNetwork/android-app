@@ -438,7 +438,3 @@ abstract class MixinDatabase : RoomDatabase() {
             }
     }
 }
-
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
-}
