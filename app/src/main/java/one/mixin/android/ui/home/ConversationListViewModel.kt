@@ -14,7 +14,6 @@ import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
@@ -173,10 +172,7 @@ class ConversationListViewModel
         suspend fun deleteCircle(circleId: String) = userRepository.deleteCircle(circleId)
 
         suspend fun deleteCircleById(circleId: String) {
-            withTransaction {
-                userRepository.deleteCircleById(circleId)
-                userRepository.deleteByCircleId(circleId)
-            }
+            userRepository.deleteCircleById(circleId)
         }
 
         suspend fun insertCircle(circle: Circle) = userRepository.insertCircle(circle)

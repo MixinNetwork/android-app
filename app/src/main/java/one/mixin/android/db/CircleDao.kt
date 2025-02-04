@@ -91,11 +91,17 @@ interface CircleDao : BaseDao<Circle> {
     )
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
-    @Query("DELETE FROM circles WHERE circle_id = :circleId")
-    suspend fun deleteCircleByIdSuspend(circleId: String)
+    @Transaction
+    fun deleteCircleById(circleId: String) {
+        deleteCircleByCircleId(circleId)
+        deleteCircleConversationById(circleId)
+    }
 
     @Query("DELETE FROM circles WHERE circle_id = :circleId")
-    fun deleteCircleById(circleId: String)
+    fun deleteCircleByCircleId(circleId: String)
+
+    @Query("DELETE FROM circle_conversations WHERE circle_id = :circleId")
+    fun deleteCircleConversationById(circleId: String)
 
     @Query("SELECT * FROM circles WHERE circle_id = :circleId")
     fun findCircleById(circleId: String): Circle?

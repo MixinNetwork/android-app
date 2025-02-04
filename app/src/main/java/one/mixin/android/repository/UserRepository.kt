@@ -265,7 +265,7 @@ class UserRepository
 
         suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
-        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleByIdSuspend(circleId)
+        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
 
         suspend fun findConversationItemByCircleId(circleId: String) =
             circleDao.findConversationItemByCircleId(circleId)
@@ -290,9 +290,6 @@ class UserRepository
             circleId: String,
         ) =
             circleConversationDao.deleteByIdsSuspend(conversationId, circleId)
-
-        suspend fun deleteByCircleId(circleId: String) =
-            circleConversationDao.deleteByCircleIdSuspend(circleId)
 
         suspend fun insertCircleConversation(circleConversation: CircleConversation) =
             circleConversationDao.insertSuspend(circleConversation)
