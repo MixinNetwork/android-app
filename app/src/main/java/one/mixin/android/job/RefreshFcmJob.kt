@@ -2,8 +2,10 @@ package one.mixin.android.job
 
 import android.annotation.SuppressLint
 import com.birbit.android.jobqueue.Params
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.runBlocking
+import okhttp3.internal.wait
 import one.mixin.android.api.request.SessionRequest
 import timber.log.Timber
 
@@ -24,7 +26,7 @@ class RefreshFcmJob(
             updateSession(SessionRequest(deviceCheckToken = deviceCheckToken))
         } else {
             val token = runCatching {
-                FirebaseMessaging.getInstance().token.result
+                Tasks.await(FirebaseMessaging.getInstance().token)
             }.onFailure {
                 Timber.e(it)
             }.getOrDefault(null)
