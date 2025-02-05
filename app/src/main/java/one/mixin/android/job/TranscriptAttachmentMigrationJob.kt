@@ -2,8 +2,6 @@ package one.mixin.android.job
 
 import android.os.Build
 import com.birbit.android.jobqueue.Params
-import java.io.IOException
-import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -12,6 +10,8 @@ import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.util.reportException
 import timber.log.Timber
+import java.io.IOException
+import java.nio.file.Files
 
 class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {

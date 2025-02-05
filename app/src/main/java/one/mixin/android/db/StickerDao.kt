@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import one.mixin.android.vo.Sticker
-import one.mixin.android.vo.StickerRelationship
 
 @Dao
 interface StickerDao : BaseDao<Sticker> {
