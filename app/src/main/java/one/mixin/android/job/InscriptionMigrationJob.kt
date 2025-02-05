@@ -4,10 +4,6 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_INSCRIPTION
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.job.SyncOutputJob.Companion.TAG
-import one.mixin.android.session.Session
-import one.mixin.android.session.buildHashMembers
-import timber.log.Timber
 
 class InscriptionMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(SyncOutputJob.TAG).persist()) {
     companion object {
