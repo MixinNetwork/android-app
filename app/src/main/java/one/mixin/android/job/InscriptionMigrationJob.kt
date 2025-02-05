@@ -19,5 +19,4 @@ class InscriptionMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(SyncOutpu
             }
             PropertyHelper.updateKeyValue(PREF_MIGRATION_INSCRIPTION, true)
         }
-
 }
