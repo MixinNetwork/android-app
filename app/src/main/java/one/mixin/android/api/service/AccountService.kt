@@ -123,9 +123,9 @@ interface AccountService {
     ): MixinResponse<Account>
 
     @POST("session")
-    fun updateSession(
+    suspend fun updateSession(
         @Body request: SessionRequest,
-    ): Observable<MixinResponse<Account>>
+    ): MixinResponse<Account>
 
     @GET("stickers/albums")
     suspend fun getStickerAlbums(): MixinResponse<List<StickerAlbum>>

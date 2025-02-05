@@ -12,7 +12,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
 
-    id 'io.sentry.android.gradle' version '5.0.0'
+    id 'io.sentry.android.gradle' version '5.1.0'
 }
 
 def versionMajor = 2
@@ -328,7 +328,6 @@ dependencies {
 
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:app-update-ktx:${playVersion}"
-    implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
     implementation "com.google.android.gms:play-services-maps:19.0.0"
     implementation "com.google.android.gms:play-services-location:21.3.0"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
