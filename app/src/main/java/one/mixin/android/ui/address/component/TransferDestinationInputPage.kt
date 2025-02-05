@@ -2,7 +2,6 @@ package one.mixin.android.ui.address.component
 
 import PageScaffold
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -55,6 +54,7 @@ fun TransferDestinationInputPage(
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
+    onAddClick: () -> Unit,
     onContentTextChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -81,11 +81,12 @@ fun TransferDestinationInputPage(
             scrimColor = Color.Black.copy(alpha = 0.3f),
             sheetBackgroundColor = Color.Transparent,
             sheetContent = {
-                AddressSearchBottomSheet(addresses = addresses, modalSheetState = modalSheetState)
+                AddressSearchBottomSheet(addresses = addresses, modalSheetState = modalSheetState, onAddClick = onAddClick, onDeleteStateChange = {})
             }
         ) {
             PageScaffold(
                 title = stringResource(R.string.Send),
+                subTitle = "1/2",
                 verticalScrollable = false,
                 pop = pop,
                 actions = {

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -14,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
@@ -40,7 +43,7 @@ fun TokenInfoHeader(
         if (token?.collectionHash != null) {
             CoilImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(token?.iconUrl ?: "")
+                    .data(token.iconUrl)
                     .transformations(CoilRoundedHexagonTransformation()).build(),
                 modifier = Modifier
                     .size(20.dp)
@@ -61,7 +64,12 @@ fun TokenInfoHeader(
             text = token?.name ?: web3Token?.name ?: "",
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 4.dp)
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .wrapContentWidth()
+                .widthIn(max = 56.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         token?.let { token ->

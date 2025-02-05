@@ -9,8 +9,10 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -29,6 +31,54 @@ fun PageScaffold(
             MixinTopAppBar(
                 title = {
                     Text(title)
+                },
+                actions = actions,
+                navigationIcon = {
+                    pop?.let { pop ->
+                        IconButton(onClick = { pop() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.icon,
+                            )
+                        }
+                    }
+                },
+            )
+        },
+    ) {
+        Column(
+            Modifier
+                .padding(it)
+                .apply {
+                    if (verticalScrollable) {
+                        verticalScroll(rememberScrollState())
+                    }
+                },
+        ) {
+            body()
+        }
+    }
+}
+
+@Composable
+fun PageScaffold(
+    title: String,
+    subTitle: String,
+    verticalScrollable: Boolean = true,
+    pop: (() -> Unit)?,
+    actions: @Composable RowScope.() -> Unit = {},
+    body: @Composable ColumnScope.() -> Unit,
+) {
+    Scaffold(
+        backgroundColor = MixinAppTheme.colors.background,
+        topBar = {
+            MixinTopAppBar(
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(title)
+                        Text(subTitle, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                    }
                 },
                 actions = actions,
                 navigationIcon = {

@@ -2,7 +2,7 @@ package one.mixin.android.ui.address.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,8 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -43,9 +42,12 @@ import one.mixin.android.vo.Address
 @Composable
 fun AddressSearchBottomSheet(
     addresses: List<Address>,
-    modalSheetState: ModalBottomSheetState? = null
+    modalSheetState: ModalBottomSheetState? = null,
+    onAddClick: () -> Unit,
+    onDeleteStateChange: (Boolean) -> Unit,
 ) {
     LocalContext.current
+    var isDeleteMode by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val filteredAddresses = remember(searchText, addresses) {
@@ -66,10 +68,12 @@ fun AddressSearchBottomSheet(
                 MixinAppTheme.colors.background,
                 shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
             )
-            .padding(horizontal = 20.dp, vertical = 15.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             SearchTextField(
                 value = searchText,
@@ -96,39 +100,103 @@ fun AddressSearchBottomSheet(
             }
         }
 
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
             items(filteredAddresses) { address ->
-                AddressListItem(address = address)
+                AddressListItem(
+                    address = address,
+                    isDeleteMode = isDeleteMode,
+                    onDeleteClick = { /* Handle delete */ }
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(
+                onClick = {
+                    isDeleteMode = !isDeleteMode
+                    onDeleteStateChange(isDeleteMode)
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_address_more),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textPrimary
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            IconButton(
+                onClick = {
+                    scope.launch {
+                        modalSheetState?.hide()
+                    }
+                    onAddClick()
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_address_add),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.textPrimary
+                )
             }
         }
     }
 }
 
 @Composable
-private fun AddressListItem(address: Address) {
-    Column(
+private fun AddressListItem(
+    address: Address,
+    isDeleteMode: Boolean,
+    onDeleteClick: (Address) -> Unit,
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
-            .padding(vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        HighlightedText(
-            text = address.label,
-            highlight = "",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary
+        Column(modifier = Modifier.weight(1f)) {
+            HighlightedText(
+                text = address.label,
+                highlight = "",
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary
+                )
             )
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        HighlightedText(
-            text = address.destination,
-            highlight = "",
-            style = TextStyle(
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
+            Spacer(modifier = Modifier.height(4.dp))
+            HighlightedText(
+                text = address.destination,
+                highlight = "",
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
             )
-        )
+        }
+
+        if (isDeleteMode) {
+            IconButton(
+                onClick = { onDeleteClick(address) }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.tipError
+                )
+            }
+        }
     }
 }
 
