@@ -2,6 +2,7 @@ package one.mixin.android.ui.address.component
 
 import PageScaffold
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -80,7 +81,6 @@ fun TransferDestinationInputPage(
             scrimColor = Color.Black.copy(alpha = 0.3f),
             sheetBackgroundColor = Color.Transparent,
             sheetContent = {
-                Spacer(modifier = Modifier.height(56.dp))
                 AddressSearchBottomSheet(addresses = addresses, modalSheetState = modalSheetState)
             }
         ) {
@@ -178,27 +178,34 @@ fun TransferDestinationInputPage(
                         Column {
                             DestinationMenu(
                                 R.drawable.ic_destination_contact,
-                                R.string.Contact,
+                                R.string.Mixin_Contact,
                                 R.string.Send_crypto_to_contact,
                                 onClick = {
-                                    scope.launch {
-                                        modalSheetState.show()
-                                    }
-                               })
+                                    // Todo
+                                }, true
+                            )
                             Spacer(modifier = Modifier.height(16.dp))
                             DestinationMenu(
                                 R.drawable.ic_destination_wallet,
                                 R.string.Account,
-                                R.string.Send_crypto_to_account,
-                                onClick = { })
+                                stringResource(
+                                    R.string.Send_crypto_to_account,
+                                    token?.chainName ?: ""
+                                ),
+                                onClick = {
+                                    // Todo
+                                })
                             Spacer(modifier = Modifier.height(16.dp))
                             DestinationMenu(
                                 R.drawable.ic_destination_address,
-                                R.string.Address,
-                                R.string.Send_crypto_to_address
-                            ) {
-
-                            }
+                                R.string.Address_Book,
+                                R.string.Send_crypto_to_address,
+                                onClick = {
+                                    scope.launch {
+                                        modalSheetState.show()
+                                    }
+                                }
+                            )
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                     }

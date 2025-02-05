@@ -1365,9 +1365,9 @@
     <string name="choose_network_fee">选择支付手续费的币种</string>
     <string name="legacy_network_transfer_hint">当前转账使用的是旧网络</string>
     <string name="FREE">免费</string>
-    <string name="Send_crypto_to_contact">向 Mixin 联系人发送加密货币</string>
+    <string name="Send_crypto_to_contact">使用 Mixin 网络向 Mixin 联系人发送加密货币。</string>
     <string name="Send_crypto_to_account">Send to my 1$s account using a crypto network. </string>
-    <string name="Send_crypto_to_address">向钱包或交易所发送加密货币</string>
+    <string name="Send_crypto_to_address">Send to a known crypto address using a crypto network.</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
     <string name="Contact_Support">联系客服</string>

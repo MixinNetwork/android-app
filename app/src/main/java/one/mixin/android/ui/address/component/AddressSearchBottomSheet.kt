@@ -2,6 +2,7 @@ package one.mixin.android.ui.address.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -45,7 +45,7 @@ fun AddressSearchBottomSheet(
     addresses: List<Address>,
     modalSheetState: ModalBottomSheetState? = null
 ) {
-    val context = LocalContext.current
+    LocalContext.current
     var searchText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val filteredAddresses = remember(searchText, addresses) {
@@ -58,6 +58,7 @@ fun AddressSearchBottomSheet(
             }
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,11 +66,10 @@ fun AddressSearchBottomSheet(
                 MixinAppTheme.colors.background,
                 shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
             )
-            .padding(horizontal = 28.dp, vertical = 15.dp)
+            .padding(horizontal = 20.dp, vertical = 15.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
         ) {
             SearchTextField(
                 value = searchText,
@@ -92,8 +92,7 @@ fun AddressSearchBottomSheet(
                                     modalSheetState.hide()
                                 }
                             }
-                        }
-                )
+                        })
             }
         }
 
@@ -116,7 +115,7 @@ private fun AddressListItem(address: Address) {
         HighlightedText(
             text = address.label,
             highlight = "",
-            style = androidx.compose.ui.text.TextStyle(
+            style = TextStyle(
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary
             )
@@ -125,7 +124,7 @@ private fun AddressListItem(address: Address) {
         HighlightedText(
             text = address.destination,
             highlight = "",
-            style = androidx.compose.ui.text.TextStyle(
+            style = TextStyle(
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist
             )
@@ -133,12 +132,11 @@ private fun AddressListItem(address: Address) {
     }
 }
 
-
 @Composable
 private fun HighlightedText(
     text: String,
     highlight: String,
-    style: androidx.compose.ui.text.TextStyle,
+    style: TextStyle,
     modifier: Modifier = Modifier
 ) {
     if (highlight.isBlank()) {
