@@ -1,4 +1,4 @@
-package one.mixin.android.ui.address.component
+package one.mixin.android.ui.address.page
 
 import PageScaffold
 import androidx.activity.compose.BackHandler
@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +43,8 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.AddressViewModel
+import one.mixin.android.ui.address.component.DestinationMenu
+import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
 
@@ -134,7 +137,7 @@ fun TransferDestinationInputPage(
                                     fontSize = 14.sp
                                 )
                             },
-                            textStyle = androidx.compose.ui.text.TextStyle(
+                            textStyle = TextStyle(
                                 fontSize = 14.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.Start

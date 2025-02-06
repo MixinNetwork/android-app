@@ -14,10 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -27,14 +29,16 @@ import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.address.component.AddressInputPage
-import one.mixin.android.ui.address.component.LabelInputPage
-import one.mixin.android.ui.address.component.MemoInputPage
-import one.mixin.android.ui.address.component.TransferDestinationInputPage
+import one.mixin.android.ui.address.page.AddressInputPage
+import one.mixin.android.ui.address.page.LabelInputPage
+import one.mixin.android.ui.address.page.MemoInputPage
+import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -207,7 +211,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             )
                         }
 
-                        composable(TransferDestination.Memo.name) { backStackEntry ->
+                        composable(
+                            route = "${TransferDestination.Memo.name}?address={address}",
+                            arguments = listOf(navArgument("address") { type = NavType.StringType })
+                        ) { backStackEntry ->
                             val address = backStackEntry.arguments?.getString("address")
                             MemoInputPage(
                                 token = token,
@@ -219,7 +226,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             )
                         }
 
-                        composable(TransferDestination.Label.name) { backStackEntry ->
+                        composable(
+                            route = "${TransferDestination.Label.name}?address={address}&memo={memo}",
+                            arguments = listOf(
+                                navArgument("address") { type = NavType.StringType },
+                                navArgument("memo") {
+                                    type = NavType.StringType
+                                    nullable = true 
+                                }
+                            )
+                        ) { backStackEntry ->
                             val address = backStackEntry.arguments?.getString("address") ?: ""
                             val memo = backStackEntry.arguments?.getString("memo")
                             LabelInputPage(
@@ -229,7 +245,26 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 memo = memo,
                                 onComplete = { address, memo, label ->
                                     Timber.e("$address $memo $label")
-                                    findNavController().popBackStack()
+                                    val bottomSheet =
+                                        TransferBottomSheetDialogFragment.newInstance(
+                                            AddressManageBiometricItem(
+                                                asset = token,
+                                                label = label,
+                                                addressId = null,
+                                                destination = address,
+                                                tag = memo ?: "",
+                                                type = TransferBottomSheetDialogFragment.ADD,
+                                            ),
+                                        )
+
+                                    bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                                    bottomSheet.setCallback(
+                                        object : TransferBottomSheetDialogFragment.Callback() {
+                                            override fun onDismiss(success: Boolean) {
+                                                navController.navigate(TransferDestination.Address.name)
+                                            }
+                                        },
+                                    )
                                 },
                                 pop = { navController.popBackStack() }
                             )

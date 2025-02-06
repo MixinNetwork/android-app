@@ -1,4 +1,4 @@
-package one.mixin.android.ui.address.component
+package one.mixin.android.ui.address.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.address.component.SearchTextField
 import one.mixin.android.vo.Address
 
 @Composable

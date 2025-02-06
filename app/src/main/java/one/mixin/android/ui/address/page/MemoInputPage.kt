@@ -1,4 +1,4 @@
-package one.mixin.android.ui.address.component
+package one.mixin.android.ui.address.page
 
 import PageScaffold
 import androidx.compose.foundation.layout.Box
@@ -16,6 +16,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,24 +39,22 @@ import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun AddressInputPage(
+fun MemoInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
-    onNext: (String) -> Unit,
+    onNext: (String?) -> Unit,
     pop: () -> Unit,
 ) {
-    var address by remember { mutableStateOf("") }
-
     val context = LocalContext.current
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+    var memo by remember { mutableStateOf("") }
+
     PageScaffold(
-        title = stringResource(R.string.Address),
-        subTitle = if (memoEnabled) "1/3" else "1/2",
+        title = stringResource(R.string.Memo),
         verticalScrollable = false,
         pop = pop,
         actions = {
@@ -73,7 +72,7 @@ fun AddressInputPage(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .padding(16.dp)
         ) {
             Column {
                 TokenInfoHeader(token = token, web3Token = web3Token)
@@ -87,10 +86,10 @@ fun AddressInputPage(
                         ),
                 ) {
                     OutlinedTextField(
-                        value = address,
-                        onValueChange = { address = it },
+                        value = memo,
+                        onValueChange = { memo = it },
                         modifier = Modifier.height(96.dp),
-                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
                             textColor = MixinAppTheme.colors.textPrimary,
                             unfocusedBorderColor = Color.Transparent,
@@ -116,10 +115,10 @@ fun AddressInputPage(
                         maxLines = 3
                     )
 
-                    if (address.isNotBlank()) {
+                    if (memo.isNotBlank()) {
                         IconButton(
                             onClick = {
-                                address = ""
+                                memo = ""
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -150,11 +149,11 @@ fun AddressInputPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        onNext.invoke(address)
+                        onNext.invoke(memo)
                     },
-                    enabled = address.isBlank().not(),
+                    enabled = memo.isBlank().not(),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (address.isNullOrBlank()
+                        backgroundColor = if (memo.isBlank()
                                 .not()
                         ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
@@ -168,8 +167,7 @@ fun AddressInputPage(
                 ) {
                     Text(
                         text = stringResource(R.string.Next),
-                        color = if (address.isBlank()
-                        ) MixinAppTheme.colors.textAssist else Color.White,
+                        color = if (memo.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }
             }

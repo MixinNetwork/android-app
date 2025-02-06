@@ -1,4 +1,4 @@
-package one.mixin.android.ui.address.component
+package one.mixin.android.ui.address.page
 
 import PageScaffold
 import androidx.compose.foundation.layout.Box
@@ -16,6 +16,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,21 +39,24 @@ import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun MemoInputPage(
+fun LabelInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
-    onNext: (String?) -> Unit,
+    address: String,
+    memo: String?,
+    onComplete: (String, String?, String) -> Unit,  // address, memo, label
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
-    var memo by remember { mutableStateOf("") }
+    var label by remember { mutableStateOf("") }
 
     PageScaffold(
-        title = stringResource(R.string.Memo),
+        title = stringResource(R.string.Label),
         verticalScrollable = false,
         pop = pop,
         actions = {
@@ -84,10 +88,10 @@ fun MemoInputPage(
                         ),
                 ) {
                     OutlinedTextField(
-                        value = memo,
-                        onValueChange = { memo = it },
+                        value = label,
+                        onValueChange = { label = it },
                         modifier = Modifier.height(96.dp),
-                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
                             textColor = MixinAppTheme.colors.textPrimary,
                             unfocusedBorderColor = Color.Transparent,
@@ -113,10 +117,10 @@ fun MemoInputPage(
                         maxLines = 3
                     )
 
-                    if (memo.isNotBlank()) {
+                    if (label.isNotBlank()) {
                         IconButton(
                             onClick = {
-                                memo = ""
+                                label = ""
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -140,6 +144,7 @@ fun MemoInputPage(
                     }
                 }
 
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
@@ -147,11 +152,11 @@ fun MemoInputPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        onNext.invoke(memo)
+                        onComplete.invoke(address, memo, label)
                     },
-                    enabled = memo.isBlank().not(),
+                    enabled = label.isBlank().not(),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (memo.isBlank()
+                        backgroundColor = if (label.isNullOrBlank()
                                 .not()
                         ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
@@ -164,8 +169,8 @@ fun MemoInputPage(
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.Next),
-                        color = if (memo.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                        text = stringResource(R.string.Confirm),
+                        color = if (label.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }
             }

@@ -1,4 +1,4 @@
-package one.mixin.android.ui.address.component
+package one.mixin.android.ui.address.page
 
 import PageScaffold
 import androidx.compose.foundation.layout.Box
@@ -8,16 +8,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,30 +34,30 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
-fun LabelInputPage(
+fun AddressInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
-    address: String,
-    memo: String?,
-    onComplete: (String, String?, String) -> Unit,  // address, memo, label
+    onNext: (String) -> Unit,
     pop: () -> Unit,
 ) {
-    val context = LocalContext.current
-    var label by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     PageScaffold(
-        title = stringResource(R.string.Label),
+        title = stringResource(R.string.Address),
+        subTitle = if (memoEnabled) "1/3" else "1/2",
         verticalScrollable = false,
         pop = pop,
         actions = {
@@ -76,7 +75,7 @@ fun LabelInputPage(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 20.dp)
         ) {
             Column {
                 TokenInfoHeader(token = token, web3Token = web3Token)
@@ -90,10 +89,10 @@ fun LabelInputPage(
                         ),
                 ) {
                     OutlinedTextField(
-                        value = label,
-                        onValueChange = { label = it },
+                        value = address,
+                        onValueChange = { address = it },
                         modifier = Modifier.height(96.dp),
-                        colors = androidx.compose.material.TextFieldDefaults.outlinedTextFieldColors(
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
                             textColor = MixinAppTheme.colors.textPrimary,
                             unfocusedBorderColor = Color.Transparent,
@@ -119,10 +118,10 @@ fun LabelInputPage(
                         maxLines = 3
                     )
 
-                    if (label.isNotBlank()) {
+                    if (address.isNotBlank()) {
                         IconButton(
                             onClick = {
-                                label = ""
+                                address = ""
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -146,7 +145,6 @@ fun LabelInputPage(
                     }
                 }
 
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
@@ -154,11 +152,11 @@ fun LabelInputPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        onComplete.invoke(address, memo, label)
+                        onNext.invoke(address)
                     },
-                    enabled = label.isBlank().not(),
+                    enabled = address.isBlank().not(),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (label.isNullOrBlank()
+                        backgroundColor = if (address.isNullOrBlank()
                                 .not()
                         ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
@@ -171,8 +169,9 @@ fun LabelInputPage(
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.Confirm),
-                        color = if (label.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                        text = stringResource(R.string.Next),
+                        color = if (address.isBlank()
+                        ) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }
             }
