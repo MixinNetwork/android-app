@@ -27,6 +27,7 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.page.AddressInputPage
@@ -38,6 +39,7 @@ import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.decodeICAP
@@ -46,8 +48,8 @@ import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.InputFragment
 import org.web3j.crypto.WalletUtils
-import timber.log.Timber
 
 @AndroidEntryPoint
 class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_address_input) {
@@ -192,9 +194,17 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onContentTextChange = { text ->
                                     contentText = text
                                 },
-                                onAddClick = {
+                                toAccount = {
+                                    navTo(InputFragment.newInstance(token!!, "test todo address"), InputFragment.TAG)
+                                },
+                                toContact = {
+                                    findNavController().navigate(R.id.action_transferDestinationInput_to_singleFriendSelect, Bundle().apply {
+                                        putParcelable(ARGS_ASSET, token)
+                                    })
+                                },
+                                toAddAddress = {
                                     navController.navigate(TransferDestination.Address.name)
-                                }
+                                },
                             )
                         }
                         composable(TransferDestination.Address.name) {
@@ -244,7 +254,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 address = address,
                                 memo = memo,
                                 onComplete = { address, memo, label ->
-                                    Timber.e("$address $memo $label")
                                     val bottomSheet =
                                         TransferBottomSheetDialogFragment.newInstance(
                                             AddressManageBiometricItem(

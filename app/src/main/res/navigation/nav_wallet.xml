@@ -237,6 +237,10 @@
             android:name="args_asset"
             app:argType="one.mixin.android.vo.safe.TokenItem" />
 
+        <action
+            android:id="@+id/action_transferDestinationInput_to_singleFriendSelect"
+            app:destination="@id/single_friend_select_fragment" />
+
     </fragment>
 
     <fragment

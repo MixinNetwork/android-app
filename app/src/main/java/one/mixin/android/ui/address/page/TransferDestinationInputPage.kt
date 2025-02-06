@@ -57,7 +57,9 @@ fun TransferDestinationInputPage(
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
-    onAddClick: () -> Unit,
+    toAddAddress: () -> Unit,
+    toContact: () -> Unit,
+    toAccount: () -> Unit,
     onContentTextChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -84,7 +86,11 @@ fun TransferDestinationInputPage(
             scrimColor = Color.Black.copy(alpha = 0.3f),
             sheetBackgroundColor = Color.Transparent,
             sheetContent = {
-                AddressSearchBottomSheet(addresses = addresses, modalSheetState = modalSheetState, onAddClick = onAddClick, onDeleteStateChange = {})
+                AddressSearchBottomSheet(
+                    addresses = addresses,
+                    modalSheetState = modalSheetState,
+                    onAddClick = toAddAddress,
+                    onDeleteStateChange = {})
             }
         ) {
             PageScaffold(
@@ -185,7 +191,7 @@ fun TransferDestinationInputPage(
                                 R.string.Mixin_Contact,
                                 R.string.Send_crypto_to_contact,
                                 onClick = {
-                                    // Todo
+                                    toContact.invoke()
                                 }, true
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -197,7 +203,7 @@ fun TransferDestinationInputPage(
                                     token?.chainName ?: ""
                                 ),
                                 onClick = {
-                                    // Todo
+                                    toAccount.invoke()
                                 })
                             Spacer(modifier = Modifier.height(16.dp))
                             DestinationMenu(
