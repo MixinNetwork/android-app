@@ -1,6 +1,7 @@
 package one.mixin.android.ui.address
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -28,6 +29,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.page.AddressInputPage
@@ -36,6 +38,7 @@ import one.mixin.android.ui.address.page.MemoInputPage
 import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
+import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.TransactionsFragment
@@ -115,7 +118,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     }
 
     private val viewModel: AddressViewModel by viewModels()
-    private var contentText by mutableStateOf("")
+    private var currentScanType: ScanType? by mutableStateOf(null)
+    private var scannedAddress by mutableStateOf("")
+    private var scannedMemo by mutableStateOf("")
+    private var scannedLabel by mutableStateOf("")
+    private var scannedTransferDest by mutableStateOf("")
+
+    enum class ScanType { ADDRESS, MEMO, LABEL, TRANSFER_DEST }
 
     lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressInputBinding::bind)
@@ -131,7 +140,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             registerForActivityResult(
                 CaptureActivity.CaptureContract(),
                 resultRegistry,
-                ::callbackScan,
+                ::handleScanResult,
             )
     }
 
@@ -188,22 +197,30 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     requireActivity().onBackPressedDispatcher.onBackPressed()
                                 },
                                 onScan = {
-                                    handleClick()
+                                    startQrScan(ScanType.TRANSFER_DEST)
                                 },
-                                contentText = contentText,
-                                onContentTextChange = { text ->
-                                    contentText = text
-                                },
+                                contentText = scannedTransferDest,
                                 toAccount = {
-                                    navTo(InputFragment.newInstance(token!!, "test todo address"), InputFragment.TAG)
+                                    navTo(
+                                        InputFragment.newInstance(token!!, "test todo address"),
+                                        InputFragment.TAG
+                                    )
                                 },
                                 toContact = {
-                                    findNavController().navigate(R.id.action_transferDestinationInput_to_singleFriendSelect, Bundle().apply {
-                                        putParcelable(ARGS_ASSET, token)
-                                    })
+                                    view.navigate(
+                                        R.id.action_transferDestinationInput_to_singleFriendSelect,
+                                        Bundle().apply {
+                                            putParcelable(ARGS_ASSET, token)
+                                        })
                                 },
                                 toAddAddress = {
                                     navController.navigate(TransferDestination.Address.name)
+                                },
+                                onSend = { address ->
+                                    navTo(
+                                        InputFragment.newInstance(token!!, address),
+                                        InputFragment.TAG
+                                    )
                                 },
                             )
                         }
@@ -211,12 +228,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             AddressInputPage(
                                 token = token,
                                 web3Token = web3Token,
+                                contentText = scannedAddress,
                                 onNext = { address ->
                                     if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE)
                                         navController.navigate("${TransferDestination.Memo.name}?address=$address")
                                     else
                                         navController.navigate("${TransferDestination.Label.name}?address=$address")
                                 },
+                                onScan = { startQrScan(ScanType.ADDRESS) },
                                 pop = { findNavController().popBackStack() }
                             )
                         }
@@ -229,9 +248,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             MemoInputPage(
                                 token = token,
                                 web3Token = web3Token,
+                                contentText = scannedMemo,
                                 onNext = { memo ->
                                     navController.navigate("${TransferDestination.Label.name}?address=${address}&memo=${memo}")
                                 },
+                                onScan = { startQrScan(ScanType.MEMO) },
                                 pop = { navController.popBackStack() }
                             )
                         }
@@ -242,7 +263,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 navArgument("address") { type = NavType.StringType },
                                 navArgument("memo") {
                                     type = NavType.StringType
-                                    nullable = true 
+                                    nullable = true
                                 }
                             )
                         ) { backStackEntry ->
@@ -251,9 +272,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             LabelInputPage(
                                 token = token,
                                 web3Token = web3Token,
-                                address = address,
-                                memo = memo,
-                                onComplete = { address, memo, label ->
+                                contentText = scannedLabel,
+                                onScan = { startQrScan(ScanType.LABEL) },
+                                onComplete = { label ->
                                     val bottomSheet =
                                         TransferBottomSheetDialogFragment.newInstance(
                                             AddressManageBiometricItem(
@@ -266,11 +287,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             ),
                                         )
 
-                                    bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                                    bottomSheet.showNow(
+                                        parentFragmentManager,
+                                        TransferBottomSheetDialogFragment.TAG
+                                    )
                                     bottomSheet.setCallback(
                                         object : TransferBottomSheetDialogFragment.Callback() {
                                             override fun onDismiss(success: Boolean) {
-                                                navController.navigate(TransferDestination.Address.name)
+                                                navController.navigate(TransferDestination.Initial.name)
                                             }
                                         },
                                     )
@@ -284,18 +308,31 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         }
     }
 
-    private fun callbackScan(
-        data: Intent?,
-        isAddr: Boolean = true,
-    ) {
-        val text = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)
-        if (text != null) {
-            contentText = if (isIcapAddress(text)) {
-                decodeICAP(text)
-            } else {
-                text
+    private fun startQrScan(scanType: ScanType) {
+        currentScanType = scanType
+        handleClick()
+    }
+
+    private fun handleScanResult(data: Intent?, isAddr: Boolean = true) {
+        if (data == null) return
+
+        data.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)?.let { result ->
+            when (currentScanType) {
+                ScanType.ADDRESS -> {
+                    scannedAddress = if (isIcapAddress(result)) {
+                        decodeICAP(result)
+                    } else {
+                        result
+                    }
+                }
+
+                ScanType.MEMO -> scannedMemo = result
+                ScanType.LABEL -> scannedLabel = result
+                ScanType.TRANSFER_DEST -> scannedTransferDest = result
+                null -> Unit
             }
         }
+        currentScanType = null
     }
 
     private fun handleClick() {

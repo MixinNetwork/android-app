@@ -18,14 +18,18 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +38,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
@@ -42,18 +50,26 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
+import kotlinx.coroutines.launch
 
 @Composable
 fun LabelInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
-    address: String,
-    memo: String?,
-    onComplete: (String, String?, String) -> Unit,  // address, memo, label
+    contentText: String = "",
+    onComplete: (String) -> Unit,
     pop: () -> Unit,
+    onScan: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    var label by remember { mutableStateOf("") }
+    val view = LocalView.current
+    var label by remember(contentText) { mutableStateOf(contentText) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect (Unit) {
+        awaitFrame()
+        focusRequester.requestFocus()
+    }
 
     PageScaffold(
         title = stringResource(R.string.Label),
@@ -90,7 +106,9 @@ fun LabelInputPage(
                     OutlinedTextField(
                         value = label,
                         onValueChange = { label = it },
-                        modifier = Modifier.height(96.dp),
+                        modifier = Modifier
+                            .height(96.dp)
+                            .focusRequester(focusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
                             textColor = MixinAppTheme.colors.textPrimary,
@@ -132,7 +150,7 @@ fun LabelInputPage(
                     } else {
                         IconButton(
                             onClick = {
-                                // onScan?.invoke()
+                                onScan?.invoke()
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -152,7 +170,7 @@ fun LabelInputPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        onComplete.invoke(address, memo, label)
+                        onComplete.invoke(label)
                     },
                     enabled = label.isBlank().not(),
                     colors = ButtonDefaults.outlinedButtonColors(

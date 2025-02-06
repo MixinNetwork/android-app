@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -20,13 +23,20 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -35,7 +45,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -60,7 +72,7 @@ fun TransferDestinationInputPage(
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
     toAccount: () -> Unit,
-    onContentTextChange: (String) -> Unit = {}
+    onSend: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel: AddressViewModel = hiltViewModel()
@@ -71,6 +83,12 @@ fun TransferDestinationInputPage(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
+    val focusRequester = remember { FocusRequester() }
+    var text by remember(contentText) { mutableStateOf(contentText) }
+    LaunchedEffect(Unit) {
+        awaitFrame()
+        focusRequester.requestFocus()
+    }
 
     MixinAppTheme {
         BackHandler(
@@ -126,9 +144,13 @@ fun TransferDestinationInputPage(
                             ),
                     ) {
                         OutlinedTextField(
-                            value = contentText,
-                            onValueChange = onContentTextChange,
-                            modifier = Modifier.height(96.dp),
+                            value = text,
+                            onValueChange = {
+                                text = it
+                            },
+                            modifier = Modifier
+                                .height(96.dp)
+                                .focusRequester(focusRequester),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 backgroundColor = Color.Transparent,
                                 textColor = MixinAppTheme.colors.textPrimary,
@@ -155,10 +177,10 @@ fun TransferDestinationInputPage(
                             maxLines = 3
                         )
 
-                        if (contentText.isNotBlank()) {
+                        if (text.isNotBlank()) {
                             IconButton(
                                 onClick = {
-                                    onContentTextChange("")
+                                    text = ""
                                 }, modifier = Modifier.align(Alignment.BottomEnd)
                             ) {
                                 Icon(
@@ -184,7 +206,7 @@ fun TransferDestinationInputPage(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (contentText.isBlank()) {
+                    if (text.isBlank()) {
                         Column {
                             DestinationMenu(
                                 R.drawable.ic_destination_contact,
@@ -218,10 +240,38 @@ fun TransferDestinationInputPage(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                         }
+                    } else {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            onClick = {
+                                onSend.invoke(text)
+                            },
+                            enabled = text.isBlank().not(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = if (text.isBlank()
+                                        .not()
+                                ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                            ),
+                            shape = RoundedCornerShape(32.dp),
+                            elevation = ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp,
+                            ),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.Send),
+                                color = if (text.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
-
