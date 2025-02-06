@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -28,8 +27,8 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.page.AddressInputPage
@@ -38,10 +37,9 @@ import one.mixin.android.ui.address.page.MemoInputPage
 import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
-import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.ui.wallet.SingleFriendSelectFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
@@ -49,6 +47,7 @@ import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.InputFragment
@@ -80,14 +79,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         ) =
             TransferDestinationInputFragment().apply {
                 withArgs {
-                    putParcelable(TransactionsFragment.Companion.ARGS_ASSET, token)
+                    putParcelable(ARGS_ASSET, token)
                 }
             }
     }
 
     private val token: TokenItem? by lazy {
         requireArguments().getParcelableCompat(
-            TransactionsFragment.Companion.ARGS_ASSET,
+            ARGS_ASSET,
             TokenItem::class.java
         )
     }
@@ -209,11 +208,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toContact = {
                                     requireView().hideKeyboard()
-                                    view.navigate(
-                                        R.id.action_transferDestinationInput_to_singleFriendSelect,
-                                        Bundle().apply {
+                                    navTo(
+                                        SingleFriendSelectFragment().withArgs {
                                             putParcelable(ARGS_ASSET, token)
-                                        })
+                                        }, SingleFriendSelectFragment::class.java.name
+                                    )
                                 },
                                 toAddAddress = {
                                     navController.navigate(TransferDestination.Address.name)
@@ -225,6 +224,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         InputFragment.TAG
                                     )
                                 },
+                                onDeleteAddress = { address ->
+                                    // Todo web3
+                                    showBottomSheet(address, token!!)
+                                }
                             )
                         }
                         composable(TransferDestination.Address.name) {
@@ -354,6 +357,25 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private fun showBottomSheet(
+        address: Address,
+        asset: TokenItem,
+    ): TransferBottomSheetDialogFragment {
+        val bottomSheet =
+            TransferBottomSheetDialogFragment.newInstance(
+                AddressManageBiometricItem(
+                    asset = asset,
+                    addressId = address.addressId,
+                    label = address.label,
+                    tag = address.tag,
+                    destination = address.destination,
+                    type = TransferBottomSheetDialogFragment.DELETE,
+                ),
+            )
+        bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        return bottomSheet
     }
 
     private fun isValidAddress(address: String): Boolean {

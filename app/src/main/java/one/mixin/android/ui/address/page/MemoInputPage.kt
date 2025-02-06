@@ -38,8 +38,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.WindowCompat
 import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -49,7 +47,6 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
-import kotlinx.coroutines.launch
 
 @Composable
 fun MemoInputPage(
