@@ -201,12 +201,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 contentText = scannedTransferDest,
                                 toAccount = {
+                                    requireView().hideKeyboard()
                                     navTo(
                                         InputFragment.newInstance(token!!, "test todo address"),
                                         InputFragment.TAG
                                     )
                                 },
                                 toContact = {
+                                    requireView().hideKeyboard()
                                     view.navigate(
                                         R.id.action_transferDestinationInput_to_singleFriendSelect,
                                         Bundle().apply {
@@ -217,6 +219,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
+                                    requireView().hideKeyboard()
                                     navTo(
                                         InputFragment.newInstance(token!!, address),
                                         InputFragment.TAG
