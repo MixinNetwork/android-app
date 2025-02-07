@@ -7,7 +7,7 @@ buildscript {
         ext.lifecycleVersion = '2.8.7'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.5'
-        ext.coilVersion = '3.0.4'
+        ext.coilVersion = '3.1.0'
         ext.collectionx = '1.4.5'
         ext.roomVersion = '2.6.1'
         ext.navigationVersion = '2.8.6'
@@ -134,7 +134,7 @@ buildscript {
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.2'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.3'
         classpath 'com.google.firebase:perf-plugin:1.4.2'
     }
 }

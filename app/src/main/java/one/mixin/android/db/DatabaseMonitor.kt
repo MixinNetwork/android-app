@@ -1,7 +1,6 @@
 package one.mixin.android.db
 
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.monitor.MonitorPrinter

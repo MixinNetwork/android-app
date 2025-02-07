@@ -21,7 +21,7 @@ interface MarketDao : BaseDao<Market> {
     @Query(
         "SELECT * FROM markets WHERE symbol LIKE '%' || :query || '%'  ESCAPE '\\' OR name LIKE '%' || :query || '%'  ESCAPE '\\'"
     )
-    fun fuzzyMarkets(query: String):List<Market>
+    fun fuzzyMarkets(query: String): List<Market>
 
     @RewriteQueriesToDropUnusedColumns
     @Query(

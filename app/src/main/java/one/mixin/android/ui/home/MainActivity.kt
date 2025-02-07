@@ -21,9 +21,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -46,7 +43,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -63,14 +59,11 @@ import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
-import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -262,13 +255,13 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
+        if (defaultSharedPreferences.getBoolean(Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
             finish()
             return
         }
 
-        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
+        if (defaultSharedPreferences.getBoolean(Account.PREF_WRONG_TIME, false)) {
             InitializeActivity.showWongTime(this)
             finish()
             return
@@ -436,7 +429,6 @@ class MainActivity : BlazeBaseActivity() {
             refreshExternalSchemes()
             cleanCache()
             jobManager.addJobInBackground(RefreshAssetsJob())
-            sendSafetyNetRequest()
             checkBatteryOptimization()
 
             if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
@@ -581,7 +573,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted &&
             defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_BIOMETRICS,
+                Account.PREF_BIOMETRICS,
                 false,
             )
         ) {
@@ -603,42 +595,6 @@ class MainActivity : BlazeBaseActivity() {
         runIntervalTask(CleanCacheJob.PREF_CLEAN_CACHE_SCHEMES, INTERVAL_7_DAYS) {
             jobManager.addJobInBackground(CleanCacheJob())
         }
-
-    private fun sendSafetyNetRequest() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
-            return
-        }
-        runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
-            accountRepo.deviceCheck().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
-                .subscribe(
-                    { resp ->
-                        resp.data?.let {
-                            val nonce = Base64.decode(it.nonce)
-                            validateSafetyNet(nonce)
-                        }
-                    },
-                    {
-                    },
-                )
-        }
-    }
-
-    private fun validateSafetyNet(nonce: ByteArray) {
-        val client = SafetyNet.getClient(this)
-        val task = client.attest(nonce, BuildConfig.SAFETYNET_API_KEY)
-        task.addOnSuccessListener { safetyResp ->
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
-                .subscribe({}, {})
-        }
-        task.addOnFailureListener { e ->
-            reportException(e)
-        }
-    }
 
     private fun checkUpdate() {
         appUpdateManager.registerListener(updatedListener)

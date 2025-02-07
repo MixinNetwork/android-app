@@ -41,7 +41,6 @@ import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
@@ -107,8 +106,6 @@ class AccountRepository
             accountService.update(request)
 
         suspend fun insertUserSuspend(user: User) = userDao.insertSuspend(user)
-
-        fun updateSession(request: SessionRequest) = accountService.updateSession(request)
 
         fun deviceCheck() = accountService.deviceCheck()
 
@@ -251,9 +248,7 @@ class AccountRepository
         fun observeSystemAlbumById(albumId: String) = stickerAlbumDao.observeSystemAlbumById(albumId)
 
         suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {
-            withTransaction {
-                stickerAlbumOrders.forEach { o -> stickerAlbumDao.updateOrderedAt(o) }
-            }
+            stickerAlbumDao.updateOrderedAt(stickerAlbumOrders)
         }
 
         suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = stickerAlbumDao.updateAdded(stickerAlbumAdded)

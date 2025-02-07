@@ -21,7 +21,6 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.pending.PendingMessage
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.event.PinMessageEvent
@@ -1323,10 +1322,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 circleConversationDao.deleteByIds(conversationId, systemMessage.circleId)
             }
             SystemCircleMessageAction.DELETE.name -> {
-                runInTransaction {
-                    circleDao.deleteCircleById(systemMessage.circleId)
-                    circleConversationDao.deleteByCircleId(systemMessage.circleId)
-                }
+                circleDao.deleteCircleById(systemMessage.circleId)
                 RxBus.publish(CircleDeleteEvent(systemMessage.circleId))
                 if (systemMessage.circleId == MixinApplication.appContext.defaultSharedPreferences.getString(Constants.CIRCLE.CIRCLE_ID, null)) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(Constants.CIRCLE.CIRCLE_ID, null)
