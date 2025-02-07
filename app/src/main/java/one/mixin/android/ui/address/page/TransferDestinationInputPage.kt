@@ -69,6 +69,7 @@ fun TransferDestinationInputPage(
     toAccount: () -> Unit,
     onSend: (String) -> Unit,
     onDeleteAddress: (Address) -> Unit,
+    onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel: AddressViewModel = hiltViewModel()
@@ -79,7 +80,7 @@ fun TransferDestinationInputPage(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
-    var text by remember { mutableStateOf(contentText) }
+    var text by remember(contentText) { mutableStateOf(contentText) }
 
     MixinAppTheme {
         BackHandler(
@@ -100,6 +101,7 @@ fun TransferDestinationInputPage(
                     modalSheetState = modalSheetState,
                     onAddClick = toAddAddress,
                     onDeleteAddress = onDeleteAddress,
+                    onAddressClick = onAddressClick,
                     onDeleteStateChange = {})
             }
         ) {

@@ -59,7 +59,7 @@ fun AddressInputPage(
 ) {
     var address by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
-    LaunchedEffect (Unit) {
+    LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
     }
@@ -102,7 +102,9 @@ fun AddressInputPage(
                     OutlinedTextField(
                         value = address,
                         onValueChange = { address = it },
-                        modifier = Modifier.height(96.dp).focusRequester(focusRequester),
+                        modifier = Modifier
+                            .height(96.dp)
+                            .focusRequester(focusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
                             textColor = MixinAppTheme.colors.textPrimary,
@@ -156,7 +158,7 @@ fun AddressInputPage(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Button(
                     modifier = Modifier
@@ -185,6 +187,7 @@ fun AddressInputPage(
                         ) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

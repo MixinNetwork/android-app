@@ -1,13 +1,17 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -52,17 +56,18 @@ import one.mixin.android.vo.safe.TokenItem
 fun LabelInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
+    address: String,
     contentText: String = "",
     onComplete: (String) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
+    LocalView.current
     var label by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect (Unit) {
+    LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
     }
@@ -157,9 +162,14 @@ fun LabelInputPage(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(10.dp))
+                Row (horizontalArrangement = Arrangement.SpaceBetween){
+                    Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)
+                }
 
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Button(
                     modifier = Modifier
@@ -183,11 +193,13 @@ fun LabelInputPage(
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.Confirm),
+                        text = stringResource(R.string.Preview),
                         color = if (label.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }
+                Spacer(modifier = Modifier.height(20.dp))
             }
+
         }
     }
 }

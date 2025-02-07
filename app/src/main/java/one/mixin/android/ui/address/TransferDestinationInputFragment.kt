@@ -224,6 +224,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         InputFragment.TAG
                                     )
                                 },
+                                onAddressClick = { address ->
+                                    // Todo
+                                    requireView().hideKeyboard()
+                                    navTo(
+                                        InputFragment.newInstance(token!!, address.destination),
+                                        InputFragment.TAG
+                                    )
+                                },
                                 onDeleteAddress = { address ->
                                     // Todo web3
                                     showBottomSheet(address, token!!)
@@ -250,10 +258,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             route = "${TransferDestination.Memo.name}?address={address}",
                             arguments = listOf(navArgument("address") { type = NavType.StringType })
                         ) { backStackEntry ->
-                            val address = backStackEntry.arguments?.getString("address")
+                            val address = backStackEntry.arguments?.getString("address") ?: ""
                             MemoInputPage(
                                 token = token,
                                 web3Token = web3Token,
+                                address = address,
                                 contentText = scannedMemo,
                                 onNext = { memo ->
                                     navController.navigate("${TransferDestination.Label.name}?address=${address}&memo=${memo}")
@@ -278,6 +287,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             LabelInputPage(
                                 token = token,
                                 web3Token = web3Token,
+                                address = address,
                                 contentText = scannedLabel,
                                 onScan = { startQrScan(ScanType.LABEL) },
                                 onComplete = { label ->
@@ -297,6 +307,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         parentFragmentManager,
                                         TransferBottomSheetDialogFragment.TAG
                                     )
+                                    scannedMemo = ""
+                                    scannedLabel = ""
+                                    scannedAddress = ""
                                     bottomSheet.setCallback(
                                         object : TransferBottomSheetDialogFragment.Callback() {
                                             override fun onDismiss(success: Boolean) {

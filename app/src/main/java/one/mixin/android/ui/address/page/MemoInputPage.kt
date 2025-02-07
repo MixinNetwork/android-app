@@ -1,13 +1,17 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -40,29 +44,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
 fun MemoInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
+    address: String,
     contentText: String = "",
     onNext: (String?) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
 ) {
+    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     val context = LocalContext.current
-    val view = LocalView.current
     var memo by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect (Unit) {
+    LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
     }
@@ -102,7 +109,9 @@ fun MemoInputPage(
                     OutlinedTextField(
                         value = memo,
                         onValueChange = { memo = it },
-                        modifier = Modifier.height(96.dp).focusRequester(focusRequester),
+                        modifier = Modifier
+                            .height(96.dp)
+                            .focusRequester(focusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
                             textColor = MixinAppTheme.colors.textPrimary,
@@ -112,7 +121,7 @@ fun MemoInputPage(
                         ),
                         placeholder = {
                             Text(
-                                text = stringResource(R.string.hint_address),
+                                text = stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.hint_tag else R.string.hint_memo),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp
                             )
@@ -155,8 +164,13 @@ fun MemoInputPage(
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+                Row (horizontalArrangement = Arrangement.SpaceBetween){
+                    Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)
+                }
+                Spacer(modifier = Modifier.weight(1f))
 
                 Button(
                     modifier = Modifier
@@ -165,11 +179,8 @@ fun MemoInputPage(
                     onClick = {
                         onNext.invoke(memo)
                     },
-                    enabled = memo.isBlank().not(),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (memo.isBlank()
-                                .not()
-                        ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                        backgroundColor = MixinAppTheme.colors.accent
                     ),
                     shape = RoundedCornerShape(32.dp),
                     elevation = ButtonDefaults.elevation(
@@ -181,9 +192,10 @@ fun MemoInputPage(
                 ) {
                     Text(
                         text = stringResource(R.string.Next),
-                        color = if (memo.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                        color = Color.White,
                     )
                 }
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

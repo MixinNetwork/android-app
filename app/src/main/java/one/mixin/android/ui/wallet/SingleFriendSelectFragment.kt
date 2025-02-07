@@ -37,7 +37,9 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsViewHolder>(), Fri
             val token = requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)!!
             TransferFragment.newInstance(buildTransferBiometricItem(user, token, "", null, null, null))
                 .showNow(parentFragmentManager, TransferFragment.TAG)
-            view?.findNavController()?.navigateUp()
+            runCatching { view?.findNavController()?.navigateUp() }.onFailure {
+                parentFragmentManager.beginTransaction().remove(this).commit()
+            }
         } else {
             toast(R.string.transfer_without_pin)
         }

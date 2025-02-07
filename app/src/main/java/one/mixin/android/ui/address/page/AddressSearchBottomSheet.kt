@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,6 +51,7 @@ import one.mixin.android.vo.Address
 fun AddressSearchBottomSheet(
     addresses: List<Address>,
     modalSheetState: ModalBottomSheetState? = null,
+    onAddressClick: (Address) -> Unit,
     onAddClick: () -> Unit,
     onDeleteAddress: (Address) -> Unit,
     onDeleteStateChange: (Boolean) -> Unit,
@@ -71,7 +72,8 @@ fun AddressSearchBottomSheet(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .height(LocalConfiguration.current.screenHeightDp.dp - 56.dp)
             .background(
                 MixinAppTheme.colors.background,
                 shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
@@ -145,7 +147,8 @@ fun AddressSearchBottomSheet(
                         address = address,
                         query = searchText,
                         isDeleteMode = isDeleteMode,
-                        onDeleteClick = onDeleteAddress
+                        onDeleteClick = onDeleteAddress,
+                        onAddressClick = onAddressClick,
                     )
                 }
             }
@@ -180,7 +183,7 @@ fun AddressSearchBottomSheet(
                             onDeleteStateChange(isDeleteMode)
                             expanded = false
                         },
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 0.dp)
                     ) {
                         Text(
                             stringResource(R.string.Delete_address),
@@ -222,12 +225,16 @@ private fun AddressListItem(
     query: String,
     isDeleteMode: Boolean,
     onDeleteClick: (Address) -> Unit,
+    onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .clickable {
+                onAddressClick.invoke(address)
+            }
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -249,7 +256,8 @@ private fun AddressListItem(
                     highlight = query,
                     style = TextStyle(
                         fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary
+                        color = MixinAppTheme.colors.textPrimary,
+                        lineHeight = 20.sp
                     )
                 )
                 Spacer(modifier = Modifier.weight(1f))

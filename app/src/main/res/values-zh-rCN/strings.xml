@@ -1496,6 +1496,8 @@
     <string name="Review">预览</string>
     <string name="Max">最大值</string>
     <string name="hint_address">输入钱包地址</string>
+    <string name="hint_memo">输入地址备注（Memo），如果没有直接点下一步</string>
+    <string name="hint_tag">输入地址标签（Tag），如果没有直接点下一步。</string>
     <string name="Accounts">账户</string>
     <string name="to_mixin_wallet">划转到 Mixin 钱包</string>
     <string name="insufficient_gas">您的账户中没有足够的 %1$s 来支付网络费用</string>
@@ -1841,4 +1843,5 @@
     <string name="buy_token">买入 %1$s</string>
     <string name="NO_ORDERS">没有订单</string>
     <string name="Destination">Destination</string>
+    <string name="Preview">预览</string>
 </resources>
