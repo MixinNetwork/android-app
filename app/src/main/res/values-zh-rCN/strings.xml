@@ -1368,6 +1368,7 @@
     <string name="Send_crypto_to_contact">使用 Mixin 网络向 Mixin 联系人发送加密货币。</string>
     <string name="Send_crypto_to_account">Send to my 1$s account using a crypto network. </string>
     <string name="Send_crypto_to_address">Send to a known crypto address using a crypto network.</string>
+    <string name="Send_crypto_to_wallet">Send to my Mixin wallet using a crypto network.</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
     <string name="Contact_Support">联系客服</string>

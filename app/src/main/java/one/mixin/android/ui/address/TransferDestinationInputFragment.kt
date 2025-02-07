@@ -30,6 +30,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
@@ -146,6 +147,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     enum class TransferDestination {
         Initial,
         Address,
+        SendMemo,
         Memo,
         Label
     }
@@ -214,15 +216,26 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         }, SingleFriendSelectFragment::class.java.name
                                     )
                                 },
+                                toWallet = {
+                                    requireView().hideKeyboard()
+                                    // todo
+                                    toast("Coming soon")
+                                },
                                 toAddAddress = {
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
-                                    requireView().hideKeyboard()
-                                    navTo(
-                                        InputFragment.newInstance(token!!, address),
-                                        InputFragment.TAG
-                                    )
+                                    val memoEnabled =
+                                        token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+                                    if (memoEnabled) {
+                                        navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
+                                    } else {
+                                        requireView().hideKeyboard()
+                                        navTo(
+                                            InputFragment.newInstance(token!!, address),
+                                            InputFragment.TAG
+                                        )
+                                    }
                                 },
                                 onAddressClick = { address ->
                                     // Todo
@@ -251,6 +264,29 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 onScan = { startQrScan(ScanType.ADDRESS) },
                                 pop = { findNavController().popBackStack() }
+                            )
+                        }
+
+                        composable(
+                            route = "${TransferDestination.SendMemo.name}?address={address}",
+                            arguments = listOf(navArgument("address") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val address = backStackEntry.arguments?.getString("address") ?: ""
+                            MemoInputPage(
+                                token = token,
+                                web3Token = web3Token,
+                                address = address,
+                                contentText = scannedMemo,
+                                onNext = { memo ->
+                                    // todo memo
+                                    requireView().hideKeyboard()
+                                    navTo(
+                                        InputFragment.newInstance(token!!, address),
+                                        InputFragment.TAG
+                                    )
+                                },
+                                onScan = { startQrScan(ScanType.MEMO) },
+                                pop = { navController.popBackStack() }
                             )
                         }
 
@@ -288,6 +324,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 token = token,
                                 web3Token = web3Token,
                                 address = address,
+                                memo = memo,
                                 contentText = scannedLabel,
                                 onScan = { startQrScan(ScanType.LABEL) },
                                 onComplete = { label ->

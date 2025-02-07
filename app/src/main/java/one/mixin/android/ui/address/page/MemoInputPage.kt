@@ -62,18 +62,17 @@ fun MemoInputPage(
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
 ) {
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     val context = LocalContext.current
     var memo by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
-
     LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
     }
 
     PageScaffold(
-        title = stringResource(R.string.Memo),
+        title = stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.Tag else R.string.Memo),
+        subTitle = "2/3",
         verticalScrollable = false,
         pop = pop,
         actions = {
@@ -163,7 +162,10 @@ fun MemoInputPage(
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Row (horizontalArrangement = Arrangement.SpaceBetween){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)

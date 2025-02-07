@@ -43,12 +43,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
@@ -56,16 +58,16 @@ fun LabelInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
     address: String,
+    memo: String?,
     contentText: String = "",
     onComplete: (String) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    LocalView.current
     var label by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
-
+    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
@@ -73,6 +75,7 @@ fun LabelInputPage(
 
     PageScaffold(
         title = stringResource(R.string.Label),
+        subTitle = if (memoEnabled) "3/3" else "2/2",
         verticalScrollable = false,
         pop = pop,
         actions = {
@@ -162,10 +165,27 @@ fun LabelInputPage(
                     }
                 }
                 Spacer(modifier = Modifier.height(10.dp))
-                Row (horizontalArrangement = Arrangement.SpaceBetween){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)
+                }
+                if (memo.isNullOrBlank().not()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.Tag else R.string.Memo),
+                            color = MixinAppTheme.colors.textAssist
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(memo, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))

@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
@@ -58,6 +60,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.Constants.ChainId
+import one.mixin.android.vo.WithdrawalMemoPossibility
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -70,6 +73,7 @@ fun TransferDestinationInputPage(
     contentText: String = "",
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
+    toWallet: () -> Unit,
     toAccount: (String) -> Unit,
     onSend: (String) -> Unit,
     onDeleteAddress: (Address) -> Unit,
@@ -82,11 +86,21 @@ fun TransferDestinationInputPage(
         .collectAsState(initial = emptyList())
 
     var account by remember { mutableStateOf("") }
+    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
 
     LaunchedEffect(token?.chainId) {
         account = when (token?.chainId) {
-            ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(Constants.Account.ChainAddress.SOLANA_ADDRESS, "")
-            ChainId.ETHEREUM_CHAIN_ID -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(
+                Constants.Account.ChainAddress.SOLANA_ADDRESS,
+                ""
+            )
+
+            ChainId.ETHEREUM_CHAIN_ID,
+            ChainId.Base,
+            ChainId.Polygon,
+            ChainId.Arbitrum,
+            ChainId.Optimism -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+
             else -> ""
         }
     }
@@ -108,12 +122,13 @@ fun TransferDestinationInputPage(
                     modalSheetState = modalSheetState,
                     onAddClick = toAddAddress,
                     onDeleteAddress = onDeleteAddress,
-                    onAddressClick = onAddressClick)
+                    onAddressClick = onAddressClick
+                )
             }
         ) {
             PageScaffold(
                 title = stringResource(R.string.Send),
-                subTitle = "1/2",
+                subTitle = if (memoEnabled) "1/3" else "1/2",
                 verticalScrollable = false,
                 pop = pop,
                 actions = {
@@ -131,6 +146,7 @@ fun TransferDestinationInputPage(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp)
                 ) {
                     TokenInfoHeader(token = token, web3Token = web3Token)
@@ -207,16 +223,29 @@ fun TransferDestinationInputPage(
 
                     if (text.isBlank()) {
                         Column {
-                            DestinationMenu(
-                                R.drawable.ic_destination_contact,
-                                R.string.Mixin_Contact,
-                                R.string.Send_crypto_to_contact,
-                                onClick = {
-                                    toContact.invoke()
-                                }, true
-                            )
-                            if (account.isNullOrBlank().not()) {
+                            if (token != null) {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_contact,
+                                    R.string.Mixin_Contact,
+                                    R.string.Send_crypto_to_contact,
+                                    onClick = {
+                                        toContact.invoke()
+                                    }, true
+                                )
                                 Spacer(modifier = Modifier.height(16.dp))
+                            }
+                            if (web3Token != null) {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_wallet,
+                                    R.string.Mixin_Wallet,
+                                    R.string.Send_crypto_to_wallet,
+                                    onClick = {
+                                        toWallet.invoke()
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                            if (account.isBlank().not()) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     R.string.Account,
@@ -227,8 +256,8 @@ fun TransferDestinationInputPage(
                                     onClick = {
                                         toAccount.invoke(account)
                                     })
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
                             DestinationMenu(
                                 R.drawable.ic_destination_address,
                                 R.string.Address_Book,

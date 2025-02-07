@@ -1398,6 +1398,7 @@
     <string name="Send_crypto_to_contact">Send crypto to my Mixin contact using the mixin Network.</string>
     <string name="Send_crypto_to_account">Send to my %1$s account using a crypto network. </string>
     <string name="Send_crypto_to_address">Send to a known crypto address using a crypto network.</string>
+    <string name="Send_crypto_to_wallet">Send to my Mixin wallet using a crypto network.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
     <string name="Contact_Support">Contact Support</string>
@@ -1885,6 +1886,7 @@
     <string name="NO_ORDERS">NO ORDERS</string>
     <string name="Destination">Destination</string>
     <string name="Mixin_Contact">Mixin Contact</string>
+    <string name="Mixin_Wallet">Mixin Wallet</string>
     <string name="Address_Book">Address Book</string>
     <string name="Preview">Preview</string>
 </resources>
