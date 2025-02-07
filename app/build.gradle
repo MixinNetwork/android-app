@@ -209,7 +209,7 @@ dependencies {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
-    implementation platform("com.google.firebase:firebase-bom:33.8.0")
+    implementation platform("com.google.firebase:firebase-bom:33.9.0")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
