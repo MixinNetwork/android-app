@@ -51,7 +51,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.InputFragment
+import one.mixin.android.ui.wallet.InputFragment
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint

@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -10,8 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
-import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
@@ -35,13 +34,13 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
@@ -56,6 +55,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     companion object {
         const val TAG = "InputFragment"
         const val ARGS_TO_ADDRESS = "args_to_address"
+        const val ARGS_TO_USER = "args_to_user"
         const val ARGS_FROM_ADDRESS = "args_from_address"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
@@ -86,6 +86,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     putString(ARGS_TO_ADDRESS, toAddress)
                 }
             }
+
+        fun newInstance(
+            tokenItem: TokenItem,
+            user: User
+        ) =
+            InputFragment().apply {
+                withArgs {
+                    putParcelable(ARGS_ASSET, tokenItem)
+                    putParcelable(ARGS_TO_USER, user)
+                }
+            }
     }
 
     private val binding by viewBinding(FragmentInputBinding::bind)
@@ -95,7 +106,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     private var isReverse: Boolean = false
 
     private val toAddress by lazy {
-        requireNotNull(requireArguments().getString(ARGS_TO_ADDRESS))
+        requireArguments().getString(ARGS_TO_ADDRESS)
     }
     private val fromAddress by lazy {
         requireArguments().getString(ARGS_FROM_ADDRESS)
@@ -145,7 +156,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
-                titleView.setSubTitle(getString(if (asset != null) R.string.Receive else R.string.Send_transfer), toAddress.formatPublicKey())
+                titleView.setSubTitle(
+                    getString(if (asset != null) R.string.Receive else R.string.Send_transfer),
+                    toAddress?.formatPublicKey() ?: ""
+                )
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(
@@ -205,6 +219,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
+                    // Todo 
+                    val toAddress = toAddress ?: return@setOnClickListener
                     if (asset != null) { // to web3
                         val assetId = requireNotNull(asset?.assetId)
                         val amount =
@@ -215,14 +231,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             }
                         lifecycleScope.launch(
                             CoroutineExceptionHandler { _, error ->
-                                ErrorHandler.handleError(error)
+                                ErrorHandler.Companion.handleError(error)
                                 alertDialog.dismiss()
                             },
                         ) {
                             alertDialog.show()
                             val feeResponse = web3ViewModel.getFees(assetId, toAddress)
                             if (!feeResponse.isSuccess) {
-                                toast(requireContext().getMixinErrorStringByCode(feeResponse.errorCode, feeResponse.errorDescription))
+                                toast(
+                                    requireContext().getMixinErrorStringByCode(
+                                        feeResponse.errorCode,
+                                        feeResponse.errorDescription
+                                    )
+                                )
                                 alertDialog.dismiss()
                                 return@launch
                             }
@@ -241,21 +262,45 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                     fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                 }
                             if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
-                                toast(requireContext().getString(R.string.insufficient_gas, feeItem.symbol))
+                                toast(
+                                    requireContext().getString(
+                                        R.string.insufficient_gas,
+                                        feeItem.symbol
+                                    )
+                                )
                                 alertDialog.dismiss()
                                 return@launch
                             }
 
                             alertDialog.dismiss()
-                            val address = Address("", "address", assetId, toAddress, "Web3 Address", nowInUtc(), null, null)
+                            val address = Address(
+                                "",
+                                "address",
+                                assetId,
+                                toAddress,
+                                "Web3 Address",
+                                nowInUtc(),
+                                null,
+                                null
+                            )
                             val networkFee = NetworkFee(feeItem, fee.amount?:"0")
-                            val withdrawBiometricItem = WithdrawBiometricItem(address, networkFee, null, UUID.randomUUID().toString(), asset, amount, null, PaymentStatus.pending.name, null)
-                            TransferBottomSheetDialogFragment.newInstance(withdrawBiometricItem).apply {
+                            val withdrawBiometricItem = WithdrawBiometricItem(
+                                address,
+                                networkFee,
+                                null,
+                                UUID.randomUUID().toString(),
+                                asset,
+                                amount,
+                                null,
+                                PaymentStatus.pending.name,
+                                null
+                            )
+                            TransferBottomSheetDialogFragment.Companion.newInstance(withdrawBiometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                     override fun onDismiss(success: Boolean) {
                                         if (success) {
                                             parentFragmentManager.apply {
-                                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
+                                                findFragmentByTag(Web3ReceiveSelectionFragment.Companion.TAG)?.let {
                                                     beginTransaction().remove(it).commit()
                                                 }
                                                 findFragmentByTag(TAG)?.let {
@@ -266,7 +311,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                     }
                                 })
 
-                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.Companion.TAG)
                         }
                     } else { // from web3
                         val token = requireNotNull(token)
@@ -279,7 +324,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                             }
                         lifecycleScope.launch(
                             CoroutineExceptionHandler { _, error ->
-                                ErrorHandler.handleError(error)
+                                ErrorHandler.Companion.handleError(error)
                                 alertDialog.dismiss()
                             },
                         ) {
@@ -293,8 +338,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 toAddress = toAddress,
                                 chainToken = chainToken,
                                 onTxhash = { _, serializedTx ->
-                                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx, null)
-                                    navTo(txStateFragment, TransactionStateFragment.TAG)
+                                    val txStateFragment =
+                                        TransactionStateFragment.Companion.newInstance(
+                                            serializedTx,
+                                            null
+                                        )
+                                    navTo(txStateFragment, TransactionStateFragment.Companion.TAG)
                                 },
                             )
                         }
@@ -446,7 +495,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                         BigDecimal(tokenBalance).subtract(fee).toPlainString()
                     }
             }
-        } else if (asset != null && (asset?.assetId == ETHEREUM_CHAIN_ID || asset?.assetId == SOLANA_CHAIN_ID)) {
+        } else if (asset != null && (asset?.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID || asset?.assetId == Constants.ChainId.SOLANA_CHAIN_ID)) {
             if (fee == null) {
                 if (!dialog.isShowing) {
                     lifecycleScope.launch {
@@ -482,6 +531,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private suspend fun refreshGas(t: TokenItem) {
+        // Todo
+        val toAddress = toAddress?: return
         val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
         feeResponse.data?.firstOrNull()
         if (feeResponse.isSuccess) {
@@ -492,13 +543,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private suspend fun refreshGas(t: Web3Token) {
+        // Todo
+        val toAddress = toAddress?: return
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
             val transaction =
                 try {
                     t.buildTransaction(fromAddress, toAddress, tokenBalance)
                 } catch (e: Exception) {
-                    Timber.w(e)
+                    Timber.Forest.w(e)
                     if (dialog.isShowing) {
                         dialog.dismiss()
                     }

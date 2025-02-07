@@ -59,7 +59,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.web3.InputFragment
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner

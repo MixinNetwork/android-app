@@ -389,4 +389,15 @@
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
+    <fragment
+        android:id="@+id/wallet_input"
+        android:name="one.mixin.android.ui.wallet.InputFragment">
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+        <argument
+            android:name="args_user"
+            app:argType="one.mixin.android.vo.User" />
+    </fragment>
+
 </navigation>

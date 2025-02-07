@@ -39,12 +39,20 @@ class SearchView : FrameLayout {
         val circleClearIcon = typedArray.getBoolean(R.styleable.SearchView_circle_clear_icon, false)
         val size = if (circleClearIcon) small else medium
         val clearIcon = if (circleClearIcon) R.drawable.ic_asset_add_search_clear else R.drawable.ic_close_black
+        val iconDrawable = typedArray.getDrawable(R.styleable.SearchView_drawable_icon)
+        if (iconDrawable != null) {
+            binding.searchEt.updateLayoutParams<LayoutParams> {
+                height = LayoutParams.WRAP_CONTENT
+            }
+            binding.searchEt.setCompoundDrawablesRelativeWithIntrinsicBounds(iconDrawable, null, null, null)
+        }
+        typedArray.recycle()
+
         binding.rightClear.setImageResource(clearIcon)
         binding.rightClear.updateLayoutParams<LayoutParams> {
             width = size
             height = size
         }
-        typedArray.recycle()
 
         binding.searchEt.apply {
             hint = resources.getString(R.string.Search)
