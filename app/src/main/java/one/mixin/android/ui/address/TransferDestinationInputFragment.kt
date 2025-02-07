@@ -366,6 +366,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private fun startQrScan(scanType: ScanType) {
         currentScanType = scanType
+        when(currentScanType) {
+            ScanType.ADDRESS -> scannedTransferDest = ""
+            ScanType.MEMO -> scannedMemo = ""
+            ScanType.LABEL -> scannedLabel = ""
+            ScanType.TRANSFER_DEST -> scannedTransferDest = ""
+            null -> Unit
+        }
         handleClick()
     }
 
