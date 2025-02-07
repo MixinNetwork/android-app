@@ -199,10 +199,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     startQrScan(ScanType.TRANSFER_DEST)
                                 },
                                 contentText = scannedTransferDest,
-                                toAccount = {
+                                toAccount = { address ->
                                     requireView().hideKeyboard()
                                     navTo(
-                                        InputFragment.newInstance(token!!, "test todo address"),
+                                        InputFragment.newInstance(token!!, address),
                                         InputFragment.TAG
                                     )
                                 },

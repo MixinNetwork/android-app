@@ -1,5 +1,6 @@
 package one.mixin.android.ui.address.page
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,11 +51,10 @@ import one.mixin.android.vo.Address
 @Composable
 fun AddressSearchBottomSheet(
     addresses: List<Address>,
-    modalSheetState: ModalBottomSheetState? = null,
+    modalSheetState: ModalBottomSheetState,
     onAddressClick: (Address) -> Unit,
     onAddClick: () -> Unit,
     onDeleteAddress: (Address) -> Unit,
-    onDeleteStateChange: (Boolean) -> Unit,
 ) {
     var isDeleteMode by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
@@ -67,6 +67,13 @@ fun AddressSearchBottomSheet(
                 address.label.contains(searchText, ignoreCase = true) ||
                     address.destination.contains(searchText, ignoreCase = true)
             }
+        }
+    }
+    BackHandler (
+        enabled = modalSheetState.isVisible
+    ) {
+        scope.launch {
+            modalSheetState.hide()
         }
     }
 
@@ -148,7 +155,10 @@ fun AddressSearchBottomSheet(
                         query = searchText,
                         isDeleteMode = isDeleteMode,
                         onDeleteClick = onDeleteAddress,
-                        onAddressClick = onAddressClick,
+                        onAddressClick = {
+                            onAddressClick.invoke(address)
+                            isDeleteMode = false
+                        },
                     )
                 }
             }
@@ -180,7 +190,6 @@ fun AddressSearchBottomSheet(
                     DropdownMenuItem(
                         onClick = {
                             isDeleteMode = !isDeleteMode
-                            onDeleteStateChange(isDeleteMode)
                             expanded = false
                         },
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 0.dp)

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +22,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,16 +44,20 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.openUrl
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.Constants.ChainId
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -66,16 +70,27 @@ fun TransferDestinationInputPage(
     contentText: String = "",
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
-    toAccount: () -> Unit,
+    toAccount: (String) -> Unit,
     onSend: (String) -> Unit,
     onDeleteAddress: (Address) -> Unit,
     onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
     val addresses by viewModel.addressesFlow(token?.assetId ?: "")
         .collectAsState(initial = emptyList())
-    val scope = rememberCoroutineScope()
+
+    var account by remember { mutableStateOf("") }
+
+    LaunchedEffect(token?.chainId) {
+        account = when (token?.chainId) {
+            ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(Constants.Account.ChainAddress.SOLANA_ADDRESS, "")
+            ChainId.ETHEREUM_CHAIN_ID -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            else -> ""
+        }
+    }
+
     val modalSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
@@ -83,14 +98,6 @@ fun TransferDestinationInputPage(
     var text by remember(contentText) { mutableStateOf(contentText) }
 
     MixinAppTheme {
-        BackHandler(
-            enabled = modalSheetState.isVisible
-        ) {
-            scope.launch {
-                modalSheetState.hide()
-            }
-        }
-
         ModalBottomSheetLayout(
             sheetState = modalSheetState,
             scrimColor = Color.Black.copy(alpha = 0.3f),
@@ -101,8 +108,7 @@ fun TransferDestinationInputPage(
                     modalSheetState = modalSheetState,
                     onAddClick = toAddAddress,
                     onDeleteAddress = onDeleteAddress,
-                    onAddressClick = onAddressClick,
-                    onDeleteStateChange = {})
+                    onAddressClick = onAddressClick)
             }
         ) {
             PageScaffold(
@@ -209,17 +215,19 @@ fun TransferDestinationInputPage(
                                     toContact.invoke()
                                 }, true
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            DestinationMenu(
-                                R.drawable.ic_destination_wallet,
-                                R.string.Account,
-                                stringResource(
-                                    R.string.Send_crypto_to_account,
-                                    token?.chainName ?: ""
-                                ),
-                                onClick = {
-                                    toAccount.invoke()
-                                })
+                            if (account.isNullOrBlank().not()) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                DestinationMenu(
+                                    R.drawable.ic_destination_wallet,
+                                    R.string.Account,
+                                    stringResource(
+                                        R.string.Send_crypto_to_account,
+                                        token?.chainName ?: ""
+                                    ),
+                                    onClick = {
+                                        toAccount.invoke(account)
+                                    })
+                            }
                             Spacer(modifier = Modifier.height(16.dp))
                             DestinationMenu(
                                 R.drawable.ic_destination_address,
