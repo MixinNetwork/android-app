@@ -24,6 +24,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
@@ -31,6 +32,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
@@ -61,6 +63,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ASSET = "args_asset"
 
+        enum class TransferType {
+            USER,
+            ADDRESS,
+            WEB3
+        }
         fun newInstance(
             fromAddress: String,
             toAddress: String,
@@ -97,6 +104,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     putParcelable(ARGS_TO_USER, user)
                 }
             }
+    }
+
+    private val transferType: TransferType by lazy {
+        when {
+            arguments?.containsKey(ARGS_TO_USER) == true -> TransferType.USER
+            arguments?.containsKey(ARGS_TOKEN) == true -> TransferType.WEB3
+            else -> TransferType.ADDRESS
+        }
+    }
+
+    private val user: User? by lazy {
+        arguments?.getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
 
     private val binding by viewBinding(FragmentInputBinding::bind)
@@ -156,6 +175,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
+                titleView.rightIb.setOnClickListener {
+                    requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }
                 titleView.setSubTitle(
                     getString(if (asset != null) R.string.Receive else R.string.Send_transfer),
                     toAddress?.formatPublicKey() ?: ""
@@ -210,7 +232,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 name.text = tokenName
                 balance.text = "$tokenBalance $tokenSymbol"
                 max.setOnClickListener {
-                    maxClick()
+                    valueClick(BigDecimal.ONE)
+                }
+                quarter.setOnClickListener {
+                    valueClick(BigDecimal.valueOf(0.25))
+                }
+                half.setOnClickListener {
+                    valueClick(BigDecimal.valueOf(0.5))
                 }
                 keyboard.initPinKeys(
                     requireContext(),
@@ -219,83 +247,147 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    // Todo 
-                    val toAddress = toAddress ?: return@setOnClickListener
-                    if (asset != null) { // to web3
-                        val assetId = requireNotNull(asset?.assetId)
-                        val amount =
-                            if (isReverse) {
-                                binding.minorTv.text.toString().split(" ")[1].replace(",", "")
-                            } else {
-                                v
-                            }
-                        lifecycleScope.launch(
-                            CoroutineExceptionHandler { _, error ->
-                                ErrorHandler.Companion.handleError(error)
-                                alertDialog.dismiss()
-                            },
-                        ) {
-                            alertDialog.show()
-                            val feeResponse = web3ViewModel.getFees(assetId, toAddress)
-                            if (!feeResponse.isSuccess) {
-                                toast(
-                                    requireContext().getMixinErrorStringByCode(
-                                        feeResponse.errorCode,
-                                        feeResponse.errorDescription
-                                    )
-                                )
-                                alertDialog.dismiss()
-                                return@launch
-                            }
-                            val fee = feeResponse.data!!.first()
-                            val feeTokensExtra = web3ViewModel.findTokensExtra(fee.assetId!!)
-                            val feeItem = web3ViewModel.syncAsset(fee.assetId)
-                            if (feeItem == null) {
-                                toast(R.string.insufficient_balance)
-                                alertDialog.dismiss()
-                                return@launch
-                            }
-                            val totalAmount =
-                                if (fee.assetId == assetId) {
-                                    (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                    when (transferType) {
+                        TransferType.ADDRESS -> {
+                            val toAddress = requireNotNull(toAddress)
+                            val assetId = requireNotNull(asset?.assetId)
+                            val amount =
+                                if (isReverse) {
+                                    binding.minorTv.text.toString().split(" ")[1].replace(",", "")
                                 } else {
-                                    fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    v
                                 }
-                            if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
-                                toast(
-                                    requireContext().getString(
-                                        R.string.insufficient_gas,
-                                        feeItem.symbol
+                            lifecycleScope.launch(
+                                CoroutineExceptionHandler { _, error ->
+                                    ErrorHandler.Companion.handleError(error)
+                                    alertDialog.dismiss()
+                                },
+                            ) {
+                                alertDialog.show()
+                                val feeResponse = web3ViewModel.getFees(assetId, toAddress)
+                                if (!feeResponse.isSuccess) {
+                                    toast(
+                                        requireContext().getMixinErrorStringByCode(
+                                            feeResponse.errorCode,
+                                            feeResponse.errorDescription
+                                        )
                                     )
-                                )
-                                alertDialog.dismiss()
-                                return@launch
-                            }
+                                    alertDialog.dismiss()
+                                    return@launch
+                                }
+                                val fee = feeResponse.data!!.first()
+                                val feeTokensExtra = web3ViewModel.findTokensExtra(fee.assetId!!)
+                                val feeItem = web3ViewModel.syncAsset(fee.assetId)
+                                if (feeItem == null) {
+                                    toast(R.string.insufficient_balance)
+                                    alertDialog.dismiss()
+                                    return@launch
+                                }
+                                val totalAmount =
+                                    if (fee.assetId == assetId) {
+                                        (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                                    } else {
+                                        fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    }
+                                if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
+                                    toast(
+                                        requireContext().getString(
+                                            R.string.insufficient_gas,
+                                            feeItem.symbol
+                                        )
+                                    )
+                                    alertDialog.dismiss()
+                                    return@launch
+                                }
 
-                            alertDialog.dismiss()
-                            val address = Address(
-                                "",
-                                "address",
-                                assetId,
-                                toAddress,
-                                "Web3 Address",
-                                nowInUtc(),
-                                null,
-                                null
-                            )
-                            val networkFee = NetworkFee(feeItem, fee.amount?:"0")
-                            val withdrawBiometricItem = WithdrawBiometricItem(
-                                address,
-                                networkFee,
-                                null,
-                                UUID.randomUUID().toString(),
-                                asset,
-                                amount,
-                                null,
-                                PaymentStatus.pending.name,
-                                null
-                            )
-                            TransferBottomSheetDialogFragment.Companion.newInstance(withdrawBiometricItem).apply {
+                                alertDialog.dismiss()
+                                val address = Address(
+                                    "",
+                                    "address",
+                                    assetId,
+                                    toAddress,
+                                    "Web3 Address",
+                                    nowInUtc(),
+                                    null,
+                                    null
+                                )
+                                val networkFee = NetworkFee(feeItem, fee.amount?:"0")
+                                val withdrawBiometricItem = WithdrawBiometricItem(
+                                    address,
+                                    networkFee,
+                                    null,
+                                    UUID.randomUUID().toString(),
+                                    asset,
+                                    amount,
+                                    null,
+                                    PaymentStatus.pending.name,
+                                    null
+                                )
+                                TransferBottomSheetDialogFragment.Companion.newInstance(withdrawBiometricItem).apply {
+                                    setCallback(object : TransferBottomSheetDialogFragment.Callback() {
+                                        override fun onDismiss(success: Boolean) {
+                                            if (success) {
+                                                parentFragmentManager.apply {
+                                                    findFragmentByTag(Web3ReceiveSelectionFragment.Companion.TAG)?.let {
+                                                        beginTransaction().remove(it).commit()
+                                                    }
+                                                    findFragmentByTag(TAG)?.let {
+                                                        beginTransaction().remove(it).commit()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+
+                                }.show(parentFragmentManager, TransferBottomSheetDialogFragment.Companion.TAG)
+                            }
+                        }
+                        TransferType.WEB3 -> {
+                            val token = requireNotNull(token)
+                            val fromAddress = requireNotNull(fromAddress)
+                            val toAddress = requireNotNull(toAddress)
+                            val amount =
+                                if (isReverse) {
+                                    binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                                } else {
+                                    v
+                                }
+                            lifecycleScope.launch(
+                                CoroutineExceptionHandler { _, error ->
+                                    ErrorHandler.Companion.handleError(error)
+                                    alertDialog.dismiss()
+                                },
+                            ) {
+                                val transaction =
+                                    token.buildTransaction(fromAddress, toAddress, amount)
+                                showBrowserBottomSheetDialogFragment(
+                                    requireActivity(),
+                                    transaction,
+                                    token = token,
+                                    amount = amount,
+                                    toAddress = toAddress,
+                                    chainToken = chainToken,
+                                    onTxhash = { _, serializedTx ->
+                                        val txStateFragment =
+                                            TransactionStateFragment.Companion.newInstance(
+                                                serializedTx,
+                                                null
+                                            )
+                                        navTo(txStateFragment, TransactionStateFragment.Companion.TAG)
+                                    },
+                                )
+                            }
+                        }
+                        TransferType.USER -> {
+                            val amount =
+                                if (isReverse) {
+                                    binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                                } else {
+                                    v
+                                }
+                            val user = requireNotNull(user)
+                            val biometricItem = buildTransferBiometricItem(user, asset, amount, null, null, null)
+                            TransferBottomSheetDialogFragment.Companion.newInstance(biometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                     override fun onDismiss(success: Boolean) {
                                         if (success) {
@@ -313,39 +405,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
                             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.Companion.TAG)
                         }
-                    } else { // from web3
-                        val token = requireNotNull(token)
-                        val fromAddress = requireNotNull(fromAddress)
-                        val amount =
-                            if (isReverse) {
-                                binding.minorTv.text.toString().split(" ")[1].replace(",", "")
-                            } else {
-                                v
-                            }
-                        lifecycleScope.launch(
-                            CoroutineExceptionHandler { _, error ->
-                                ErrorHandler.Companion.handleError(error)
-                                alertDialog.dismiss()
-                            },
-                        ) {
-                            val transaction =
-                                token.buildTransaction(fromAddress, toAddress, amount)
-                            showBrowserBottomSheetDialogFragment(
-                                requireActivity(),
-                                transaction,
-                                token = token,
-                                amount = amount,
-                                toAddress = toAddress,
-                                chainToken = chainToken,
-                                onTxhash = { _, serializedTx ->
-                                    val txStateFragment =
-                                        TransactionStateFragment.Companion.newInstance(
-                                            serializedTx,
-                                            null
-                                        )
-                                    navTo(txStateFragment, TransactionStateFragment.Companion.TAG)
-                                },
-                            )
+                        else -> {
+                            // Todo
                         }
                     }
                 }
@@ -365,7 +426,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
                 updateUI()
             }
-            refreshGas()
+            refreshFee()
         }
     }
 
@@ -478,60 +539,60 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
     private var fee: BigDecimal? = null
 
-    private fun maxClick() {
-        if (token != null && token?.fungibleId == chainToken?.fungibleId) {
-            if (fee == null) {
-                if (!dialog.isShowing) {
-                    lifecycleScope.launch {
-                        dialog.show()
-                        refreshGas()
+    private fun valueClick(percentageOfBalance: BigDecimal) {
+        val baseValue = when {
+            token != null && token?.fungibleId == chainToken?.fungibleId -> {
+                if (fee == null) {
+                    if (!dialog.isShowing) {
+                        lifecycleScope.launch {
+                            dialog.show()
+                            refreshFee()
+                        }
                     }
+                    return
                 }
-            } else {
-                v =
-                    if (isReverse) {
-                        BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                    } else {
-                        BigDecimal(tokenBalance).subtract(fee).toPlainString()
-                    }
+                BigDecimal(tokenBalance).subtract(fee)
             }
-        } else if (asset != null && (asset?.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID || asset?.assetId == Constants.ChainId.SOLANA_CHAIN_ID)) {
-            if (fee == null) {
-                if (!dialog.isShowing) {
-                    lifecycleScope.launch {
-                        dialog.show()
-                        refreshGas()
+            asset != null && (asset?.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID || asset?.assetId == Constants.ChainId.SOLANA_CHAIN_ID) -> {
+                if (fee == null) {
+                    if (!dialog.isShowing) {
+                        lifecycleScope.launch {
+                            dialog.show()
+                            refreshFee()
+                        }
                     }
+                    return
                 }
-            } else {
-                v =
-                    if (isReverse) {
-                        BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                    } else {
-                        BigDecimal(tokenBalance).subtract(fee).toPlainString()
-                    }
+                BigDecimal(tokenBalance).subtract(fee)
             }
-        } else {
-            v =
-                if (isReverse) {
-                    BigDecimal(tokenBalance).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                } else {
-                    tokenBalance
-                }
+            else -> BigDecimal(tokenBalance)
         }
+
+        v = if (isReverse) {
+            baseValue.multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+        } else {
+            baseValue.toPlainString()
+        }
+
+        v = BigDecimal(v).multiply(percentageOfBalance).toPlainString()
         updateUI()
     }
 
-    private suspend fun refreshGas() {
-        if (asset != null) {
-            refreshGas(asset!!)
-        } else if (token != null) {
-            refreshGas(token!!)
+    private suspend fun refreshFee() {
+        when (transferType) {
+            TransferType.ADDRESS -> {
+                refreshFee(asset!!)
+            }
+            TransferType.WEB3 -> {
+                refreshGas(token!!)
+            }
+            else -> {
+                // Todo
+            }
         }
     }
 
-    private suspend fun refreshGas(t: TokenItem) {
-        // Todo
+    private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
         val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
         feeResponse.data?.firstOrNull()
@@ -543,7 +604,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     }
 
     private suspend fun refreshGas(t: Web3Token) {
-        // Todo
         val toAddress = toAddress?: return
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return

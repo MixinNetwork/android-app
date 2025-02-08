@@ -5,6 +5,7 @@ import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
@@ -14,6 +15,7 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.adapter.FriendsAdapter
 import one.mixin.android.ui.conversation.adapter.FriendsViewHolder
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 
@@ -26,6 +28,13 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsViewHolder>(), Fri
             }
     }
 
+    private val token: TokenItem? by lazy {
+        requireArguments().getParcelableCompat(
+            ARGS_ASSET,
+            TokenItem::class.java
+        )
+    }
+
     override fun getTitleResId() = R.string.Send_to_Contact
 
     override suspend fun getFriends() = viewModel.findFriendsAndMyBot()
@@ -34,9 +43,14 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsViewHolder>(), Fri
 
     override fun onItemClick(user: User) {
         if (Session.getAccount()?.hasPin == true) {
-            val token = requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)!!
-            TransferFragment.newInstance(buildTransferBiometricItem(user, token, "", null, null, null))
-                .showNow(parentFragmentManager, TransferFragment.TAG)
+            val token = requireArguments().getParcelableCompat(
+                ARGS_ASSET,
+                TokenItem::class.java
+            )!!
+            navTo(
+                InputFragment.newInstance(token, user),
+                InputFragment.TAG
+            )
             runCatching { view?.findNavController()?.navigateUp() }.onFailure {
                 parentFragmentManager.beginTransaction().remove(this).commit()
             }
