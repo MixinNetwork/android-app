@@ -8,6 +8,7 @@ import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -182,8 +183,10 @@ class DepositFragment : BaseFragment() {
             uAssets.entries.forEach { entry ->
                 val chip =
                     Chip(requireContext()).apply {
+                        val c = this
                         text = entry.value
                         isClickable = true
+                        c.tag = entry.key
                         val same = entry.key == asset.assetId
                         if (same) {
                             isChecked = true
@@ -203,7 +206,7 @@ class DepositFragment : BaseFragment() {
                                     if (newAsset == null) {
                                         toast(R.string.Not_found)
                                     } else {
-                                        initChips(newAsset, usdcAssets)
+                                        initChips(newAsset, uAssets)
                                         val localDepositEntry = localMap[newAsset.assetId]
                                         if (localDepositEntry == null) {
                                             refreshDeposit(newAsset)
@@ -396,6 +399,20 @@ class DepositFragment : BaseFragment() {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
                 notSupportTv.setText(R.string.verification_failed)
+            }
+        }
+        binding.networkChipGroup.children.forEach { clip ->
+            (clip as? Chip)?.apply {
+                val same = clip.tag == asset.assetId
+                if (same) {
+                    isChecked = true
+                    setTextColor(Color.WHITE)
+                    chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                } else {
+                    setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    chipBackgroundColor =
+                        ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                }
             }
         }
     }
