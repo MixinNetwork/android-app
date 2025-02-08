@@ -194,11 +194,6 @@ class WalletViewModel
             tokenRepository.findAndSyncDepositEntry(chainId)
         }
 
-    suspend fun syncDepositEntry(chainId: String) =
-        withContext(Dispatchers.IO) {
-            tokenRepository.syncDepositEntry(chainId)
-        }
-
     suspend fun syncNoExistAsset(assetIds: List<String>) =
         withContext(Dispatchers.IO) {
             assetIds.forEach { id ->
