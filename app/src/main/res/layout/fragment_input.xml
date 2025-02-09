@@ -20,7 +20,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:need_divider="false"
-            app:rightIcon="@drawable/ic_custom_service" />
+            app:rightIcon="@drawable/ic_support" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -33,7 +33,7 @@
                 android:layout_width="256dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="36dp"
+                android:layout_marginBottom="20dp"
                 android:background="@drawable/bg_round_blue_btn_40"
                 android:clickable="true"
                 android:focusable="true"
@@ -67,7 +67,7 @@
                 android:id="@+id/keyboard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="46dp"
+                android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toTopOf="@id/continue_va" />
 
             <RelativeLayout
@@ -136,12 +136,63 @@
                 </LinearLayout>
 
                 <RelativeLayout
+                    android:id="@+id/info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp">
+
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:textColor="?attr/text_primary"
+                        tools:text="Title" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/content"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_primary"
+                            tools:text="Content" />
+
+                        <ProgressBar
+                            android:id="@+id/progress"
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:id="@+id/icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:visibility="gone"
+                            tools:src="@drawable/ic_arrow_down_info" />
+
+                    </LinearLayout>
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:id="@+id/token_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginBottom="20dp"
+                    android:layout_below="@+id/info"
                     android:background="@drawable/bg_round_window_8dp">
 
                     <one.mixin.android.widget.BadgeCircleImageView

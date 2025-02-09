@@ -24,6 +24,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
@@ -246,6 +247,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     force = true,
                     white = true,
                 )
+                when(transferType) {
+                    TransferType.USER -> title.setText(R.string.Note)
+                    else -> title.setText(R.string.Network_Fee)
+                }
                 continueVa.setOnClickListener {
                     when (transferType) {
                         TransferType.ADDRESS -> {
@@ -594,17 +599,24 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
+        binding.progress.isVisible = true
+        binding.content.isVisible = false
         val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
         feeResponse.data?.firstOrNull()
         if (feeResponse.isSuccess) {
             feeResponse.data?.firstOrNull()?.let {
                 fee = BigDecimal(it.amount)
+                binding.content.text = "${fee?.numberFormat8()} ${t.symbol}"
             }
         }
+        binding.content.isVisible = true
+        binding.progress.isVisible = false
     }
 
     private suspend fun refreshGas(t: Web3Token) {
         val toAddress = toAddress?: return
+        binding.progress.isVisible = true
+        binding.content.isVisible = false
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
             val transaction =
@@ -619,6 +631,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
             if (isAdded) {
                 fee = web3ViewModel.calcFee(t, transaction, fromAddress)
+                binding.content.text = "${fee?.numberFormat8()} ${chainToken?.symbol}"
                 if (dialog.isShowing) {
                     dialog.dismiss()
                     v =
@@ -631,6 +644,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
             }
         }
+        binding.content.isVisible = true
+        binding.progress.isVisible = false
     }
 
     private val dialog by lazy {

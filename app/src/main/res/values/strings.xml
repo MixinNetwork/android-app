@@ -1889,4 +1889,5 @@
     <string name="Mixin_Wallet">Mixin Wallet</string>
     <string name="Address_Book">Address Book</string>
     <string name="Preview">Preview</string>
+    <string name="Network_Fee">Network Fee</string>
 </resources>
