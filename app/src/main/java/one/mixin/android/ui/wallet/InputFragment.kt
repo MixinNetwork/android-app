@@ -40,7 +40,6 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
@@ -59,6 +58,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     companion object {
         const val TAG = "InputFragment"
         const val ARGS_TO_ADDRESS = "args_to_address"
+        const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
+        const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
+        const val ARGS_TO_ADDRESS_LABEL = "args_to_address_label"
         const val ARGS_TO_USER = "args_to_user"
         const val ARGS_FROM_ADDRESS = "args_from_address"
         const val ARGS_TOKEN = "args_token"
@@ -88,11 +90,27 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         fun newInstance(
             tokenItem: TokenItem,
             toAddress: String,
+            tag: String? = null
         ) =
             InputFragment().apply {
                 withArgs {
                     putParcelable(ARGS_ASSET, tokenItem)
                     putString(ARGS_TO_ADDRESS, toAddress)
+                    putString(ARGS_TO_ADDRESS_TAG, tag)
+                }
+            }
+
+        fun newInstance(
+            tokenItem: TokenItem,
+            address: Address,
+        ) =
+            InputFragment().apply {
+                withArgs {
+                    putParcelable(ARGS_ASSET, tokenItem)
+                    putString(ARGS_TO_ADDRESS, address.destination)
+                    putString(ARGS_TO_ADDRESS_TAG, address.tag)
+                    putString(ARGS_TO_ADDRESS_ID, address.addressId)
+                    putString(ARGS_TO_ADDRESS_LABEL, address.label)
                 }
             }
 
@@ -116,10 +134,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         }
     }
 
-    private val user: User? by lazy {
-        arguments?.getParcelableCompat(ARGS_TO_USER, User::class.java)
-    }
-
     private val binding by viewBinding(FragmentInputBinding::bind)
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
@@ -129,8 +143,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
     private val toAddress by lazy {
         requireArguments().getString(ARGS_TO_ADDRESS)
     }
+
     private val fromAddress by lazy {
         requireArguments().getString(ARGS_FROM_ADDRESS)
+    }
+    private val user: User? by lazy {
+        arguments?.getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
     private val token by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
@@ -141,6 +159,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
     private val asset by lazy {
         requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
+    }
+
+    private val addressTag by lazy {
+        requireArguments().getString(ARGS_TO_ADDRESS_TAG)
+    }
+
+    private val addressLabel by lazy {
+        requireArguments().getString(ARGS_TO_ADDRESS_LABEL)
+    }
+
+    private val addressId by lazy {
+        requireArguments().getString(ARGS_TO_ADDRESS_ID)
     }
 
     private val currencyName by lazy {
@@ -281,30 +311,23 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                 },
                             ) {
                                 alertDialog.show()
-                                val feeResponse = web3ViewModel.getFees(assetId, toAddress)
-                                if (!feeResponse.isSuccess) {
-                                    toast(
-                                        requireContext().getMixinErrorStringByCode(
-                                            feeResponse.errorCode,
-                                            feeResponse.errorDescription
-                                        )
-                                    )
+                                if (currentFee == null) {
+                                    refreshFee(asset!!)
                                     alertDialog.dismiss()
                                     return@launch
                                 }
-                                val fee = feeResponse.data!!.first()
-                                val feeTokensExtra = web3ViewModel.findTokensExtra(fee.assetId!!)
-                                val feeItem = web3ViewModel.syncAsset(fee.assetId)
+                                val feeTokensExtra = web3ViewModel.findTokensExtra(currentFee!!.token.assetId)
+                                val feeItem = web3ViewModel.syncAsset(currentFee!!.token.assetId)
                                 if (feeItem == null) {
                                     toast(R.string.insufficient_balance)
                                     alertDialog.dismiss()
                                     return@launch
                                 }
                                 val totalAmount =
-                                    if (fee.assetId == assetId) {
-                                        (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                                    if (currentFee?.token?.assetId == assetId) {
+                                        (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) + (currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                                     } else {
-                                        fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                        currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                     }
                                 if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
                                     toast(
@@ -319,16 +342,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
                                 alertDialog.dismiss()
                                 val address = Address(
-                                    "",
+                                    addressId ?: "",
                                     "address",
                                     assetId,
                                     toAddress,
-                                    "Web3 Address",
+                                    addressLabel ?: "Web3 Address",
                                     nowInUtc(),
-                                    null,
+                                    addressTag,
                                     null
                                 )
-                                val networkFee = NetworkFee(feeItem, fee.amount?:"0")
+                                val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
@@ -422,8 +445,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
                             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.Companion.TAG)
                         }
+
                         else -> {
-                            // Todo
+                            throw IllegalArgumentException("Not supported type")
                         }
                     }
                 }
@@ -570,8 +594,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         }
     }
 
-    private var fee: BigDecimal? = null
-
     private fun valueClick(percentageOfBalance: BigDecimal) {
         val baseValue = when {
             token != null && token?.fungibleId == chainToken?.fungibleId -> {
@@ -586,17 +608,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
                 BigDecimal(tokenBalance).subtract(fee)
             }
-            asset != null && (asset?.assetId == Constants.ChainId.ETHEREUM_CHAIN_ID || asset?.assetId == Constants.ChainId.SOLANA_CHAIN_ID) -> {
-                if (fee == null) {
-                    if (!dialog.isShowing) {
-                        lifecycleScope.launch {
-                            dialog.show()
-                            refreshFee()
-                        }
-                    }
-                    return
-                }
-                BigDecimal(tokenBalance).subtract(fee)
+            asset != null && asset?.assetId == currentFee?.token?.assetId -> {
+                BigDecimal(tokenBalance).subtract(BigDecimal(currentFee!!.fee))
             }
             else -> BigDecimal(tokenBalance)
         }
@@ -625,22 +638,50 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         }
     }
 
+    private val fees: ArrayList<NetworkFee> = arrayListOf()
+    private var currentFee: NetworkFee? = null
+    private var fee: BigDecimal? = null
+
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false
         val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
-        feeResponse.data?.firstOrNull()
         if (feeResponse.isSuccess) {
-            if (feeResponse.data?.size ?: 0 > 1) {
-                binding.iconImageView.isVisible = false
-            } else {
+            val ids = feeResponse.data?.mapNotNull { it.assetId }
+            val tokens = web3ViewModel.findTokenItems(ids?:emptyList())
+            fees.clear()
+            fees.addAll(
+                feeResponse.data!!.mapNotNull { d ->
+                    tokens.find { t -> t.assetId == d.assetId }?.let {
+                        NetworkFee(it, d.amount!!)
+                    }
+                },
+            )
+            if (fees.size > 1) {
                 binding.iconImageView.isVisible = true
                 binding.iconImageView.setImageResource(R.drawable.ic_keyboard_arrow_down)
+                binding.infoLinearLayout.setOnClickListener {
+                    NetworkFeeBottomSheetDialogFragment.newInstance(
+                        fees,
+                        currentFee?.token?.assetId
+                    ).apply {
+                        callback = { networkFee ->
+                            currentFee = networkFee
+                            binding.contentTextView.text = "${BigDecimal(networkFee.fee).numberFormat8()} ${t.symbol}"
+                            dismiss()
+                        }
+                    }.show(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
+                }
+            } else {
+                binding.iconImageView.isVisible = false
+                binding.infoLinearLayout.setOnClickListener {
+                    // do nothing
+                }
             }
-            feeResponse.data?.firstOrNull()?.let {
-                fee = BigDecimal(it.amount)
-                binding.contentTextView.text = "${fee?.numberFormat8()} ${t.symbol}"
+            fees.firstOrNull()?.let {
+                currentFee = it
+                binding.contentTextView.text = "${currentFee?.fee?.numberFormat8()} ${t.symbol}"
             }
         }
         binding.contentTextView.isVisible = true
@@ -678,6 +719,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
             }
         }
+        binding.iconImageView.isVisible = false
         binding.contentTextView.isVisible = true
         binding.loadingProgressBar.isVisible = false
     }

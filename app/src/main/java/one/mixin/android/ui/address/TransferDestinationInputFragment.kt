@@ -238,15 +238,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     }
                                 },
                                 onAddressClick = { address ->
-                                    // Todo
                                     requireView().hideKeyboard()
                                     navTo(
-                                        InputFragment.newInstance(token!!, address.destination),
+                                        InputFragment.newInstance(token!!, address),
                                         InputFragment.TAG
                                     )
                                 },
                                 onDeleteAddress = { address ->
-                                    // Todo web3
                                     showBottomSheet(address, token!!)
                                 }
                             )
@@ -278,10 +276,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 address = address,
                                 contentText = scannedMemo,
                                 onNext = { memo ->
-                                    // todo memo
                                     requireView().hideKeyboard()
                                     navTo(
-                                        InputFragment.newInstance(token!!, address),
+                                        InputFragment.newInstance(token!!, address, memo),
                                         InputFragment.TAG
                                     )
                                 },

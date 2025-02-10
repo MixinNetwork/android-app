@@ -44,6 +44,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSignMessage
@@ -201,6 +202,8 @@ class Web3ViewModel
             id: String,
             destination: String,
         ) = tokenRepository.getFees(id, destination)
+
+        suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
 
         suspend fun findTokensExtra(assetId: String) =
             withContext(Dispatchers.IO) {
