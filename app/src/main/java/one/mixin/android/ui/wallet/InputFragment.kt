@@ -34,6 +34,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
@@ -165,6 +166,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         asset?.name ?: token!!.name
     }
 
+    private var currentNote: String? = null
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
@@ -248,8 +251,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     white = true,
                 )
                 when(transferType) {
-                    TransferType.USER -> title.setText(R.string.Note)
-                    else -> title.setText(R.string.Network_Fee)
+                    TransferType.USER -> {
+                        binding.infoLinearLayout.setOnClickListener {
+                            noteDialog()
+                        }
+                        binding.titleTextView.setText(R.string.Note_Optional)
+                        binding.contentTextView.setText(R.string.Add_a_note)
+                        binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
+                    }
+                    else -> {
+                        binding.titleTextView.setText(R.string.Network_Fee)
+                    }
                 }
                 continueVa.setOnClickListener {
                     when (transferType) {
@@ -391,7 +403,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                     v
                                 }
                             val user = requireNotNull(user)
-                            val biometricItem = buildTransferBiometricItem(user, asset, amount, null, null, null)
+                            val biometricItem = buildTransferBiometricItem(user, asset, amount, null, memo = currentNote, null)
                             TransferBottomSheetDialogFragment.Companion.newInstance(biometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                     override fun onDismiss(success: Boolean) {
@@ -432,6 +444,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 updateUI()
             }
             refreshFee()
+        }
+    }
+
+    private fun noteDialog() {
+        editDialog {
+            titleText = this@InputFragment.getString(R.string.Add_a_note)
+            editText = currentNote
+            maxTextCount = 20
+            allowEmpty = true
+            rightAction = { note ->
+                if (isAdded) {
+                    currentNote = note
+                    binding.contentTextView.text =
+                        if (note.isNotEmpty()) note else getString(R.string.Add_a_note)
+                }
+            }
         }
     }
 
@@ -592,31 +620,37 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 refreshGas(token!!)
             }
             else -> {
-                // Todo
+                // User free
             }
         }
     }
 
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
-        binding.progress.isVisible = true
-        binding.content.isVisible = false
+        binding.loadingProgressBar.isVisible = true
+        binding.contentTextView.isVisible = false
         val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
         feeResponse.data?.firstOrNull()
         if (feeResponse.isSuccess) {
+            if (feeResponse.data?.size ?: 0 > 1) {
+                binding.iconImageView.isVisible = false
+            } else {
+                binding.iconImageView.isVisible = true
+                binding.iconImageView.setImageResource(R.drawable.ic_keyboard_arrow_down)
+            }
             feeResponse.data?.firstOrNull()?.let {
                 fee = BigDecimal(it.amount)
-                binding.content.text = "${fee?.numberFormat8()} ${t.symbol}"
+                binding.contentTextView.text = "${fee?.numberFormat8()} ${t.symbol}"
             }
         }
-        binding.content.isVisible = true
-        binding.progress.isVisible = false
+        binding.contentTextView.isVisible = true
+        binding.loadingProgressBar.isVisible = false
     }
 
     private suspend fun refreshGas(t: Web3Token) {
         val toAddress = toAddress?: return
-        binding.progress.isVisible = true
-        binding.content.isVisible = false
+        binding.loadingProgressBar.isVisible = true
+        binding.contentTextView.isVisible = false
         if (t.fungibleId == chainToken?.fungibleId) {
             val fromAddress = fromAddress ?: return
             val transaction =
@@ -631,7 +665,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
             if (isAdded) {
                 fee = web3ViewModel.calcFee(t, transaction, fromAddress)
-                binding.content.text = "${fee?.numberFormat8()} ${chainToken?.symbol}"
+                binding.contentTextView.text = "${fee?.numberFormat8()} ${chainToken?.symbol}"
                 if (dialog.isShowing) {
                     dialog.dismiss()
                     v =
@@ -644,8 +678,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                 }
             }
         }
-        binding.content.isVisible = true
-        binding.progress.isVisible = false
+        binding.contentTextView.isVisible = true
+        binding.loadingProgressBar.isVisible = false
     }
 
     private val dialog by lazy {

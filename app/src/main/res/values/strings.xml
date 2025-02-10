@@ -1890,4 +1890,6 @@
     <string name="Address_Book">Address Book</string>
     <string name="Preview">Preview</string>
     <string name="Network_Fee">Network Fee</string>
+    <string name="Note_Optional">Note(Optional)</string>
+    <string name="Add_a_note">Add a note</string>
 </resources>
