@@ -40,6 +40,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.SingleFriendSelectFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -51,7 +52,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.ui.wallet.InputFragment
 import org.web3j.crypto.WalletUtils
 
 @AndroidEntryPoint

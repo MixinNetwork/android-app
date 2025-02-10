@@ -8,11 +8,9 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
 import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.ui.conversation.ConversationViewModel
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.adapter.FriendsAdapter
 import one.mixin.android.ui.conversation.adapter.FriendsViewHolder
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET

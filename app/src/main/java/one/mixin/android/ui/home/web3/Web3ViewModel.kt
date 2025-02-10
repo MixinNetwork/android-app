@@ -69,6 +69,9 @@ class Web3ViewModel
         private val tokenRepository: TokenRepository,
         private val web3Service: Web3Service,
     ) : ViewModel() {
+        fun tokenExtraFlow(assetId: String) =
+            tokenRepository.tokenExtraFlow(assetId)
+
         fun disconnect(
             version: WalletConnect.Version,
             topic: String,

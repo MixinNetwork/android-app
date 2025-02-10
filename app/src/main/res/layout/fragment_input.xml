@@ -98,6 +98,7 @@
                         android:paddingTop="4dp"
                         android:paddingEnd="30dp"
                         android:paddingBottom="4dp"
+                        android:textColor="?attr/text_primary"
                         android:text="25%" />
 
                     <View
@@ -114,6 +115,8 @@
                         android:paddingTop="4dp"
                         android:paddingEnd="30dp"
                         android:paddingBottom="4dp"
+                        android:background="@drawable/ripple_round_window_20"
+                        android:textColor="?attr/text_primary"
                         android:text="50%" />
 
                     <View
@@ -131,6 +134,7 @@
                         android:paddingTop="4dp"
                         android:paddingEnd="30dp"
                         android:paddingBottom="4dp"
+                        android:textColor="?attr/text_primary"
                         android:text="@string/Max" />
                 </LinearLayout>
 
@@ -158,14 +162,23 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:orientation="horizontal"
-                        android:background="@drawable/ripple_round_8">
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/add_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_blue"
+                            android:layout_marginEnd="8dp"
+                            android:foreground="?attr/selectableItemBackground"
+                            tools:text="Add ETH" />
 
                         <TextView
                             android:id="@+id/content_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/text_assist"
+                            android:foreground="?attr/selectableItemBackground"
                             tools:text="Content" />
 
                         <ProgressBar
@@ -181,6 +194,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:visibility="gone"
+                            android:foreground="?attr/selectableItemBackground"
                             tools:src="@drawable/ic_arrow_down_info" />
 
                     </LinearLayout>
@@ -287,12 +301,30 @@
 
             <TextView
                 android:id="@+id/insufficient_balance"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="@string/insufficient_balance"
                 android:textColor="@color/text_color_error_tip"
                 android:textSize="14sp"
+                android:visibility="gone"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/minor_ll" />
+
+            <TextView
+                android:id="@+id/insufficient_fee_balance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_color_error_tip"
+                android:textSize="14sp"
+                android:text="@string/insufficient_gas"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

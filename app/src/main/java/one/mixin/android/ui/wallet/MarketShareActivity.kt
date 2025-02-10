@@ -16,8 +16,6 @@ import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.File
-import java.io.FileOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -36,6 +34,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import java.io.File
+import java.io.FileOutputStream
 
 @AndroidEntryPoint
 class MarketShareActivity : BaseActivity() {

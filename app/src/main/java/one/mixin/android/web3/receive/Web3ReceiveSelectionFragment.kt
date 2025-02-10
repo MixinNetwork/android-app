@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWeb3ReceuceSelectionBinding
+import one.mixin.android.databinding.FragmentWeb3ReceiveSelectionBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
@@ -31,7 +31,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         const val TAG = "Wbe3ReceiveSelectionFragment"
     }
 
-    private var _binding: FragmentWeb3ReceuceSelectionBinding? = null
+    private var _binding: FragmentWeb3ReceiveSelectionBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
@@ -40,7 +40,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentWeb3ReceuceSelectionBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
+        _binding = FragmentWeb3ReceiveSelectionBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         binding.root.setOnClickListener { }
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }

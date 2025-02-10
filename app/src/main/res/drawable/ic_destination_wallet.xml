@@ -5,16 +5,16 @@
     android:viewportHeight="16">
   <path
       android:pathData="M10.5,11C11.328,11 12,10.328 12,9.5C12,8.672 11.328,8 10.5,8C9.672,8 9,8.672 9,9.5C9,10.328 9.672,11 10.5,11Z"
-      android:fillColor="#BCBEC2"
+      android:fillColor="?attr/icon_gray"
       android:fillType="evenOdd"/>
   <path
       android:pathData="M4,5L8.024,2.367C9.035,1.66 10.368,2.004 11,3.136L12,5"
       android:strokeWidth="1.5"
       android:fillColor="#00000000"
-      android:strokeColor="#BCBEC3"/>
+      android:strokeColor="?attr/icon_gray"/>
   <path
       android:pathData="M4,5L12,5A2,2 0,0 1,14 7L14,12A2,2 0,0 1,12 14L4,14A2,2 0,0 1,2 12L2,7A2,2 0,0 1,4 5z"
       android:strokeWidth="1.5"
       android:fillColor="#00000000"
-      android:strokeColor="#BCBEC3"/>
+      android:strokeColor="?attr/icon_gray"/>
 </vector>

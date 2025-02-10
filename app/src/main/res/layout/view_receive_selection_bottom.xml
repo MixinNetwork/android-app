@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp">
+
+        <ImageView
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="@null"
+            android:foreground="@drawable/play_ripple"
+            android:src="@drawable/ic_circle_close" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="16dp"
+            android:text="@string/Send_transfer"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/wallet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/ripple_round_window"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/wallet_ic"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_transfer_contact" />
+
+        <TextView
+            android:id="@+id/wallet_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@+id/wallet_ic"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:text="@string/From_mixin_wallet"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/wallet_ic"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@+id/wallet_ic"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:text="@string/From_mixin_wallet"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/ripple_round_window"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/address_ic"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_transfer_address" />
+
+        <TextView
+            android:id="@+id/address_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@+id/address_ic"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:text="@string/From_address"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/address_ic"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@+id/address_ic"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:text="@string/From_address_desc"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="40dp" />
+</LinearLayout>

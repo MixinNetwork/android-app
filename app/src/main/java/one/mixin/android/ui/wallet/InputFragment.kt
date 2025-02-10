@@ -31,7 +31,11 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.address.ReceiveSelectionBottom
+import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
@@ -45,6 +49,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -54,7 +59,7 @@ import java.util.UUID
 import kotlin.math.max
 
 @AndroidEntryPoint
-class InputFragment : BaseFragment(R.layout.fragment_input) {
+class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionClicker {
     companion object {
         const val TAG = "InputFragment"
         const val ARGS_TO_ADDRESS = "args_to_address"
@@ -330,14 +335,25 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                                         currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                     }
                                 if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
-                                    toast(
-                                        requireContext().getString(
-                                            R.string.insufficient_gas,
-                                            feeItem.symbol
-                                        )
-                                    )
+                                    binding.insufficientFeeBalance.isVisible = true
+                                    binding.insufficientBalance.isVisible = false
+                                    binding.insufficientFeeBalance.text =
+                                        getString(R.string.insufficient_gas, currentFee?.token?.symbol?:"")
+                                    binding.addTv.text =
+                                        getString(R.string.Add) + currentFee?.token?.symbol ?: ""
+                                    binding.addTv.setOnClickListener {
+                                        binding.addTv.setOnClickListener {
+                                            ReceiveSelectionBottom(
+                                                this@InputFragment,
+                                            ).apply {
+                                                setOnReceiveSelectionClicker(this@InputFragment)
+                                            }.show(currentFee!!.token)
+                                        }
+                                    }
                                     alertDialog.dismiss()
                                     return@launch
+                                } else {
+                                    binding.insufficientFeeBalance.isVisible = false
                                 }
 
                                 alertDialog.dismiss()
@@ -536,6 +552,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
 
             if (value == "0") {
                 insufficientBalance.isVisible = false
+                insufficientFeeBalance.isVisible = false
                 continueVa.isEnabled = false
                 continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             } else {
@@ -551,6 +568,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
+                    insufficientFeeBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
@@ -562,6 +580,32 @@ class InputFragment : BaseFragment(R.layout.fragment_input) {
         }
 
         updatePrimarySize()
+    }
+
+    override
+    fun onAddressClick() {
+        currentFee?.let {
+            when(transferType){
+                TransferType.ADDRESS -> {
+                    navTo(DepositFragment.newInstance(asset!!), DepositFragment.TAG)
+                }
+                TransferType.USER -> {
+                    navTo(DepositFragment.newInstance(asset!!), DepositFragment.TAG)
+                }
+                TransferType.WEB3 -> {
+                    navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                }
+                else -> throw IllegalArgumentException("Not supported type")
+            }
+        }
+    }
+
+    override
+    fun onWalletClick() {
+        QrBottomSheetDialogFragment.newInstance(
+            one.mixin.android.session.Session.getAccountId()!!,
+            TYPE_RECEIVE_QR
+        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
     }
 
     private fun getNumberFormat(value: String): String {

@@ -1,0 +1,70 @@
+package one.mixin.android.ui.address
+
+import android.os.Bundle
+import android.view.ContextThemeWrapper
+import android.view.View
+import androidx.annotation.IdRes
+import androidx.fragment.app.Fragment
+import one.mixin.android.R
+import one.mixin.android.databinding.ViewReceiveSelectionBottomBinding
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.navigate
+import one.mixin.android.extension.putString
+import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.wallet.TransactionsFragment
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.BottomSheet
+
+class ReceiveSelectionBottom(
+    private val fragment: Fragment,
+) {
+    private var _bottomSendBinding: ViewReceiveSelectionBottomBinding? = null
+    private val bottomSendBinding get() = requireNotNull(_bottomSendBinding)
+
+    fun show(asset: TokenItem) {
+        val builder = BottomSheet.Builder(fragment.requireActivity())
+        _bottomSendBinding =
+            ViewReceiveSelectionBottomBinding.bind(
+                View.inflate(
+                    ContextThemeWrapper(fragment.requireActivity(), R.style.Custom),
+                    R.layout.view_receive_selection_bottom,
+                    null,
+                ),
+            )
+        builder.setCustomView(bottomSendBinding.root)
+        val bottomSheet = builder.create()
+        bottomSendBinding.apply {
+            wallet.setOnClickListener {
+                _onReceiveSelectionClicker?.onWalletClick()
+                bottomSheet.dismiss()
+            }
+            address.setOnClickListener {
+                _onReceiveSelectionClicker?.onAddressClick()
+                bottomSheet.dismiss()
+            }
+            cancel.setOnClickListener { bottomSheet.dismiss() }
+        }
+
+        bottomSheet.setOnDismissListener {
+            release()
+        }
+
+        bottomSheet.show()
+    }
+
+    interface OnReceiveSelectionClicker {
+        abstract fun onAddressClick()
+        abstract fun onWalletClick()
+    }
+
+    private var _onReceiveSelectionClicker: OnReceiveSelectionClicker? = null
+
+    fun setOnReceiveSelectionClicker(onReceiveSelectionClicker: OnReceiveSelectionClicker) {
+        _onReceiveSelectionClicker = onReceiveSelectionClicker
+    }
+
+    fun release() {
+        _bottomSendBinding = null
+    }
+}

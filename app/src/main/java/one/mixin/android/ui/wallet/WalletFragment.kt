@@ -65,8 +65,8 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.reportException
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.generateConversationId

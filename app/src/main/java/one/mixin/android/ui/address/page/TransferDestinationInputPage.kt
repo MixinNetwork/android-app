@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -47,20 +48,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.openUrl
-import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.Constants.ChainId
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.safe.TokenItem
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -80,6 +80,7 @@ fun TransferDestinationInputPage(
     onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
+    val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
     val addresses by viewModel.addressesFlow(token?.assetId ?: "")
@@ -263,6 +264,7 @@ fun TransferDestinationInputPage(
                                 R.string.Address_Book,
                                 R.string.Send_crypto_to_address,
                                 onClick = {
+                                    localLocalSoftwareKeyboardController?.hide()
                                     scope.launch {
                                         modalSheetState.show()
                                     }
