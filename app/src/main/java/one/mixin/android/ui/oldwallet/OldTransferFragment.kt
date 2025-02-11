@@ -62,7 +62,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.BiometricItem
@@ -92,6 +91,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         const val TAG = "OldTransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
+        const val ARGS_ADDRESS = "args_address"
 
         const val POST_TEXT = 0
         const val POST_PB = 1

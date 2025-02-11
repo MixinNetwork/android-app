@@ -27,6 +27,7 @@ class ReceiveSelectionBottom(
         builder.setCustomView(bottomSendBinding.root)
         val bottomSheet = builder.create()
         bottomSendBinding.apply {
+            title.text = "${fragment.getString(R.string.Add)} ${asset.symbol}"
             wallet.setOnClickListener {
                 _onReceiveSelectionClicker?.onWalletClick()
                 bottomSheet.dismiss()
