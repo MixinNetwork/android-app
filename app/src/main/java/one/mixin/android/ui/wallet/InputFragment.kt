@@ -365,6 +365,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
                                     binding.insufficientFeeBalance.isVisible = true
                                     binding.insufficientBalance.isVisible = false
+                                    continueVa.isEnabled = false
+                                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                                     binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, currentFee?.token?.symbol?:"")
                                     binding.addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                                     binding.addTv.setOnClickListener {
@@ -667,7 +669,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun valueClick(percentageOfBalance: BigDecimal) {
         val baseValue = when {
             web3Token != null && web3Token?.fungibleId == chainToken?.fungibleId -> {
-                if (fee == null) {
+                if (gas == null) {
                     if (!dialog.isShowing) {
                         lifecycleScope.launch {
                             dialog.show()
@@ -676,7 +678,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                     return
                 }
-                BigDecimal(tokenBalance).subtract(fee)
+                BigDecimal(tokenBalance).subtract(gas)
             }
             token != null && token?.assetId == currentFee?.token?.assetId -> {
                 BigDecimal(tokenBalance).subtract(BigDecimal(currentFee!!.fee))
@@ -726,7 +728,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
             }
         }
-    private var fee: BigDecimal? = null
+    private var gas: BigDecimal? = null
 
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
@@ -791,15 +793,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     return
                 }
             if (isAdded) {
-                fee = web3ViewModel.calcFee(t, transaction, fromAddress)
-                binding.contentTextView.text = "${fee?.numberFormat8()} ${chainToken?.symbol}"
+                gas = web3ViewModel.calcFee(t, transaction, fromAddress)
+                binding.contentTextView.text = "${gas?.numberFormat8()} ${chainToken?.symbol}"
                 if (dialog.isShowing) {
                     dialog.dismiss()
                     v =
                         if (isReverse) {
-                            BigDecimal(tokenBalance).subtract(fee).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
+                            BigDecimal(tokenBalance).subtract(gas).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
                         } else {
-                            BigDecimal(tokenBalance).subtract(fee).toPlainString()
+                            BigDecimal(tokenBalance).subtract(gas).toPlainString()
                         }
                     updateUI()
                 }

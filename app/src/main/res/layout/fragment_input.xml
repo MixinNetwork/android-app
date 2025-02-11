@@ -268,12 +268,12 @@
 
             <LinearLayout
                 android:id="@+id/minor_ll"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
                 app:layout_constraintBottom_toTopOf="@id/token_rl"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -282,9 +282,8 @@
 
                 <TextView
                     android:id="@+id/minor_tv"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center"
                     android:textColor="?attr/text_assist"
                     android:textSize="16sp"
