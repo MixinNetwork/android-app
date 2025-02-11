@@ -249,7 +249,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             } else {
                                                 PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                             }
-                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId)
+                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
                                             if (token == null || fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
@@ -277,7 +277,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         lifecycleScope.launch {
                                             handleMixinResponse(
                                                 invokeNetwork = {
-                                                    web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId!!, address, null)
+                                                    web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId ?: chainToken?.assetId ?: "", address, null)
                                                 },
                                                 successBlock = {
                                                     navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
@@ -303,7 +303,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             } else {
                                                 PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                             }
-                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId)
+                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
                                             if (token == null || fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
@@ -366,7 +366,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         dialog.show()
                                         handleMixinResponse(
                                             invokeNetwork = {
-                                                web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId!!, address, memo)
+                                                web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId ?: "", address, memo)
                                             },
                                             successBlock = {
                                                 navTo(InputFragment.newInstance(token!!, address, memo), InputFragment.TAG)

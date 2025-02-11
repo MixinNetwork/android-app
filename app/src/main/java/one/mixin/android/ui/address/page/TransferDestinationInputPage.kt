@@ -266,18 +266,20 @@ fun TransferDestinationInputPage(
                                     })
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
-                            DestinationMenu(
-                                R.drawable.ic_destination_address,
-                                R.string.Address_Book,
-                                R.string.send_to_address_description,
-                                onClick = {
-                                    localLocalSoftwareKeyboardController?.hide()
-                                    scope.launch {
-                                        modalSheetState.show()
+                            if (token != null || web3Token?.assetId != null) {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_address,
+                                    R.string.Address_Book,
+                                    R.string.send_to_address_description,
+                                    onClick = {
+                                        localLocalSoftwareKeyboardController?.hide()
+                                        scope.launch {
+                                            modalSheetState.show()
+                                        }
                                     }
-                                }
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
                         }
                     } else {
                         Spacer(modifier = Modifier.height(16.dp))
