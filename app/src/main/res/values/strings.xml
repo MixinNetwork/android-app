@@ -1890,7 +1890,7 @@
     <string name="Network_Fee">Network Fee</string>
     <string name="Note_Optional">Note(Optional)</string>
     <string name="memo_placeholder">Enter the Memo. If there isn’t one, just tap “Next”.</string>
-    <string name="tag_placeholder">Enter the Tag. If there isn’t one, just tap “Next”.</string>
+    <string name="tag_placeholder">Enter the Tag. If there isn’t one, please enter any non-zero number.</string>
     <string name="withdrawal_label_placeholder">Use a unique label to help you identify this address, such as name of the wallet, exchange, or a friend.</string>
     <string name="add_a_note">Add a note</string>
     <string name="optional_note">Note (Optional)</string>

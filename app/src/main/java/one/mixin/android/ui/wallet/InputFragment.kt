@@ -75,6 +75,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_WEB3_CHAIN_TOKEN = "args_web3_chain_token"
         const val ARGS_TOKEN = "args_token"
 
+        const val ARGS_RECEIVE = "args_receive"
+
         enum class TransferType {
             USER,
             ADDRESS,
@@ -98,13 +100,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         fun newInstance(
             tokenItem: TokenItem,
             toAddress: String,
-            tag: String? = null
+            tag: String? = null,
+            isReceive: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
                     putParcelable(ARGS_TOKEN, tokenItem)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
+                    putBoolean(ARGS_RECEIVE, isReceive)
                 }
             }
 
@@ -181,6 +185,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getString(ARGS_TO_ADDRESS_ID)
     }
 
+    private val isReceive by lazy {
+        requireArguments().getBoolean(ARGS_RECEIVE, false)
+    }
+
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
     }
@@ -226,7 +234,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
                 titleView.setSubTitle(
-                    getString(if (token != null) R.string.Receive else R.string.Send_transfer),
+                    getString(if (isReceive) R.string.Receive else R.string.Send_transfer),
                     when(transferType) {
                         TransferType.WEB3 -> "2/2"
                         else -> {
@@ -288,7 +296,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = "$tokenBalance $tokenSymbol"
+                balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
                 max.setOnClickListener {
                     valueClick(BigDecimal.ONE)
                 }
@@ -311,6 +319,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         }
                         binding.titleTextView.setText(R.string.Note_Optional)
                         binding.contentTextView.setText(R.string.add_a_note)
+                        binding.iconImageView.isVisible = true
                         binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
                     }
                     else -> {
@@ -356,10 +365,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
                                     binding.insufficientFeeBalance.isVisible = true
                                     binding.insufficientBalance.isVisible = false
-                                    binding.insufficientFeeBalance.text =
-                                        getString(R.string.insufficient_gas, currentFee?.token?.symbol?:"")
-                                    binding.addTv.text =
-                                        getString(R.string.Add) + currentFee?.token?.symbol ?: ""
+                                    binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, currentFee?.token?.symbol?:"")
+                                    binding.addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                                     binding.addTv.setOnClickListener {
                                         binding.addTv.setOnClickListener {
                                             ReceiveSelectionBottom(
@@ -508,9 +515,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun noteDialog() {
         editDialog {
-            titleText = this@InputFragment.getString(R.string.add_a_note)
+            titleText = this@InputFragment.getString(if (currentNote.isNullOrBlank().not()) R.string.Edit_Note else R.string.add_a_note)
             editText = currentNote
-            maxTextCount = 20
+            maxTextCount = 140
             allowEmpty = true
             rightAction = { note ->
                 if (isAdded) {
@@ -683,7 +690,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             baseValue.toPlainString()
         }
 
-        v = BigDecimal(v).multiply(percentageOfBalance).toPlainString()
+        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).toPlainString()
         updateUI()
     }
 
@@ -703,6 +710,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private val fees: ArrayList<NetworkFee> = arrayListOf()
     private var currentFee: NetworkFee? = null
+        get() = field
+        set(value) {
+            field = value
+            if (value != null) {
+                Timber.e("${value.token.assetId} ${value.token.symbol} ${token?.assetId}")
+                if (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId) {
+                    val balance = runCatching {
+                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull()?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                    }.getOrDefault("0")
+
+                    binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
+                } else {
+                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                }
+            }
+        }
     private var fee: BigDecimal? = null
 
     private suspend fun refreshFee(t: TokenItem) {
@@ -731,7 +754,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     ).apply {
                         callback = { networkFee ->
                             currentFee = networkFee
-                            binding.contentTextView.text = "${BigDecimal(networkFee.fee).numberFormat8()} ${t.symbol}"
+                            binding.contentTextView.text = "${BigDecimal(networkFee.fee).numberFormat8()} ${networkFee.token.symbol}"
                             dismiss()
                         }
                     }.show(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
@@ -744,7 +767,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             fees.firstOrNull()?.let {
                 currentFee = it
-                binding.contentTextView.text = "${currentFee?.fee?.numberFormat8()} ${t.symbol}"
+                binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
             }
         }
         binding.contentTextView.isVisible = true

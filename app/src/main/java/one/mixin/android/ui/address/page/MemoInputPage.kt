@@ -1,6 +1,7 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
+import android.text.TextUtils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
@@ -50,6 +52,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
+import androidx.core.text.isDigitsOnly
 
 @Composable
 fun MemoInputPage(
@@ -69,8 +72,11 @@ fun MemoInputPage(
         focusRequester.requestFocus()
     }
 
+    val isRippleChainId = token?.assetId == RIPPLE_CHAIN_ID
+    val isValidMemo = isRippleChainId.not() || ((memo.isDigitsOnly() && (memo.toIntOrNull() ?: 0) != 0))
+
     PageScaffold(
-        title = stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.Tag else R.string.Memo),
+        title = stringResource(if (isRippleChainId) R.string.Tag else R.string.Memo),
         subTitle = "2/3",
         verticalScrollable = false,
         pop = pop,
@@ -117,7 +123,7 @@ fun MemoInputPage(
                         ),
                         placeholder = {
                             Text(
-                                text = stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.tag_placeholder else R.string.memo_placeholder),
+                                text = stringResource(if (isRippleChainId) R.string.tag_placeholder else R.string.memo_placeholder),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp
                             )
@@ -178,8 +184,9 @@ fun MemoInputPage(
                     onClick = {
                         onNext.invoke(memo)
                     },
+                    enabled = isValidMemo,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent
+                        backgroundColor = if (isValidMemo) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
                     shape = RoundedCornerShape(32.dp),
                     elevation = ButtonDefaults.elevation(
@@ -191,7 +198,7 @@ fun MemoInputPage(
                 ) {
                     Text(
                         text = stringResource(R.string.Next),
-                        color = Color.White,
+                        color = if (isValidMemo) Color.White else MixinAppTheme.colors.textAssist,
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))

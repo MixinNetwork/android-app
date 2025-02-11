@@ -249,7 +249,12 @@ fun TransferDestinationInputPage(
                             if (account.isBlank().not()) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    R.string.Account,
+                                    stringResource(
+                                        when (token?.chainId) {
+                                            ChainId.SOLANA_CHAIN_ID -> R.string.Solana_Account
+                                            else -> R.string.Ethereum_Account
+                                        }
+                                    ),
                                     stringResource(
                                         R.string.Send_to_web3_wallet_description,
                                         token?.chainName ?: ""

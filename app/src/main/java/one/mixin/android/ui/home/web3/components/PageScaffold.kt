@@ -76,8 +76,8 @@ fun PageScaffold(
             MixinTopAppBar(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(title)
-                        Text(subTitle, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                        Text(title, fontSize = 16.sp, lineHeight = 20.sp)
+                        Text(subTitle, fontSize = 12.sp, lineHeight = 16.sp, color = MixinAppTheme.colors.textAssist)
                     }
                 },
                 actions = actions,

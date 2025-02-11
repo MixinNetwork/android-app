@@ -401,10 +401,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     bottomSheet.setCallback(
                                         object : TransferBottomSheetDialogFragment.Callback() {
                                             override fun onDismiss(success: Boolean) {
-                                                navController.popBackStack(
-                                                    TransferDestination.Initial.name,
-                                                    inclusive = false
-                                                )
+                                                if (success) {
+                                                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                                                } else {
+                                                    navController.popBackStack(
+                                                        TransferDestination.Initial.name,
+                                                        inclusive = false
+                                                    )
+                                                }
                                             }
                                         },
                                     )

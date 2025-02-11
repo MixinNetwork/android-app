@@ -32,6 +32,17 @@ fun DestinationMenu(
     onClick: () -> Unit = {},
     free: Boolean = false
 ) {
+    DestinationMenu(icon, stringResource(title), stringResource(subTile), onClick, free)
+}
+
+@Composable
+fun DestinationMenu(
+    icon: Int,
+    title: String,
+    subTile: Int,
+    onClick: () -> Unit = {},
+    free: Boolean = false
+) {
     DestinationMenu(icon, title, stringResource(subTile), onClick, free)
 }
 
@@ -39,6 +50,17 @@ fun DestinationMenu(
 fun DestinationMenu(
     icon: Int,
     title: Int,
+    subTile: String,
+    onClick: () -> Unit = {},
+    free: Boolean = false
+) {
+    DestinationMenu(icon, stringResource(title), subTile, onClick, free)
+}
+
+@Composable
+fun DestinationMenu(
+    icon: Int,
+    title: String,
     subTile: String,
     onClick: () -> Unit = {},
     free: Boolean = false
@@ -62,7 +84,7 @@ fun DestinationMenu(
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    stringResource(title),
+                    title,
                     fontSize = 16.sp,
                     lineHeight = 19.sp,
                     color = MixinAppTheme.colors.textPrimary

@@ -60,7 +60,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
                 val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
-                        navTo(InputFragment.newInstance(token, address), InputFragment.TAG)
+                        navTo(InputFragment.newInstance(token, address, null, true), InputFragment.TAG)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
