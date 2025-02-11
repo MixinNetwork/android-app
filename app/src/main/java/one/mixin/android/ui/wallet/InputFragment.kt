@@ -17,7 +17,6 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
@@ -63,14 +62,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     companion object {
         const val TAG = "InputFragment"
         const val ARGS_TO_ADDRESS = "args_to_address"
+        const val ARGS_FROM_ADDRESS = "args_from_address"
+
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
         const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
         const val ARGS_TO_ADDRESS_LABEL = "args_to_address_label"
+
         const val ARGS_TO_USER = "args_to_user"
-        const val ARGS_FROM_ADDRESS = "args_from_address"
+
+        const val ARGS_WEB3_TOKEN = "args_web3_token"
+        const val ARGS_WEB3_CHAIN_TOKEN = "args_web3_chain_token"
         const val ARGS_TOKEN = "args_token"
-        const val ARGS_CHAIN_TOKEN = "args_chain_token"
-        const val ARGS_ASSET = "args_asset"
 
         enum class TransferType {
             USER,
@@ -87,8 +89,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 withArgs {
                     putString(ARGS_FROM_ADDRESS, fromAddress)
                     putString(ARGS_TO_ADDRESS, toAddress)
-                    putParcelable(ARGS_TOKEN, web3Token)
-                    putParcelable(ARGS_CHAIN_TOKEN, chainToken)
+                    putParcelable(ARGS_WEB3_TOKEN, web3Token)
+                    putParcelable(ARGS_WEB3_CHAIN_TOKEN, chainToken)
                 }
             }
 
@@ -99,7 +101,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         ) =
             InputFragment().apply {
                 withArgs {
-                    putParcelable(ARGS_ASSET, tokenItem)
+                    putParcelable(ARGS_TOKEN, tokenItem)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
                 }
@@ -111,7 +113,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         ) =
             InputFragment().apply {
                 withArgs {
-                    putParcelable(ARGS_ASSET, tokenItem)
+                    putParcelable(ARGS_TOKEN, tokenItem)
                     putString(ARGS_TO_ADDRESS, address.destination)
                     putString(ARGS_TO_ADDRESS_TAG, address.tag)
                     putString(ARGS_TO_ADDRESS_ID, address.addressId)
@@ -125,7 +127,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         ) =
             InputFragment().apply {
                 withArgs {
-                    putParcelable(ARGS_ASSET, tokenItem)
+                    putParcelable(ARGS_TOKEN, tokenItem)
                     putParcelable(ARGS_TO_USER, user)
                 }
             }
@@ -134,7 +136,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private val transferType: TransferType by lazy {
         when {
             arguments?.containsKey(ARGS_TO_USER) == true -> TransferType.USER
-            arguments?.containsKey(ARGS_TOKEN) == true -> TransferType.WEB3
+            arguments?.containsKey(ARGS_WEB3_TOKEN) == true -> TransferType.WEB3
             else -> TransferType.ADDRESS
         }
     }
@@ -155,15 +157,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private val user: User? by lazy {
         arguments?.getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
-    private val token by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
+    private val web3Token by lazy {
+        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3Token::class.java)
     }
     private val chainToken by lazy {
-        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_WEB3_CHAIN_TOKEN, Web3Token::class.java)
     }
 
-    private val asset by lazy {
-        requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)
+    private val token by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
     }
 
     private val addressTag by lazy {
@@ -183,22 +185,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private val tokenPrice: BigDecimal by lazy {
-        ((asset?.priceUsd ?: token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
+        ((token?.priceUsd ?: web3Token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
     }
     private val tokenSymbol by lazy {
-        asset?.symbol ?: token!!.symbol
+        token?.symbol ?: web3Token!!.symbol
     }
     private val tokenIconUrl by lazy {
-        asset?.iconUrl ?: token!!.iconUrl
+        token?.iconUrl ?: web3Token!!.iconUrl
     }
     private val tokenChainIconUrl by lazy {
-        asset?.chainIconUrl ?: token!!.chainIconUrl
+        token?.chainIconUrl ?: web3Token!!.chainIconUrl
     }
     private val tokenBalance by lazy {
-        asset?.balance ?: token!!.balance
+        token?.balance ?: web3Token!!.balance
     }
     private val tokenName by lazy {
-        asset?.name ?: token!!.name
+        token?.name ?: web3Token!!.name
     }
 
     private var currentNote: String? = null
@@ -218,8 +220,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
                 titleView.setSubTitle(
-                    getString(if (asset != null) R.string.Receive else R.string.Send_transfer),
-                    toAddress?.formatPublicKey() ?: ""
+                    getString(if (token != null) R.string.Receive else R.string.Send_transfer),
+                    when(transferType) {
+                        TransferType.WEB3 -> "2/2"
+                        else -> {
+                            if (tag.isNullOrBlank()) "2/2"
+                            else "3/3"
+                        }
+                    }
                 )
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
@@ -262,6 +270,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             position: Int,
                             value: String,
                         ) {
+                            if (position == 11) {
+                                v = "0"
+                                updateUI()
+                            }
                             context?.clickVibrate()
                         }
                     },
@@ -302,7 +314,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     when (transferType) {
                         TransferType.ADDRESS -> {
                             val toAddress = requireNotNull(toAddress)
-                            val assetId = requireNotNull(asset?.assetId)
+                            val assetId = requireNotNull(token?.assetId)
                             val amount =
                                 if (isReverse) {
                                     binding.minorTv.text.toString().split(" ")[1].replace(",", "")
@@ -317,7 +329,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             ) {
                                 alertDialog.show()
                                 if (currentFee == null) {
-                                    refreshFee(asset!!)
+                                    refreshFee(token!!)
                                     alertDialog.dismiss()
                                     return@launch
                                 }
@@ -373,7 +385,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     networkFee,
                                     null,
                                     UUID.randomUUID().toString(),
-                                    asset,
+                                    token,
                                     amount,
                                     null,
                                     PaymentStatus.pending.name,
@@ -399,7 +411,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             }
                         }
                         TransferType.WEB3 -> {
-                            val token = requireNotNull(token)
+                            val token = requireNotNull(web3Token)
                             val fromAddress = requireNotNull(fromAddress)
                             val toAddress = requireNotNull(toAddress)
                             val amount =
@@ -442,7 +454,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     v
                                 }
                             val user = requireNotNull(user)
-                            val biometricItem = buildTransferBiometricItem(user, asset, amount, null, memo = currentNote, null)
+                            val biometricItem = buildTransferBiometricItem(user, token, amount, null, memo = currentNote, null)
                             TransferBottomSheetDialogFragment.Companion.newInstance(biometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                     override fun onDismiss(success: Boolean) {
@@ -587,10 +599,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         currentFee?.let {
             when(transferType){
                 TransferType.ADDRESS -> {
-                    navTo(DepositFragment.newInstance(asset!!), DepositFragment.TAG)
+                    navTo(DepositFragment.newInstance(token!!), DepositFragment.TAG)
                 }
                 TransferType.USER -> {
-                    navTo(DepositFragment.newInstance(asset!!), DepositFragment.TAG)
+                    navTo(DepositFragment.newInstance(token!!), DepositFragment.TAG)
                 }
                 TransferType.WEB3 -> {
                     navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
@@ -640,7 +652,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun valueClick(percentageOfBalance: BigDecimal) {
         val baseValue = when {
-            token != null && token?.fungibleId == chainToken?.fungibleId -> {
+            web3Token != null && web3Token?.fungibleId == chainToken?.fungibleId -> {
                 if (fee == null) {
                     if (!dialog.isShowing) {
                         lifecycleScope.launch {
@@ -652,7 +664,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 BigDecimal(tokenBalance).subtract(fee)
             }
-            asset != null && asset?.assetId == currentFee?.token?.assetId -> {
+            token != null && token?.assetId == currentFee?.token?.assetId -> {
                 BigDecimal(tokenBalance).subtract(BigDecimal(currentFee!!.fee))
             }
             else -> BigDecimal(tokenBalance)
@@ -671,10 +683,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private suspend fun refreshFee() {
         when (transferType) {
             TransferType.ADDRESS -> {
-                refreshFee(asset!!)
+                refreshFee(token!!)
             }
             TransferType.WEB3 -> {
-                refreshGas(token!!)
+                refreshGas(web3Token!!)
             }
             else -> {
                 // User free

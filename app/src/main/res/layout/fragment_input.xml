@@ -51,7 +51,7 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:text="@string/Review"
+                    android:text="@string/Next"
                     android:textColor="@color/selector_tv_white"
                     android:textSize="14sp" />
 

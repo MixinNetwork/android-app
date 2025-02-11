@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -46,6 +47,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.address.component.SearchTextField
+import one.mixin.android.ui.wallet.Components.DropdownMenuNoPaddingVeitical
 import one.mixin.android.vo.Address
 
 @Composable
@@ -178,7 +180,7 @@ fun AddressSearchBottomSheet(
                         tint = MixinAppTheme.colors.textPrimary
                     )
                 }
-                DropdownMenu(
+                DropdownMenuNoPaddingVeitical (
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     modifier = Modifier
@@ -192,13 +194,13 @@ fun AddressSearchBottomSheet(
                             isDeleteMode = !isDeleteMode
                             expanded = false
                         },
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 0.dp)
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
                     ) {
                         Text(
                             stringResource(R.string.Delete_address),
-                            color = MixinAppTheme.colors.tipError
+                            color = MixinAppTheme.colors.tipError,
                         )
-                        Spacer(modifier = Modifier.width(20.dp))
+                        Spacer(modifier = Modifier.width(24.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_addr_remove),
                             contentDescription = null,

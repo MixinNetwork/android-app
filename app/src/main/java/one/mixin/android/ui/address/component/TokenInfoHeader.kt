@@ -67,7 +67,7 @@ fun TokenInfoHeader(
             modifier = Modifier
                 .padding(start = 4.dp)
                 .wrapContentWidth()
-                .widthIn(max = 56.dp),
+                .widthIn(max = 80.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -89,6 +89,21 @@ fun TokenInfoHeader(
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
+        }
+
+        web3Token?.let {
+            Text(
+                text = it.chainName,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .background(
+                        color = MixinAppTheme.colors.backgroundWindow,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(horizontal = 4.dp, vertical = 1.dp)
+            )
         }
 
         Spacer(modifier = Modifier.weight(1f))
