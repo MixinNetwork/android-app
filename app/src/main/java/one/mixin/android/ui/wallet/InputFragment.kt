@@ -49,6 +49,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
@@ -349,8 +350,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                     return@launch
                                 }
-                                val feeTokensExtra = web3ViewModel.findTokensExtra(currentFee!!.token.assetId)
-                                val feeItem = web3ViewModel.syncAsset(currentFee!!.token.assetId)
+                                feeTokensExtra = web3ViewModel.findTokensExtra(currentFee!!.token.assetId)
+                                val feeItem = web3ViewModel.syncAsset(assetId)
                                 if (feeItem == null) {
                                     toast(R.string.insufficient_balance)
                                     alertDialog.dismiss()
@@ -362,12 +363,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     } else {
                                         currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                     }
-                                if (feeTokensExtra == null || (feeTokensExtra.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
+                                if (feeTokensExtra == null || (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
                                     binding.insufficientFeeBalance.isVisible = true
                                     binding.insufficientBalance.isVisible = false
-                                    continueVa.isEnabled = false
-                                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                                    binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, currentFee?.token?.symbol?:"")
                                     binding.addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                                     binding.addTv.setOnClickListener {
                                         binding.addTv.setOnClickListener {
@@ -599,6 +597,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFeeBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (currentFee != null && feeTokensExtra == null ||
+                    (currentFee?.token?.assetId == token?.assetId && BigDecimal(v).add(currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)) ||
+                    (currentFee?.token?.assetId != token?.assetId && (currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO))
+                ) {
+                    insufficientFeeBalance.isVisible = true
+                    insufficientBalance.isVisible = false
+                    continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = true
@@ -716,7 +722,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         set(value) {
             field = value
             if (value != null) {
-                Timber.e("${value.token.assetId} ${value.token.symbol} ${token?.assetId}")
                 if (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId) {
                     val balance = runCatching {
                         tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull()?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
@@ -726,8 +731,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 } else {
                     binding.balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
                 }
+                binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, value.token.symbol)
             }
+            refreshFeeTokenExtra(value?.token?.assetId)
         }
+    private var feeTokensExtra: TokensExtra? = null
+
+    private fun refreshFeeTokenExtra(tokenId: String?) = lifecycleScope.launch {
+        feeTokensExtra = if (tokenId == null) null
+        else web3ViewModel.findTokensExtra(tokenId)
+    }
+
     private var gas: BigDecimal? = null
 
     private suspend fun refreshFee(t: TokenItem) {
@@ -737,7 +751,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
         if (feeResponse.isSuccess) {
             val ids = feeResponse.data?.mapNotNull { it.assetId }
-            val tokens = web3ViewModel.findTokenItems(ids?:emptyList())
+            val tokens = web3ViewModel.findTokenItems(ids ?: emptyList())
             fees.clear()
             fees.addAll(
                 feeResponse.data!!.mapNotNull { d ->
