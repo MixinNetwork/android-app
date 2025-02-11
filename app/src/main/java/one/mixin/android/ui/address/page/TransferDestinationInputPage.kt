@@ -239,7 +239,7 @@ fun TransferDestinationInputPage(
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     R.string.Mixin_Wallet,
-                                    R.string.Send_crypto_to_wallet,
+                                    R.string.Send_to_Contact_description,
                                     onClick = {
                                         toWallet.invoke()
                                     }
@@ -251,7 +251,7 @@ fun TransferDestinationInputPage(
                                     R.drawable.ic_destination_wallet,
                                     R.string.Account,
                                     stringResource(
-                                        R.string.Send_crypto_to_account,
+                                        R.string.Send_to_web3_wallet_description,
                                         token?.chainName ?: ""
                                     ),
                                     onClick = {
@@ -262,7 +262,7 @@ fun TransferDestinationInputPage(
                             DestinationMenu(
                                 R.drawable.ic_destination_address,
                                 R.string.Address_Book,
-                                R.string.Send_crypto_to_address,
+                                R.string.send_to_address_description,
                                 onClick = {
                                     localLocalSoftwareKeyboardController?.hide()
                                     scope.launch {

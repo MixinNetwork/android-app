@@ -120,7 +120,7 @@ fun LabelInputPage(
                         ),
                         placeholder = {
                             Text(
-                                text = stringResource(R.string.hint_address),
+                                text = stringResource(R.string.withdrawal_label_placeholder),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp
                             )

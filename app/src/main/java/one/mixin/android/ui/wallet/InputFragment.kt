@@ -310,7 +310,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             noteDialog()
                         }
                         binding.titleTextView.setText(R.string.Note_Optional)
-                        binding.contentTextView.setText(R.string.Add_a_note)
+                        binding.contentTextView.setText(R.string.add_a_note)
                         binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
                     }
                     else -> {
@@ -508,7 +508,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun noteDialog() {
         editDialog {
-            titleText = this@InputFragment.getString(R.string.Add_a_note)
+            titleText = this@InputFragment.getString(R.string.add_a_note)
             editText = currentNote
             maxTextCount = 20
             allowEmpty = true
@@ -516,7 +516,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (isAdded) {
                     currentNote = note
                     binding.contentTextView.text =
-                        if (note.isNotEmpty()) note else getString(R.string.Add_a_note)
+                        if (note.isNotEmpty()) note else getString(R.string.add_a_note)
                 }
             }
         }

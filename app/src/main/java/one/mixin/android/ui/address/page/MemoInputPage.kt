@@ -117,7 +117,7 @@ fun MemoInputPage(
                         ),
                         placeholder = {
                             Text(
-                                text = stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.hint_tag else R.string.hint_memo),
+                                text = stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.tag_placeholder else R.string.memo_placeholder),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp
                             )
