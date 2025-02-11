@@ -72,7 +72,7 @@ class Web3ViewModel
         fun tokenExtraFlow(assetId: String) =
             tokenRepository.tokenExtraFlow(assetId)
 
-        fun disconnect(
+     fun disconnect(
             version: WalletConnect.Version,
             topic: String,
         ) {
@@ -194,9 +194,9 @@ class Web3ViewModel
             return tokenRepository.findDepositEntry(token.getChainIdFromName())?.destination
         }
 
-        suspend fun findAndSyncDepositEntry(token: Web3Token): String? =
+        suspend fun findAndSyncDepositEntry(token: Web3Token) =
             withContext(Dispatchers.IO) {
-                tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
+                tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first
             }
 
         suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)

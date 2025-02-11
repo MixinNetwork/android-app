@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +23,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -218,8 +220,17 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toWallet = {
                                     requireView().hideKeyboard()
-                                    // todo
-                                    toast("Coming soon")
+                                    lifecycleScope.launch {
+                                        web3Token?.let {
+                                            val deposit = web3ViewModel.findAndSyncDepositEntry(it) ?: return@launch
+                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId)
+                                            if (token == null) {
+                                                toast(R.string.Alert_Not_Support)
+                                            } else {
+                                                navTo(InputFragment.newInstance(token, toAddress = deposit.destination, tag = deposit.tag), InputFragment.TAG)
+                                            }
+                                        }
+                                    }
                                 },
                                 toAddAddress = {
                                     navController.navigate(TransferDestination.Address.name)

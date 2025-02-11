@@ -67,6 +67,8 @@ class Web3Token(
     val assetKey: String,
     @SerializedName("decimals")
     val decimals: Int,
+    @SerializedName("mixin_asset_id")
+    val assetId: String
 ) : Parcelable, Swappable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -360,7 +362,8 @@ fun Web3Token.copy(
         changeAbsolute = changeAbsolute,
         changePercent = changePercent,
         assetKey = assetKey,
-        decimals = decimals
+        decimals = decimals,
+        assetId = assetId
     )
 }
 
