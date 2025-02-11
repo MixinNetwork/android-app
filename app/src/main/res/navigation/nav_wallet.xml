@@ -195,16 +195,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/single_friend_select_fragment"
-        android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
-        tools:layout="@layout/fragment_friends" >
-
-        <argument
-            android:name="args_asset"
-            app:argType="one.mixin.android.vo.safe.TokenItem" />
-    </fragment>
-
-    <fragment
         android:id="@+id/address_management_fragment"
         android:name="one.mixin.android.ui.address.AddressManagementFragment"
         tools:layout="@layout/fragment_address_management">
@@ -236,10 +226,6 @@
         <argument
             android:name="args_asset"
             app:argType="one.mixin.android.vo.safe.TokenItem" />
-
-        <action
-            android:id="@+id/action_transferDestinationInput_to_singleFriendSelect"
-            app:destination="@id/single_friend_select_fragment" />
 
     </fragment>
 

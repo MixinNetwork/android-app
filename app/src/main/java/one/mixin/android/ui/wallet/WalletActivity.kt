@@ -83,11 +83,6 @@ class WalletActivity : BlazeBaseActivity() {
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
                 navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
             }
-            Destination.Contact -> {
-                navGraph.setStartDestination(R.id.single_friend_select_fragment)
-                val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
-                navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
-            }
             Destination.Buy -> {
                 navGraph.setStartDestination(R.id.wallet_calculate)
                 val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
@@ -115,7 +110,6 @@ class WalletActivity : BlazeBaseActivity() {
         Hidden,
         Deposit,
         Address,
-        Contact,
         Buy,
         Market,
     }

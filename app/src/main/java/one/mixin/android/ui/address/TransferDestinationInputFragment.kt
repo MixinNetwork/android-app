@@ -45,8 +45,8 @@ import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
-import one.mixin.android.ui.wallet.SingleFriendSelectFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.decodeICAP
@@ -214,11 +214,18 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toContact = {
                                     requireView().hideKeyboard()
-                                    navTo(
-                                        SingleFriendSelectFragment().withArgs {
-                                            putParcelable(ARGS_ASSET, token)
-                                        }, SingleFriendSelectFragment::class.java.name
-                                    )
+                                    token?.let { t ->
+                                        TransferContactBottomSheetDialogFragment.newInstance(t)
+                                            .apply {
+                                                onUserClick = { user->
+                                                    this@TransferDestinationInputFragment.navTo(InputFragment.newInstance(t, user), InputFragment.TAG)
+                                                }
+                                            }
+                                            .show(
+                                                parentFragmentManager,
+                                                TransferContactBottomSheetDialogFragment.TAG
+                                            )
+                                    }
                                 },
                                 toWallet = {
                                     requireView().hideKeyboard()
