@@ -57,13 +57,6 @@
             app:exitAnim="@anim/stay"
             app:popEnterAnim="@anim/stay"/>
 
-        <action
-            android:id="@+id/action_transactions_to_transfer_destination_input"
-            app:destination="@id/transfer_destination_input_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:exitAnim="@anim/stay"
-            app:popEnterAnim="@anim/stay"/>
     </fragment>
 
     <fragment

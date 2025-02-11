@@ -83,7 +83,7 @@ fun TransferDestinationInputPage(
     val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
-    val addresses by viewModel.addressesFlow(token?.assetId ?: "")
+    val addresses by viewModel.addressesFlow(token?.assetId ?: web3Token?.assetId ?: "")
         .collectAsState(initial = emptyList())
 
     var account by remember { mutableStateOf("") }
@@ -178,11 +178,13 @@ fun TransferDestinationInputPage(
                                 Text(
                                     text = stringResource(R.string.hint_address),
                                     color = MixinAppTheme.colors.textAssist,
-                                    fontSize = 14.sp
+                                    fontSize = 14.sp,
+                                    lineHeight = 20.sp
                                 )
                             },
                             textStyle = TextStyle(
                                 fontSize = 14.sp,
+                                lineHeight = 20.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.Start
                             ),

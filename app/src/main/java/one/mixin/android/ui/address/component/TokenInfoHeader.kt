@@ -106,7 +106,7 @@ fun TokenInfoHeader(
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f).widthIn(min = 4.dp))
 
         Text(
             text = "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}",

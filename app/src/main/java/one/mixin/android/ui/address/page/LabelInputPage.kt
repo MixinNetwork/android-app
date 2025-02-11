@@ -122,11 +122,13 @@ fun LabelInputPage(
                             Text(
                                 text = stringResource(R.string.withdrawal_label_placeholder),
                                 color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp
                             )
                         },
                         textStyle = TextStyle(
                             fontSize = 14.sp,
+                            lineHeight = 20.sp,
                             color = MixinAppTheme.colors.textPrimary,
                             textAlign = TextAlign.Start
                         ),

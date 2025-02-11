@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,11 +25,16 @@ import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.isSolana
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -57,6 +63,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import org.web3j.crypto.WalletUtils
+import timber.log.Timber
 
 @AndroidEntryPoint
 class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_address_input) {
@@ -237,11 +244,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         dialog.show()
                                         web3Token?.let {
                                             val deposit = web3ViewModel.findAndSyncDepositEntry(it) ?: return@launch
+                                            val fromAddress = if (it.isSolana()) {
+                                                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                                            } else {
+                                                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                                            }
                                             val token = web3ViewModel.syncAsset(web3Token!!.assetId)
-                                            if (token == null) {
+                                            if (token == null || fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                navTo(InputFragment.newInstance(token, toAddress = deposit.destination, tag = deposit.tag), InputFragment.TAG)
+                                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken= chainToken), InputFragment.TAG)
                                             }
                                         }
                                         dialog.dismiss()
@@ -279,13 +291,42 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 onAddressClick = { address ->
                                     requireView().hideKeyboard()
-                                    navTo(
-                                        InputFragment.newInstance(token!!, address),
-                                        InputFragment.TAG
-                                    )
+                                    if (web3Token != null) {
+                                        val dialog =
+                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                setCancelable(false)
+                                            }
+                                        lifecycleScope.launch {
+                                            dialog.show()
+                                            val fromAddress = if (web3Token!!.isSolana()) {
+                                                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                                            } else {
+                                                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                                            }
+                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId)
+                                            if (token == null || fromAddress.isBlank()) {
+                                                toast(R.string.Alert_Not_Support)
+                                            } else {
+                                                navTo(
+                                                    InputFragment.newInstance(
+                                                        fromAddress = fromAddress,
+                                                        toAddress = address.destination,
+                                                        web3Token = web3Token!!,
+                                                        chainToken = chainToken
+                                                    ), InputFragment.TAG
+                                                )
+                                            }
+                                            dialog.dismiss()
+                                        }
+                                    } else {
+                                        navTo(
+                                            InputFragment.newInstance(token!!, address),
+                                            InputFragment.TAG
+                                        )
+                                    }
                                 },
                                 onDeleteAddress = { address ->
-                                    showBottomSheet(address, token!!)
+                                    showBottomSheet(address, token!!, navController)
                                 }
                             )
                         }
@@ -402,7 +443,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         object : TransferBottomSheetDialogFragment.Callback() {
                                             override fun onDismiss(success: Boolean) {
                                                 if (success) {
-                                                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                                                    this@TransferDestinationInputFragment.parentFragmentManager.popBackStack()
                                                 } else {
                                                     navController.popBackStack(
                                                         TransferDestination.Initial.name,
@@ -477,6 +518,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     private fun showBottomSheet(
         address: Address,
         asset: TokenItem,
+        navController: NavHostController
     ): TransferBottomSheetDialogFragment {
         val bottomSheet =
             TransferBottomSheetDialogFragment.newInstance(
@@ -488,7 +530,21 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     destination = address.destination,
                     type = TransferBottomSheetDialogFragment.DELETE,
                 ),
-            )
+            ).apply {
+                setCallback(object : TransferBottomSheetDialogFragment.Callback() {
+                    override fun onDismiss(success: Boolean) {
+                        Timber.e("aaa $success")
+                        if (success) {
+                            this@TransferDestinationInputFragment.parentFragmentManager.popBackStack()
+                        } else {
+                            navController.popBackStack(
+                                TransferDestination.Initial.name,
+                                inclusive = false
+                            )
+                        }
+                    }
+                })
+            }
         bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         return bottomSheet
     }

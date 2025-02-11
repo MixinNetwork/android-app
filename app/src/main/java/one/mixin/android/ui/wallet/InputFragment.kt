@@ -141,8 +141,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private val transferType: TransferType by lazy {
         when {
-            arguments?.containsKey(ARGS_TO_USER) == true -> TransferType.USER
             arguments?.containsKey(ARGS_WEB3_TOKEN) == true -> TransferType.WEB3
+            arguments?.containsKey(ARGS_TO_USER) == true -> TransferType.USER
             else -> TransferType.ADDRESS
         }
     }
@@ -597,9 +597,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFeeBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if (currentFee != null && feeTokensExtra == null ||
+                } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||
                     (currentFee?.token?.assetId == token?.assetId && BigDecimal(v).add(currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)) ||
-                    (currentFee?.token?.assetId != token?.assetId && (currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO))
+                    (currentFee?.token?.assetId != token?.assetId && (currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO) > (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
                     insufficientFeeBalance.isVisible = true
                     insufficientBalance.isVisible = false
@@ -607,6 +607,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
+                    insufficientFeeBalance.isVisible = false
                     continueVa.isEnabled = true
                     continueTv.textColor = requireContext().getColor(R.color.white)
                 }
@@ -703,6 +704,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshFee() {
+        Timber.e("aaa $transferType")
         when (transferType) {
             TransferType.ADDRESS -> {
                 refreshFee(token!!)
@@ -771,6 +773,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         callback = { networkFee ->
                             currentFee = networkFee
                             binding.contentTextView.text = "${BigDecimal(networkFee.fee).numberFormat8()} ${networkFee.token.symbol}"
+                            binding.insufficientFeeBalance.isVisible = false
+                            updateUI()
                             dismiss()
                         }
                     }.show(parentFragmentManager, NetworkFeeBottomSheetDialogFragment.TAG)
@@ -794,31 +798,35 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val toAddress = toAddress?: return
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false
-        if (t.fungibleId == chainToken?.fungibleId) {
-            val fromAddress = fromAddress ?: return
-            val transaction =
-                try {
-                    t.buildTransaction(fromAddress, toAddress, tokenBalance)
-                } catch (e: Exception) {
-                    Timber.Forest.w(e)
-                    if (dialog.isShowing) {
-                        dialog.dismiss()
-                    }
-                    return
-                }
-            if (isAdded) {
-                gas = web3ViewModel.calcFee(t, transaction, fromAddress)
-                binding.contentTextView.text = "${gas?.numberFormat8()} ${chainToken?.symbol}"
+        val fromAddress = fromAddress ?: return
+        val transaction =
+            try {
+                t.buildTransaction(fromAddress, toAddress, tokenBalance)
+            } catch (e: Exception) {
+                Timber.Forest.w(e)
                 if (dialog.isShowing) {
                     dialog.dismiss()
-                    v =
-                        if (isReverse) {
-                            BigDecimal(tokenBalance).subtract(gas).multiply(tokenPrice).setScale(2, RoundingMode.DOWN).toPlainString()
-                        } else {
-                            BigDecimal(tokenBalance).subtract(gas).toPlainString()
-                        }
-                    updateUI()
                 }
+                return
+            }
+        if (isAdded) {
+            gas = web3ViewModel.calcFee(t, transaction, fromAddress)
+            binding.balance.text = getString(
+                R.string.available_balance,
+                "${tokenBalance.numberFormat8()} $tokenSymbol"
+            )
+            binding.insufficientFeeBalance.text =
+                getString(R.string.insufficient_gas, chainToken?.symbol)
+            binding.contentTextView.text = "${gas?.numberFormat8()} ${chainToken?.symbol}"
+            if (dialog.isShowing) {
+                dialog.dismiss()
+                v = if (isReverse) {
+                        BigDecimal(tokenBalance).subtract(gas).multiply(tokenPrice)
+                            .setScale(2, RoundingMode.DOWN).toPlainString()
+                    } else {
+                        BigDecimal(tokenBalance).subtract(gas).toPlainString()
+                    }
+                updateUI()
             }
         }
         binding.iconImageView.isVisible = false

@@ -116,11 +116,13 @@ fun AddressInputPage(
                             Text(
                                 text = stringResource(R.string.hint_address),
                                 color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp
                             )
                         },
                         textStyle = TextStyle(
                             fontSize = 14.sp,
+                            lineHeight = 20.sp,
                             color = MixinAppTheme.colors.textPrimary,
                             textAlign = TextAlign.Start
                         ),
