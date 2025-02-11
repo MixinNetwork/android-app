@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -72,10 +71,11 @@ fun AddressSearchBottomSheet(
         }
     }
     BackHandler (
-        enabled = modalSheetState.isVisible
+        enabled = modalSheetState.isVisible || isDeleteMode
     ) {
         scope.launch {
-            modalSheetState.hide()
+            if (isDeleteMode) isDeleteMode = false
+            else modalSheetState.hide()
         }
     }
 
@@ -110,6 +110,8 @@ fun AddressSearchBottomSheet(
                         .clickable {
                             if (searchText.isNotEmpty()) {
                                 searchText = ""
+                            } else if (isDeleteMode) {
+                                isDeleteMode = false
                             } else if (modalSheetState != null) {
                                 scope.launch {
                                     modalSheetState.hide()
@@ -128,7 +130,7 @@ fun AddressSearchBottomSheet(
             ) {
                 Row(modifier = Modifier.clickable {
                     scope.launch {
-                        modalSheetState?.hide()
+                        modalSheetState.hide()
                         onAddClick()
                     }
                 }) {
@@ -158,8 +160,11 @@ fun AddressSearchBottomSheet(
                         isDeleteMode = isDeleteMode,
                         onDeleteClick = onDeleteAddress,
                         onAddressClick = {
-                            onAddressClick.invoke(address)
                             isDeleteMode = false
+                            scope.launch {
+                                modalSheetState.hide()
+                                onAddressClick.invoke(address)
+                            }
                         },
                     )
                 }

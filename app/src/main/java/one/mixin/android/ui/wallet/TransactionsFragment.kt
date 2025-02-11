@@ -41,6 +41,7 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -372,9 +373,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_transfer_destination_input, Bundle().apply {
-                    putParcelable(ARGS_ASSET, asset)
-                })
+                navTo(TransferDestinationInputFragment.newInstance(asset), TransferDestinationInputFragment.TAG)
             }
             sendReceiveView.receive.setOnClickListener {
                 if (!Session.saltExported() && Session.isAnonymous()) {

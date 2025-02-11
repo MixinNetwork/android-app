@@ -1,18 +1,10 @@
 package one.mixin.android.ui.address
 
-import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.View
-import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewReceiveSelectionBottomBinding
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.navigate
-import one.mixin.android.extension.putString
-import one.mixin.android.ui.conversation.TransferFragment
-import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 

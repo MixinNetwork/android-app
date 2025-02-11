@@ -25,11 +25,13 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -220,7 +222,12 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toWallet = {
                                     requireView().hideKeyboard()
+                                    val dialog =
+                                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                            setCancelable(false)
+                                        }
                                     lifecycleScope.launch {
+                                        dialog.show()
                                         web3Token?.let {
                                             val deposit = web3ViewModel.findAndSyncDepositEntry(it) ?: return@launch
                                             val token = web3ViewModel.syncAsset(web3Token!!.assetId)
@@ -230,6 +237,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 navTo(InputFragment.newInstance(token, toAddress = deposit.destination, tag = deposit.tag), InputFragment.TAG)
                                             }
                                         }
+                                        dialog.dismiss()
                                     }
                                 },
                                 toAddAddress = {
@@ -242,10 +250,24 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
                                     } else {
                                         requireView().hideKeyboard()
-                                        navTo(
-                                            InputFragment.newInstance(token!!, address),
-                                            InputFragment.TAG
-                                        )
+                                        val dialog =
+                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                setCancelable(false)
+                                            }
+                                        dialog.show()
+                                        lifecycleScope.launch {
+                                            handleMixinResponse(
+                                                invokeNetwork = {
+                                                    web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId!!, address, null)
+                                                },
+                                                successBlock = {
+                                                    navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
+                                                },
+                                                endBlock = {
+                                                    dialog.dismiss()
+                                                }
+                                            )
+                                        }
                                     }
                                 },
                                 onAddressClick = { address ->
@@ -288,10 +310,24 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedMemo,
                                 onNext = { memo ->
                                     requireView().hideKeyboard()
-                                    navTo(
-                                        InputFragment.newInstance(token!!, address, memo),
-                                        InputFragment.TAG
-                                    )
+                                    lifecycleScope.launch {
+                                        val dialog =
+                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                setCancelable(false)
+                                            }
+                                        dialog.show()
+                                        handleMixinResponse(
+                                            invokeNetwork = {
+                                                web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId!!, address, memo)
+                                            },
+                                            successBlock = {
+                                                navTo(InputFragment.newInstance(token!!, address, memo), InputFragment.TAG)
+                                            },
+                                            endBlock = {
+                                                dialog.dismiss()
+                                            }
+                                        )
+                                    }
                                 },
                                 onScan = { startQrScan(ScanType.MEMO) },
                                 pop = { navController.popBackStack() }
@@ -358,7 +394,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     bottomSheet.setCallback(
                                         object : TransferBottomSheetDialogFragment.Callback() {
                                             override fun onDismiss(success: Boolean) {
-                                                navController.navigate(TransferDestination.Initial.name)
+                                                navController.popBackStack(
+                                                    TransferDestination.Initial.name,
+                                                    inclusive = false
+                                                )
                                             }
                                         },
                                     )
@@ -374,7 +413,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private fun startQrScan(scanType: ScanType) {
         currentScanType = scanType
-        when(currentScanType) {
+        when (currentScanType) {
             ScanType.ADDRESS -> scannedTransferDest = ""
             ScanType.MEMO -> scannedMemo = ""
             ScanType.LABEL -> scannedLabel = ""

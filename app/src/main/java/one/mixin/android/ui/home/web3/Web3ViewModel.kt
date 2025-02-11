@@ -218,6 +218,13 @@ class Web3ViewModel
                 tokenRepository.syncAsset(assetId)
             }
 
+        suspend fun validateExternalAddress(
+            assetId: String,
+            destination: String,
+            tag: String?,
+        ) =
+            accountRepository.validateExternalAddress(assetId, destination, tag)
+
         fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = tokenRepository.collectibles(sortOrder)
 
         fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = tokenRepository.collectiblesByHash(collectionHash)

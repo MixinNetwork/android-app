@@ -18,6 +18,7 @@ import one.mixin.android.api.response.buildTransaction
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
@@ -205,6 +206,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var currentNote: String? = null
 
+    override fun onResume() {
+        super.onResume()
+        binding.root.hideKeyboard()
+    }
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
@@ -224,7 +230,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     when(transferType) {
                         TransferType.WEB3 -> "2/2"
                         else -> {
-                            if (tag.isNullOrBlank()) "2/2"
+                            if (addressId.isNullOrBlank().not()) "2/2"
+                            else if (addressTag.isNullOrBlank()) "2/2"
                             else "3/3"
                         }
                     }
