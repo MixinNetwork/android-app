@@ -708,7 +708,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             baseValue.toPlainString()
         }
 
-        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).toPlainString()
+        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).stripTrailingZeros().toPlainString()
         updateUI()
     }
 
