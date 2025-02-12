@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -27,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-
 @Composable
 fun SearchTextField(
     value: String,
@@ -57,6 +57,7 @@ fun SearchTextField(
             color = MixinAppTheme.colors.textPrimary
         ),
         singleLine = true,
+        cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier

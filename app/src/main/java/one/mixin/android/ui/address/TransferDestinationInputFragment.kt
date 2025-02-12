@@ -459,7 +459,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         }
                     }
                 }
-            }
+            } 
         }
     }
 

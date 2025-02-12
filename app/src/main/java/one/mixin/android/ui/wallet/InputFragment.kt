@@ -33,6 +33,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.ReceiveSelectionBottom
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
@@ -405,12 +406,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     PaymentStatus.pending.name,
                                     null
                                 )
-                                TransferBottomSheetDialogFragment.Companion.newInstance(withdrawBiometricItem).apply {
+                                TransferBottomSheetDialogFragment.newInstance(withdrawBiometricItem).apply {
                                     setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                         override fun onDismiss(success: Boolean) {
                                             if (success) {
                                                 parentFragmentManager.apply {
-                                                    findFragmentByTag(Web3ReceiveSelectionFragment.Companion.TAG)?.let {
+                                                    findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
+                                                        beginTransaction().remove(it).commit()
+                                                    }
+                                                    findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
                                                         beginTransaction().remove(it).commit()
                                                     }
                                                     findFragmentByTag(TAG)?.let {
@@ -421,7 +425,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         }
                                     })
 
-                                }.show(parentFragmentManager, TransferBottomSheetDialogFragment.Companion.TAG)
+                                }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                             }
                         }
                         TransferType.WEB3 -> {
@@ -451,11 +455,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
                                         val txStateFragment =
-                                            TransactionStateFragment.Companion.newInstance(
+                                            TransactionStateFragment.newInstance(
                                                 serializedTx,
                                                 null
                                             )
-                                        navTo(txStateFragment, TransactionStateFragment.Companion.TAG)
+                                        navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                 )
                             }
@@ -469,12 +473,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                             val user = requireNotNull(user)
                             val biometricItem = buildTransferBiometricItem(user, token, amount, null, memo = currentNote, null)
-                            TransferBottomSheetDialogFragment.Companion.newInstance(biometricItem).apply {
+                            TransferBottomSheetDialogFragment.newInstance(biometricItem).apply {
                                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                                     override fun onDismiss(success: Boolean) {
                                         if (success) {
                                             parentFragmentManager.apply {
-                                                findFragmentByTag(Web3ReceiveSelectionFragment.Companion.TAG)?.let {
+                                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
+                                                    beginTransaction().remove(it).commit()
+                                                }
+                                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
                                                     beginTransaction().remove(it).commit()
                                                 }
                                                 findFragmentByTag(TAG)?.let {
@@ -485,7 +492,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     }
                                 })
 
-                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.Companion.TAG)
+                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                         }
 
                         else -> {
