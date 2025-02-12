@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -749,6 +751,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun refreshFeeTokenExtra(tokenId: String?) = lifecycleScope.launch {
         feeTokensExtra = if (tokenId == null) null
         else web3ViewModel.findTokensExtra(tokenId)
+        updateUI()
     }
 
     private var gas: BigDecimal? = null
@@ -757,8 +760,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val toAddress = toAddress?: return
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false
-        val feeResponse = web3ViewModel.getFees(t.assetId, toAddress)
-        if (feeResponse.isSuccess) {
+        val feeResponse = runCatching { web3ViewModel.getFees(t.assetId, toAddress) }.getOrNull()
+        if (feeResponse == null) {
+            delay(3000)
+            refreshFee(t)
+        } else if (feeResponse.isSuccess) {
             val ids = feeResponse.data?.mapNotNull { it.assetId }
             val tokens = web3ViewModel.findTokenItems(ids ?: emptyList())
             fees.clear()
@@ -814,9 +820,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (dialog.isShowing) {
                     dialog.dismiss()
                 }
-                return
+                null
             }
-        if (isAdded) {
+        if (transaction == null) {
+          delay(3000)
+          refreshGas(t)
+        } else if (isAdded) {
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
             binding.balance.text = getString(
                 R.string.available_balance,

@@ -68,6 +68,7 @@ fun TransferDestinationInputPage(
     token: TokenItem?,
     web3Token: Web3Token?,
     web3Chain: Web3Token?,
+    addressShown: Boolean,
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
@@ -107,7 +108,7 @@ fun TransferDestinationInputPage(
     }
 
     val modalSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
+        initialValue = if (addressShown) ModalBottomSheetValue.Expanded else ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
     var text by remember(contentText) { mutableStateOf(contentText) }

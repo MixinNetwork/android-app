@@ -35,18 +35,10 @@ fun SearchTextField(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MixinAppTheme.colors.backgroundWindow,
 ) {
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect (Unit) {
-        awaitFrame()
-        focusRequester.requestFocus()
-    }
-
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
-            .focusRequester(focusRequester)
             .background(
                 backgroundColor,
                 RoundedCornerShape(32.dp)

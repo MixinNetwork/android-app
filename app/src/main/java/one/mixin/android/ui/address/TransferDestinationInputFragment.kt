@@ -171,7 +171,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = TransferDestination.Initial.name,
+                        startDestination = "${TransferDestination.Initial.name}?address=false",
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -197,11 +197,15 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             )
                         }
                     ) {
-                        composable(TransferDestination.Initial.name) {
+                        composable(
+                            route = TransferDestination.Initial.name
+                        ) { backStackEntry ->
+                            val addressShown = backStackEntry.arguments?.getBoolean("address") ?: false
                             TransferDestinationInputPage(
                                 token = token,
                                 web3Token = web3Token,
                                 web3Chain = chainToken,
+                                addressShown = addressShown,
                                 pop = {
                                     requireActivity().onBackPressedDispatcher.onBackPressed()
                                 },
@@ -440,12 +444,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         object : TransferBottomSheetDialogFragment.Callback() {
                                             override fun onDismiss(success: Boolean) {
                                                 if (success) {
-                                                    this@TransferDestinationInputFragment.parentFragmentManager.popBackStack()
-                                                } else {
-                                                    navController.popBackStack(
-                                                        TransferDestination.Initial.name,
-                                                        inclusive = false
-                                                    )
+                                                    navController.popBackStack(TransferDestination.Initial.name, inclusive = false)
                                                 }
                                             }
                                         },
@@ -456,7 +455,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         }
                     }
                 }
-            } 
+            }
         }
     }
 
