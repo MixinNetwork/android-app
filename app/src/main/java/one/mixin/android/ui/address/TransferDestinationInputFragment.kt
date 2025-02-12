@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,7 +24,6 @@ import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
@@ -63,7 +61,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import org.web3j.crypto.WalletUtils
-import timber.log.Timber
 
 @AndroidEntryPoint
 class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_address_input) {
@@ -326,7 +323,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     }
                                 },
                                 onDeleteAddress = { address ->
-                                    showBottomSheet(address, token!!, navController)
+                                    showDeleteBottomSheet(address, token!!)
                                 }
                             )
                         }
@@ -515,10 +512,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             }
     }
 
-    private fun showBottomSheet(
+    private fun showDeleteBottomSheet(
         address: Address,
         asset: TokenItem,
-        navController: NavHostController
     ): TransferBottomSheetDialogFragment {
         val bottomSheet =
             TransferBottomSheetDialogFragment.newInstance(
@@ -533,15 +529,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             ).apply {
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
-                        Timber.e("aaa $success")
-                        if (success) {
-                            this@TransferDestinationInputFragment.parentFragmentManager.popBackStack()
-                        } else {
-                            navController.popBackStack(
-                                TransferDestination.Initial.name,
-                                inclusive = false
-                            )
-                        }
+
                     }
                 })
             }
