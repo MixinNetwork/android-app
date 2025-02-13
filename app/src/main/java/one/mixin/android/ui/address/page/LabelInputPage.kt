@@ -168,24 +168,27 @@ fun LabelInputPage(
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
-                    Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist)
+                    Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)
+                    Text(address, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
                 }
                 if (memo.isNullOrBlank().not()) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
                     ) {
                         Text(
                             stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.Tag else R.string.Memo),
-                            color = MixinAppTheme.colors.textAssist
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp, lineHeight = 17.sp
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(memo, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End)
+                        Text(memo, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
                     }
                 }
 
