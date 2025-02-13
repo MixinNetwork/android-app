@@ -77,7 +77,6 @@ fun MemoInputPage(
 
     PageScaffold(
         title = stringResource(if (isRippleChainId) R.string.Tag else R.string.Memo),
-        subTitle = "2/3",
         verticalScrollable = false,
         pop = pop,
         actions = {

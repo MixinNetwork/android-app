@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +18,7 @@ import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -69,6 +69,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_FROM_ADDRESS = "args_from_address"
 
+        const val ARGS_TO_WALLET = "args_to_wallet"
+
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
         const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
         const val ARGS_TO_ADDRESS_LABEL = "args_to_address_label"
@@ -91,6 +93,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             toAddress: String,
             web3Token: Web3Token,
             chainToken: Web3Token?,
+            label: String? = null,
+            toWallet: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
@@ -98,6 +102,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putParcelable(ARGS_WEB3_TOKEN, web3Token)
                     putParcelable(ARGS_WEB3_CHAIN_TOKEN, chainToken)
+                    putString(ARGS_TO_ADDRESS_LABEL, label)
+                    putBoolean(ARGS_TO_WALLET, toWallet)
                 }
             }
 
@@ -193,6 +199,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getBoolean(ARGS_RECEIVE, false)
     }
 
+    private val toWallet by lazy {
+        requireArguments().getBoolean(ARGS_TO_WALLET, false)
+    }
+
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
     }
@@ -237,21 +247,21 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 titleView.rightIb.setOnClickListener {
                     requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
-                if (transferType == TransferType.USER) {
-                    titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_transfer), user)
-                } else {
-                    titleView.setSubTitle(
-                        getString(if (isReceive) R.string.Receive else R.string.Send_transfer),
-                        when (transferType) {
-                            TransferType.WEB3 -> "2/2"
-                            TransferType.USER -> ""
-                            else -> {
-                                if (addressId.isNullOrBlank().not()) "2/2"
-                                else if (addressTag.isNullOrBlank()) "2/2"
-                                else "3/3"
-                            }
+                when (transferType) {
+                    TransferType.USER -> {
+                        titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), user)
+                    }
+                    TransferType.ADDRESS -> {
+                        if (addressLabel.isNullOrBlank()) {
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null,"$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
+                        } else {
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
                         }
-                    )
+                    }
+                    TransferType.WEB3 -> {
+                        titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel ?: if (toWallet)getString(R.string.Mixin_Wallet) else null, toAddress?:"", toWallet)
+                    }
+                    else -> {}
                 }
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
@@ -718,7 +728,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshFee() {
-        Timber.e("aaa $transferType")
         when (transferType) {
             TransferType.ADDRESS -> {
                 refreshFee(token!!)

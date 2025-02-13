@@ -130,7 +130,6 @@ fun TransferDestinationInputPage(
         ) {
             PageScaffold(
                 title = stringResource(R.string.Send),
-                subTitle = if (memoEnabled) "1/3" else "1/2",
                 verticalScrollable = false,
                 pop = pop,
                 actions = {

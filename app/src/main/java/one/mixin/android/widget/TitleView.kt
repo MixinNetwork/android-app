@@ -1,6 +1,11 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannedString
+import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +16,8 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
+import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
+import timber.log.Timber
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding: ViewTitleBinding =
@@ -104,6 +111,29 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleAvatar.visibility = VISIBLE
             binding.subTitleTv.setName(second)
             binding.subTitleAvatar.setInfo(second.fullName, second.avatarUrl, second.userId)
+        }
+    }
+
+    fun setLabel(
+        title: String,
+        label: String?,
+        content: String,
+        toWallet: Boolean = false,
+    ) {
+        binding.titleTv.setTextOnly(title)
+        binding.subTitleTv.visibility = VISIBLE
+        if (label != null) {
+            val spannableString = SpannableString("$label ")
+            val backgroundColor: Int = if (toWallet) Color.parseColor("#7EABFB") else Color.parseColor("#8DCC99")
+            val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
+            val endIndex = label.length
+            if (endIndex > 0) {
+                spannableString.setSpan(RelativeSizeSpan(0.8f), 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannableString.setSpan(backgroundColorSpan, 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            binding.subTitleTv.setTextOnly(spannableString)
+        } else {
+            binding.subTitleTv.setTextOnly(content)
         }
     }
 

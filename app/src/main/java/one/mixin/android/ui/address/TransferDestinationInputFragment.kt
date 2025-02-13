@@ -254,7 +254,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             if (token == null || fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken= chainToken), InputFragment.TAG)
+                                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken= chainToken, toWallet = true), InputFragment.TAG)
                                             }
                                         }
                                         dialog.dismiss()
@@ -268,6 +268,23 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
                                     if (memoEnabled) {
                                         navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
+                                    } else if (web3Token != null) {
+                                        lifecycleScope.launch {
+                                            web3Token?.let {
+                                                val deposit = web3ViewModel.findAndSyncDepositEntry(it) ?: return@launch
+                                                val fromAddress = if (it.isSolana()) {
+                                                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                                                } else {
+                                                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                                                }
+                                                val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
+                                                if (token == null || fromAddress.isBlank()) {
+                                                    toast(R.string.Alert_Not_Support)
+                                                } else {
+                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = it, chainToken= chainToken), InputFragment.TAG)
+                                                }
+                                            }
+                                        }
                                     } else {
                                         requireView().hideKeyboard()
                                         navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
@@ -296,7 +313,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                         fromAddress = fromAddress,
                                                         toAddress = address.destination,
                                                         web3Token = web3Token!!,
-                                                        chainToken = chainToken
+                                                        chainToken = chainToken,
+                                                        label = address.label
                                                     ), InputFragment.TAG
                                                 )
                                             }

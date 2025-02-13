@@ -1843,7 +1843,7 @@
     <string name="sell_token">卖出 %1$s</string>
     <string name="buy_token">买入 %1$s</string>
     <string name="NO_ORDERS">没有订单</string>
-    <string name="Destination">Destination</string>
+    <string name="Mixin_Wallet">Mixin 钱包</string>
     <string name="Preview">预览</string>
     <string name="memo_placeholder">输入地址备注（Memo），如果没有直接点下一步。</string>
     <string name="tag_placeholder">输入数字地址标签（Tag），如果没有请输入任意非 0 数字。</string>
@@ -1856,4 +1856,5 @@
     <string name="Mixin_Contact">Mixin 联系人</string>
     <string name="Address_Book">地址簿</string>
     <string name="insufficient_fee_description">需要 %1$s 以支付 %2$s 网络费用</string>
+    <string name="Send_To_Title">转给</string>
 </resources>

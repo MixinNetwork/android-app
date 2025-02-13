@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.text.InputFilter
+import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -126,6 +127,13 @@ class NameTextView : LinearLayoutCompat {
     }
 
     fun setTextOnly(text: String?) {
+        this.textView.text = text
+        iconView.isVisible = false
+        iconView.stopAnimation()
+        this.textView.setCompoundDrawables(null, null, null, null)
+    }
+
+    fun setTextOnly(text: SpannableString?) {
         this.textView.text = text
         iconView.isVisible = false
         iconView.stopAnimation()

@@ -74,7 +74,6 @@ fun LabelInputPage(
 
     PageScaffold(
         title = stringResource(R.string.Label),
-        subTitle = if (memoEnabled) "3/3" else "2/2",
         verticalScrollable = false,
         pop = pop,
         actions = {
