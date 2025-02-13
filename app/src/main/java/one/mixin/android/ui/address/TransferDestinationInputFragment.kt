@@ -270,24 +270,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
                                     } else {
                                         requireView().hideKeyboard()
-                                        val dialog =
-                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                                setCancelable(false)
-                                            }
-                                        dialog.show()
-                                        lifecycleScope.launch {
-                                            handleMixinResponse(
-                                                invokeNetwork = {
-                                                    web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId ?: chainToken?.assetId ?: "", address, null)
-                                                },
-                                                successBlock = {
-                                                    navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
-                                                },
-                                                endBlock = {
-                                                    dialog.dismiss()
-                                                }
-                                            )
-                                        }
+                                        navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
                                     }
                                 },
                                 onAddressClick = { address ->
@@ -359,24 +342,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedMemo,
                                 onNext = { memo ->
                                     requireView().hideKeyboard()
-                                    lifecycleScope.launch {
-                                        val dialog =
-                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                                setCancelable(false)
-                                            }
-                                        dialog.show()
-                                        handleMixinResponse(
-                                            invokeNetwork = {
-                                                web3ViewModel.validateExternalAddress(token?.assetId ?: web3Token?.assetId ?: "", address, memo)
-                                            },
-                                            successBlock = {
-                                                navTo(InputFragment.newInstance(token!!, address, memo), InputFragment.TAG)
-                                            },
-                                            endBlock = {
-                                                dialog.dismiss()
-                                            }
-                                        )
-                                    }
+                                    navTo(InputFragment.newInstance(token!!, address, memo), InputFragment.TAG)
                                 },
                                 onScan = { startQrScan(ScanType.MEMO) },
                                 pop = { navController.popBackStack() }

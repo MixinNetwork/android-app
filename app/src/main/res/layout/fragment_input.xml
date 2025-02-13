@@ -141,7 +141,7 @@
                 <RelativeLayout
                     android:id="@+id/info"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="36sp"
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
                     android:paddingBottom="10dp"
@@ -154,6 +154,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:textColor="?attr/text_assist"
+                        android:includeFontPadding="false"
                         tools:text="Title" />
 
                     <LinearLayout
@@ -171,7 +172,7 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_blue"
                             android:layout_marginEnd="8dp"
-                            android:foreground="?attr/selectableItemBackground"
+                            android:includeFontPadding="false"
                             tools:text="Add ETH" />
 
                         <TextView
@@ -179,7 +180,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/text_assist"
-                            android:foreground="?attr/selectableItemBackground"
+                            android:includeFontPadding="false"
                             tools:text="Content" />
 
                         <ProgressBar
