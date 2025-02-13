@@ -237,17 +237,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 titleView.rightIb.setOnClickListener {
                     requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
-                titleView.setSubTitle(
-                    getString(if (isReceive) R.string.Receive else R.string.Send_transfer),
-                    when(transferType) {
-                        TransferType.WEB3 -> "2/2"
-                        else -> {
-                            if (addressId.isNullOrBlank().not()) "2/2"
-                            else if (addressTag.isNullOrBlank()) "2/2"
-                            else "3/3"
+                if (transferType == TransferType.USER) {
+                    titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_transfer), user)
+                } else {
+                    titleView.setSubTitle(
+                        getString(if (isReceive) R.string.Receive else R.string.Send_transfer),
+                        when (transferType) {
+                            TransferType.WEB3 -> "2/2"
+                            TransferType.USER -> ""
+                            else -> {
+                                if (addressId.isNullOrBlank().not()) "2/2"
+                                else if (addressTag.isNullOrBlank()) "2/2"
+                                else "3/3"
+                            }
                         }
-                    }
-                )
+                    )
+                }
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(

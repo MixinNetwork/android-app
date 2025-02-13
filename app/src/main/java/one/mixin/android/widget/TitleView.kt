@@ -87,15 +87,30 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.visibility = View.GONE
         } else {
             binding.subTitleTv.visibility = View.VISIBLE
-            binding.subTitleTv.text = second
+            binding.subTitleTv.setTextOnly(second)
         }
     }
 
+    fun setSubTitle(
+        first: String,
+        second: User?,
+    ) {
+        binding.titleTv.setTextOnly(first)
+        if (second == null) {
+            binding.subTitleTv.visibility = GONE
+            binding.subTitleAvatar.visibility = GONE
+        } else {
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleAvatar.visibility = VISIBLE
+            binding.subTitleTv.setName(second)
+            binding.subTitleAvatar.setInfo(second.fullName, second.avatarUrl, second.userId)
+        }
+    }
 
     fun setUser(user: User) {
         binding.titleTv.setName(user)
         binding.subTitleTv.visibility = View.VISIBLE
-        binding.subTitleTv.text = user.identityNumber
+        binding.subTitleTv.setTextOnly(user.identityNumber)
     }
 
     fun initProgress(

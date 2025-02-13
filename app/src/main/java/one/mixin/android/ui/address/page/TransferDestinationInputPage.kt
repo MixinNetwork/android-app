@@ -227,24 +227,16 @@ fun TransferDestinationInputPage(
 
                     if (text.isBlank()) {
                         Column {
-                            if (token != null) {
+                            if (token != null || web3Token?.assetId != null) {
                                 DestinationMenu(
-                                    R.drawable.ic_destination_contact,
-                                    R.string.Mixin_Contact,
-                                    R.string.Send_crypto_to_contact,
+                                    R.drawable.ic_destination_address,
+                                    R.string.Address_Book,
+                                    R.string.send_to_address_description,
                                     onClick = {
-                                        toContact.invoke()
-                                    }, true
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
-                            if (web3Token != null) {
-                                DestinationMenu(
-                                    R.drawable.ic_destination_wallet,
-                                    R.string.Mixin_Wallet,
-                                    R.string.Send_to_Contact_description,
-                                    onClick = {
-                                        toWallet.invoke()
+                                        localLocalSoftwareKeyboardController?.hide()
+                                        scope.launch {
+                                            modalSheetState.show()
+                                        }
                                     }
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -267,16 +259,24 @@ fun TransferDestinationInputPage(
                                     })
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
-                            if (token != null || web3Token?.assetId != null) {
+                            if (token != null) {
                                 DestinationMenu(
-                                    R.drawable.ic_destination_address,
-                                    R.string.Address_Book,
-                                    R.string.send_to_address_description,
+                                    R.drawable.ic_destination_contact,
+                                    R.string.Mixin_Contact,
+                                    R.string.Send_crypto_to_contact,
                                     onClick = {
-                                        localLocalSoftwareKeyboardController?.hide()
-                                        scope.launch {
-                                            modalSheetState.show()
-                                        }
+                                        toContact.invoke()
+                                    }, true
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                            if (web3Token != null) {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_wallet,
+                                    R.string.Mixin_Wallet,
+                                    R.string.Send_to_Contact_description,
+                                    onClick = {
+                                        toWallet.invoke()
                                     }
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
