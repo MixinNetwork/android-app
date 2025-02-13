@@ -59,7 +59,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             measureAllChildren = false
         }
         lifecycleScope.launch {
-            checkTipCounter(Session.getAccount()!!)
+            checkTipCounter(requireNotNull(Session.getAccount()))
         }
     }
 

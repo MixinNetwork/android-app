@@ -114,6 +114,19 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         errorAction?.let { setErrorButton(it) }
     }
 
+    fun showErrorInfo(
+        content: String,
+        tickMillis: Long = 0L,
+        errorAction: ErrorAction? = null,
+    ) {
+        displayedChild = POS_ERROR
+        binding.errorInfo.text = content
+        if (tickMillis > 0) {
+            startCountDown(tickMillis)
+        }
+        errorAction?.let { setErrorButton(it) }
+    }
+
     fun showPin(clearPin: Boolean) {
         displayedChild = POS_PIN
         if (clearPin) {

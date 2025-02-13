@@ -370,13 +370,7 @@ class MainActivity : BlazeBaseActivity() {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
                     AnalyticsTracker.trackLoginVerifyPin("verify_pin")
-                    LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                        onDismissCallback = { success ->
-                            if (success) {
-                                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                            }
-                        }
-                    }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                    CheckPinActivity.start(this)
                 }
             } else {
                 CheckRegisterBottomSheetDialogFragment.newInstance()
