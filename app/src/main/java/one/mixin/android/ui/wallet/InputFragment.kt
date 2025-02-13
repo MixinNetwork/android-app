@@ -359,7 +359,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     return@launch
                                 }
                                 feeTokensExtra = web3ViewModel.findTokensExtra(currentFee!!.token.assetId)
-                                val feeItem = web3ViewModel.syncAsset(assetId)
+                                val feeItem = web3ViewModel.syncAsset(currentFee!!.token.assetId)
                                 if (feeItem == null) {
                                     toast(R.string.insufficient_balance)
                                     alertDialog.dismiss()
