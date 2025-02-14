@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
+import one.mixin.android.api.response.getChainSymbolFromName
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
@@ -923,7 +924,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             )
             binding.insufficientFeeBalance.text =
                 getString(R.string.insufficient_gas, chainToken?.symbol)
-            binding.contentTextView.text = "${gas?.numberFormat8()} ${chainToken?.symbol}"
+
+            binding.contentTextView.text = "${gas?.numberFormat8()} ${chainToken?.symbol ?: t.getChainSymbolFromName()}"
             if (dialog.isShowing) {
                 dialog.dismiss()
                 v = if (isReverse) {

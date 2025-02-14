@@ -138,6 +138,21 @@ fun Web3Token.getChainFromName(): Chain {
     }
 }
 
+fun Web3Token.getChainSymbolFromName(): String {
+    return when {
+        chainId.equals("ethereum", true) -> "ETH"
+        chainId.equals("base", true) ->"ETH"
+        chainId.equals("blast", true) -> "ETH"
+        chainId.equals("arbitrum", true) -> "ETH"
+        chainId.equals("optimism", true) -> "ETH"
+        chainId.equals("polygon", true) -> "POL"
+        chainId.equals("binance-smart-chain", true) -> "BNB"
+        chainId.equals("avalanche", true) -> "AVAX"
+        chainId.equals("solana", true) -> "SOL"
+        else -> throw IllegalArgumentException("Not support: $chainId")
+    }
+}
+
 fun Web3Token.getChainIdFromName(): String {
     return when {
         chainId.equals("ethereum", true) -> Constants.ChainId.ETHEREUM_CHAIN_ID
