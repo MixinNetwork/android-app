@@ -114,6 +114,32 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         }
     }
 
+    fun setSubTitle(
+        title: String,
+        users: List<User>,
+        callback: () -> Unit,
+    ) {
+        binding.titleTv.setTextOnly(title)
+        if (users.isEmpty()) {
+            binding.subTitleTv.visibility = GONE
+            binding.subTitleAvatar.visibility = GONE
+        } else if (users.size == 1) {
+            val user = users.first()
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleAvatar.visibility = VISIBLE
+            binding.subTitleTv.setName(user)
+            binding.subTitleAvatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+        } else {
+            binding.subTitleTv.visibility = GONE
+            binding.subTitleAvatar.visibility = GONE
+            binding.receiversView.visibility = VISIBLE
+            binding.receiversView.addList(users)
+            binding.receiversView.setOnClickListener {
+                callback()
+            }
+        }
+    }
+
     fun setLabel(
         title: String,
         label: String?,

@@ -39,8 +39,11 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
@@ -278,6 +281,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                     TransferType.WEB3 -> {
                         titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel ?: if (toWallet)getString(R.string.Mixin_Wallet) else null, toAddress?:"", toWallet)
+                    }
+                    TransferType.URL -> {
+                        assetBiometricItem?.let { item ->
+                            when {
+                                item is AddressTransferBiometricItem -> {
+                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, "$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
+                                }
+                                item is TransferBiometricItem -> {
+                                    titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), item.users) {
+                                        showUserList(item.users)
+                                    }
+                                }
+                            }
+                        }
                     }
                     else -> {}
                 }
@@ -585,6 +602,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             refreshFee()
         }
+    }
+
+    private fun showUserList(
+        userList: List<User>,
+    ) {
+        val t = assetBiometricItem as TransferBiometricItem
+        val title = getString(R.string.multisig_receivers_threshold, "${t.threshold}/${t.users.size}")
+        UserListBottomSheetDialogFragment.newInstance(ArrayList(userList), title)
+            .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
     }
 
     private fun noteDialog() {

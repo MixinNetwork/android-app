@@ -32,6 +32,7 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -174,8 +175,12 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     ) {
                         binding.searchEt.hideKeyboard()
                         tokenItem?.let {
-                            defaultSharedPreferences.addToList(key, it.assetId)
-                            onAsset?.invoke(it)
+                            if (asyncOnAsset != null) {
+                                asyncClick(it)
+                            } else {
+                                defaultSharedPreferences.addToList(key, it.assetId)
+                                onAsset?.invoke(it)
+                            }
                         }
                         dismiss()
                     }
@@ -261,8 +266,12 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         setContent {
                             RecentTokens (key) {
                                 defaultSharedPreferences.addToList(key, it.assetId)
-                                this@AssetListBottomSheetDialogFragment.onAsset?.invoke(it)
-                                dismiss()
+                                if (asyncOnAsset != null) {
+                                    asyncClick(it)
+                                } else {
+                                    this@AssetListBottomSheetDialogFragment.onAsset?.invoke(it)
+                                    dismiss()
+                                }
                             }
                         }
                     }
@@ -345,6 +354,20 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return this
     }
 
+    private fun asyncClick(token: TokenItem) {
+        lifecycleScope.launch {
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
+            asyncOnAsset?.invoke(token)
+            dialog.dismiss()
+            dismiss()
+        }
+    }
+
     private var onAsset: ((TokenItem) -> Unit)? = null
     private var onDeposit: (() -> Unit)? = null
+
+    var asyncOnAsset: (suspend (TokenItem) -> Unit)? = null
 }

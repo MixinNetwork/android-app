@@ -134,6 +134,14 @@
                 app:badgePadding="6dp"
                 app:badgeSize="16sp"/>
 
+            <one.mixin.android.widget.AvatarsView
+                android:id="@+id/receivers_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone"
+                app:avatar_size="16sp"/>
+
         </LinearLayout>
 
     </LinearLayout>
