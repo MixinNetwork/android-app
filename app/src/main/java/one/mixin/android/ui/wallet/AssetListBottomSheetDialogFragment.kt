@@ -187,6 +187,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             if (fromType == TYPE_FROM_SEND) {
+                onDepositTv.isVisible = onDeposit != null
                 depositTv.setOnClickListener {
                     onDeposit?.invoke()
                     dismiss()
