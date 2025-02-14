@@ -129,7 +129,7 @@ fun TransferDestinationInputPage(
             }
         ) {
             PageScaffold(
-                title = stringResource(R.string.Send),
+                title = stringResource(R.string.Address),
                 verticalScrollable = false,
                 pop = pop,
                 actions = {
