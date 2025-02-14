@@ -39,6 +39,8 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
+import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
@@ -83,11 +85,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
         const val ARGS_RECEIVE = "args_receive"
 
+        const val ARGS_BIOMETRIC_ITEM = "args_biometric_item"
+
         enum class TransferType {
             USER,
             ADDRESS,
-            WEB3
+            WEB3,
+            URL
         }
+
         fun newInstance(
             fromAddress: String,
             toAddress: String,
@@ -146,12 +152,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     putParcelable(ARGS_TO_USER, user)
                 }
             }
+
+        inline fun <reified T : BiometricItem> newInstance(t: T) =
+            InputFragment().apply {
+                withArgs {
+                    putParcelable(ARGS_BIOMETRIC_ITEM, t)
+                }
+            }
     }
 
     private val transferType: TransferType by lazy {
         when {
             arguments?.containsKey(ARGS_WEB3_TOKEN) == true -> TransferType.WEB3
             arguments?.containsKey(ARGS_TO_USER) == true -> TransferType.USER
+            arguments?.containsKey(ARGS_BIOMETRIC_ITEM) == true -> TransferType.URL
             else -> TransferType.ADDRESS
         }
     }
@@ -180,7 +194,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private val token by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
+        requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java) ?: assetBiometricItem?.asset
+    }
+
+    private val assetBiometricItem: AssetBiometricItem? by lazy {
+        requireArguments().getParcelableCompat(ARGS_BIOMETRIC_ITEM, AssetBiometricItem::class.java)
     }
 
     private val addressTag by lazy {
@@ -332,7 +350,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     white = true,
                 )
                 when(transferType) {
-                    TransferType.USER -> {
+                    TransferType.USER, TransferType.URL -> {
                         binding.infoLinearLayout.setOnClickListener {
                             noteDialog()
                         }
@@ -340,6 +358,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         binding.contentTextView.setText(R.string.add_a_note)
                         binding.iconImageView.isVisible = true
                         binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
+                        currentNote = assetBiometricItem?.memo
                     }
                     else -> {
                         binding.titleTextView.setText(R.string.Network_Fee)
@@ -509,6 +528,37 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     }
                                 })
 
+                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                        }
+
+                        TransferType.URL -> {
+                            val item = assetBiometricItem ?: return@setOnClickListener
+                            val amount =
+                                if (isReverse) {
+                                    binding.minorTv.text.toString().split(" ")[1].replace(",", "")
+                                } else {
+                                    v
+                                }
+                            item.amount = amount
+                            item.memo = currentNote
+                            TransferBottomSheetDialogFragment.newInstance(item).apply {
+                                setCallback(object : TransferBottomSheetDialogFragment.Callback() {
+                                    override fun onDismiss(success: Boolean) {
+                                        if (success) {
+                                            parentFragmentManager.apply {
+                                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
+                                                    beginTransaction().remove(it).commit()
+                                                }
+                                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
+                                                    beginTransaction().remove(it).commit()
+                                                }
+                                                findFragmentByTag(TAG)?.let {
+                                                    beginTransaction().remove(it).commit()
+                                                }
+                                            }
+                                        }
+                                    }
+                                })
                             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                         }
 

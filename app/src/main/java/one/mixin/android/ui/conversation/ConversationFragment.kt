@@ -171,7 +171,6 @@ import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.conversation.TransferFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
@@ -206,6 +205,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity

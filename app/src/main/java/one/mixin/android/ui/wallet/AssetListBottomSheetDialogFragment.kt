@@ -60,6 +60,8 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_FROM_RECEIVE = 1
         const val TYPE_FROM_TRANSFER = 2
 
+        const val ASSET_PREFERENCE = "TRANSFER_ASSET"
+
         fun newInstance(
             fromType: Int,
             assets: ArrayList<String>? = null,
