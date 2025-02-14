@@ -34,6 +34,8 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.ui.address.ReceiveSelectionBottom
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.address.TransferDestinationInputFragment
@@ -66,6 +68,7 @@ import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
+import javax.inject.Inject
 import kotlin.math.max
 
 @AndroidEntryPoint
@@ -250,6 +253,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var currentNote: String? = null
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     override fun onResume() {
         super.onResume()
         binding.root.hideKeyboard()
@@ -261,6 +267,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(SyncOutputJob())
         lifecycleScope.launch {
             binding.apply {
                 titleView.leftIb.setOnClickListener {

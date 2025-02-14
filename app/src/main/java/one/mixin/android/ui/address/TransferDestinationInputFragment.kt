@@ -40,6 +40,8 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
 import one.mixin.android.ui.address.page.MemoInputPage
@@ -61,6 +63,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import org.web3j.crypto.WalletUtils
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_address_input) {
@@ -152,6 +155,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             )
     }
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     enum class TransferDestination {
         Initial,
         Address,
@@ -165,6 +171,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(SyncOutputJob())
         binding.apply {
             compose.setContent {
                 MixinAppTheme {
