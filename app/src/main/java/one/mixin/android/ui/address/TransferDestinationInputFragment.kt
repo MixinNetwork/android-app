@@ -250,11 +250,18 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             } else {
                                                 PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                             }
-                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
-                                            if (token == null || fromAddress.isBlank()) {
+                                            val assetId = web3Token!!.assetId
+                                            if (assetId.isNullOrBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken= chainToken, toWallet = true), InputFragment.TAG)
+                                                val token = web3ViewModel.syncAsset(
+                                                    web3Token!!.assetId ?: ""
+                                                )
+                                                if (token == null || fromAddress.isBlank()) {
+                                                    toast(R.string.Alert_Not_Support)
+                                                } else {
+                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken = chainToken, toWallet = true), InputFragment.TAG)
+                                                }
                                             }
                                         }
                                         dialog.dismiss()
