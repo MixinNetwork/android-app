@@ -772,7 +772,6 @@ class BottomSheetViewModel
             }
 
             if (selectedOutputs.size >= maxUtxoCount) {
-                jobManager.addJobInBackground(SyncOutputJob())
                 throw MaxCountNotEnoughUtxoException
             }
 

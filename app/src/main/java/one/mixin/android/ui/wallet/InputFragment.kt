@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
@@ -36,6 +37,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.address.TransferDestinationInputFragment
@@ -43,6 +45,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
+import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
+import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -61,6 +65,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
+import one.mixin.android.vo.toUser
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
@@ -467,26 +472,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     PaymentStatus.pending.name,
                                     null
                                 )
-                                TransferBottomSheetDialogFragment.newInstance(withdrawBiometricItem).apply {
-                                    setCallback(object : TransferBottomSheetDialogFragment.Callback() {
-                                        override fun onDismiss(success: Boolean) {
-                                            if (success) {
-                                                parentFragmentManager.apply {
-                                                    findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
-                                                        beginTransaction().remove(it).commit()
-                                                    }
-                                                    findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                                                        beginTransaction().remove(it).commit()
-                                                    }
-                                                    findFragmentByTag(TAG)?.let {
-                                                        beginTransaction().remove(it).commit()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    })
 
-                                }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                                prepareCheck(withdrawBiometricItem)
                             }
                         }
                         TransferType.WEB3 -> {
@@ -534,26 +521,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                             val user = requireNotNull(user)
                             val biometricItem = buildTransferBiometricItem(user, token, amount, null, memo = currentNote, null)
-                            TransferBottomSheetDialogFragment.newInstance(biometricItem).apply {
-                                setCallback(object : TransferBottomSheetDialogFragment.Callback() {
-                                    override fun onDismiss(success: Boolean) {
-                                        if (success) {
-                                            parentFragmentManager.apply {
-                                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
-                                                    beginTransaction().remove(it).commit()
-                                                }
-                                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                                                    beginTransaction().remove(it).commit()
-                                                }
-                                                findFragmentByTag(TAG)?.let {
-                                                    beginTransaction().remove(it).commit()
-                                                }
-                                            }
-                                        }
-                                    }
-                                })
-
-                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                            prepareCheck(biometricItem)
                         }
 
                         TransferType.URL -> {
@@ -566,25 +534,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                             item.amount = amount
                             item.memo = currentNote
-                            TransferBottomSheetDialogFragment.newInstance(item).apply {
-                                setCallback(object : TransferBottomSheetDialogFragment.Callback() {
-                                    override fun onDismiss(success: Boolean) {
-                                        if (success) {
-                                            parentFragmentManager.apply {
-                                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
-                                                    beginTransaction().remove(it).commit()
-                                                }
-                                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                                                    beginTransaction().remove(it).commit()
-                                                }
-                                                findFragmentByTag(TAG)?.let {
-                                                    beginTransaction().remove(it).commit()
-                                                }
-                                            }
-                                        }
-                                    }
-                                })
-                            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                            prepareCheck(item)
                         }
 
                         else -> {
@@ -911,6 +861,120 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.contentTextView.isVisible = true
         binding.loadingProgressBar.isVisible = false
     }
+
+    private fun prepareCheck(item: BiometricItem){
+        lifecycleScope.launch {
+            val amount = item.amount
+            val rawTransaction = web3ViewModel.firstUnspentTransaction()
+            if (rawTransaction != null) {
+                WaitingBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+            } else {
+                checkUtxo(amount) {
+                    prepareTransferBottom(amount, item)
+                }
+            }
+        }
+    }
+
+    private fun checkUtxo(amount: String, callback: () -> Unit) {
+        val token = token ?: return
+        lifecycleScope.launch {
+            val consolidationAmount = web3ViewModel.checkUtxoSufficiency(token.assetId, amount)
+            if (consolidationAmount != null) {
+                UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                    .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+            } else {
+                callback.invoke()
+            }
+        }
+    }
+
+    private fun prepareTransferBottom(amount: String,  item: BiometricItem) =
+        lifecycleScope.launch {
+            val t = item
+            if (t !is TransferBiometricItem && t !is AddressTransferBiometricItem && t !is WithdrawBiometricItem) {
+                return@launch
+            }
+            val asset = t.asset ?: return@launch
+
+            if (item is WithdrawBiometricItem) {
+                t as WithdrawBiometricItem
+                val address = t.address
+                val dust = address.dust?.toBigDecimalOrNull()
+                val amountDouble = amount.toBigDecimalOrNull()
+                if (dust != null && amountDouble != null && amountDouble < dust) {
+                    toast(getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol))
+                    return@launch
+                }
+            }
+
+            val memo = currentNote?.toString() ?: ""
+            if (memo.toByteArray().size > 140) {
+                toast("${currentNote} ${getString(R.string.Content_too_long)}")
+                return@launch
+            }
+
+            val traceId = t.traceId
+            val pair =
+                if (t is TransferBiometricItem && t.users.size == 1) {
+                    web3ViewModel.findLatestTrace(t.users.first().userId, null, null, amount, asset.assetId)
+                } else if (t is WithdrawBiometricItem) {
+                    web3ViewModel.findLatestTrace(null, t.address.destination, t.address.tag, amount, asset.assetId)
+                } else {
+                    Pair(null, false)
+                }
+            if (pair.second) {
+                return@launch
+            }
+            if (t is TransferBiometricItem && t.users.size == 1) {
+                t.trace = pair.first
+            } else if (t is WithdrawBiometricItem) {
+                t.trace = pair.first
+            }
+
+            var isTraceNotFound = false
+            val tx =
+                handleMixinResponse(
+                    invokeNetwork = { web3ViewModel.getTransactionsById(traceId) },
+                    successBlock = { r -> r.data },
+                    failureBlock = {
+                        isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
+                        return@handleMixinResponse isTraceNotFound
+                    },
+                )
+            t.state =
+                if (isTraceNotFound) {
+                    PaymentStatus.pending.name
+                } else if (tx != null) {
+                    PaymentStatus.paid.name
+                } else {
+                    return@launch
+                }
+
+            if (t is WithdrawBiometricItem) {
+                val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
+                t.fee = fee
+            }
+            TransferBottomSheetDialogFragment.newInstance(item).apply {
+                setCallback(object : TransferBottomSheetDialogFragment.Callback() {
+                    override fun onDismiss(success: Boolean) {
+                        if (success) {
+                            parentFragmentManager.apply {
+                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
+                                    beginTransaction().remove(it).commit()
+                                }
+                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
+                                    beginTransaction().remove(it).commit()
+                                }
+                                findFragmentByTag(TAG)?.let {
+                                    beginTransaction().remove(it).commit()
+                                }
+                            }
+                        }
+                    }
+                })
+            }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        }
 
     private suspend fun refreshGas(t: Web3Token) {
         val toAddress = toAddress?: return

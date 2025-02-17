@@ -146,7 +146,6 @@ class NewSchemeParser(
             } else {
                 val token = asset?.let { checkToken(it) ?: return Result.failure(ParserError(FAILURE)) }
                 if (token == null) {
-                    Timber.e("aaaaaaa")
                     val bottom = AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                         .apply {
                             asyncOnAsset = { selectedAsset ->
