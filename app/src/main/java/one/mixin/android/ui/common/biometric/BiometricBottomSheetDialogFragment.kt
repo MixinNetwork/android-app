@@ -74,7 +74,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     open fun onClickBiometricLayoutClose(): Boolean = false
 
     private val titleView by lazy {
-        contentView.findViewById<RoundTitleView>(R.id.title_view)
+        contentView.findViewById<RoundTitleView?>(R.id.title_view)
     }
 
     private val biometricLayout by lazy {
@@ -85,7 +85,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     }
 
     protected fun setBiometricLayout() {
-        titleView.rightIv.setOnClickListener { dismiss() }
+        titleView?.rightIv?.setOnClickListener { dismiss() }
         biometricLayout.setKeyboard(keyboard)
         biometricLayout.callback = biometricLayoutCallback
         contentView.post {

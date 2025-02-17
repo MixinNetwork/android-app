@@ -17,6 +17,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +36,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -229,11 +231,9 @@ fun PinKeyBoard(
                                     LazyRow(
                                         modifier = Modifier.height(20.dp),
                                         verticalAlignment = Alignment.Bottom,
+                                        horizontalArrangement = Arrangement.spacedBy(24.dp),
                                     ) {
-                                        items(7) { index ->
-                                            if (index == 3) {
-                                                return@items Spacer(modifier = Modifier.width(20.dp))
-                                            }
+                                        items(6) { index ->
                                             val hasContent = (if (index > 3) index - 1 else index) < pinCode.length
                                             AnimatedContent(
                                                 targetState = hasContent,
@@ -248,15 +248,11 @@ fun PinKeyBoard(
                                                 },
                                                 label = "",
                                             ) { b ->
-                                                Text(
-                                                    "*",
-                                                    modifier =
-                                                        Modifier
-                                                            .width(24.dp),
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (b) MixinAppTheme.colors.textPrimary else MixinAppTheme.colors.textMinor,
-                                                    fontSize = if (b) 20.sp else 13.sp,
-                                                    textAlign = TextAlign.Center,
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(14.dp)
+                                                        .border(1.dp, MixinAppTheme.colors.textPrimary, CircleShape)
+                                                        .background(if (b) MixinAppTheme.colors.textPrimary else Color.Transparent, CircleShape)
                                                 )
                                             }
                                         }

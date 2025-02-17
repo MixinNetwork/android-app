@@ -43,7 +43,7 @@
 
             <one.mixin.android.widget.PinView
                     android:id="@+id/pin"
-                    android:layout_width="200dp"
+                    android:layout_width="wrap_content"
                     android:layout_marginTop="12dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"/>

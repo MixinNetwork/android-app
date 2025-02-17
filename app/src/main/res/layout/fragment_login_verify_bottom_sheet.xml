@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/bg_round_top_white"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.RoundTitleView
@@ -16,29 +16,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="70dp"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:textColor="?attr/text_primary"
-        android:text="@string/Enter_your_PIN"
-        android:textSize="16sp" />
+        android:text="@string/For_your_security"
+        android:textSize="18sp"
+        android:textFontWeight="600"/>
 
     <one.mixin.android.ui.common.biometric.BiometricLayout
         android:id="@+id/biometric_layout"
+        android:layout_marginTop="87dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/desc_tv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:layout_marginStart="54dp"
-        android:layout_marginEnd="54dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
-        android:text="@string/login_verify_pin"
-        android:textSize="14sp"
-        android:textColor="?attr/text_assist" />
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

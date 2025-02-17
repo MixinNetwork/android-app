@@ -21,7 +21,6 @@ import one.mixin.android.extension.textColor
 class PinView : LinearLayout {
     companion object {
         const val DEFAULT_COUNT = 6
-        const val STAR = "*"
     }
 
     private var color = context.colorFromAttribute(R.attr.text_primary)
@@ -30,14 +29,15 @@ class PinView : LinearLayout {
     // control tip_tv and line visibility
     private var tipVisible = true
 
-    private val views = ArrayList<TextView>()
+    private val views = ArrayList<View>()
     private val codes = SparseArray<String>()
-    private var mid = count / 2
     private var index = 0
     private var listener: OnPinListener? = null
     private var finishListener: OnPinFinishListener? = null
     private val textSize = 26f
     private val starSize = 18f
+    private val dotSize = 14.dp
+    private val dotMargin = 12.dp
 
     private val binding = ViewPinBinding.inflate(LayoutInflater.from(context), this)
 
@@ -64,26 +64,19 @@ class PinView : LinearLayout {
         }
         ta.recycle()
         orientation = VERTICAL
-        mid = count / 2
-        for (i in 0..count) {
-            if (i == mid) {
-                binding.containerLl.addView(View(context), LayoutParams(20.dp, MATCH_PARENT))
-            } else {
-                val item = TextView(context)
-                item.textSize = starSize
-                item.textColor = color
-                item.typeface = Typeface.DEFAULT_BOLD
-                item.hintTextColor = context.colorFromAttribute(R.attr.text_assist)
-                item.hint = STAR
-                item.gravity = Gravity.CENTER
-
-                val params = LayoutParams(0, MATCH_PARENT)
-                params.weight = 1f
-                params.gravity = Gravity.BOTTOM
-                binding.containerLl.addView(item, params)
-                views.add(item)
-            }
+        for (i in 0 until count) {
+            val item = createDotView()
+            views.add(item)
+            binding.containerLl.addView(item)
         }
+    }
+
+    private fun createDotView() = View(context).apply {
+        layoutParams = LayoutParams(dotSize, dotSize).apply {
+            setMargins(dotMargin, 0, dotMargin, 0)
+            gravity = Gravity.CENTER
+        }
+        background = context.getDrawable(R.drawable.pin_circle_empty)
     }
 
     fun append(s: String) {
@@ -94,13 +87,12 @@ class PinView : LinearLayout {
         }
 
         val curItem = views[index]
-        curItem.text = STAR
-        curItem.textSize = textSize
+        curItem.background = context.getDrawable(R.drawable.pin_circle_filled)
         codes.append(index, s)
         index++
 
         listener?.onUpdate(index)
-        if (index == 6) {
+        if (index == count) {
             finishListener?.onPinFinish()
         }
     }
@@ -111,8 +103,7 @@ class PinView : LinearLayout {
         for (i in 0 until count) {
             val c = s[i]
             val v = views[i]
-            v.text = STAR
-            v.textSize = textSize
+            v.background = context.getDrawable(R.drawable.pin_circle_filled)
             codes.append(i, c.toString())
         }
         listener?.onUpdate(count)
@@ -123,15 +114,14 @@ class PinView : LinearLayout {
         if (index <= 0) return
         index--
         val codeView = views[index]
-        codeView.text = ""
-        codeView.textSize = starSize
+        codeView.background = context.getDrawable(R.drawable.pin_circle_empty)
 
         listener?.onUpdate(index)
     }
 
     fun clear() {
         if (index != 0) {
-            views.forEach { code -> code.text = "" }
+            views.forEach { code -> code.background = context.getDrawable(R.drawable.pin_circle_empty) }
             codes.clear()
             index = 0
         }
