@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -23,11 +24,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.Web3Token
@@ -38,6 +42,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -160,7 +165,10 @@ class SwapFragment : BaseFragment() {
             slippage = DefaultSlippage
             defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
         }
+        orderBadge = defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
     }
+
+    private var orderBadge: Boolean by mutableStateOf(false)
 
     @FlowPreview
     override fun onCreateView(
@@ -213,6 +221,7 @@ class SwapFragment : BaseFragment() {
                             SwapPage(
                                 from = fromToken,
                                 to = toToken,
+                                orderBadge = orderBadge,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -258,6 +267,11 @@ class SwapFragment : BaseFragment() {
                                     navigateUp(navController)
                                 },
                                 onOrderClick = { orderId ->
+                                    if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
+                                        defaultSharedPreferences.putInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
+                                        orderBadge = false
+                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                                    }
                                     navController.navigate("${SwapDestination.OrderDetail.name}/$orderId")
                                 }
                             )

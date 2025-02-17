@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -28,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
@@ -48,9 +50,11 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
@@ -279,6 +283,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(RefreshOrdersJob())
         binding.apply {
             moreIb.setOnClickListener { showBottom() }
             scanIb.setOnClickListener {
@@ -321,9 +326,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
-                        sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
-                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                        if (MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 0) {
+                            sendReceiveView.badge.isVisible = false
+                            RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                        }
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root
@@ -430,8 +437,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             }
         checkPin()
 
-        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
+        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
         _headBinding?.sendReceiveView?.badge?.isVisible = swap
+
+        RxBus.listen(BadgeEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch{
+                    when (e.badge) {
+                        Account.PREF_HAS_USED_SWAP -> {
+                            _headBinding?.sendReceiveView?.badge?.isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+                        }
+                    }
+                }
+            }
     }
 
     override fun onResume() {
