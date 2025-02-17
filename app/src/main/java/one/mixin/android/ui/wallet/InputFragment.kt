@@ -13,7 +13,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.buildTransaction
@@ -103,7 +102,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             USER,
             ADDRESS,
             WEB3,
-            URL
+            BIOMETRIC_ITEM
         }
 
         fun newInstance(
@@ -177,7 +176,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         when {
             arguments?.containsKey(ARGS_WEB3_TOKEN) == true -> TransferType.WEB3
             arguments?.containsKey(ARGS_TO_USER) == true -> TransferType.USER
-            arguments?.containsKey(ARGS_BIOMETRIC_ITEM) == true -> TransferType.URL
+            arguments?.containsKey(ARGS_BIOMETRIC_ITEM) == true -> TransferType.BIOMETRIC_ITEM
             else -> TransferType.ADDRESS
         }
     }
@@ -189,7 +188,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var isReverse: Boolean = false
 
     private val toAddress by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS)
+        requireArguments().getString(ARGS_TO_ADDRESS) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.destination
     }
 
     private val fromAddress by lazy {
@@ -214,15 +213,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private val addressTag by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_TAG)
+        requireArguments().getString(ARGS_TO_ADDRESS_TAG) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.tag
     }
 
     private val addressLabel by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_LABEL)
+        requireArguments().getString(ARGS_TO_ADDRESS_LABEL) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.label
     }
 
     private val addressId by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_ID)
+        requireArguments().getString(ARGS_TO_ADDRESS_ID) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.addressId
     }
 
     private val isReceive by lazy {
@@ -295,9 +294,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     TransferType.WEB3 -> {
                         titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel ?: if (toWallet)getString(R.string.Mixin_Wallet) else null, toAddress?:"", toWallet)
                     }
-                    TransferType.URL -> {
+                    TransferType.BIOMETRIC_ITEM -> {
                         assetBiometricItem?.let { item ->
                             when {
+                                item is WithdrawBiometricItem -> {
+                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
+                                }
                                 item is AddressTransferBiometricItem -> {
                                     titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, "$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
                                 }
@@ -305,6 +307,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), item.users) {
                                         showUserList(item.users)
                                     }
+                                }
+
+                                else -> {
+                                    titleView.setSubTitle(
+                                        getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
+                                        ""
+                                    )
                                 }
                             }
                         }
@@ -380,7 +389,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     white = true,
                 )
                 when(transferType) {
-                    TransferType.USER, TransferType.URL -> {
+                    TransferType.USER, TransferType.BIOMETRIC_ITEM -> {
                         binding.infoLinearLayout.setOnClickListener {
                             noteDialog()
                         }
@@ -395,8 +404,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                 }
                 continueVa.setOnClickListener {
-                    when (transferType) {
-                        TransferType.ADDRESS -> {
+                    when  {
+                        transferType == TransferType.ADDRESS  || (transferType == TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem)-> {
                             val toAddress = requireNotNull(toAddress)
                             val assetId = requireNotNull(token?.assetId)
                             val amount =
@@ -450,16 +459,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
 
                                 alertDialog.dismiss()
-                                val address = Address(
-                                    addressId ?: "",
-                                    "address",
-                                    assetId,
-                                    toAddress,
-                                    addressLabel ?: "Web3 Address",
-                                    nowInUtc(),
-                                    addressTag,
-                                    null
-                                )
+                                val address = (assetBiometricItem as? WithdrawBiometricItem)?.address
+                                    ?: Address(addressId ?: "", "address", assetId, toAddress, addressLabel ?: "Web3 Address", nowInUtc(), addressTag, null)
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
@@ -476,7 +477,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 prepareCheck(withdrawBiometricItem)
                             }
                         }
-                        TransferType.WEB3 -> {
+                        transferType == TransferType.WEB3 -> {
                             val token = requireNotNull(web3Token)
                             val fromAddress = requireNotNull(fromAddress)
                             val toAddress = requireNotNull(toAddress)
@@ -512,7 +513,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 )
                             }
                         }
-                        TransferType.USER -> {
+                        transferType == TransferType.USER -> {
                             val amount =
                                 if (isReverse) {
                                     binding.minorTv.text.toString().split(" ")[1].replace(",", "")
@@ -524,7 +525,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             prepareCheck(biometricItem)
                         }
 
-                        TransferType.URL -> {
+                        transferType == TransferType.BIOMETRIC_ITEM -> {
                             val item = assetBiometricItem ?: return@setOnClickListener
                             val amount =
                                 if (isReverse) {
@@ -685,16 +686,23 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     override
     fun onAddressClick() {
         currentFee?.let {
-            when(transferType){
-                TransferType.ADDRESS -> {
+            when  {
+                transferType == TransferType.ADDRESS -> {
                     navTo(DepositFragment.newInstance(token!!), DepositFragment.TAG)
                 }
-                TransferType.USER -> {
+
+                transferType ==  TransferType.USER -> {
                     navTo(DepositFragment.newInstance(token!!), DepositFragment.TAG)
                 }
-                TransferType.WEB3 -> {
+
+                transferType == TransferType.WEB3 -> {
                     navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                 }
+
+                transferType ==  TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem -> {
+                    navTo(DepositFragment.newInstance(token!!), DepositFragment.TAG)
+                }
+
                 else -> throw IllegalArgumentException("Not supported type")
             }
         }
@@ -769,12 +777,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshFee() {
-        when (transferType) {
-            TransferType.ADDRESS -> {
+        when  {
+            transferType == TransferType.ADDRESS -> {
                 refreshFee(token!!)
             }
-            TransferType.WEB3 -> {
+            transferType == TransferType.WEB3 -> {
                 refreshGas(web3Token!!)
+            }
+            transferType == TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem -> {
+                refreshFee(token!!)
             }
             else -> {
                 // User free
@@ -862,12 +873,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.loadingProgressBar.isVisible = false
     }
 
-    private fun prepareCheck(item: BiometricItem){
+    private fun prepareCheck(item: BiometricItem) {
         lifecycleScope.launch {
             val amount = item.amount
             val rawTransaction = web3ViewModel.firstUnspentTransaction()
             if (rawTransaction != null) {
-                WaitingBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+                WaitingBottomSheetDialogFragment.newInstance()
+                    .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
             } else {
                 checkUtxo(amount) {
                     prepareTransferBottom(amount, item)
@@ -889,7 +901,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
-    private fun prepareTransferBottom(amount: String,  item: BiometricItem) =
+    private fun prepareTransferBottom(amount: String, item: BiometricItem) =
         lifecycleScope.launch {
             val t = item
             if (t !is TransferBiometricItem && t !is AddressTransferBiometricItem && t !is WithdrawBiometricItem) {
@@ -910,7 +922,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
             val memo = currentNote?.toString() ?: ""
             if (memo.toByteArray().size > 140) {
-                toast("${currentNote} ${getString(R.string.Content_too_long)}")
+                toast("$currentNote ${getString(R.string.Content_too_long)}")
                 return@launch
             }
 
@@ -932,30 +944,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 t.trace = pair.first
             }
 
-            var isTraceNotFound = false
-            val tx =
-                handleMixinResponse(
-                    invokeNetwork = { web3ViewModel.getTransactionsById(traceId) },
-                    successBlock = { r -> r.data },
-                    failureBlock = {
-                        isTraceNotFound = it.errorCode == ErrorHandler.NOT_FOUND
-                        return@handleMixinResponse isTraceNotFound
-                    },
-                )
-            t.state =
-                if (isTraceNotFound) {
-                    PaymentStatus.pending.name
-                } else if (tx != null) {
-                    PaymentStatus.paid.name
-                } else {
-                    return@launch
-                }
-
             if (t is WithdrawBiometricItem) {
                 val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
                 t.fee = fee
             }
-            TransferBottomSheetDialogFragment.newInstance(item).apply {
+            TransferBottomSheetDialogFragment.newInstance(t).apply {
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
                         if (success) {

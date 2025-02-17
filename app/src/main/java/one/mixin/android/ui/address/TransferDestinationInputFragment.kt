@@ -48,6 +48,7 @@ import one.mixin.android.ui.address.page.MemoInputPage
 import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
+import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
@@ -336,7 +337,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         }
                                     } else {
                                         navTo(
-                                            InputFragment.newInstance(token!!, address),
+                                            InputFragment.newInstance(buildWithdrawalBiometricItem(address, token!!)),
                                             InputFragment.TAG
                                         )
                                     }
