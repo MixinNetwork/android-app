@@ -9,6 +9,8 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toast
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -369,7 +371,10 @@ class NewSchemeParser(
             callback.invoke()
         }
         val consolidationAmount = linkViewModel.checkUtxoSufficiency(token.assetId, amount)
-        if (consolidationAmount != null) {
+        if (consolidationAmount == "") {
+            WaitingBottomSheetDialogFragment.newInstance(true)
+                .showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+        } else if (consolidationAmount != null) {
             UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                 .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
         } else {
@@ -379,7 +384,11 @@ class NewSchemeParser(
 
     private suspend fun checkUtxo(assetId: String, amount: String): Boolean {
         val consolidationAmount = linkViewModel.checkUtxoSufficiency(assetId, amount)
-        if (consolidationAmount != null) {
+        if (consolidationAmount == "") {
+            WaitingBottomSheetDialogFragment.newInstance(true)
+                .showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+            return false
+        } else if (consolidationAmount != null) {
             val asset = checkToken(assetId) ?: return false
             UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                 .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)

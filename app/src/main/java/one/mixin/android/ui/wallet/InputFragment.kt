@@ -892,7 +892,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val token = token ?: return
         lifecycleScope.launch {
             val consolidationAmount = web3ViewModel.checkUtxoSufficiency(token.assetId, amount)
-            if (consolidationAmount != null) {
+            if (consolidationAmount == "") {
+                WaitingBottomSheetDialogFragment.newInstance(true)
+                    .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+            } else if (consolidationAmount != null) {
                 UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
                     .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
             } else {
