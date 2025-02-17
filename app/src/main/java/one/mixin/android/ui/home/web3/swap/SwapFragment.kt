@@ -252,6 +252,11 @@ class SwapFragment : BaseFragment() {
                                 },
                                 onOrderList = {
                                     navController.navigate(SwapDestination.OrderList.name)
+                                    if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
+                                        defaultSharedPreferences.putInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
+                                        orderBadge = false
+                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                                    }
                                 },
                                 pop = {
                                     navigateUp(navController)
@@ -267,11 +272,6 @@ class SwapFragment : BaseFragment() {
                                     navigateUp(navController)
                                 },
                                 onOrderClick = { orderId ->
-                                    if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
-                                        defaultSharedPreferences.putInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
-                                        orderBadge = false
-                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
-                                    }
                                     navController.navigate("${SwapDestination.OrderDetail.name}/$orderId")
                                 }
                             )
