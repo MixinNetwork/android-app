@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.Components
+package one.mixin.android.ui.wallet.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

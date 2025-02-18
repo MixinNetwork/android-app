@@ -35,7 +35,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.Components.RecentTokens
+import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.util.viewBinding

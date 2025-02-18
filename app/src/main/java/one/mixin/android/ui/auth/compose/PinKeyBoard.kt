@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -229,7 +230,7 @@ fun PinKeyBoard(
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     LazyRow(
-                                        modifier = Modifier.height(20.dp),
+                                        modifier = Modifier.wrapContentSize().padding(bottom = 8.dp),
                                         verticalAlignment = Alignment.Bottom,
                                         horizontalArrangement = Arrangement.spacedBy(24.dp),
                                     ) {
