@@ -70,7 +70,7 @@ class WalletViewModel
         private val pinCipher: PinCipher,
     ) : ViewModel() {
     fun init() {
-        walletDatabase.query("SELECT * FROM web3_token" , null)
+        // walletDatabase.query("SELECT * FROM web3_token" , null)
     }
 
     fun insertUser(user: User) =

@@ -129,23 +129,23 @@ fun WalletCard(
 
 val privacyChain = listOf(
     R.drawable.ic_chain_btc,
-    R.drawable.ic_web3_chain_eth,
-    R.drawable.ic_web3_chain_sol,
-    R.drawable.ic_web3_chain_polygon,
+    R.drawable.ic_chain_eth,
+    R.drawable.ic_chain_sol,
+    R.drawable.ic_chain_polygon,
     R.drawable.ic_chain_xmr,
     R.drawable.ic_chain_xrp,
     R.drawable.ic_chain_doge,
-    R.drawable.ic_web3_chain_bsc,
+    R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_ton,
-    R.drawable.ic_web3_chain_base_eth,
+    R.drawable.ic_chain_base,
 )
 
 val classicChain = listOf(
-    R.drawable.ic_web3_chain_eth,
-    R.drawable.ic_web3_chain_polygon,
-    R.drawable.ic_web3_chain_bsc,
-    R.drawable.ic_web3_chain_base_eth,
-    R.drawable.ic_web3_chain_arbitrum_eth,
-    R.drawable.ic_web3_chain_blast,
-    R.drawable.ic_web3_chain_sol,
+    R.drawable.ic_chain_eth,
+    R.drawable.ic_chain_polygon,
+    R.drawable.ic_chain_bsc,
+    R.drawable.ic_chain_base,
+    R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_blast,
+    R.drawable.ic_chain_sol,
 )
