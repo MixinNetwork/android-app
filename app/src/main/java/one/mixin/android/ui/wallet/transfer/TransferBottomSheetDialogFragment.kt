@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.transfer
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -14,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -117,8 +117,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         outState.putString("error_message", transferViewModel.errorMessage)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         savedInstanceState?.let { bundle ->
             canRetry = bundle.getBoolean("can_retry", true)
             isSuccess = bundle.getBoolean("is_success", false)
@@ -145,17 +145,22 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
-        if (t is SafeMultisigsBiometricItem){
+        if (t is SafeMultisigsBiometricItem) {
             val item = t as SafeMultisigsBiometricItem
             if (item.safe != null) {
-                binding.bottom.setText(if(item.action == "sign") R.string.Approve else R.string.Reject)
+                binding.bottom.setText(if (item.action == "sign") R.string.Approve else R.string.Reject)
             }
-            if (t.state == PaymentStatus.paid.name || t.state == SignatureState.signed.name) {
-                transferViewModel.updateStatus(TransferStatus.SIGNED)
-                binding.transferAlert.isVisible = false
+        }
+
+        if (!isSuccess) {
+            if (t is SafeMultisigsBiometricItem) {
+                if (t.state == PaymentStatus.paid.name || t.state == SignatureState.signed.name) {
+                    transferViewModel.updateStatus(TransferStatus.SIGNED)
+                    binding.transferAlert.isVisible = false
+                }
+            } else {
+                transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
             }
-        } else {
-            transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
         }
         when (t) {
             is SafeMultisigsBiometricItem -> {
@@ -216,7 +221,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
         lifecycleScope.launch {
-            transferViewModel.status.collect { status ->
+            transferViewModel.status.collectLatest { status ->
                 binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
