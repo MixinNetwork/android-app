@@ -58,6 +58,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        walletViewModel.init()
         binding.apply {
             moreIb.setOnClickListener {
                 // Todo

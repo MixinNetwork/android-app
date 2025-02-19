@@ -1,6 +1,10 @@
 package one.mixin.android.api.response
 
 import android.os.Parcelable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,33 +42,49 @@ import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
-
+@Entity(
+    tableName = "web3_token",
+)
 @Parcelize
 class Web3Token(
+    @PrimaryKey
+    @ColumnInfo(name = "fungible_id")
     @SerializedName("fungible_id")
     val fungibleId: String,
+    @ColumnInfo(name = "name")
     @SerializedName("name")
     val name: String,
+    @ColumnInfo(name = "symbol")
     @SerializedName("symbol")
     val symbol: String,
+    @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
     val iconUrl: String,
+    @ColumnInfo(name = "chain_id")
     @SerializedName("chain_id")
     val chainId: String,
+    @ColumnInfo(name = "chain_name")
     @SerializedName("chain_name")
     val chainName: String,
+    @ColumnInfo(name = "chain_icon_url")
     @SerializedName("chain_icon_url")
     val chainIconUrl: String,
+    @ColumnInfo(name = "balance")
     @SerializedName("balance")
     val balance: String,
+    @ColumnInfo(name = "price")
     @SerializedName("price")
     val price: String,
+    @ColumnInfo(name = "change_absolute")
     @SerializedName("change_absolute")
     val changeAbsolute: String,
+    @ColumnInfo(name = "change_percent")
     @SerializedName("change_percent")
     val changePercent: String,
+    @ColumnInfo(name = "asset_key")
     @SerializedName("asset_key")
     val assetKey: String,
+    @ColumnInfo(name = "decimals")
     @SerializedName("decimals")
     val decimals: Int,
 ) : Parcelable, Swappable {

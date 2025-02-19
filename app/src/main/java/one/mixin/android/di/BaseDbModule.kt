@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.fts.FtsDatabase
@@ -22,6 +23,10 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideFtsDb(app: Application) = FtsDatabase.getDatabase(app)
+
+    @Singleton
+    @Provides
+    fun provideWalletDatabase(app: Application) = WalletDatabase.getDatabase(app)
 
     @Singleton
     @Provides

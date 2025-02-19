@@ -27,6 +27,7 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -60,6 +61,7 @@ import javax.inject.Inject
 class WalletViewModel
     @Inject
     internal constructor(
+        private val walletDatabase: WalletDatabase,
         private val userRepository: UserRepository,
         private val accountRepository: AccountRepository,
         private val tokenRepository: TokenRepository,
@@ -67,6 +69,10 @@ class WalletViewModel
         private val jobManager: MixinJobManager,
         private val pinCipher: PinCipher,
     ) : ViewModel() {
+    fun init() {
+        walletDatabase.query("SELECT * FROM web3_token" , null)
+    }
+
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)

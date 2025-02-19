@@ -88,13 +88,13 @@ fun WalletCard(
                 Text("USD", color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if (destination == WalletDestination.Classic) {
+            if (destination == WalletDestination.Privacy) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    classicChain.forEachIndexed { index, iconRes ->
+                    privacyChain.forEachIndexed { index, iconRes ->
                         Image(
                             painter = painterResource(id = iconRes),
                             contentDescription = null,
@@ -126,6 +126,16 @@ fun WalletCard(
         }
     }
 }
+
+val privacyChain = listOf(
+    R.drawable.ic_web3_chain_eth,
+    R.drawable.ic_web3_chain_polygon,
+    R.drawable.ic_web3_chain_bsc,
+    R.drawable.ic_web3_chain_base_eth,
+    R.drawable.ic_web3_chain_arbitrum_eth,
+    R.drawable.ic_web3_chain_blast,
+    R.drawable.ic_web3_chain_sol,
+)
 
 val classicChain = listOf(
     R.drawable.ic_web3_chain_eth,
