@@ -59,7 +59,6 @@ class PinView : LinearLayout {
             tipVisible = ta.getBoolean(R.styleable.PinView_pin_tipVisible, true)
             if (!tipVisible) {
                 binding.tipTv.visibility = View.GONE
-                binding.line.visibility = View.GONE
             }
         }
         ta.recycle()
@@ -69,6 +68,7 @@ class PinView : LinearLayout {
             views.add(item)
             binding.containerLl.addView(item)
         }
+        binding.containerLl.requestLayout()
     }
 
     private fun createDotView() = View(context).apply {

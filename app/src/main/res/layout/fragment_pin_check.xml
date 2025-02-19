@@ -34,26 +34,28 @@
                     android:textSize="18sp"/>
         </FrameLayout>
 
+
         <ViewAnimator
                 android:id="@+id/pin_va"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="24dp">
 
             <one.mixin.android.widget.PinView
-                    android:id="@+id/pin"
-                    android:layout_width="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"/>
+                android:id="@+id/pin"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
 
             <ProgressBar
                     style="?android:attr/progressBarStyleSmall"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_gravity="center"
-                    android:theme="@style/AppTheme.BlueProgress"/>
+                    android:theme="@style/AppTheme.BlueProgress"
+                    android:visibility="gone"/>
 
             <TextView
                     android:layout_width="wrap_content"
