@@ -33,8 +33,8 @@ fun MultiColorProgressBar(
                         .background(
                             when (index) {
                                 0 -> MixinAppTheme.colors.walletBlue
-                                1 -> MixinAppTheme.colors.walletYellow
-                                else -> MixinAppTheme.colors.walletPurple
+                                1 -> MixinAppTheme.colors.walletPurple
+                                else -> MixinAppTheme.colors.walletYellow
                             }
                         )
                 )

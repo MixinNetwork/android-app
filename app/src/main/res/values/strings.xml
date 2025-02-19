@@ -1881,4 +1881,6 @@
     <string name="buy_token">Buy %1$s</string>
     <string name="NO_ORDERS">NO ORDERS</string>
     <string name="For_your_security">For your security, enter your pin</string>
+    <string name="Privacy_Wallet">Privacy Wallet</string>
+    <string name="Classic_Wallet">Classic Wallet</string>
 </resources>
