@@ -27,6 +27,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -413,12 +414,20 @@ fun Context.appCompatActionBarHeight(): Int {
     theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
     return resources.getDimensionPixelSize(tv.resourceId)
 }
-
-@Suppress("DEPRECATION")
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetwork = connectivityManager.activeNetworkInfo ?: return false
-    return activeNetwork.isConnectedOrConnecting
+    return isInternetConnectivityValidated(connectivityManager)
+}
+
+private fun isInternetConnectivityValidated(connectivityManager: ConnectivityManager): Boolean {
+    val activeNetwork = connectivityManager.activeNetwork ?: return false
+    return try {
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    } catch (e: SecurityException) {
+        // Workaround for https://issuetracker.google.com/issues/175055271.
+        true
+    }
 }
 
 fun Context.realSize(): Point {
