@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -163,6 +164,7 @@ class AvatarsView : ViewGroup {
     private fun getTextView(num: Int) =
         TextView(context).apply {
             text = "+$num"
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, (avatarSize * 0.4f).toFloat())
             setTextColor(resources.getColor(R.color.wallet_pending_text_color, null))
             setBackgroundResource(R.drawable.bg_multisigs_gray)
             gravity = Gravity.CENTER

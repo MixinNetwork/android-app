@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c0d83605d488208ae3caee92c0a4317a",
+    "identityHash": "c46b81e6c49ebfb33f4c6839953dc314",
     "entities": [
       {
         "tableName": "web3_token",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fungible_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `chain_name` TEXT NOT NULL, `chain_icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `price` TEXT NOT NULL, `change_absolute` TEXT NOT NULL, `change_percent` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `decimals` INTEGER NOT NULL, PRIMARY KEY(`fungible_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fungible_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `chain_name` TEXT NOT NULL, `chain_icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `price` TEXT NOT NULL, `change_absolute` TEXT NOT NULL, `change_percent` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `decimals` INTEGER NOT NULL, `assetId` TEXT, PRIMARY KEY(`fungible_id`))",
         "fields": [
           {
             "fieldPath": "fungibleId",
@@ -85,6 +85,12 @@
             "columnName": "decimals",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -100,7 +106,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c0d83605d488208ae3caee92c0a4317a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c46b81e6c49ebfb33f4c6839953dc314')"
     ]
   }
 }

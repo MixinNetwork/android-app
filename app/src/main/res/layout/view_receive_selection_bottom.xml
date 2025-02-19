@@ -14,7 +14,7 @@
         android:paddingBottom="24dp">
 
         <ImageView
-            android:id="@+id/send_cancel"
+            android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -24,17 +24,17 @@
             android:src="@drawable/ic_circle_close" />
 
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginTop="16dp"
-            android:text="@string/Send_transfer"
             android:textColor="?attr/text_primary"
             android:textSize="18sp" />
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/address"
+        android:id="@+id/wallet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -43,7 +43,7 @@
         android:padding="16dp">
 
         <ImageView
-            android:id="@+id/address_ic"
+            android:id="@+id/wallet_ic"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_centerVertical="true"
@@ -51,14 +51,14 @@
             android:src="@drawable/ic_transfer_contact" />
 
         <TextView
-            android:id="@+id/address_tv"
+            android:id="@+id/wallet_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_toEndOf="@+id/address_ic"
+            android:layout_toEndOf="@+id/wallet_ic"
             android:gravity="center_vertical"
             android:includeFontPadding="false"
-            android:text="@string/Address"
+            android:text="@string/From_mixin_wallet"
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
 
@@ -66,19 +66,19 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/address_ic"
+            android:layout_alignBottom="@+id/wallet_ic"
             android:layout_marginStart="16dp"
-            android:layout_toEndOf="@+id/address_ic"
+            android:layout_toEndOf="@+id/wallet_ic"
             android:gravity="center_vertical"
             android:includeFontPadding="false"
-            android:text="@string/Send_crypto_to_address"
+            android:text="@string/From_mixin_wallet"
             android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/contact"
+        android:id="@+id/address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -88,7 +88,7 @@
         android:padding="16dp">
 
         <ImageView
-            android:id="@+id/contact_ic"
+            android:id="@+id/address_ic"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_centerVertical="true"
@@ -96,43 +96,29 @@
             android:src="@drawable/ic_transfer_address" />
 
         <TextView
-            android:id="@+id/contact_tv"
+            android:id="@+id/address_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_toEndOf="@+id/contact_ic"
+            android:layout_toEndOf="@+id/address_ic"
             android:gravity="center_vertical"
             android:includeFontPadding="false"
-            android:text="@string/Contact"
+            android:text="@string/From_address"
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/contact_ic"
+            android:layout_alignBottom="@+id/address_ic"
             android:layout_marginStart="16dp"
-            android:layout_toEndOf="@+id/contact_ic"
+            android:layout_toEndOf="@+id/address_ic"
             android:gravity="center_vertical"
             android:includeFontPadding="false"
-            android:text="@string/Send_crypto_to_contact"
+            android:text="@string/From_address_desc"
             android:textColor="?attr/text_assist"
             android:textSize="12sp" />
 
-        <TextView
-            android:background="@drawable/bg_round_blue_tv"
-            android:gravity="center_vertical"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/contact_tv"
-            android:layout_width="wrap_content"
-            android:paddingEnd="6dp"
-            android:paddingStart="6dp"
-            android:paddingTop="0.5dp"
-            android:paddingBottom="0.5dp"
-            android:text="@string/FREE"
-            android:textColor="@color/white"
-            android:textSize="12sp" />
     </RelativeLayout>
 
     <View

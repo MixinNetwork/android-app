@@ -87,6 +87,8 @@ class Web3Token(
     @ColumnInfo(name = "decimals")
     @SerializedName("decimals")
     val decimals: Int,
+    @SerializedName("mixin_asset_id")
+    val assetId: String?
 ) : Parcelable, Swappable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -152,6 +154,21 @@ fun Web3Token.getChainFromName(): Chain {
         chainId.equals("binance-smart-chain", true) -> Chain.BinanceSmartChain
         chainId.equals("avalanche", true) -> Chain.Avalanche
         chainId.equals("solana", true) -> Chain.Solana
+        else -> throw IllegalArgumentException("Not support: $chainId")
+    }
+}
+
+fun Web3Token.getChainSymbolFromName(): String {
+    return when {
+        chainId.equals("ethereum", true) -> "ETH"
+        chainId.equals("base", true) ->"ETH"
+        chainId.equals("blast", true) -> "ETH"
+        chainId.equals("arbitrum", true) -> "ETH"
+        chainId.equals("optimism", true) -> "ETH"
+        chainId.equals("polygon", true) -> "POL"
+        chainId.equals("binance-smart-chain", true) -> "BNB"
+        chainId.equals("avalanche", true) -> "AVAX"
+        chainId.equals("solana", true) -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
@@ -380,7 +397,8 @@ fun Web3Token.copy(
         changeAbsolute = changeAbsolute,
         changePercent = changePercent,
         assetKey = assetKey,
-        decimals = decimals
+        decimals = decimals,
+        assetId = assetId
     )
 }
 

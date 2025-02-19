@@ -436,6 +436,8 @@ class TokenRepository
 
         fun addresses(id: String) = addressDao.addresses(id)
 
+        fun addressesFlow(id: String) = addressDao.addressesFlow(id)
+
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
         fun saveAddr(addr: Address) = addressDao.insert(addr)

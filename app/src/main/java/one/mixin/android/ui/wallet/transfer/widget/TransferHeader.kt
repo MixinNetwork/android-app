@@ -13,7 +13,6 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
-import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.safe.TokenItem
 
 class TransferHeader : LinearLayout {

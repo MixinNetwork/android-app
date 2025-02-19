@@ -26,7 +26,6 @@ import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
-import org.kethereum.model.Token
 import java.math.BigDecimal
 
 class TransferContent : LinearLayout {

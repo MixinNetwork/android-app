@@ -6,13 +6,12 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemAssetChangeBinding
 import one.mixin.android.databinding.ItemTransferAssetChangeBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.forEachWithIndex
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.util.getChainName
+import one.mixin.android.vo.safe.TokenItem
 
 class TransferAssetChangeItem : LinearLayout {
     private val _binding: ItemTransferAssetChangeBinding

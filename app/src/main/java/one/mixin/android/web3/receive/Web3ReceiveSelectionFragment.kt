@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWeb3ReceuceSelectionBinding
+import one.mixin.android.databinding.FragmentWeb3ReceiveSelectionBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
@@ -22,7 +22,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.exploreEvm
 import one.mixin.android.ui.home.exploreSolana
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.web3.InputFragment
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
 
 @AndroidEntryPoint
@@ -31,7 +31,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         const val TAG = "Wbe3ReceiveSelectionFragment"
     }
 
-    private var _binding: FragmentWeb3ReceuceSelectionBinding? = null
+    private var _binding: FragmentWeb3ReceiveSelectionBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
@@ -40,7 +40,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentWeb3ReceuceSelectionBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
+        _binding = FragmentWeb3ReceiveSelectionBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         binding.root.setOnClickListener { }
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -60,7 +60,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
                 val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
-                        navTo(InputFragment.newInstance(token, address), InputFragment.TAG)
+                        navTo(InputFragment.newInstance(token, address, null, true), InputFragment.TAG)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
