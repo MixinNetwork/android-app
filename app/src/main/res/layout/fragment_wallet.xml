@@ -22,7 +22,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="16dp">
+                android:layout_marginStart="12dp"
+                android:padding="4dp"
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <ImageView
                     android:id="@+id/head_icon"
@@ -31,6 +33,15 @@
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="8dp"
                     android:src="@drawable/ic_wallet_menu" />
+
+                <View
+                    android:id="@+id/badge"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_alignTop="@id/head_icon"
+                    android:layout_alignEnd="@id/head_icon"
+                    android:background="@drawable/bg_red_dot"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/title_tv"

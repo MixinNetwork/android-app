@@ -58,7 +58,7 @@ fun WalletCard(
                 Text(
                     if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
                         R.string.Classic_Wallet
-                    ), fontSize = 16.sp, fontWeight = FontWeight.W500
+                    ), fontSize = 16.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary
                 )
                 if (destination == WalletDestination.Privacy) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -128,13 +128,16 @@ fun WalletCard(
 }
 
 val privacyChain = listOf(
+    R.drawable.ic_chain_btc,
     R.drawable.ic_web3_chain_eth,
-    R.drawable.ic_web3_chain_polygon,
-    R.drawable.ic_web3_chain_bsc,
-    R.drawable.ic_web3_chain_base_eth,
-    R.drawable.ic_web3_chain_arbitrum_eth,
-    R.drawable.ic_web3_chain_blast,
     R.drawable.ic_web3_chain_sol,
+    R.drawable.ic_web3_chain_polygon,
+    R.drawable.ic_chain_xmr,
+    R.drawable.ic_chain_xrp,
+    R.drawable.ic_chain_doge,
+    R.drawable.ic_web3_chain_bsc,
+    R.drawable.ic_chain_ton,
+    R.drawable.ic_web3_chain_base_eth,
 )
 
 val classicChain = listOf(

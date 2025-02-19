@@ -14,8 +14,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
@@ -59,7 +61,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         walletViewModel.init()
+        val wallet = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
+
         binding.apply {
+            badge.isVisible = wallet == null
+            if (wallet == WalletDestination.Privacy.name || wallet == null) { // defualt wallet
+                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                titleTv.setText(R.string.Privacy_Wallet)
+                tailIcon.isVisible = true
+            } else {
+                // Todo wallet id
+                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                titleTv.setText(R.string.Classic_Wallet)
+                tailIcon.isVisible = false
+            }
             moreIb.setOnClickListener {
                 // Todo
             }
@@ -120,14 +135,24 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun handleWalletCardClick(destination: WalletDestination, walletId: String?) {
         when (destination) {
             WalletDestination.Privacy -> {
+                // Todo save destination
                 requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                binding.titleTv.setText(R.string.Privacy_Wallet)
                 binding.tailIcon.isVisible = true
+                binding.badge.isVisible = false
             }
             WalletDestination.Classic -> {
+                // Todo save destination
                 requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                binding.titleTv.setText(R.string.Classic_Wallet)
                 binding.tailIcon.isVisible = false
+                binding.badge.isVisible = false
             }
         }
+        closeMenu()
+    }
+
+    private fun closeMenu() {
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2
         val endRadius = hypot(

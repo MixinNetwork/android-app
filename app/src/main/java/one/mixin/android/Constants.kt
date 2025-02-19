@@ -94,6 +94,7 @@ object Constants {
 
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+        const val PREF_HAS_USED_WALLET = "pref_has_used_wallet"
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
