@@ -59,6 +59,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
+import one.mixin.android.job.RefreshWbe3Job
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
@@ -121,19 +122,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Todo web3 token
-        lifecycleScope.launch {
-            val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-            val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-            var response = web3ViewModel.web3Account(ChainType.ethereum.name, erc20Address)
-            response.data?.tokens?.let {
-                web3ViewModel.insertWeb3Tokens(it)
-            }
-            response = web3ViewModel.web3Account(ChainType.solana.name, solAddress)
-            response.data?.tokens?.let {
-                web3ViewModel.insertWeb3Tokens(it)
-            }
-        }
+        jobManager.addJobInBackground(RefreshWbe3Job())
     }
 
     override fun onCreateView(
