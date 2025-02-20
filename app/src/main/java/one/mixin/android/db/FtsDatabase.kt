@@ -8,6 +8,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.fts.MessageMetaDao
 import one.mixin.android.session.Session
 import one.mixin.android.util.database.dbDir
 import java.io.File
@@ -51,6 +53,7 @@ abstract class WalletDatabase : RoomDatabase() {
         }
     }
 
+    abstract fun web3TokenDao(): Web3TokenDao
 
     override fun close() {
         super.close()

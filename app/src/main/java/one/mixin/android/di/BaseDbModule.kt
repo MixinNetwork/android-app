@@ -232,4 +232,8 @@ internal object BaseDbModule {
     @Provides
     fun provideOrderDao(db: MixinDatabase) = db.orderDao()
 
+    @Singleton
+    @Provides
+    fun provideWeb3TokenDao(db: WalletDatabase) = db.web3TokenDao()
+
 }

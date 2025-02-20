@@ -29,6 +29,7 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -72,11 +73,24 @@ internal constructor(
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
     private val tokenRepository: TokenRepository,
+    private val web3Repository: Web3Repository,
     private val web3Service: Web3Service,
     private val jobManager: MixinJobManager,
 ) : ViewModel() {
+    suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3Repository.insertWeb3Tokens(list)
+
+    fun web3Tokens() = web3Repository.web3Tokens()
+
     fun tokenExtraFlow(assetId: String) =
         tokenRepository.tokenExtraFlow(assetId)
+
+    suspend fun findOrSyncAsset(
+        assetId: String,
+    ): TokenItem? {
+        return withContext(Dispatchers.IO) {
+            tokenRepository.findOrSyncAsset(assetId)
+        }
+    }
 
     fun disconnect(
         version: WalletConnect.Version,

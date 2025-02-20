@@ -16,6 +16,7 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
@@ -42,8 +43,9 @@ import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
+
 @Entity(
-    tableName = "web3_token",
+    tableName = "web3_tokens",
 )
 @Parcelize
 class Web3Token(
@@ -137,6 +139,23 @@ class Web3Token(
 
     override fun getUnique(): String {
         return if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey
+    }
+
+    fun fiat(): BigDecimal = try {
+        BigDecimal(balance).multiply(priceFiat())
+    } catch (e: NumberFormatException) {
+        BigDecimal.ZERO
+    }
+
+    fun priceFiat(): BigDecimal = when {
+        price == "0" -> BigDecimal.ZERO
+        else -> BigDecimal(price).multiply(Fiats.getRate().toBigDecimal())
+    }
+
+    fun btcValue(btcPrice: BigDecimal): BigDecimal = try {
+        BigDecimal(balance).multiply(btcPrice)
+    } catch (e: NumberFormatException) {
+        BigDecimal.ZERO
     }
 }
 

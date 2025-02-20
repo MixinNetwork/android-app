@@ -104,27 +104,6 @@
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_eth"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Ethereum"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_solana"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Solana"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:textSize="14sp" />
         </RadioGroup>
     </HorizontalScrollView>
 

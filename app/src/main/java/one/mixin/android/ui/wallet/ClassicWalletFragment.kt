@@ -28,15 +28,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.findChainToken
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.config
@@ -56,14 +61,17 @@ import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
+import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.reportException
@@ -73,6 +81,10 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.web3.ChainType
+import one.mixin.android.web3.details.Web3TransactionDetailsFragment
+import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -99,19 +111,29 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
-    private val walletViewModel by viewModels<WalletViewModel>()
-    private var assets: List<TokenItem> = listOf()
-    private val assetsAdapter by lazy { WalletAssetAdapter(false) }
+    private val web3ViewModel by viewModels<Web3ViewModel>()
+    private var assets: List<Web3Token> = listOf()
+    private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
 
     private var distance = 0
     private var snackBar: Snackbar? = null
+    private var lastFiatCurrency :String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Todo web3 token
-        // jobManager.addJobInBackground(RefreshTokensJob())
-        // jobManager.addJobInBackground(RefreshSnapshotsJob())
-        // jobManager.addJobInBackground(SyncOutputJob())
+        lifecycleScope.launch {
+            val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            var response = web3ViewModel.web3Account(ChainType.ethereum.name, erc20Address)
+            response.data?.tokens?.let {
+                web3ViewModel.insertWeb3Tokens(it)
+            }
+            response = web3ViewModel.web3Account(ChainType.solana.name, solAddress)
+            response.data?.tokens?.let {
+                web3ViewModel.insertWeb3Tokens(it)
+            }
+        }
     }
 
     override fun onCreateView(
@@ -133,13 +155,20 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                     sendReceiveView.send.setOnClickListener {
-                        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
-                            .setOnAssetClick {
-                                // Todo
-                            }.setOnDepositClick {
-                                showReceiveAssetList()
+                        Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
+                            setOnClickListener { token ->
+                                lifecycleScope.launch {
+                                    val address =
+                                        if (token.chainId != "solana") {
+                                            PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                                        } else {
+                                            PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                                        }
+                                    navTo(TransferDestinationInputFragment.newInstance(address, token, token.findChainToken(assets)), TransferDestinationInputFragment.TAG)
+                                }
+                                dismissNow()
                             }
-                            .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
                         if (!Session.saltExported() && Session.isAnonymous()) {
@@ -162,6 +191,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
                     }
                 }
+            _headBinding?.pendingView?.isVisible = false
             assetsAdapter.headerView = _headBinding!!.root
             coinsRv.itemAnimator = null
             coinsRv.setHasFixedSize(true)
@@ -169,29 +199,29 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 AssetItemCallback(
                     object : AssetItemCallback.ItemCallbackListener {
                         override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                            val hiddenPos = viewHolder.absoluteAdapterPosition
-                            val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                            val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                            lifecycleScope.launch {
-                                walletViewModel.updateAssetHidden(asset.assetId, true)
-                                val anchorView = coinsRv
-
-                                snackBar =
-                                    Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
-                                        .setAction(R.string.UNDO) {
-                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                            lifecycleScope.launch(Dispatchers.IO) {
-                                                walletViewModel.updateAssetHidden(asset.assetId, false)
-                                            }
-                                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                            (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)!!)
-                                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                        }.apply {
-                                            snackBar?.config(anchorView.context)
-                                        }
-                                snackBar?.show()
-                                distance = 0
-                            }
+                            // val hiddenPos = viewHolder.absoluteAdapterPosition
+                            // val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
+                            // val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
+                            // lifecycleScope.launch {
+                            //     // walletViewModel.updateAssetHidden(asset.assetId, true)
+                            //     val anchorView = coinsRv
+                            //
+                            //     snackBar =
+                            //         Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
+                            //             .setAction(R.string.UNDO) {
+                            //                 assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                            //                 lifecycleScope.launch(Dispatchers.IO) {
+                            //                     walletViewModel.updateAssetHidden(asset.assetId, false)
+                            //                 }
+                            //             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                            //                 (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)!!)
+                            //                     .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                            //             }.apply {
+                            //                 snackBar?.config(anchorView.context)
+                            //             }
+                            //     snackBar?.show()
+                            //     distance = 0
+                            // }
                         }
                     },
                 ),
@@ -216,55 +246,31 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-        // walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
-        //     if (it.isEmpty()) {
-        //         setEmpty()
-        //     } else {
-        //         assets = it
-        //         assetsAdapter.setAssetList(it)
-        //         // Refresh the entire list when the fiat currency changes
-        //         if (lastFiatCurrency != Session.getFiatCurrency()) {
-        //             lastFiatCurrency = Session.getFiatCurrency()
-        //             assetsAdapter.notifyDataSetChanged()
-        //         }
-        //         lifecycleScope.launch {
-        //             var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
-        //             if (bitcoin == null) {
-        //                 bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-        //             }
-        //
-        //             renderPie(assets, bitcoin)
-        //         }
-        //     }
-        // }
-        // walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
-        //     migrateEnable = it
-        // }
-        //
-        // walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
-        //     _headBinding?.apply {
-        //         pendingView.isVisible = it.isNotEmpty()
-        //         pendingView.updateTokens(it)
-        //         pendingView.setOnClickListener { v ->
-        //             if (it.size == 0) {
-        //                 lifecycleScope.launch {
-        //                     val token = walletViewModel.simpleAssetItem(it[0].assetId) ?: return@launch
-        //                     WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
-        //                 }
-        //             } else {
-        //                 WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
-        //             }
-        //         }
-        //     }
-        // }
+        web3ViewModel.web3Tokens().observe(viewLifecycleOwner) {
+            if (it.isEmpty()) {
+                setEmpty()
+            } else {
+                assets = it
+                assetsAdapter.setAssetList(it)
+                // Refresh the entire list when the fiat currency changes
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
+                lifecycleScope.launch {
+                    val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                    renderPie(assets, bitcoin)
+                }
+            }
+        }
 
-        // RxBus.listen(QuoteColorEvent::class.java)
-        //     .observeOn(AndroidSchedulers.mainThread())
-        //     .autoDispose(destroyScope)
-        //     .subscribe { _ ->
-        //         assetsAdapter.notifyDataSetChanged()
-        //     }
 
+        RxBus.listen(QuoteColorEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { _ ->
+                assetsAdapter.notifyDataSetChanged()
+            }
     }
 
     override fun onStop() {
@@ -282,7 +288,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun renderPie(
-        assets: List<TokenItem>,
+        assets: List<Web3Token>,
         bitcoin: TokenItem?,
     ) {
         var totalBTC = BigDecimal.ZERO
@@ -290,7 +296,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         assets.map {
             totalFiat = totalFiat.add(it.fiat())
             if (bitcoin == null) {
-                totalBTC = totalBTC.add(it.btc())
+                totalBTC = totalBTC.add(it.btcValue(bitcoin?.priceUsd?.toBigDecimalOrNull() ?: BigDecimal.ZERO))
             }
         }
         if (bitcoin != null) {
@@ -351,7 +357,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun setPieView(
-        r: List<TokenItem>,
+        r: List<Web3Token>,
         totalUSD: BigDecimal,
     ) {
         val list =
@@ -431,25 +437,24 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
             bottomSheet.dismiss()
         }
-        bottomBinding.migrate.setOnClickListener {
-            lifecycleScope.launch click@{
-                val bot = walletViewModel.findBondBotUrl() ?: return@click
-                WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
-            }
-            bottomSheet.dismiss()
-        }
-
         bottomSheet.show()
     }
 
     private fun showReceiveAssetList() {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
-            .setOnAssetClick { asset ->
-                WalletActivity.showWithToken(requireActivity(), asset, WalletActivity.Destination.Deposit)
-            }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+        navTo(Web3ReceiveSelectionFragment(), Web3ReceiveSelectionFragment.TAG)
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        WalletActivity.showWithToken(requireActivity(), item as TokenItem, WalletActivity.Destination.Transactions)
+        val token = item as Web3Token
+        // Todo
+        lifecycleScope.launch {
+            val address =
+                if (token.chainId != "solana") {
+                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                } else {
+                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                }
+            navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, token.findChainToken(assets)), Web3TransactionDetailsFragment.TAG)
+        }
     }
 }

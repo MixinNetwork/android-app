@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
+import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
@@ -90,6 +91,12 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
     fun loadCoin(coinItem: CoinItem) {
         binding.badge.isVisible = false
         binding.bg.loadImage(coinItem.iconUrl, R.drawable.ic_avatar_place_holder)
+    }
+
+    fun loadToken(web3Token: Web3Token) {
+        binding.badge.isVisible = true
+        binding.bg.loadImage(web3Token.iconUrl, R.drawable.ic_avatar_place_holder)
+        binding.badge.loadImage(web3Token.chainIconUrl, R.drawable.ic_avatar_place_holder)
     }
 
     fun loadToken(

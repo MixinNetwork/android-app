@@ -2,10 +2,10 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c46b81e6c49ebfb33f4c6839953dc314",
+    "identityHash": "a39c6655d16862c0f3aefe8a8c7d70ec",
     "entities": [
       {
-        "tableName": "web3_token",
+        "tableName": "web3_tokens",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fungible_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `chain_name` TEXT NOT NULL, `chain_icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `price` TEXT NOT NULL, `change_absolute` TEXT NOT NULL, `change_percent` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `decimals` INTEGER NOT NULL, `assetId` TEXT, PRIMARY KEY(`fungible_id`))",
         "fields": [
           {
@@ -106,7 +106,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c46b81e6c49ebfb33f4c6839953dc314')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a39c6655d16862c0f3aefe8a8c7d70ec')"
     ]
   }
 }
