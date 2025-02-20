@@ -66,12 +66,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         binding.apply {
             badge.isVisible = wallet == null
             if (wallet == WalletDestination.Privacy.name || wallet == null) { // defualt wallet
-                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, PrivacyWalletFragment.TAG)
                 titleTv.setText(R.string.Privacy_Wallet)
                 tailIcon.isVisible = true
             } else {
                 // Todo wallet id
-                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, ClassicWalletFragment.TAG)
                 titleTv.setText(R.string.Classic_Wallet)
                 tailIcon.isVisible = false
             }
@@ -107,8 +107,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     val centerY = titleTv.y.toInt() + titleTv.height / 2
                     val startRadius = 0
                     val endRadius = hypot(
-                        binding.container.width.toDouble(),
-                        binding.container.height.toDouble()
+                        binding.root.width.toDouble(),
+                        binding.root.height.toDouble()
                     ).toInt()
 
                     val anim = ViewAnimationUtils.createCircularReveal(
@@ -136,14 +136,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         when (destination) {
             WalletDestination.Privacy -> {
                 // Todo save destination
-                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, PrivacyWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Privacy_Wallet)
                 binding.tailIcon.isVisible = true
                 binding.badge.isVisible = false
             }
             WalletDestination.Classic -> {
                 // Todo save destination
-                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, TAG)
+                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, ClassicWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Classic_Wallet)
                 binding.tailIcon.isVisible = false
                 binding.badge.isVisible = false
@@ -156,8 +156,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2
         val endRadius = hypot(
-            binding.container.width.toDouble(),
-            binding.container.height.toDouble()
+            binding.root.width.toDouble(),
+            binding.root.height.toDouble()
         ).toInt()
 
         val closeAnim = ViewAnimationUtils.createCircularReveal(
