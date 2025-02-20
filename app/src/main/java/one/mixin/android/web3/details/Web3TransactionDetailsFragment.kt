@@ -120,43 +120,6 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
                     }
 
-                    R.id.more -> {
-                        val builder = BottomSheet.Builder(requireActivity())
-                        _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_token_bottom, null))
-                        builder.setCustomView(bottomBinding.root)
-                        val bottomSheet = builder.create()
-                        bottomBinding.apply {
-                            title.text = token.name
-                            addressTv.text = token.assetKey
-                            view.setOnClickListener {
-                                if (token.isSolana()) {
-                                    context?.openUrl("https://solscan.io/token/" + token.assetKey)
-                                } else {
-                                    // TODO more evm
-                                    context?.openUrl("https://etherscan.io/token/" + token.assetKey)
-                                }
-                                bottomSheet.dismiss()
-                            }
-                            stakeSolTv.isVisible = token.isSolToken()
-                            stakeSolTv.setOnClickListener {
-                                this@Web3TransactionDetailsFragment.navTo(ValidatorsFragment.newInstance().apply {
-                                    setOnSelect { v ->
-                                        this@Web3TransactionDetailsFragment.navTo(StakeFragment.newInstance(v, token.balance), StakeFragment.TAG)
-                                    }
-                                }, ValidatorsFragment.TAG)
-                                bottomSheet.dismiss()
-                            }
-                            copy.setOnClickListener {
-                                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
-                                toast(R.string.copied_to_clipboard)
-                                bottomSheet.dismiss()
-                            }
-                            cancel.setOnClickListener { bottomSheet.dismiss() }
-                        }
-
-                        bottomSheet.show()
-                    }
-
                     R.id.stake_rl -> {
                         navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
                     }
@@ -176,6 +139,42 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         binding.titleView.apply {
             leftIb.setOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
+            rightIb.setOnClickListener {
+                val builder = BottomSheet.Builder(requireActivity())
+                _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_token_bottom, null))
+                builder.setCustomView(bottomBinding.root)
+                val bottomSheet = builder.create()
+                bottomBinding.apply {
+                    title.text = token.name
+                    addressTv.text = token.assetKey
+                    view.setOnClickListener {
+                        if (token.isSolana()) {
+                            context?.openUrl("https://solscan.io/token/" + token.assetKey)
+                        } else {
+                            // TODO more evm
+                            context?.openUrl("https://etherscan.io/token/" + token.assetKey)
+                        }
+                        bottomSheet.dismiss()
+                    }
+                    stakeSolTv.isVisible = token.isSolToken()
+                    stakeSolTv.setOnClickListener {
+                        this@Web3TransactionDetailsFragment.navTo(ValidatorsFragment.newInstance().apply {
+                            setOnSelect { v ->
+                                this@Web3TransactionDetailsFragment.navTo(StakeFragment.newInstance(v, token.balance), StakeFragment.TAG)
+                            }
+                        }, ValidatorsFragment.TAG)
+                        bottomSheet.dismiss()
+                    }
+                    copy.setOnClickListener {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
+                        toast(R.string.copied_to_clipboard)
+                        bottomSheet.dismiss()
+                    }
+                    cancel.setOnClickListener { bottomSheet.dismiss() }
+                }
+
+                bottomSheet.show()
             }
         }
         binding.transactionsRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)

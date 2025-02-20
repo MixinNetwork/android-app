@@ -69,14 +69,15 @@
         android:gravity="center_horizontal"
         android:orientation="vertical"
         app:layout_constraintEnd_toStartOf="@id/receive"
-        app:layout_constraintStart_toStartOf="@id/avatar"
-        app:layout_constraintTop_toBottomOf="@id/avatar">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/avatar"
+        app:layout_constraintHorizontal_chainStyle="spread">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple_25"
-            android:src="@drawable/ic_web3_send" />
+            android:foreground="@drawable/mixin_ripple_24"
+            android:src="@drawable/ic_wallet_receive" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -92,15 +93,15 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:layout_marginStart="36dp"
         app:layout_constraintStart_toEndOf="@id/send"
-        app:layout_constraintTop_toTopOf="@id/send">
+        app:layout_constraintTop_toTopOf="@id/send"
+        app:layout_constraintEnd_toStartOf="@id/swap">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple_25"
-            android:src="@drawable/ic_web3_receive" />
+            android:foreground="@drawable/mixin_ripple_24"
+            android:src="@drawable/ic_wallet_send" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -116,46 +117,22 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:layout_marginStart="36dp"
+        android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@id/receive"
         app:layout_constraintTop_toTopOf="@id/receive"
-        android:visibility="gone">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple_25"
-            android:src="@drawable/ic_web3_swap" />
+            android:foreground="@drawable/mixin_ripple_24"
+            android:src="@drawable/ic_wallet_swap" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="@string/Swap"
-            android:textColor="?attr/text_primary" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/more"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:layout_marginStart="36dp"
-        app:layout_constraintStart_toEndOf="@id/receive"
-        app:layout_constraintTop_toTopOf="@id/receive">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple_25"
-            android:src="@drawable/ic_web3_more" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/More"
             android:textColor="?attr/text_primary" />
     </LinearLayout>
 
