@@ -28,7 +28,7 @@ import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
 @AndroidEntryPoint
 class Web3ReceiveSelectionFragment : BaseFragment() {
     companion object {
-        const val TAG = "Wbe3ReceiveSelectionFragment"
+        const val TAG = "Web3ReceiveSelectionFragment"
     }
 
     private var _binding: FragmentWeb3ReceiveSelectionBinding? = null

@@ -81,6 +81,8 @@ internal constructor(
 
     fun web3Tokens() = web3Repository.web3Tokens()
 
+    fun web3Transactions() = web3Repository.web3Transactions()
+
     fun tokenExtraFlow(assetId: String) =
         tokenRepository.tokenExtraFlow(assetId)
 
@@ -454,4 +456,6 @@ internal constructor(
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()
     }
+
+    fun marketById(assetId: String) = tokenRepository.marketById(assetId)
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
@@ -11,34 +12,269 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:rightIcon="@drawable/ic_more"
         app:need_divider="false"
+        app:rightIcon="@drawable/ic_more"
         app:titleText="@string/Transactions" />
 
-    <FrameLayout
+    <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/transactions_rv"
-            android:scrollbars="vertical"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="209dp"
-            android:visibility="gone">
+            <FrameLayout
+                android:id="@+id/top_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="?attr/bg_market_card">
 
-            <ProgressBar
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.BlueProgress" />
-        </FrameLayout>
-    </FrameLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:id="@+id/top_rl"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:foreground="?android:attr/selectableItemBackground">
+
+                        <one.mixin.android.widget.BadgeCircleImageView
+                            android:id="@+id/avatar"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="26dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginBottom="16dp"
+                            android:layout_alignParentEnd="true"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:id="@+id/title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/avatar"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_alignParentStart="true"
+                            android:textSize="14sp"
+                            android:textColor="?attr/text_minor"
+                            android:text="@string/Balance"
+                            tools:ignore="RelativeOverlap" />
+
+                        <TextView
+                            android:id="@+id/balance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_below="@+id/title"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_toStartOf="@id/avatar"
+                            android:layout_alignParentStart="true"
+                            android:layout_marginEnd="12dp"
+                            android:textIsSelectable="true"
+                            android:textSize="14sp"
+                            tools:ignore="RelativeOverlap" />
+
+                        <TextView
+                            android:id="@+id/balance_as"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/balance"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                            android:layout_marginTop="4dp"
+                            android:layout_alignParentStart="true"
+                            android:textColor="?attr/text_assist" />
+
+                    </RelativeLayout>
+
+                    <one.mixin.android.widget.SendReceiveView
+                        android:id="@+id/send_receive_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="24dp"
+                        android:layout_marginTop="30dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"/>
+
+                </LinearLayout>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/market_rl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/contract_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginEnd="@dimen/margin16"
+                        android:layout_marginTop="20dp"
+                        android:src="@drawable/ic_arrow_gray_right"
+                        tools:ignore="ContentDescription" />
+
+                    <TextView
+                        android:id="@+id/market_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@+id/contract_iv"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_alignParentStart="true"
+                        android:textSize="14sp"
+                        android:text="@string/Market"
+                        android:textColor="?attr/text_minor"
+                        tools:ignore="RelativeOverlap" />
+
+                    <TextView
+                        android:id="@+id/value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_below="@+id/market_title"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginEnd="12dp"
+                        android:textFontWeight="600"
+                        android:textSize="18sp"
+                        android:text="@string/N_A"
+                        android:textColor="?attr/text_primary"
+                        tools:ignore="RelativeOverlap" />
+
+                    <TextView
+                        android:id="@+id/rise"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/value"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="@dimen/margin16"
+                        android:layout_alignParentStart="true"
+                        android:text="@string/N_A"
+                        android:textColor="@color/wallet_green" />
+
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/market_view"
+                        android:layout_below="@id/contract_iv"
+                        android:layout_marginTop="10dp"
+                        android:layout_alignEnd="@id/contract_iv"
+                        android:layout_width="150dp"
+                        android:layout_height="48dp" />
+
+                </RelativeLayout>
+            </FrameLayout>
+
+            <include
+                android:id="@+id/stake"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                layout="@layout/view_web3_sol_stake" />
+
+            <FrameLayout
+                android:id="@+id/bottom_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="?attr/bg_market_card">
+
+                <LinearLayout
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:id="@+id/transactions_title_ll"
+                        android:layout_marginTop="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:foreground="?android:attr/selectableItemBackground">
+
+                        <ImageView
+                            android:id="@+id/transactions_iv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="@dimen/margin16"
+                            android:src="@drawable/ic_arrow_gray_right"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:id="@+id/transactions_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/transactions_iv"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_alignParentStart="true"
+                            android:textSize="14sp"
+                            android:text="@string/Transactions"
+                            android:textColor="?attr/text_minor"
+                            tools:ignore="RelativeOverlap" />
+                    </RelativeLayout>
+
+                    <one.mixin.android.ui.wallet.Web3SnapshotLinearLayout
+                        android:id="@+id/transactions_rv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp" />
+
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/bottom_rl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/bottom_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginTop="-18dp"
+                        android:src="@drawable/ic_empty_transaction"
+                        android:contentDescription="@null" />
+
+                    <TextView
+                        android:id="@+id/wallet_transactions_empty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/bottom_iv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/No_transactions"
+                        android:textColor="?attr/text_assist" />
+                </RelativeLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

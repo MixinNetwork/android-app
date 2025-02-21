@@ -7,13 +7,13 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.db.property.PropertyHelper
 
-class RefreshWbe3Job : BaseJob(
+class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .addTags(GROUP).persist().requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L
-        const val GROUP = "RefreshWbe3Job"
+        const val GROUP = "RefreshWeb3Job"
     }
 
     override fun onRun(): Unit =

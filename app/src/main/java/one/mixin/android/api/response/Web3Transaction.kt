@@ -3,6 +3,7 @@ package one.mixin.android.api.response
 import android.content.Context
 import android.os.Parcelable
 import android.text.SpannedString
+import androidx.room.*
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
@@ -19,22 +20,41 @@ import one.mixin.android.web3.details.Web3TransactionType
 import java.math.BigDecimal
 import java.util.Locale
 
+@Entity(tableName = "web3_transactions")
 @Parcelize
 data class Web3Transaction(
+    @PrimaryKey
+    @ColumnInfo(name = "id")
     val id: String,
     @SerializedName("transaction_hash")
+    @ColumnInfo(name = "transaction_hash")
     val transactionHash: String,
     @SerializedName("operation_type")
+    @ColumnInfo(name = "operation_type")
     val operationType: String,
+    @SerializedName("status")
+    @ColumnInfo(name = "status")
     val status: String,
+    @SerializedName("sender")
+    @ColumnInfo(name = "sender")
     val sender: String,
+    @SerializedName("receiver")
+    @ColumnInfo(name = "receiver")
     val receiver: String,
+    @SerializedName("fee")
+    @ColumnInfo(name = "fee")
     val fee: Web3Fee,
+    @SerializedName("transfers")
+    @ColumnInfo(name = "transfers")
     val transfers: List<Web3Transfer>,
+    @SerializedName("approvals")
+    @ColumnInfo(name = "approvals")
     val approvals: List<Approval>,
     @SerializedName("app_metadata")
+    @ColumnInfo(name = "app_metadata")
     val appMetadata: AppMetadata?,
     @SerializedName("created_at")
+    @ColumnInfo(name = "created_at")
     val createdAt: String,
 ) : Parcelable {
     val icon: String?

@@ -29,7 +29,7 @@ import one.mixin.android.ui.home.exploreSolana
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
     companion object {
-        const val TAG = "Wbe3ReceiveFragment"
+        const val TAG = "Web3ReceiveFragment"
     }
 
     private var _binding: FragmentWeb3AddressBinding? = null

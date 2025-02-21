@@ -4,22 +4,25 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
-import one.mixin.android.Constants.DataBase.FTS_DB_NAME
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3TokenDao
-import one.mixin.android.fts.MessageMetaDao
-import one.mixin.android.session.Session
+import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.util.database.dbDir
 import java.io.File
 
 @Database(
     entities = [
         Web3Token::class,
+        Web3Transaction::class,
     ],
     version = 1,
 )
+@TypeConverters(Web3TypeConverters::class)
 abstract class WalletDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: WalletDatabase? = null
@@ -36,7 +39,7 @@ abstract class WalletDatabase : RoomDatabase() {
                         Room.databaseBuilder(
                             context,
                             WalletDatabase::class.java,
-                            File(dir, Constants.DataBase.WALLET_DB_NAME).absolutePath,
+                            File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
                         ).addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {
@@ -54,6 +57,7 @@ abstract class WalletDatabase : RoomDatabase() {
     }
 
     abstract fun web3TokenDao(): Web3TokenDao
+    abstract fun web3TransactionDao(): Web3TransactionDao
 
     override fun close() {
         super.close()

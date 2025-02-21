@@ -4,7 +4,9 @@ import android.content.ClipData
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,14 +22,28 @@ import one.mixin.android.api.response.isSolana
 import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
+import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.setQuoteText
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3TransactionJob
+import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.StakeAccountSummary
@@ -41,7 +57,14 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.ui.address.TransferDestinationInputFragment
+import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.getChainName
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.DebugClickListener
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -81,6 +104,9 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
 
     @Inject
+    lateinit var jobManager: MixinJobManager
+
+    @Inject
     lateinit var tip: Tip
 
     private val address: String by lazy {
@@ -103,33 +129,48 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
     }
 
-    private val adapter by lazy {
-        Web3TransactionAdapter(token).apply {
-            setOnClickAction { id ->
-                when (id) {
-                    R.id.send -> {
-                        navTo(TransferDestinationInputFragment.newInstance(address, token, chainToken), TransferDestinationInputFragment.TAG)
-                    }
-
-                    R.id.receive -> {
-                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
-                    }
-
-                    R.id.swap -> {
-                        AnalyticsTracker.trackSwapStart("solana", "solana")
-                        navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
-                    }
-
-                    R.id.stake_rl -> {
-                        navTo(StakingFragment.newInstance(ArrayList(this.stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
-                    }
-                }
-            }
-            setOnClickListener { transaction ->
-                navTo(Web3TransactionFragment.newInstance(transaction, chain, token), Web3TransactionFragment.TAG)
-            }
-        }
-    }
+    // private val adapter by lazy {
+    //     Web3TransactionAdapter(token).apply {
+    //         setOnClickAction { id ->
+    //             when (id) {
+    //                 R.id.send -> {
+    //                     navTo(
+    //                         TransferDestinationInputFragment.newInstance(
+    //                             address,
+    //                             token,
+    //                             chainToken
+    //                         ), TransferDestinationInputFragment.TAG
+    //                     )
+    //                 }
+    //
+    //                 R.id.receive -> {
+    //                     navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+    //                 }
+    //
+    //                 R.id.swap -> {
+    //                     AnalyticsTracker.trackSwapStart("solana", "solana")
+    //                     navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
+    //                 }
+    //
+    //                 R.id.stake_rl -> {
+    //                     navTo(
+    //                         StakingFragment.newInstance(
+    //                             ArrayList(
+    //                                 this.stakeAccounts ?: emptyList()
+    //                             ), token.balance
+    //                         ), StakingFragment.TAG
+    //                     )
+    //                 }
+    //             }
+    //         }
+    //         setOnClickListener { transaction ->
+    //             navTo(
+    //                 Web3TransactionFragment.newInstance(transaction, chain, token),
+    //                 Web3TransactionFragment.TAG
+    //             )
+    //         }
+    //     }
+    // }
 
     override fun onViewCreated(
         view: View,
@@ -137,12 +178,20 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.apply {
+            titleTv.setTextOnly(token.name)
             leftIb.setOnClickListener {
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
             rightIb.setOnClickListener {
                 val builder = BottomSheet.Builder(requireActivity())
-                _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_web3_token_bottom, null))
+                _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(
+                    View.inflate(
+                        ContextThemeWrapper(
+                            requireActivity(),
+                            R.style.Custom
+                        ), R.layout.view_wallet_web3_token_bottom, null
+                    )
+                )
                 builder.setCustomView(bottomBinding.root)
                 val bottomSheet = builder.create()
                 bottomBinding.apply {
@@ -159,15 +208,23 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
                     stakeSolTv.isVisible = token.isSolToken()
                     stakeSolTv.setOnClickListener {
-                        this@Web3TransactionDetailsFragment.navTo(ValidatorsFragment.newInstance().apply {
-                            setOnSelect { v ->
-                                this@Web3TransactionDetailsFragment.navTo(StakeFragment.newInstance(v, token.balance), StakeFragment.TAG)
-                            }
-                        }, ValidatorsFragment.TAG)
+                        this@Web3TransactionDetailsFragment.navTo(
+                            ValidatorsFragment.newInstance().apply {
+                                setOnSelect { v ->
+                                    this@Web3TransactionDetailsFragment.navTo(
+                                        StakeFragment.newInstance(
+                                            v,
+                                            token.balance
+                                        ), StakeFragment.TAG
+                                    )
+                                }
+                            }, ValidatorsFragment.TAG
+                        )
                         bottomSheet.dismiss()
                     }
                     copy.setOnClickListener {
-                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
+                        context?.getClipboardManager()
+                            ?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
                         toast(R.string.copied_to_clipboard)
                         bottomSheet.dismiss()
                     }
@@ -176,33 +233,124 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
                 bottomSheet.show()
             }
-        }
-        binding.transactionsRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        binding.transactionsRv.adapter = adapter
-        web3ViewModel // keep init
-        lifecycleScope.launch {
-            binding.progress.isVisible = true
-            handleMixinResponse(invokeNetwork = {
-                web3ViewModel.web3Transaction(address, token.chainId, token.fungibleId, token.assetKey)
-            }, successBlock = { result ->
-                if (!viewDestroyed()) adapter.transactions = result.data ?: emptyList()
-            }, endBlock = {
-                if (!viewDestroyed()) binding.progress.isVisible = false
-            })
+
+            binding.apply {
+                web3ViewModel.marketById(token.fungibleId).observe(viewLifecycleOwner) { market ->
+                    // todo
+                    // if (market != null) {
+                    //     val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
+                    //     val isRising = priceChangePercentage24H >= BigDecimal.ZERO
+                    //     rise.setQuoteText(
+                    //         "${(priceChangePercentage24H).numberFormat2()}%",
+                    //         isRising
+                    //     )
+                    // } else if (asset.priceUsd == "0") {
+                    //     rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                    //     rise.text = "0.00%"
+                    // } else if (asset.changeUsd.isNotEmpty()) {
+                    //     val changeUsd = BigDecimal(asset.changeUsd)
+                    //     val isRising = changeUsd >= BigDecimal.ZERO
+                    //     rise.setQuoteText(
+                    //         "${(changeUsd * BigDecimal(100)).numberFormat2()}%",
+                    //         isRising
+                    //     )
+                    // }
+                }
+                if (token.isSolToken()) {
+                    lifecycleScope.launch {
+                        getStakeAccounts(address)
+                    }
+                }
+                bottomCard.post {
+                    bottomCard.isVisible = true
+                    val remainingHeight =
+                        requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
+                    bottomRl.updateLayoutParams {
+                        height = remainingHeight
+                    }
+
+                    if (scrollY > 0) {
+                        scrollView.isInvisible = true
+                        scrollView.postDelayed(
+                            {
+                                scrollView.scrollTo(0, scrollY)
+                                scrollView.isInvisible = false
+                            }, 1
+                        )
+                    }
+                }
+
+                sendReceiveView.send.setOnClickListener {
+                    navTo(TransferDestinationInputFragment.newInstance(address, token, chainToken), TransferDestinationInputFragment.TAG)
+                }
+                sendReceiveView.receive.setOnClickListener {
+                    navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                }
+                sendReceiveView.swap.isVisible = token.isSolana()
+                sendReceiveView.swap.setOnClickListener {
+                    AnalyticsTracker.trackSwapStart("solana", "solana")
+                    navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
+                }
+            }
         }
 
-        if (token.isSolToken()) {
-            lifecycleScope.launch {
-                getStakeAccounts(address)
-            }
+        web3ViewModel.web3Transactions().observe(viewLifecycleOwner) {
+            binding.transactionsRv.list = it
+        }
+
+        jobManager.addJobInBackground(
+            RefreshWeb3TransactionJob(
+                address,
+                token.chainId,
+                token.fungibleId,
+                token.assetKey
+            )
+        )
+        updateHeader(token) //todo Live data
+    }
+
+
+    private fun updateHeader(asset: Web3Token) {
+        binding.apply {
+            val amountText =
+                try {
+                    if (asset.balance.toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        asset.balance.numberFormat()
+                    }
+                } catch (ignored: NumberFormatException) {
+                    asset.balance.numberFormat()
+                }
+            val color = requireContext().colorFromAttribute(R.attr.text_primary)
+            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balanceAs.text =
+                try {
+                    if (asset.fiat().toFloat() == 0f) {
+                        "≈ ${Fiats.getSymbol()}0.00"
+                    } else {
+                        "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                    }
+                } catch (ignored: NumberFormatException) {
+                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                }
+            avatar.loadToken(asset)
+            avatar.setOnClickListener(
+                object : DebugClickListener() {
+                    override fun onDebugClick() {
+                    }
+
+                    override fun onSingleClick() {
+                    }
+                },
+            )
         }
     }
 
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
         if (stakeAccounts.isNullOrEmpty()) {
-            adapter.setStake(emptyList(), StakeAccountSummary(0, "0"))
+            // adapter.setStake(emptyList(), StakeAccountSummary(0, "0"))
             return
         }
 
@@ -212,6 +360,12 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             count++
             amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
         }
-        adapter.setStake(stakeAccounts, StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString()))
+        // adapter.setStake(
+        //     stakeAccounts,
+        //     StakeAccountSummary(
+        //         count,
+        //         amount.solLamportToAmount().stripTrailingZeros().toPlainString()
+        //     )
+        // )
     }
 }
