@@ -269,7 +269,7 @@ class DepositFragment : BaseFragment() {
     private fun refreshDeposit(asset: TokenItem) {
         showLoading()
         lifecycleScope.launch {
-            val (depositEntry, different, code) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
+            val (depositEntry, different, code) = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry == null) {
                 if (code == ADDRESS_GENERATING) {
                     binding.apply {
@@ -337,14 +337,14 @@ class DepositFragment : BaseFragment() {
         val signature = depositEntry.signature.hexStringToByteArray()
 
         if (destination.isBlank() || signature.isNullOrEmpty()) return
-        val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
+        val pubs = Constants.SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
         val message =
             if (tag.isNullOrBlank()) {
                 destination
             } else {
                 "$destination:$tag"
             }.toByteArray().sha3Sum256()
-        val verify = verifyCurve25519Signature(message, signature, pub)
+        val verify = pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
         if (verify) {
             val noTag = tag.isNullOrBlank()
             binding.apply {
