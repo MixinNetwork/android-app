@@ -257,6 +257,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     // }
                 }
                 if (token.isSolToken()) {
+                    stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
                         getStakeAccounts(address)
                     }
@@ -350,7 +351,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
         if (stakeAccounts.isNullOrEmpty()) {
-            // adapter.setStake(emptyList(), StakeAccountSummary(0, "0"))
+            updateStake(StakeAccountSummary(0, "0"))
             return
         }
 
@@ -360,12 +361,26 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             count++
             amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
         }
-        // adapter.setStake(
-        //     stakeAccounts,
-        //     StakeAccountSummary(
-        //         count,
-        //         amount.solLamportToAmount().stripTrailingZeros().toPlainString()
-        //     )
-        // )
+
+        val stakeAccountSummary = StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())
+        updateStake(stakeAccountSummary)
+    }
+
+    private fun updateStake(stakeAccountSummary: StakeAccountSummary?) {
+        binding.stake.apply {
+            if (stakeAccountSummary == null) {
+                iconVa.displayedChild = 0
+                amountTv.text = "0 SOL"
+                countTv.text = "0 account"
+            } else {
+                iconVa.displayedChild = 1
+                amountTv.text = "${stakeAccountSummary.amount} SOL"
+                countTv.text = "${stakeAccountSummary.count} account"
+                stakeRl.setOnClickListener {
+                    // Todo
+                    // onClickAction?.invoke(stake.stakeRl.id)
+                }
+            }
+        }
     }
 }
