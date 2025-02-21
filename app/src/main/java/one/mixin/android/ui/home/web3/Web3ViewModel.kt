@@ -192,7 +192,7 @@ class Web3ViewModel
 
         suspend fun findAndSyncDepositEntry(token: Web3Token): String? =
             withContext(Dispatchers.IO) {
-                tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first?.destination
+                tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName(), null).first?.destination
             }
 
         suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
