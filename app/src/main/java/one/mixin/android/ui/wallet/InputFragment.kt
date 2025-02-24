@@ -992,10 +992,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
           refreshGas(t)
         } else if (isAdded) {
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
-            binding.balance.text = getString(
-                R.string.available_balance,
-                "${tokenBalance.numberFormat8()} $tokenSymbol"
-            )
+            if (chainToken?.assetId == t.assetId) {
+                val balance = runCatching {
+                    tokenBalance.toBigDecimalOrNull()?.subtract(gas?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                }.getOrDefault("0")
+                binding.balance.text = getString(
+                    R.string.available_balance,
+                    "$balance $tokenSymbol"
+                )
+            } else {
+                binding.balance.text = getString(
+                    R.string.available_balance,
+                    "${tokenBalance.numberFormat8()} $tokenSymbol"
+                )
+            }
             binding.insufficientFeeBalance.text =
                 getString(R.string.insufficient_gas, chainToken?.symbol)
 
