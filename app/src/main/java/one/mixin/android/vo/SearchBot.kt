@@ -70,7 +70,10 @@ data class SearchBot(
     val membership: Membership? = null,
 ) : Parcelable {
     fun isBot(): Boolean {
-        return appId != null && identityNumber != "0"
+        return appId != null && identityNumber.let {
+            val n = it.toIntOrNull() ?: return false
+            return (n in 7000000001..7999999999) || n == 7000
+        }
     }
 
     fun isMembership(): Boolean {

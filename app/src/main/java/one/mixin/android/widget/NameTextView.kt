@@ -702,7 +702,11 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (user.appId != null && user.identityNumber != "0") {
+        } else if (user.appId != null && user.identityNumber.let {
+                val n = it?.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }
+        ) {
             R.drawable.ic_bot
         } else {
             null
@@ -732,7 +736,10 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (!user.appId.isNullOrEmpty() && user.identityNumber != "0") {
+        } else if (!user.appId.isNullOrEmpty() && user.identityNumber.let {
+                val n = it.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null
@@ -779,7 +786,10 @@ class NameTextView : LinearLayoutCompat {
             item.sharedMembership.membershipIcon()
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
-        } else if (item.sharedUserAppId != null && item.userIdentityNumber != "0") {
+        } else if (item.sharedUserAppId != null && item.userIdentityNumber.let {
+                val n = it.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null
@@ -807,7 +817,10 @@ class NameTextView : LinearLayoutCompat {
     private fun getMessageBadge(item: MessageItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.appId != null && item.userIdentityNumber != "0") {
+        } else if (item.appId != null && item.userIdentityNumber.let {
+                val n = it.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null
@@ -824,7 +837,10 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (!user.appId.isNullOrEmpty() && user.identityNumber != "0") {
+        } else if (!user.appId.isNullOrEmpty() && user.identityNumber.let {
+                val n = it.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null
@@ -841,7 +857,10 @@ class NameTextView : LinearLayoutCompat {
             item.membership.membershipIcon()
         } else if (item.isVerified) {
             R.drawable.ic_user_verified
-        } else if (!item.appId.isNullOrEmpty() && item.userIdentityNumber != "0") {
+        } else if (!item.appId.isNullOrEmpty() && item.userIdentityNumber.let {
+                val n = it?.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null
@@ -858,7 +877,10 @@ class NameTextView : LinearLayoutCompat {
             item.sharedMembership.membershipIcon()
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
-        } else if (item.sharedUserAppId != null && item.sharedUserIdentityNumber != "0") {
+        } else if (item.sharedUserAppId != null && item.sharedUserIdentityNumber.let {
+                val n = it?.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null
@@ -873,7 +895,10 @@ class NameTextView : LinearLayoutCompat {
     private fun getMessageBadge(item: ChatHistoryMessageItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.appId != null && item.userIdentityNumber != "0") {
+        } else if (item.appId != null && item.userIdentityNumber.let {
+                val n = it?.toIntOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000
+            }) {
             R.drawable.ic_bot
         } else {
             null

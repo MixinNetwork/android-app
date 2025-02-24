@@ -29,7 +29,10 @@ data class SearchMessageItem(
     }
 
     fun isBot(): Boolean {
-        return conversationCategory == ConversationCategory.CONTACT.name && !appId.isNullOrEmpty() && userIdentityNumber != "0"
+        return conversationCategory == ConversationCategory.CONTACT.name && userIdentityNumber.let {
+            val n = it?.toIntOrNull() ?: return false
+            return (n in 7000000001..7999999999) || n == 7000
+        }
     }
 
     fun isVerified(): Boolean {
