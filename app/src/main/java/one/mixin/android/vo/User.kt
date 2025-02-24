@@ -113,7 +113,7 @@ data class User(
     }
 
     fun isBot(): Boolean {
-        return appId != null
+        return appId != null && notMessengerUser().not()
     }
 
     fun isMembership(): Boolean {

@@ -638,6 +638,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             null,
                             user.fullName,
                             user.avatarUrl,
+                            user.identityNumber,
                             null,
                             false,
                             null
@@ -649,6 +650,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             it.name,
                             0,
                             "",
+                            null,
                             null,
                             null,
                             null,

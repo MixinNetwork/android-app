@@ -35,6 +35,7 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
@@ -73,7 +74,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                     (t as TransferBiometricItem).let {
                         title.text =
                             getString(R.string.transfer_to, it.user.fullName ?: "")
-                        subTitle.text = if (it.user.identityNumber == "0") it.user.userId else "Mixin ID: ${it.user.identityNumber}"
+                        subTitle.text = if (it.user.notMessengerUser()) it.user.userId else "Mixin ID: ${it.user.identityNumber}"
                     }
                     biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
                 }

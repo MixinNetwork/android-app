@@ -15,6 +15,7 @@ data class SearchMessageItem(
     val appId: String?,
     val userFullName: String?,
     val userAvatarUrl: String?,
+    val userIdentityNumber: String?,
     val conversationAvatarUrl: String?,
     val isVerified: Boolean?,
     val membership: Membership?
@@ -28,7 +29,7 @@ data class SearchMessageItem(
     }
 
     fun isBot(): Boolean {
-        return conversationCategory == ConversationCategory.CONTACT.name && !appId.isNullOrEmpty()
+        return conversationCategory == ConversationCategory.CONTACT.name && !appId.isNullOrEmpty() && userIdentityNumber != "0"
     }
 
     fun isVerified(): Boolean {

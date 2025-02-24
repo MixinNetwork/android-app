@@ -29,6 +29,7 @@ data class ConversationItem(
     val participantUserId: String?,
     val ownerMuteUntil: String?,
     val ownerVerified: Boolean?,
+    val ownerIdentityNumber: String,
     val muteUntil: String?,
     val appId: String?,
     val mentions: String?,
@@ -87,7 +88,7 @@ data class ConversationItem(
     fun isExpire() = actionName == SystemConversationAction.EXPIRE.name
 
     fun isBot(): Boolean {
-        return isContactConversation() && appId != null
+        return isContactConversation() && appId != null && ownerIdentityNumber != "0"
     }
 
     fun isMembership(): Boolean {

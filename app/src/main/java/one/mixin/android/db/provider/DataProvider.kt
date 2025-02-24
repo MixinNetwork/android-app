@@ -58,7 +58,7 @@ class DataProvider {
                         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
                         c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                         c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, cc.pin_time AS pinTime, c.mute_until AS muteUntil,
-                        ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
+                        ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified, ou.identity_number AS ownerIdentityNumber,
                         ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
                         m.content AS content, m.category AS contentType, m.created_at AS createdAt,
                         m.user_id AS senderId, m.`action` AS actionName, m.status AS messageStatus,
@@ -439,7 +439,8 @@ class DataProvider {
                 val sql = """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
                 c.name AS conversationName, c.category AS conversationCategory, 0 as messageCount,
-                u.user_id AS userId, u.app_id AS appId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, u.is_verified as isVerified, u.membership AS membership   
+                u.user_id AS userId, u.app_id AS appId, u.avatar_url AS userAvatarUrl, u.identity_number AS userIdentityNumber,
+                u.full_name AS userFullName, u.is_verified as isVerified, u.membership AS membership   
                 FROM messages m
                 INNER JOIN conversations c ON c.conversation_id = m.conversation_id
 				INNER JOIN users u ON c.owner_id = u.user_id

@@ -16,7 +16,7 @@ class MaoUser(
     val membership: Membership? = null,
 ) {
     fun isBot(): Boolean {
-        return appId != null
+        return appId != null && identityNumber != "0"
     }
 
     fun isMembership(): Boolean {
