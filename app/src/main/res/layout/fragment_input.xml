@@ -141,7 +141,7 @@
                 <RelativeLayout
                     android:id="@+id/info"
                     android:layout_width="match_parent"
-                    android:layout_height="36sp"
+                    android:layout_height="wrap_content"
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
                     android:paddingBottom="10dp"
