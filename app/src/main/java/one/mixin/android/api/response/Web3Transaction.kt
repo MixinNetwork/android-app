@@ -3,6 +3,7 @@ package one.mixin.android.api.response
 import android.content.Context
 import android.os.Parcelable
 import android.text.SpannedString
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.*
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
@@ -14,6 +15,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.util.needsSpaceBetweenWords
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
 import one.mixin.android.web3.details.Web3TransactionType
@@ -57,6 +59,24 @@ data class Web3Transaction(
     @ColumnInfo(name = "created_at")
     val createdAt: String,
 ) : Parcelable {
+
+    companion object {
+        val DIFF_CALLBACK =
+            object : DiffUtil.ItemCallback<Web3Transaction>() {
+                override fun areItemsTheSame(
+                    oldItem: Web3Transaction,
+                    newItem: Web3Transaction,
+                ) =
+                    oldItem.id == newItem.id
+
+                override fun areContentsTheSame(
+                    oldItem: Web3Transaction,
+                    newItem: Web3Transaction,
+                ) =
+                    oldItem == newItem
+            }
+    }
+
     val icon: String?
         get() {
             when (operationType) {

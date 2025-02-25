@@ -26,6 +26,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.extension.escapeSql
@@ -138,6 +139,19 @@ class WalletViewModel
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
             tokenRepository.allSnapshots(filterParams),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build(),
+        ).setInitialLoadKey(initialLoadKey).build()
+
+    fun allWeb3Transaction(
+        initialLoadKey: Int? = 0,
+        filterParams: Web3FilterParams,
+    ): LiveData<PagedList<Web3Transaction>> =
+        LivePagedListBuilder(
+            tokenRepository.allWeb3Transacation(filterParams),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)

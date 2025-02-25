@@ -9,66 +9,56 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.Web3Token
+import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.isSolana
 import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
-import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionJob
-import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
-import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
+import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.UserItem
 import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
 import one.mixin.android.web3.receive.Web3AddressFragment
-import one.mixin.android.ui.address.TransferDestinationInputFragment
-import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.util.getChainName
-import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_transaction_details) {
+class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_transaction_details), OnSnapshotListener {
     companion object {
         const val TAG = "Web3TransactionDetailsFragment"
         const val ARGS_TOKEN = "args_token"
@@ -262,6 +252,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         getStakeAccounts(address)
                     }
                 }
+                transactionsRv.listener = this@Web3TransactionDetailsFragment
                 bottomCard.post {
                     bottomCard.isVisible = true
                     val remainingHeight =
@@ -382,5 +373,21 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 }
             }
         }
+    }
+
+    override fun <T> onNormalItemClick(item: T) {
+        item as Web3Transaction
+        navTo(
+            Web3TransactionFragment.newInstance(item, chain, token),
+            Web3TransactionFragment.TAG
+        )
+    }
+
+    override fun onUserClick(userId: String) {
+        // Do nothing
+    }
+
+    override fun onMoreClick() {
+        navTo(AllWeb3TransactionsFragment.newInstance(), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
     }
 }

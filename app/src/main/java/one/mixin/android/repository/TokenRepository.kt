@@ -132,6 +132,9 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.flow
+import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.ui.wallet.Web3FilterParams
 
 @Singleton
 class TokenRepository
@@ -163,6 +166,7 @@ class TokenRepository
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
+        private val web3TranTransactionDao: Web3TransactionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -497,6 +501,11 @@ class TokenRepository
                 }
                 it
             }
+        }
+
+
+        fun allWeb3Transacation(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3Transaction> {
+            return web3TranTransactionDao.allTransactions(filterParams.buildQuery())
         }
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)

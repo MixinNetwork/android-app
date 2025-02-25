@@ -12,9 +12,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
-import one.mixin.android.ui.wallet.adapter.SnapshotHolder
 import one.mixin.android.util.debug.debugLongClick
-import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.web3.details.Web3TransactionHolder
 import kotlin.math.abs
 
@@ -30,7 +28,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
             updateViews()
         }
 
-    // var listener: OnSnapshotListener? = null
+    var listener: OnSnapshotListener? = null
 
     init {
         orientation = VERTICAL
@@ -52,7 +50,10 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
 
             val itemView = ItemWeb3TransactionBinding.inflate(LayoutInflater.from(context),this,false)
             val holder = Web3TransactionHolder(itemView)
-            holder.bind(item) // toco click
+            holder.bind(item)
+            holder.itemView.setOnClickListener {
+                listener?.onNormalItemClick(item)
+            }
             debugLongClick(
                 itemView.root,
                 {
@@ -66,8 +67,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
             val itemView = LayoutInflater.from(context)
                 .inflate(R.layout.item_web3_transaction, this, false)
             itemView.setOnClickListener {
-                // Todo click
-                // listener?.onMoreClick()
+                listener?.onMoreClick()
             }
             addView(itemView)
         }
