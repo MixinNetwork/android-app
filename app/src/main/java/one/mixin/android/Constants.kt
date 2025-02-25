@@ -368,7 +368,10 @@ object Constants {
 
     const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
-    const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
+    val SAFE_PUBLIC_KEY = listOf(
+        "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d",
+        "2dc073588908a02284197ad78fc863e83c760dabcd5d9a508e09a799ebc1ecb8"
+    )
 
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""

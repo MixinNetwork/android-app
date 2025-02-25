@@ -195,9 +195,9 @@ class WalletViewModel
 
     suspend fun findDepositEntryDestinations() = tokenRepository.findDepositEntryDestinations()
 
-    suspend fun findAndSyncDepositEntry(chainId: String) =
+    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String?) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndSyncDepositEntry(chainId)
+            tokenRepository.findAndSyncDepositEntry(chainId, assetId)
         }
 
     suspend fun syncNoExistAsset(assetIds: List<String>) =

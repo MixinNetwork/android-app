@@ -221,7 +221,7 @@ internal constructor(
 
     suspend fun findAndSyncDepositEntry(token: Web3Token) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName()).first
+            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName(), null).first
         }
 
     suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)

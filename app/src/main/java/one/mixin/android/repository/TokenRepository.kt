@@ -222,13 +222,13 @@ class TokenRepository
             return assetItem
         }
 
-        suspend fun syncDepositEntry(chainId: String): Pair<DepositEntry?, Int> {
+        suspend fun syncDepositEntry(chainId: String, assetId: String?): Pair<DepositEntry?, Int> {
             var code = 200
             val depositEntry =
                 handleMixinResponse(
                     invokeNetwork = {
                         utxoService.createDeposit(
-                            DepositEntryRequest(chainId),
+                            DepositEntryRequest(chainId, assetId),
                         )
                     },
                     failureBlock = {
@@ -236,7 +236,7 @@ class TokenRepository
                         code == ErrorHandler.ADDRESS_GENERATING
                     },
                     successBlock = { resp ->
-                        val pub = SAFE_PUBLIC_KEY.hexStringToByteArray()
+                        val pubs = SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
                         resp.data?.filter {
                             val message =
                                 if (it.tag.isNullOrBlank()) {
@@ -245,7 +245,7 @@ class TokenRepository
                                     "${it.destination}:${it.tag}"
                                 }.toByteArray().sha3Sum256()
                             val signature = it.signature.hexStringToByteArray()
-                            verifyCurve25519Signature(message, signature, pub)
+                            pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
                         }?.let { list ->
                             depositDao.insertAll(chainId, list)
                             list.find { it.isPrimary }
@@ -259,9 +259,9 @@ class TokenRepository
 
         suspend fun findDepositEntryDestinations() = depositDao.findDepositEntryDestinations()
 
-        suspend fun findAndSyncDepositEntry(chainId: String): Triple<DepositEntry?, Boolean, Int> {
+        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String?): Triple<DepositEntry?, Boolean, Int> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
-            val (newDeposit, code) = syncDepositEntry(chainId)
+            val (newDeposit, code) = syncDepositEntry(chainId, assetId)
             val result =
                 if (code != 200) {
                     null // response error
