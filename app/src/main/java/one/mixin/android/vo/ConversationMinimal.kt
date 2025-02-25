@@ -61,10 +61,7 @@ data class ConversationMinimal(
     }
 
     fun isBot(): Boolean {
-        return category == ConversationCategory.CONTACT.name && ownerIdentityNumber.let {
-            val n = it.toLongOrNull() ?: return@let false
-            return (n in 7000000001..7999999999) || n == 7000L
-        }
+        return category == ConversationCategory.CONTACT.name && ownerIdentityNumber.isBotIdentityNumber()
     }
 
     fun isVerified(): Boolean {

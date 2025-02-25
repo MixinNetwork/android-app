@@ -88,10 +88,7 @@ data class ConversationItem(
     fun isExpire() = actionName == SystemConversationAction.EXPIRE.name
 
     fun isBot(): Boolean {
-        return isContactConversation() && ownerIdentityNumber.let {
-            val n = it.toLongOrNull() ?: return@let false
-            return (n in 7000000001..7999999999) || n == 7000L
-        }
+        return isContactConversation() && ownerIdentityNumber.isBotIdentityNumber()
     }
 
     fun isMembership(): Boolean {

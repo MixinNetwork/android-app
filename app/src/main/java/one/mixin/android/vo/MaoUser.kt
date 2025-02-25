@@ -16,10 +16,7 @@ class MaoUser(
     val membership: Membership? = null,
 ) {
     fun isBot(): Boolean {
-        return appId != null && identityNumber.let {
-            val n = it.toLongOrNull() ?: return@let false
-            return (n in 7000000001..7999999999) || n == 7000L
-        }
+        return appId != null && identityNumber.isBotIdentityNumber()
     }
 
     fun isMembership(): Boolean {
