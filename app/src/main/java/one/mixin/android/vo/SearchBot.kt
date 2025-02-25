@@ -71,8 +71,8 @@ data class SearchBot(
 ) : Parcelable {
     fun isBot(): Boolean {
         return appId != null && identityNumber.let {
-            val n = it.toIntOrNull() ?: return false
-            return (n in 7000000001..7999999999) || n == 7000
+            val n = it.toLongOrNull() ?: return@let false
+            return (n in 7000000001..7999999999) || n == 7000L
         }
     }
 

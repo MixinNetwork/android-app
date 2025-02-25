@@ -703,8 +703,8 @@ class NameTextView : LinearLayoutCompat {
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
         } else if (user.appId != null && user.identityNumber.let {
-                val n = it?.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it?.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }
         ) {
             R.drawable.ic_bot
@@ -737,8 +737,8 @@ class NameTextView : LinearLayoutCompat {
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
         } else if (!user.appId.isNullOrEmpty() && user.identityNumber.let {
-                val n = it.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {
@@ -787,8 +787,8 @@ class NameTextView : LinearLayoutCompat {
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
         } else if (item.sharedUserAppId != null && item.userIdentityNumber.let {
-                val n = it.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {
@@ -818,8 +818,8 @@ class NameTextView : LinearLayoutCompat {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
         } else if (item.appId != null && item.userIdentityNumber.let {
-                val n = it.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {
@@ -838,8 +838,8 @@ class NameTextView : LinearLayoutCompat {
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
         } else if (!user.appId.isNullOrEmpty() && user.identityNumber.let {
-                val n = it.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {
@@ -858,8 +858,8 @@ class NameTextView : LinearLayoutCompat {
         } else if (item.isVerified) {
             R.drawable.ic_user_verified
         } else if (!item.appId.isNullOrEmpty() && item.userIdentityNumber.let {
-                val n = it?.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it?.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {
@@ -878,8 +878,8 @@ class NameTextView : LinearLayoutCompat {
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
         } else if (item.sharedUserAppId != null && item.sharedUserIdentityNumber.let {
-                val n = it?.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it?.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {
@@ -896,8 +896,8 @@ class NameTextView : LinearLayoutCompat {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
         } else if (item.appId != null && item.userIdentityNumber.let {
-                val n = it?.toIntOrNull() ?: return@let false
-                (n in 7000000001..7999999999) || n == 7000
+                val n = it?.toLongOrNull() ?: return@let false
+                (n in 7000000001..7999999999) || n == 7000L
             }) {
             R.drawable.ic_bot
         } else {

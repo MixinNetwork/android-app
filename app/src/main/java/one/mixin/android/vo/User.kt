@@ -113,8 +113,8 @@ data class User(
     }
 
     fun isBot(): Boolean {
-        val n = identityNumber.toIntOrNull() ?: return false
-        return (n in 7000000001..7999999999) || n == 7000
+        val n = identityNumber.toLongOrNull() ?: return false
+        return (n in 7000000001..7999999999) || n == 7000L
     }
 
     fun isMembership(): Boolean {
