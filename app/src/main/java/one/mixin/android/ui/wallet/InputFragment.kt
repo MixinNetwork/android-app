@@ -460,7 +460,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
                                 alertDialog.dismiss()
                                 val address = (assetBiometricItem as? WithdrawBiometricItem)?.address
-                                    ?: Address(addressId ?: "", "address", assetId, toAddress, addressLabel ?: "Web3 Address", nowInUtc(), addressTag, null)
+                                    ?: Address(addressId ?: "", "address", assetId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
