@@ -207,7 +207,6 @@ internal constructor(
     suspend fun saveSession(participantSession: ParticipantSession) {
         userRepository.saveSession(participantSession)
     }
-
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun findBotPublicKey(

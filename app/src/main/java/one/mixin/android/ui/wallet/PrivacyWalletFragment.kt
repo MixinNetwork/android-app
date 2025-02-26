@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -34,7 +33,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
-import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.event.BadgeEvent
@@ -47,7 +45,6 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
@@ -59,17 +56,14 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.reportException
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.rxpermission.RxPermissions
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem

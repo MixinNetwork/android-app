@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -12,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -76,6 +78,28 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("transfer_status", transferViewModel.status.value.name)
+        outState.putBoolean("can_retry", canRetry)
+        outState.putBoolean("is_success", isSuccess)
+        outState.putString("error_message", transferViewModel.errorMessage)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        savedInstanceState?.let { bundle ->
+            canRetry = bundle.getBoolean("can_retry", true)
+            isSuccess = bundle.getBoolean("is_success", false)
+            bundle.getString("error_message")?.let { errorMessage ->
+                transferViewModel.errorMessage = errorMessage
+            }
+            bundle.getString("transfer_status")?.let { status ->
+                transferViewModel.updateStatus(TransferStatus.valueOf(status))
+            }
+        }
+    }
+
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(
         dialog: Dialog,
@@ -90,7 +114,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
-        transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+        if (!isSuccess) transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
 
         binding.bottom.setOnClickListener({
             dismiss()
@@ -124,7 +148,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 }
             }
 
-            transferViewModel.status.collect { status ->
+            transferViewModel.status.collectLatest { status ->
                 binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {

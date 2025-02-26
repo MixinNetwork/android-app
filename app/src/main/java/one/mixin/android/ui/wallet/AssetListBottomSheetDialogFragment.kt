@@ -36,9 +36,9 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
+import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
