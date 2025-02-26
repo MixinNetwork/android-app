@@ -139,6 +139,7 @@
     </declare-styleable>
     <declare-styleable name="SearchView">
         <attr name="circle_clear_icon" format="boolean" />
+        <attr name="drawable_icon" format="reference" />
         <attr name="android:hint" format="string"/>
         <attr name="android:imeOptions" format="integer" />
     </declare-styleable>

@@ -139,7 +139,7 @@ class MarketShareActivity : BaseActivity() {
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
             val bitmap = binding.test.drawToBitmap()
-            val file = File(cacheDir, "${name}.png")
+            val file = File(cacheDir, "$name.png")
             saveBitmapToFile(file, bitmap)
             val uri = FileProvider.getUriForFile(this@MarketShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
             val share = Intent()
@@ -166,7 +166,7 @@ class MarketShareActivity : BaseActivity() {
             val bitmap = binding.test.drawToBitmap()
             val dir = getPublicDownloadPath()
             dir.mkdirs()
-            val file = File(dir, "${name}.png")
+            val file = File(dir, "$name.png")
             saveBitmapToFile(file, bitmap)
             MediaScannerConnection.scanFile(this@MarketShareActivity, arrayOf(file.toString()), null, null)
             finish()

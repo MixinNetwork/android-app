@@ -26,7 +26,6 @@ import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.visibleDisplayHeight
@@ -37,11 +36,8 @@ import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.UtxoException
-import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity

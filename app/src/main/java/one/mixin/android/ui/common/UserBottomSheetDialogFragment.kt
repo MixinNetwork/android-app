@@ -50,6 +50,7 @@ import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
@@ -59,6 +60,7 @@ import one.mixin.android.extension.localTime
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -72,11 +74,14 @@ import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.addPinShortcut
@@ -224,10 +229,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
         binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(buildEmptyTransferBiometricItem(user))
-                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                    .apply {
+                        setOnAssetClick { selectedAsset ->
+                            requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                            navTo(InputFragment.newInstance(selectedAsset, user), InputFragment.TAG)
+                        }
+                    }.show(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                this@UserBottomSheetDialogFragment.dismiss()
                 RxBus.publish(BotCloseEvent())
-                dismiss()
             } else {
                 toast(R.string.transfer_without_pin)
             }

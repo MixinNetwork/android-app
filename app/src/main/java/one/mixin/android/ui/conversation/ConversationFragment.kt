@@ -126,6 +126,7 @@ import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.isVideo
 import one.mixin.android.extension.isWebp
 import one.mixin.android.extension.lateOneHours
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -136,6 +137,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
@@ -201,6 +203,10 @@ import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -2597,11 +2603,15 @@ class ConversationFragment() :
                         MenuType.Transfer -> {
                             binding.chatControl.reset()
                             if (Session.getAccount()?.hasPin == true) {
-                                recipient?.let {
-                                    TransferFragment.newInstance(buildEmptyTransferBiometricItem(it))
-                                        .showNow(parentFragmentManager, TransferFragment.TAG)
-                                    // FIXME sync
-                                    // jobManager.addJobInBackground(SyncOutputJob())
+                                recipient?.let { recipient ->
+                                    AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                        .setOnAssetClick { asset ->
+                                            activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, asset.assetId)
+                                            navTo(
+                                                InputFragment.newInstance(asset, recipient),
+                                                InputFragment.TAG
+                                            )
+                                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                                 }
                             } else {
                                 TipActivity.show(requireActivity(), TipType.Create, true)

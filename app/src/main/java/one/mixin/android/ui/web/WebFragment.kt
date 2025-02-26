@@ -102,6 +102,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
+import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
@@ -1766,7 +1767,7 @@ class WebFragment : BaseFragment() {
                 return true
             }
 
-            if (url.isMixinUrl()) {
+            if (url.isMixinUrl() || url.isExternalTransferUrl()) {
                 if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
                     return true
                 }

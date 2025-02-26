@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -201,10 +202,14 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         binding.bottom.setOnClickListener({
+            callback?.onDismiss(isSuccess)
+            callback = null
             dismiss()
         }, {
             showPin()
         }, {
+            callback?.onDismiss(isSuccess)
+            callback = null
             dismiss()
         })
 
@@ -829,9 +834,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return "$pre ($post)"
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDismiss(dialog: DialogInterface) {
         callback?.onDismiss(isSuccess)
+        callback = null
+        super.onDismiss(dialog)
     }
 
     private var isSuccess = false

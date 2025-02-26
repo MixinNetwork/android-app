@@ -41,6 +41,7 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -78,7 +79,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     @Inject
     lateinit var tip: Tip
@@ -266,7 +266,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     override fun onDestroyView() {
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 
@@ -374,7 +373,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                sendBottomSheet.show(asset)
+                navTo(TransferDestinationInputFragment.newInstance(asset), TransferDestinationInputFragment.TAG)
             }
             sendReceiveView.receive.setOnClickListener {
                 if (!Session.saltExported() && Session.isAnonymous()) {
