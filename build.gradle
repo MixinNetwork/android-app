@@ -19,7 +19,7 @@ buildscript {
         ext.browserVersion = '1.8.0'
         ext.biometricVersion = '1.4.0-alpha02'
         ext.mdcVersion = '1.12.0'
-        ext.exifinterfaceVersion = '1.3.7'
+        ext.exifinterfaceVersion = '1.4.0'
         ext.preferenceVersion = '1.2.1'
         ext.hiltVersion = '2.55'
         ext.hiltAndroidxVersion = '1.2.0'
