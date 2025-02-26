@@ -12,29 +12,14 @@ import timber.log.Timber
 class RefreshFcmJob(
     private val notificationToken: String? = null,
     private val deviceCheckToken: String? = null,
-) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
+) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork()) {
     companion object {
-        private const val serialVersionUID = 1L
+        private const val serialVersionUID = 2L
         const val GROUP = "RefreshFcmJob"
     }
 
     @SuppressLint("CheckResult")
     override fun onRun() {
-        if (notificationToken.isNullOrBlank().not()) {
-            updateSession(SessionRequest(notificationToken = notificationToken))
-        } else if (deviceCheckToken.isNullOrBlank().not()) {
-            updateSession(SessionRequest(deviceCheckToken = deviceCheckToken))
-        } else {
-            val token = runCatching {
-                Tasks.await(FirebaseMessaging.getInstance().token)
-            }.onFailure {
-                Timber.e(it)
-            }.getOrDefault(null)
-            updateSession(SessionRequest(notificationToken = token))
-        }
-    }
-
-    private fun updateSession(request: SessionRequest) = runBlocking {
-        accountService.updateSession(request)
+       // do nothing
     }
 }

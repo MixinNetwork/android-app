@@ -42,6 +42,7 @@ constructor(
         return if (response.isSuccess) {
             Result.success()
         } else {
+            Timber.e("SessionWorker.onRun() updateSession response: ${response.errorCode}")
             Result.failure()
         }
     }
