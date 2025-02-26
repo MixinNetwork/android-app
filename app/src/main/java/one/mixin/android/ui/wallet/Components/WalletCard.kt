@@ -35,7 +35,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import org.sol4k.rpc.Balance
 import java.math.BigDecimal
 
 @Composable
