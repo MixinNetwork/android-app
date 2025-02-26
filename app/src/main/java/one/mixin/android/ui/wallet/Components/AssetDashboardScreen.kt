@@ -23,9 +23,9 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
-fun WalletScreen(
+fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit,
-    viewModel: WalletViewModel = hiltViewModel()
+    viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
     val top3TokenDistribution by viewModel.top3TokenDistribution.collectAsState(initial = emptyList())
     val top3Web3TokenDistribution by viewModel.top3Web3TokenDistribution.collectAsState(initial = emptyList())

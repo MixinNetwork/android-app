@@ -17,7 +17,7 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
-class WalletViewModel @Inject constructor(
+class AssetDistributionViewModel @Inject constructor(
     private val tokenRepository: TokenRepository
 ) : ViewModel() {
 

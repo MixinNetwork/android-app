@@ -80,8 +80,8 @@ import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
@@ -1050,10 +1050,16 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
+        val walletFragmentInstance = 
+            supportFragmentManager.findFragmentByTag(WalletFragment.TAG) as? BaseFragment
+        
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
+            walletFragmentInstance != null && walletFragmentInstance.isVisible && walletFragmentInstance.onBackPressed() -> {
+                // do nothing
+            }
             conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
                 conversationListFragment.closeSearch()
             }

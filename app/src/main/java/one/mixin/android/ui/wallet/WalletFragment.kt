@@ -23,8 +23,8 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
-import one.mixin.android.ui.wallet.components.WalletScreen
 import one.mixin.android.util.rxpermission.RxPermissions
 import javax.inject.Inject
 import kotlin.math.hypot
@@ -92,7 +92,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
             }
             compose.setContent {
-                WalletScreen(
+                AssetDashboardScreen(
                     onWalletCardClick = ::handleWalletCardClick
                 )
             }
@@ -175,5 +175,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
         })
         closeAnim.start()
+    }
+
+    override fun onBackPressed(): Boolean {
+        return if (binding.compose.isVisible) {
+            closeMenu()
+            true
+        } else {
+            false
+        }
     }
 }

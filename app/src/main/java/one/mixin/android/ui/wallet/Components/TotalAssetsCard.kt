@@ -27,7 +27,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @Composable
 fun TotalAssetsCard(
-    viewModel: WalletViewModel = hiltViewModel()
+    viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
     val combinedDistribution by viewModel.combinedAssetDistribution.collectAsState(initial = emptyList())
     val totalBalance by viewModel.totalBalance.collectAsState()
