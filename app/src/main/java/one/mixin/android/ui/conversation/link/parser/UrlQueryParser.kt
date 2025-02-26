@@ -8,7 +8,6 @@ import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.MixinInvoicePrefix
 import one.mixin.android.vo.toMixAddress
-import timber.log.Timber
 import java.io.UnsupportedEncodingException
 import java.math.BigDecimal
 import java.net.URLDecoder

@@ -6,16 +6,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentWaitingBottomSheetBinding
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RestoreTransactionJob
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class WaitingBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class WaitingBottomSheetDialogFragment(val anyNotConfirmed: Boolean = false) : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "WaitingBottomSheetDialogFragment"
 
-        fun newInstance() = WaitingBottomSheetDialogFragment()
+        fun newInstance(anyNotConfirmed: Boolean = false) = WaitingBottomSheetDialogFragment(anyNotConfirmed)
     }
 
     private val binding by viewBinding(FragmentWaitingBottomSheetBinding::inflate)
@@ -41,6 +42,7 @@ class WaitingBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        jobManager.addJobInBackground(RestoreTransactionJob())
+        if (anyNotConfirmed) jobManager.addJobInBackground(SyncOutputJob())
+        else jobManager.addJobInBackground(RestoreTransactionJob())
     }
 }

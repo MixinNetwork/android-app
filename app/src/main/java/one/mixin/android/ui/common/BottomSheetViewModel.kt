@@ -788,27 +788,27 @@ class BottomSheetViewModel
         ): String? {
             val desiredAmount = BigDecimal(amount)
             val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
-
             if (candidateOutputs.isEmpty()) {
                 return null
             }
 
             val selectedOutputs = mutableListOf<Output>()
             var totalSelectedAmount = BigDecimal.ZERO
-            var refresh = false
+            var anyNotConfirmed = false
             candidateOutputs.forEach { output ->
                 if (output.sequence == 0L) {
-                    refresh = true
+                    anyNotConfirmed = true
                 }
                 val outputAmount = BigDecimal(output.amount)
                 selectedOutputs.add(output)
                 totalSelectedAmount += outputAmount
                 if (totalSelectedAmount >= desiredAmount) {
-                    if (refresh) {
+                    if (anyNotConfirmed) {
                         // Refresh when there is an undetermined UTXO
                         jobManager.addJobInBackground(SyncOutputJob())
                     }
-                    return null
+                    if (anyNotConfirmed) return ""
+                    else return null
                 }
             }
 
@@ -819,7 +819,7 @@ class BottomSheetViewModel
             if (totalSelectedAmount < desiredAmount) {
                 // Refresh when balance is insufficient
                 jobManager.addJobInBackground(SyncOutputJob())
-                return null
+                if (anyNotConfirmed) return ""
             }
 
             throw Exception("Impossible")

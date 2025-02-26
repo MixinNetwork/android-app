@@ -650,7 +650,7 @@ fun TransferBottomPreview() {
 @Preview
 @Composable
 fun BalanceChangePreview() {
-    val token = Web3Token(fungibleId = "", name = "Solana", symbol = "SOL", chainId = "solana", chainName = "Solana", chainIconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", balance = "0.01605982", price = "132.9102434930042", changeAbsolute = "-0.030625", changePercent = "-0.023036555963245636", decimals = 9, assetKey = "asset_key", iconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png")
+    val token = Web3Token(fungibleId = "", name = "Solana", symbol = "SOL", chainId = "solana", chainName = "Solana", chainIconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", balance = "0.01605982", price = "132.9102434930042", changeAbsolute = "-0.030625", changePercent = "-0.023036555963245636", decimals = 9, assetKey = "asset_key", iconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", assetId = "64692c23-8971-4cf4-84a7-4dd1271dd887")
     BalanceChangeItem(token = token, balanceChange = BalanceChange("So11111111111111111111111111111111111111112", -10000000))
 }
 

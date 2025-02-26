@@ -61,7 +61,7 @@ data class ConversationMinimal(
     }
 
     fun isBot(): Boolean {
-        return category == ConversationCategory.CONTACT.name && appId != null
+        return category == ConversationCategory.CONTACT.name && ownerIdentityNumber.isBotIdentityNumber()
     }
 
     fun isVerified(): Boolean {

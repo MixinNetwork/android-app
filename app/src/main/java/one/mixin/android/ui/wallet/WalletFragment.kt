@@ -55,6 +55,7 @@ import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.MainActivity
@@ -64,9 +65,8 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.reportException
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.generateConversationId
@@ -98,8 +98,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
-    private val sendBottomSheet = SendBottomSheet(this, -1, -1)
-
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
@@ -122,156 +120,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _binding = FragmentWalletBinding.inflate(inflater, container, false)
         return binding.root
     }
-
-    // private fun toBuy() {
-    //     val sendReceiveView = _headBinding?.sendReceiveView ?: return
-    //     lifecycleScope.launch {
-    //         sendReceiveView.buy.displayedChild = 1
-    //         sendReceiveView.buy.isEnabled = false
-    //         flow {
-    //             emit(ROUTE_BOT_USER_ID)
-    //         }.map { botId ->
-    //             val key =
-    //                 walletViewModel.findBotPublicKey(
-    //                     generateConversationId(
-    //                         botId,
-    //                         Session.getAccountId()!!,
-    //                     ),
-    //                     botId,
-    //                 )
-    //             if (!key.isNullOrEmpty()) {
-    //                 MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
-    //             } else {
-    //                 val sessionResponse =
-    //                     walletViewModel.fetchSessionsSuspend(listOf(botId))
-    //                 if (sessionResponse.isSuccess) {
-    //                     val sessionData = requireNotNull(sessionResponse.data)[0]
-    //                     walletViewModel.saveSession(
-    //                         ParticipantSession(
-    //                             generateConversationId(
-    //                                 sessionData.userId,
-    //                                 Session.getAccountId()!!,
-    //                             ),
-    //                             sessionData.userId,
-    //                             sessionData.sessionId,
-    //                             publicKey = sessionData.publicKey,
-    //                         ),
-    //                     )
-    //                     MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-    //                 } else {
-    //                     throw MixinResponseException(
-    //                         sessionResponse.errorCode,
-    //                         sessionResponse.errorDescription,
-    //                     )
-    //                 }
-    //             }
-    //             botId
-    //         }.map { _ ->
-    //             val profileResponse =
-    //                 walletViewModel.profile()
-    //             if (profileResponse.isSuccess) {
-    //                 val supportCurrencies =
-    //                     getCurrencyData(requireContext().resources).filter {
-    //                         profileResponse.data!!.currencies.contains(it.name)
-    //                     }
-    //                 val supportAssetIds = profileResponse.data!!.assetIds
-    //                 val kycState = profileResponse.data!!.kycState
-    //                 val hideGooglePay =
-    //                     profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
-    //                         .not()
-    //                 RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
-    //             } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION) {
-    //                 alertDialogBuilder()
-    //                     .setTitle(R.string.Update_Mixin)
-    //                     .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-    //                     .setNegativeButton(R.string.Later) { dialog, _ ->
-    //                         dialog.dismiss()
-    //                     }.setPositiveButton(R.string.Update) { dialog, _ ->
-    //                         requireContext().openMarket()
-    //                         dialog.dismiss()
-    //                     }.create().show()
-    //                 throw MixinResponseException(
-    //                     profileResponse.errorCode,
-    //                     profileResponse.errorDescription,
-    //                 )
-    //             } else {
-    //                 throw MixinResponseException(
-    //                     profileResponse.errorCode,
-    //                     profileResponse.errorDescription,
-    //                 )
-    //             }
-    //         }.map { routeProfile ->
-    //             walletViewModel.syncNoExistAsset(routeProfile.supportAssetIds)
-    //             routeProfile
-    //         }.map { routeProfile ->
-    //             val assetId =
-    //                 requireContext().defaultSharedPreferences.getString(
-    //                     CalculateFragment.CURRENT_ASSET_ID,
-    //                     Constants.AssetId.USDT_ASSET_ID,
-    //                 ) ?: routeProfile.supportAssetIds.first()
-    //             val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
-    //             val tickerResponse =
-    //                 walletViewModel.ticker(
-    //                     RouteTickerRequest(
-    //                         currency,
-    //                         assetId,
-    //                     ),
-    //                 )
-    //             if (tickerResponse.isSuccess) {
-    //                 val state =
-    //                     FiatMoneyViewModel.CalculateState(
-    //                         minimum =
-    //                             tickerResponse.data!!.minimum.toIntOrNull()
-    //                                 ?: 0,
-    //                         maximum =
-    //                             tickerResponse.data!!.maximum.toIntOrNull()
-    //                                 ?: 0,
-    //                         assetPrice =
-    //                             tickerResponse.data!!.assetPrice.toFloatOrNull()
-    //                                 ?: 0f,
-    //                         feePercent =
-    //                             tickerResponse.data!!.feePercent.toFloatOrNull()
-    //                                 ?: 0f,
-    //                     )
-    //                 Pair(state, routeProfile)
-    //             } else {
-    //                 throw MixinResponseException(
-    //                     tickerResponse.errorCode,
-    //                     tickerResponse.errorDescription,
-    //                 )
-    //             }
-    //         }.catch { e ->
-    //             if (e is MixinResponseException) {
-    //                 if (e.errorCode == ErrorHandler.OLD_VERSION) {
-    //                     // do nothing
-    //                 } else if (e.errorCode == ErrorHandler.AUTHENTICATION) {
-    //                     walletViewModel.deleteSessionByUserId(
-    //                         generateConversationId(
-    //                             ROUTE_BOT_USER_ID,
-    //                             Session.getAccountId()!!,
-    //                         ),
-    //                         ROUTE_BOT_USER_ID,
-    //                     )
-    //                     toast(getString(R.string.Try_Again))
-    //                     sendReceiveView.buy.displayedChild = 0
-    //                     sendReceiveView.buy.isEnabled = true
-    //                     return@catch
-    //                 }
-    //                 sendReceiveView.buy.displayedChild = 0
-    //                 sendReceiveView.buy.isEnabled = true
-    //                 ErrorHandler.handleMixinError(e.errorCode, e.errorDescription)
-    //             } else {
-    //                 ErrorHandler.handleError(e)
-    //             }
-    //             sendReceiveView.buy.displayedChild = 0
-    //             sendReceiveView.buy.isEnabled = true
-    //         }.collectLatest { pair ->
-    //             WalletActivity.showBuy(requireActivity(), pair.first, pair.second)
-    //             sendReceiveView.buy.displayedChild = 0
-    //             sendReceiveView.buy.isEnabled = true
-    //         }
-    //     }
-    // }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
@@ -299,7 +147,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                sendBottomSheet.show(it)
+                                navTo(TransferDestinationInputFragment.newInstance(it),
+                                    TransferDestinationInputFragment.TAG)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }
@@ -493,7 +342,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _binding = null
         _headBinding = null
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 

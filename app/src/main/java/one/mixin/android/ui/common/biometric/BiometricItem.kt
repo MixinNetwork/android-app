@@ -47,8 +47,8 @@ class TransferBiometricItem(
     override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
-fun buildEmptyTransferBiometricItem(user: User) =
-    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null, null)
+fun buildEmptyTransferBiometricItem(user: User, token: TokenItem? = null) =
+    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), token, "", null, PaymentStatus.pending.name, null, null, null)
 
 fun buildTransferBiometricItem(
     user: User,

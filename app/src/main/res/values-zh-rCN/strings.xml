@@ -1365,8 +1365,10 @@
     <string name="choose_network_fee">选择支付手续费的币种</string>
     <string name="legacy_network_transfer_hint">当前转账使用的是旧网络</string>
     <string name="FREE">免费</string>
-    <string name="Send_crypto_to_contact">向 Mixin 联系人发送加密货币</string>
-    <string name="Send_crypto_to_address">向钱包或交易所发送加密货币</string>
+    <string name="Send_crypto_to_contact">使用 Mixin 网络向 Mixin 联系人发送加密货币。</string>
+    <string name="send_to_address_description">通过区块链网络转给已知地址</string>
+    <string name="Send_to_Contact_description">通过 Mixin 网络转给我的 Mixin 联系人</string>
+    <string name="Send_to_web3_wallet_description">通过区块链网络转给我的 %1$s 账户</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
     <string name="Contact_Support">联系客服</string>
@@ -1494,7 +1496,9 @@
     <string name="Solana_Account">Solana 账户</string>
     <string name="Review">预览</string>
     <string name="Max">最大值</string>
-    <string name="hint_address">输入钱包地址</string>
+    <string name="hint_address">输入钱包地址、交易所地址</string>
+    <string name="hint_memo">输入地址备注（Memo），如果没有直接点下一步</string>
+    <string name="hint_tag">输入地址标签（Tag），如果没有直接点下一步。</string>
     <string name="Accounts">账户</string>
     <string name="to_mixin_wallet">划转到 Mixin 钱包</string>
     <string name="insufficient_gas">您的账户中没有足够的 %1$s 来支付网络费用</string>
@@ -1839,4 +1843,18 @@
     <string name="sell_token">卖出 %1$s</string>
     <string name="buy_token">买入 %1$s</string>
     <string name="NO_ORDERS">没有订单</string>
+    <string name="Mixin_Wallet">Mixin 钱包</string>
+    <string name="Preview">预览</string>
+    <string name="memo_placeholder">输入地址备注（Memo），如果没有直接点下一步。</string>
+    <string name="tag_placeholder">输入数字地址标签（Tag），如果没有请输入任意非 0 数字。</string>
+    <string name="withdrawal_label_placeholder">使用一个独特的标签来帮助您找到这个地址，例如钱包、交易所或者朋友的名称。</string>
+    <string name="optional_note">转账备注（可选）</string>
+    <string name="add_a_note">添加转账备注</string>
+    <string name="Edit_Note">修改转账备注</string>
+    <string name="Delete_Note">删除转账备注</string>
+    <string name="available_balance">可用余额：%1$s</string>
+    <string name="Mixin_Contact">Mixin 联系人</string>
+    <string name="Address_Book">地址簿</string>
+    <string name="insufficient_fee_description">需要 %1$s 以支付 %2$s 网络费用</string>
+    <string name="Send_To_Title">转给</string>
 </resources>

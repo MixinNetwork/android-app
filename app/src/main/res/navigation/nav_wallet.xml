@@ -42,22 +42,6 @@
             app:popEnterAnim="@anim/stay"/>
 
         <action
-            android:id="@+id/action_transactions_to_single_friend_select"
-            app:destination="@id/single_friend_select_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:exitAnim="@anim/stay"
-            app:popEnterAnim="@anim/stay"/>
-
-        <action
-            android:id="@+id/action_transactions_to_address_management"
-            app:destination="@id/address_management_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:exitAnim="@anim/stay"
-            app:popEnterAnim="@anim/stay"/>
-
-        <action
             android:id="@+id/action_transactions_to_utxo"
             app:destination="@id/utxo_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -72,6 +56,7 @@
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
             app:popEnterAnim="@anim/stay"/>
+
     </fragment>
 
     <fragment
@@ -203,16 +188,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/single_friend_select_fragment"
-        android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
-        tools:layout="@layout/fragment_friends" >
-
-        <argument
-            android:name="args_asset"
-            app:argType="one.mixin.android.vo.safe.TokenItem" />
-    </fragment>
-
-    <fragment
         android:id="@+id/address_management_fragment"
         android:name="one.mixin.android.ui.address.AddressManagementFragment"
         tools:layout="@layout/fragment_address_management">
@@ -234,6 +209,17 @@
             app:popExitAnim="@anim/slide_out_right"
             app:popUpTo="@id/transactions_fragment"
             app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transfer_destination_input_fragment"
+        android:name="one.mixin.android.ui.address.TransferDestinationInputFragment"
+        tools:layout="@layout/fragment_address_input">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+
     </fragment>
 
     <fragment
@@ -380,6 +366,17 @@
             app:popUpTo="@id/wallet_select_payment"
             app:popUpToInclusive="true"
             app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/wallet_input"
+        android:name="one.mixin.android.ui.wallet.InputFragment">
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.safe.TokenItem" />
+        <argument
+            android:name="args_user"
+            app:argType="one.mixin.android.vo.User" />
     </fragment>
 
 </navigation>
