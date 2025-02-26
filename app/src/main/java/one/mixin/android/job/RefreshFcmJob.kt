@@ -14,7 +14,7 @@ class RefreshFcmJob(
     private val deviceCheckToken: String? = null,
 ) : BaseJob(Params(PRIORITY_UI_HIGH).setSingleId(GROUP).requireNetwork()) {
     companion object {
-        private const val serialVersionUID = 2L
+        private const val serialVersionUID = 1L
         const val GROUP = "RefreshFcmJob"
     }
 
