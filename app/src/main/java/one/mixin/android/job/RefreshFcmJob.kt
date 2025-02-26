@@ -12,7 +12,7 @@ import timber.log.Timber
 class RefreshFcmJob(
     private val notificationToken: String? = null,
     private val deviceCheckToken: String? = null,
-) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork()) {
+) : BaseJob(Params(PRIORITY_UI_HIGH).setSingleId(GROUP).requireNetwork()) {
     companion object {
         private const val serialVersionUID = 2L
         const val GROUP = "RefreshFcmJob"
