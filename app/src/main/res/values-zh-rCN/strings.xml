@@ -410,6 +410,7 @@
     <string name="error_expired_authorization_code">错误 20121：授权码已过期</string>
     <string name="error_full_group">错误 20116：群组已满</string>
     <string name="error_insufficient_balance">错误 20117：余额不足</string>
+    <string name="error_legacy_pin">错误 20118：为了加强 Mixin 网络的安全，Mixin API 现已暂停 D3M-PIN 升级到 TIP，详情请查看文档并登记等待处理。</string>
     <string name="error_insufficient_transaction_fee_with_amount">错误 20124：手续费不足。请确保钱包至少有 %1$s 当作手续费。</string>
     <string name="error_invalid_address">错误 30102：地址格式错误。请输入正确的 %1$s %2$s 的地址！</string>
     <string name="error_invalid_address_plain">错误 30102：地址格式错误。</string>
@@ -1857,4 +1858,5 @@
     <string name="Address_Book">地址簿</string>
     <string name="insufficient_fee_description">需要 %1$s 以支付 %2$s 网络费用</string>
     <string name="Send_To_Title">转给</string>
+    <string name="View_Document">查看文档</string>
 </resources>
