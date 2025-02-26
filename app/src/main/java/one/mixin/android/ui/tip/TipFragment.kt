@@ -333,7 +333,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 val failedSigners = tipBundle.tipEvent?.failedSigners
                 if (nodeCounter != tipCounter && failedSigners?.size == tip.tipNodeCount()) {
                     // for fix tipCounter > nodeCounter
-                    AnalyticsTracker.trackLoginVerifyPin("change_pin")
                     showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                         tipBundle.oldPin = pin
                         tipBundle.pin = pin
@@ -342,7 +341,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 } else {
                     // We should always input old PIN to decrypt encryptedSalt
                     // even if there are no failed signers.
-                    AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
                     showInputPin(getString(R.string.Enter_your_old_PIN)) { oldPin ->
                         tipBundle.oldPin = oldPin
                         showInputPin { pin ->
@@ -353,7 +351,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
             TipType.Upgrade -> {
-                AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
                 showVerifyPin(getString(R.string.Enter_your_PIN)) { pin ->
                     tipBundle.oldPin = pin // as legacy pin
                     tipBundle.pin = pin
@@ -361,7 +358,6 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 }
             }
             TipType.Create -> {
-                AnalyticsTracker.trackSignUpSetPin()
                 showInputPin(getString(R.string.Enter_your_PIN)) { pin ->
                     tipBundle.pin = pin
                     processTip()
@@ -391,6 +387,21 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
             val oldPin = tipBundle.oldPin
             Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
+
+            when(tipBundle.tipType) {
+                TipType.Change -> {
+                    AnalyticsTracker.trackLoginVerifyPin("change_pin")
+                }
+                TipType.Upgrade -> {
+                    AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
+                }
+                TipType.Create -> {
+                    AnalyticsTracker.trackSignUpSetPin()
+                }
+                else -> {
+                    // do noting
+                }
+            }
 
             tip.addObserver(tipObserver)
             when {

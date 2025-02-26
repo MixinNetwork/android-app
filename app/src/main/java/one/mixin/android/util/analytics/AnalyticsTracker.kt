@@ -110,7 +110,7 @@ object AnalyticsTracker {
             totalUsd >= 10000 -> "v10000"
             totalUsd >= 1000 -> "v1000"
             totalUsd >= 100 -> "v100"
-            totalUsd >= 1 -> "v100"
+            totalUsd >= 1 -> "v1"
             else -> "v0"
         }
         firebaseAnalytics.setUserProperty("asset_level", level)

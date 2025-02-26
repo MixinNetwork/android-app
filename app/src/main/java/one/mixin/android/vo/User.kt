@@ -113,7 +113,7 @@ data class User(
     }
 
     fun isBot(): Boolean {
-        return appId != null
+        return identityNumber.isBotIdentityNumber()
     }
 
     fun isMembership(): Boolean {
@@ -133,4 +133,9 @@ fun createSystemUser(): User {
 
 fun User.notMessengerUser(): Boolean {
     return identityNumber == "0"
+}
+
+fun String?.isBotIdentityNumber(): Boolean {
+    val n = this?.toLongOrNull() ?: return false
+    return (n in 7000000001..7999999999) || n == 7000L
 }

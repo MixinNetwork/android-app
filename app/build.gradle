@@ -17,7 +17,7 @@ plugins {
 
 def versionMajor = 2
 def versionMinor = 2
-def versionPatch = 2
+def versionPatch = 3
 def versionBuild = 0
 
 android {
@@ -208,7 +208,7 @@ dependencies {
     implementation("org.bitcoinj:bitcoinj-core:${bitcoinVersion}") {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
     implementation platform("com.google.firebase:firebase-bom:33.9.0")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
@@ -328,7 +328,7 @@ dependencies {
 
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:app-update-ktx:${playVersion}"
-    implementation "com.google.android.gms:play-services-maps:19.0.0"
+    implementation "com.google.android.gms:play-services-maps:19.1.0"
     implementation "com.google.android.gms:play-services-location:21.3.0"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"

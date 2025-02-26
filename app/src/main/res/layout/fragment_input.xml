@@ -13,44 +13,45 @@
         android:orientation="vertical">
 
         <one.mixin.android.widget.TitleView
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:need_divider="false" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:need_divider="false"
+            app:rightIcon="@drawable/ic_support" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <ViewAnimator
                 android:id="@+id/continue_va"
                 android:layout_width="256dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_round_blue_btn_40"
                 android:clickable="true"
                 android:focusable="true"
-                android:paddingTop="14dp"
-                android:paddingBottom="14dp"
-                android:layout_marginBottom="36dp"
                 android:inAnimation="@anim/fade_in"
                 android:outAnimation="@anim/fade_out"
-                android:background="@drawable/bg_round_blue_btn_40"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
                 <TextView
-                    android:layout_gravity="center"
                     android:id="@+id/continue_tv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_gravity="center"
                     android:gravity="center"
-                    android:text="@string/Review"
+                    android:text="@string/Next"
                     android:textColor="@color/selector_tv_white"
                     android:textSize="14sp" />
 
@@ -66,59 +67,182 @@
                 android:id="@+id/keyboard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="46dp"
+                android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toTopOf="@id/continue_va" />
 
             <RelativeLayout
                 android:id="@+id/token_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/bg_round_window_8dp"
-                app:layout_constraintBottom_toTopOf="@id/keyboard">
+                app:layout_constraintBottom_toTopOf="@id/keyboard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
-                <one.mixin.android.widget.BadgeCircleImageView
-                    android:id="@+id/avatar"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
+                <LinearLayout
+                    android:id="@+id/value_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/token_ll"
+                    android:layout_marginBottom="12dp"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp">
+
+                    <TextView
+                        android:id="@+id/quarter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ripple_round_window_20"
+                        android:gravity="center"
+                        android:paddingStart="30dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="30dp"
+                        android:paddingBottom="4dp"
+                        android:textColor="?attr/text_primary"
+                        android:text="25%" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/half"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:paddingStart="30dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="30dp"
+                        android:paddingBottom="4dp"
+                        android:background="@drawable/ripple_round_window_20"
+                        android:textColor="?attr/text_primary"
+                        android:text="50%" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/max"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ripple_round_window_20"
+                        android:gravity="center"
+                        android:paddingStart="30dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="30dp"
+                        android:paddingBottom="4dp"
+                        android:textColor="?attr/text_primary"
+                        android:text="@string/Max" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp">
+
+                    <TextView
+                        android:id="@+id/title_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:textColor="?attr/text_assist"
+                        android:includeFontPadding="false"
+                        tools:text="Title" />
+
+                    <LinearLayout
+                        android:id="@+id/info_linear_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/add_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_blue"
+                            android:layout_marginEnd="8dp"
+                            android:includeFontPadding="false"
+                            tools:text="Add ETH" />
+
+                        <TextView
+                            android:id="@+id/content_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_assist"
+                            android:includeFontPadding="false"
+                            tools:text="Content" />
+
+                        <ProgressBar
+                            android:id="@+id/loading_progress_bar"
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="12sp"
+                            android:layout_height="12sp"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:id="@+id/icon_image_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:visibility="gone"
+                            tools:src="@drawable/ic_arrow_down_info" />
+
+                    </LinearLayout>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/token_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginBottom="15dp"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerInParent="true"/>
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_below="@+id/info"
+                    android:background="@drawable/bg_round_window_8dp">
 
-                <TextView
-                    android:id="@+id/name"
-                    android:textColor="?attr/text_primary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignTop="@id/avatar"
-                    android:layout_toEndOf="@id/avatar"
-                    android:layout_marginStart="16dp"
-                    tools:text="@string/Ethereum"/>
+                    <one.mixin.android.widget.BadgeCircleImageView
+                        android:id="@+id/avatar"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerInParent="true"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp" />
 
-                <TextView
-                    android:id="@+id/balance"
-                    android:textColor="?attr/text_assist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBottom="@id/avatar"
-                    android:layout_toEndOf="@id/avatar"
-                    android:layout_marginStart="16dp"
-                    tools:text="1.2345678 ETH"/>
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@id/avatar"
+                        android:layout_marginStart="16dp"
+                        android:layout_toEndOf="@id/avatar"
+                        android:textColor="?attr/text_primary"
+                        tools:text="@string/Ethereum" />
 
-                <TextView
-                    android:id="@+id/max"
-                    android:text="@string/Max"
-                    android:padding="20dp"
-                    android:textColor="@color/selector_blue_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true" />
+                    <TextView
+                        android:id="@+id/balance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/avatar"
+                        android:layout_marginStart="16dp"
+                        android:layout_toEndOf="@id/avatar"
+                        android:textColor="?attr/text_assist"
+                        tools:text="1.2345678 ETH" />
 
+
+                </RelativeLayout>
             </RelativeLayout>
 
             <TextView
@@ -127,66 +251,84 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin16"
                 android:layout_marginEnd="@dimen/margin16"
+                android:gravity="center_vertical"
+                android:maxLines="2"
                 android:paddingStart="@dimen/margin16"
                 android:paddingEnd="@dimen/margin16"
-                android:maxLines="2"
-                android:gravity="center_vertical"
                 android:textColor="?attr/text_primary"
-                android:textSize="40sp"
                 android:textFontWeight="500"
-                app:layout_constraintVertical_chainStyle="packed"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                android:textSize="40sp"
                 app:layout_constraintBottom_toTopOf="@id/minor_ll"
-                tools:text="0 USD"
-                tools:ignore="HardcodedText" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                tools:ignore="HardcodedText"
+                tools:text="0 USD" />
 
 
             <LinearLayout
                 android:id="@+id/minor_ll"
-                android:orientation="horizontal"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp"
-                app:layout_constraintTop_toBottomOf="@id/primary_tv"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
                 app:layout_constraintBottom_toTopOf="@id/token_rl"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/primary_tv"
                 tools:ignore="UseCompoundDrawables">
 
                 <TextView
                     android:id="@+id/minor_tv"
-                    android:layout_width="0dp"
-                    android:textColor="?attr/text_assist"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
                     android:gravity="center"
-                    android:layout_weight="1"
-                    tools:text="0 USD"/>
+                    android:textColor="?attr/text_assist"
+                    android:textSize="16sp"
+                    tools:text="0 USD" />
 
                 <ImageView
                     android:id="@+id/switch_iv"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:background="@drawable/mixin_ripple"
-                    android:src="@drawable/ic_switch"
-                    android:contentDescription="@null" />
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_switch" />
             </LinearLayout>
+
             <TextView
                 android:id="@+id/insufficient_balance"
-                android:layout_width="wrap_content"
-                android:textColor="@color/text_color_error_tip"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
                 android:layout_marginTop="10dp"
-                android:visibility="gone"
                 android:text="@string/insufficient_balance"
-                app:layout_constraintTop_toBottomOf="@id/minor_ll"
+                android:textColor="@color/text_color_error_tip"
+                android:textSize="14sp"
+                android:visibility="gone"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/minor_ll" />
+
+            <TextView
+                android:id="@+id/insufficient_fee_balance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_color_error_tip"
+                android:textSize="14sp"
+                android:text="@string/insufficient_gas"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/minor_ll" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
