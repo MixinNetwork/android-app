@@ -33,10 +33,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import org.sol4k.rpc.Balance
+import java.math.BigDecimal
 
 @Composable
 fun WalletCard(
+    balance: BigDecimal,
+    assets: List<AssetDistribution>,
     destination: WalletDestination,
     onClick: () -> Unit
 ) {
@@ -58,7 +63,10 @@ fun WalletCard(
                 Text(
                     if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
                         R.string.Classic_Wallet
-                    ), fontSize = 16.sp, fontWeight = FontWeight.W500, color = MixinAppTheme.colors.textPrimary
+                    ),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
                 )
                 if (destination == WalletDestination.Privacy) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -78,7 +86,7 @@ fun WalletCard(
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = "0",
+                    text = balance.numberFormat2(),
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W400,
@@ -88,38 +96,42 @@ fun WalletCard(
                 Text("USD", color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if (destination == WalletDestination.Privacy) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    privacyChain.forEachIndexed { index, iconRes ->
-                        Image(
-                            painter = painterResource(id = iconRes),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .offset(x = (-6 * index).dp)
-                                .border(1.dp, MixinAppTheme.colors.background, CircleShape)
-                        )
-                    }
-                }
+            if (assets.isNotEmpty()) {
+                Distribution(assets)
             } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    classicChain.forEachIndexed { index, iconRes ->
-                        Image(
-                            painter = painterResource(id = iconRes),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .offset(x = (-6 * index).dp)
-                                .border(1.dp, MixinAppTheme.colors.background, CircleShape)
-                        )
+                if (destination == WalletDestination.Privacy) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        privacyChain.forEachIndexed { index, iconRes ->
+                            Image(
+                                painter = painterResource(id = iconRes),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .offset(x = (-6 * index).dp)
+                                    .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                            )
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        classicChain.forEachIndexed { index, iconRes ->
+                            Image(
+                                painter = painterResource(id = iconRes),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .offset(x = (-6 * index).dp)
+                                    .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                            )
+                        }
                     }
                 }
             }

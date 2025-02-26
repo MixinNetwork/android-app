@@ -151,7 +151,7 @@ class WalletViewModel
         filterParams: Web3FilterParams,
     ): LiveData<PagedList<Web3Transaction>> =
         LivePagedListBuilder(
-            tokenRepository.allWeb3Transacation(filterParams),
+            tokenRepository.allWeb3Transaction(filterParams),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)

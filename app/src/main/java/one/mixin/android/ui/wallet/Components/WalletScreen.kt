@@ -1,8 +1,5 @@
 package one.mixin.android.ui.wallet.components
 
-import android.view.View
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,25 +10,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.isVisible
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 
-
 @Composable
 fun WalletScreen(
-    onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit
+    onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit,
+    viewModel: WalletViewModel = hiltViewModel()
 ) {
+    val top3TokenDistribution by viewModel.top3TokenDistribution.collectAsState(initial = emptyList())
+    val top3Web3TokenDistribution by viewModel.top3Web3TokenDistribution.collectAsState(initial = emptyList())
+
+    val tokenTotalBalance by viewModel.tokenTotalBalance.collectAsState()
+    val web3TokenTotalBalance by viewModel.web3TokenTotalBalance.collectAsState()
+
     MixinAppTheme {
         Column(
             modifier = Modifier
@@ -50,14 +51,19 @@ fun WalletScreen(
             )
             TotalAssetsCard()
             Spacer(modifier = Modifier.height(20.dp))
+            
             WalletCard(
+                balance = tokenTotalBalance,
+                assets= top3TokenDistribution,
                 destination = WalletDestination.Privacy,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, "privacy_001") }
+                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, "privacy") }
             )
             Spacer(modifier = Modifier.height(10.dp))
             WalletCard(
+                balance = web3TokenTotalBalance,
+                assets = top3Web3TokenDistribution,
                 destination = WalletDestination.Classic,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Classic, "classic_001") }
+                onClick = { onWalletCardClick.invoke(WalletDestination.Classic, "classic") }
             )
         }
     }
@@ -67,13 +73,3 @@ data class AssetDistribution(
     val currency: String,
     val percentage: Float, // 0.0 - 1.0
 )
-
-// Todo remove
-val sampleDistribution = listOf<AssetDistribution>(
-    // AssetDistribution("BTC", 0.65f),
-    // AssetDistribution("ETH", 0.25f),
-    // AssetDistribution("XIN", 0.1f)
-)
-
-
-

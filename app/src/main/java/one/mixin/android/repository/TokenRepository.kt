@@ -38,6 +38,7 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.Web3Transaction
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -73,7 +74,6 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
@@ -108,7 +108,6 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -131,8 +130,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.flow
-import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.ui.wallet.Web3FilterParams
 
@@ -166,6 +164,7 @@ class TokenRepository
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
+        private val web3TokenDao: Web3TokenDao,
         private val web3TranTransactionDao: Web3TransactionDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
@@ -504,7 +503,7 @@ class TokenRepository
         }
 
 
-        fun allWeb3Transacation(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3Transaction> {
+        fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3Transaction> {
             return web3TranTransactionDao.allTransactions(filterParams.buildQuery())
         }
 
@@ -1283,4 +1282,7 @@ class TokenRepository
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
+    fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
+
+    fun assetFlow() = tokenDao.assetFlow()
 }
