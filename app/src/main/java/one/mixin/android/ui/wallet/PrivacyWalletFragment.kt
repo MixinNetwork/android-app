@@ -33,7 +33,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
-import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
@@ -91,8 +90,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var _binding: FragmentPrivacyWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
-    private var _bottomBinding: ViewWalletBottomBinding? = null
-    private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
@@ -232,9 +229,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 }
             }
         }
-        walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
-            migrateEnable = it
-        }
 
         walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
             _headBinding?.apply {
@@ -300,9 +294,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-
-    private var migrateEnable = false
-
     private var lastFiatCurrency :String? = null
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -323,7 +314,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         assetsAdapter.onItemListener = null
         _binding = null
         _headBinding = null
-        _bottomBinding = null
         super.onDestroyView()
     }
 
@@ -491,32 +481,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
         _headBinding?.pieItemContainer?.addView(item)
-    }
-
-    @SuppressLint("InflateParams")
-    private fun showBottom() {
-        val builder = BottomSheet.Builder(requireActivity())
-        _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
-        builder.setCustomView(bottomBinding.root)
-        val bottomSheet = builder.create()
-        bottomBinding.migrate.isVisible = migrateEnable
-        bottomBinding.hide.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.Hidden)
-            bottomSheet.dismiss()
-        }
-        bottomBinding.transactionsTv.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
-            bottomSheet.dismiss()
-        }
-        bottomBinding.migrate.setOnClickListener {
-            lifecycleScope.launch click@{
-                val bot = walletViewModel.findBondBotUrl() ?: return@click
-                WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
-            }
-            bottomSheet.dismiss()
-        }
-
-        bottomSheet.show()
     }
 
     private fun showReceiveAssetList() {

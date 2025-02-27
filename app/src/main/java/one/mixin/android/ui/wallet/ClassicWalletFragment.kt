@@ -29,7 +29,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
-import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
@@ -82,8 +81,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var _binding: FragmentPrivacyWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
-    private var _bottomBinding: ViewWalletBottomBinding? = null
-    private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private var assets: List<Web3Token> = listOf()
@@ -245,7 +242,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         assetsAdapter.onItemListener = null
         _binding = null
         _headBinding = null
-        _bottomBinding = null
         super.onDestroyView()
     }
 
@@ -382,24 +378,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
         _headBinding?.pieItemContainer?.addView(item)
-    }
-
-    @SuppressLint("InflateParams")
-    private fun showBottom() {
-        val builder = BottomSheet.Builder(requireActivity())
-        _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
-        builder.setCustomView(bottomBinding.root)
-        val bottomSheet = builder.create()
-        bottomBinding.migrate.isVisible = false
-        bottomBinding.hide.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.Hidden)
-            bottomSheet.dismiss()
-        }
-        bottomBinding.transactionsTv.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
-            bottomSheet.dismiss()
-        }
-        bottomSheet.show()
     }
 
     private fun showReceiveAssetList() {

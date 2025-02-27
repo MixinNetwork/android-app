@@ -10,23 +10,32 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletBinding
+import one.mixin.android.databinding.ViewClassicWalletBottomBinding
+import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.rxpermission.RxPermissions
+import one.mixin.android.vo.generateConversationId
+import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -43,7 +52,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
-
+    private var currentType: String = WalletDestination.Classic.name
     private val walletViewModel by viewModels<WalletViewModel>()
 
     override fun onCreateView(
@@ -54,6 +63,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         _binding = FragmentWalletBinding.inflate(inflater, container, false)
         return binding.root
     }
+
+    private val classicWalletFragment by lazy {  ClassicWalletFragment.newInstance() }
+    private val privacyWalletFragment by lazy {  PrivacyWalletFragment.newInstance() }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
@@ -67,17 +79,23 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         binding.apply {
             badge.isVisible = wallet == null
             if (wallet == WalletDestination.Privacy.name || wallet == null) { // defualt wallet
-                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, PrivacyWalletFragment.TAG)
+                currentType = WalletDestination.Privacy.name
+                requireActivity().replaceFragment(privacyWalletFragment, R.id.wallet_container, PrivacyWalletFragment.TAG)
                 titleTv.setText(R.string.Privacy_Wallet)
                 tailIcon.isVisible = true
             } else {
                 // Todo wallet id
-                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, ClassicWalletFragment.TAG)
+                currentType = WalletDestination.Classic.name
+                requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
                 titleTv.setText(R.string.Classic_Wallet)
                 tailIcon.isVisible = false
             }
             moreIb.setOnClickListener {
-                // Todo
+                if (currentType == WalletDestination.Privacy.name) {
+                    showPrivacyBottom()
+                } else {
+                    showClassicBottom()
+                }
             }
             scanIb.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA)
@@ -90,6 +108,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     }
             }
             searchIb.setOnClickListener {
+                // Todo classic search
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
             }
             compose.setContent {
@@ -131,20 +150,28 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 }
             }
         }
+
+        walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
+            migrateEnable = it
+        }
     }
+
+    private var migrateEnable = false
 
     private fun handleWalletCardClick(destination: WalletDestination, walletId: String?) {
         when (destination) {
             WalletDestination.Privacy -> {
                 defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Privacy.name)
-                requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, PrivacyWalletFragment.TAG)
+                currentType = WalletDestination.Privacy.name
+                requireActivity().replaceFragment(privacyWalletFragment, R.id.wallet_container, PrivacyWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Privacy_Wallet)
                 binding.tailIcon.isVisible = true
                 binding.badge.isVisible = false
             }
             WalletDestination.Classic -> {
                 defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Classic.name)
-                requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, ClassicWalletFragment.TAG)
+                currentType = WalletDestination.Classic.name
+                requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Classic_Wallet)
                 binding.tailIcon.isVisible = false
                 binding.badge.isVisible = false
@@ -185,5 +212,61 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         } else {
             false
         }
+    }
+    private var _privacyBottomBinding: ViewPrivacyWalletBottomBinding? = null
+    private val privacyBottomBinding get() = requireNotNull(_privacyBottomBinding)
+
+    @SuppressLint("InflateParams")
+    private fun showPrivacyBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        if (_privacyBottomBinding == null) {
+            _privacyBottomBinding = ViewPrivacyWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_privacy_wallet_bottom, null))
+        }
+        builder.setCustomView(privacyBottomBinding.root)
+        val bottomSheet = builder.create()
+        privacyBottomBinding.migrate.isVisible = migrateEnable
+        privacyBottomBinding.hide.setOnClickListener {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.Hidden)
+            bottomSheet.dismiss()
+        }
+        privacyBottomBinding.transactionsTv.setOnClickListener {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+            bottomSheet.dismiss()
+        }
+        privacyBottomBinding.migrate.setOnClickListener {
+            lifecycleScope.launch click@{
+                val bot = walletViewModel.findBondBotUrl() ?: return@click
+                WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
+            }
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
+    }
+
+    private var _classicBottomBinding: ViewClassicWalletBottomBinding? = null
+    private val classicBottomBinding get() = requireNotNull(_classicBottomBinding)
+
+    @SuppressLint("InflateParams")
+    private fun showClassicBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        if (_classicBottomBinding == null) {
+            _classicBottomBinding = ViewClassicWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_classic_wallet_bottom, null))
+        }
+        builder.setCustomView(privacyBottomBinding.root)
+        val bottomSheet = builder.create()
+        classicBottomBinding.hide.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+        classicBottomBinding.transactionsTv.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+        bottomSheet.show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _privacyBottomBinding = null
+        _classicBottomBinding = null
     }
 }
