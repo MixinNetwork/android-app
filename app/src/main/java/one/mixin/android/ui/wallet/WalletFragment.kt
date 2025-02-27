@@ -19,6 +19,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -135,14 +136,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun handleWalletCardClick(destination: WalletDestination, walletId: String?) {
         when (destination) {
             WalletDestination.Privacy -> {
-                // Todo save destination
+                defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Privacy.name)
                 requireActivity().replaceFragment(PrivacyWalletFragment.newInstance(), R.id.wallet_container, PrivacyWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Privacy_Wallet)
                 binding.tailIcon.isVisible = true
                 binding.badge.isVisible = false
             }
             WalletDestination.Classic -> {
-                // Todo save destination
+                defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Classic.name)
                 requireActivity().replaceFragment(ClassicWalletFragment.newInstance(), R.id.wallet_container, ClassicWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Classic_Wallet)
                 binding.tailIcon.isVisible = false

@@ -68,7 +68,7 @@ fun WalletCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 if (destination == WalletDestination.Privacy) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_wallet_privacy),
                         tint = Color.Unspecified,
