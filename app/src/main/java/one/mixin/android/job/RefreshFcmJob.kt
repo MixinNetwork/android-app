@@ -20,21 +20,6 @@ class RefreshFcmJob(
 
     @SuppressLint("CheckResult")
     override fun onRun() {
-        if (notificationToken.isNullOrBlank().not()) {
-            updateSession(SessionRequest(notificationToken = notificationToken))
-        } else if (deviceCheckToken.isNullOrBlank().not()) {
-            updateSession(SessionRequest(deviceCheckToken = deviceCheckToken))
-        } else {
-            val token = runCatching {
-                Tasks.await(FirebaseMessaging.getInstance().token)
-            }.onFailure {
-                Timber.e(it)
-            }.getOrDefault(null)
-            updateSession(SessionRequest(notificationToken = token))
-        }
-    }
-
-    private fun updateSession(request: SessionRequest) = runBlocking {
-        accountService.updateSession(request)
+       // do nothing
     }
 }
