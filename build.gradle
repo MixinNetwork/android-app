@@ -39,7 +39,7 @@ buildscript {
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
         ext.kotlinVersion = '2.1.10'
-        ext.libphonenumberVersion = '8.13.55'
+        ext.libphonenumberVersion = '9.0.0'
         ext.coroutinesVersion = '1.10.1'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
