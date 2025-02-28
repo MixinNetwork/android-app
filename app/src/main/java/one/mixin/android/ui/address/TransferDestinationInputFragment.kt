@@ -311,8 +311,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             } else {
                                                 PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                             }
-                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
-                                            if (token == null || fromAddress.isBlank()) {
+                                            if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
                                                 navTo(
