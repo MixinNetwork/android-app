@@ -8,6 +8,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -17,6 +21,7 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.databinding.FragmentCheckRegisterBottomSheetBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
@@ -33,6 +38,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import javax.inject.Inject
@@ -188,6 +194,12 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                         ),
                 )
             if (resp.isSuccess) {
+                val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
+                PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
+                JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, solAddress)
+                val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
+                PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
+                JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, evmAddress)
                 resp.data?.let { account ->
                     Session.storeAccount(account)
                     dismiss()

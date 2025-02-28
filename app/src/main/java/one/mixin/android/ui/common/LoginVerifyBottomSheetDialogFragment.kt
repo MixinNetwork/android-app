@@ -8,20 +8,28 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentLoginVerifyBottomSheetBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import javax.inject.Inject
@@ -114,7 +122,16 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        return bottomViewModel.verifyPin(pin)
+        val r = bottomViewModel.verifyPin(pin)
+        if (r.isSuccess) {
+            val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
+            PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
+            JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, solAddress)
+            val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
+            PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
+            JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, evmAddress)
+        }
+        return r
     }
 
     private var pinSuccess = false

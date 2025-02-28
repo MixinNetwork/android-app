@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
@@ -349,7 +350,7 @@ class MainActivity : BlazeBaseActivity() {
                             val type = e.chainType ?: TYPE_ETH
                             if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
                                 WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                            } else if (type == TYPE_ETH && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
                                 WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                             } else {
                                 WalletConnectActivity.show(this@MainActivity, e)
@@ -512,6 +513,23 @@ class MainActivity : BlazeBaseActivity() {
                 periodicWorkRequest
             )
             initWalletConnect()
+            Timber.e("${defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) == false}-${PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty()}-${PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty()}")
+            if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) == false && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
+                                LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                                    onDismissCallback = { success ->
+                                    }
+                                }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                            }
+                        } catch (e: Exception) {
+                            Timber.w(e)
+                        }
+                    }
+                }
+            }
         }
 
     private fun handleTipEvent(
