@@ -21,6 +21,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -106,7 +110,6 @@ import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
-import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -177,7 +180,9 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -497,8 +502,15 @@ class MainActivity : BlazeBaseActivity() {
             }
 
             jobManager.addJobInBackground(RefreshContactJob())
-            jobManager.addJobInBackground(RefreshFcmJob())
 
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
+                6, TimeUnit.HOURS
+            ).build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "SessionWorker",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                periodicWorkRequest
+            )
             initWalletConnect()
         }
 

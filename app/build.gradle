@@ -16,8 +16,8 @@ plugins {
 }
 
 def versionMajor = 2
-def versionMinor = 2
-def versionPatch = 3
+def versionMinor = 3
+def versionPatch = 0
 def versionBuild = 0
 
 android {
@@ -209,7 +209,7 @@ dependencies {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
-    implementation platform("com.google.firebase:firebase-bom:33.9.0")
+    implementation platform("com.google.firebase:firebase-bom:33.10.0")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
@@ -390,7 +390,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
-    implementation 'androidx.activity:activity-compose:1.10.0'
+    implementation 'androidx.activity:activity-compose:1.10.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     
     // accompanist

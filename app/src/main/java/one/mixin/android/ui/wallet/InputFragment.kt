@@ -420,17 +420,21 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
-                                alertDialog.show()
                                 if (currentFee == null) {
+                                    alertDialog.show()
                                     refreshFee(token!!)
                                     alertDialog.dismiss()
                                     return@launch
                                 }
                                 feeTokensExtra = web3ViewModel.findTokensExtra(currentFee!!.token.assetId)
-                                val feeItem = web3ViewModel.syncAsset(currentFee!!.token.assetId)
+                                var feeItem = web3ViewModel.findAssetItemById(currentFee!!.token.assetId)
+                                if (feeItem == null) {
+                                    alertDialog.show()
+                                    feeItem = web3ViewModel.syncAsset(currentFee!!.token.assetId)
+                                    alertDialog.dismiss()
+                                }
                                 if (feeItem == null) {
                                     toast(R.string.insufficient_balance)
-                                    alertDialog.dismiss()
                                     return@launch
                                 }
                                 val totalAmount =
@@ -452,21 +456,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             }.show(currentFee!!.token)
                                         }
                                     }
-                                    alertDialog.dismiss()
                                     return@launch
                                 } else {
                                     binding.insufficientFeeBalance.isVisible = false
                                 }
-
-                                alertDialog.dismiss()
                                 val address = (assetBiometricItem as? WithdrawBiometricItem)?.address
                                     ?: Address(addressId ?: "", "address", assetId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
+                                val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
-                                    null,
-                                    UUID.randomUUID().toString(),
+                                    addressLabel,
+                                    trace,
                                     token,
                                     amount,
                                     null,

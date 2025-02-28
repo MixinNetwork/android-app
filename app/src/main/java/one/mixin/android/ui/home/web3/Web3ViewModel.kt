@@ -243,6 +243,8 @@ internal constructor(
             tokenRepository.syncAsset(assetId)
         }
 
+    suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
+
     suspend fun validateExternalAddress(
         assetId: String,
         destination: String,
