@@ -10,7 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.extension.fullDate
@@ -35,7 +35,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         fun newInstance(
             transaction: Web3Transaction,
             chain: String,
-            web3Token: Web3Token,
+            web3Token: Web3TokenItem,
         ) = Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
             putString(ARGS_CHAIN, chain)
@@ -45,8 +45,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private val binding by viewBinding(FragmentWeb3TransactionBinding::bind)
     private val web3ViewModel by viewModels<Web3ViewModel>()
-    private val token: Web3Token by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)!!
+    private val token: Web3TokenItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)!!
     }
 
     private val transaction by lazy {

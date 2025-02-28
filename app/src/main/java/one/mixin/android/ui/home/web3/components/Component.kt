@@ -57,6 +57,7 @@ import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
@@ -133,7 +134,7 @@ fun TransactionPreview(
 @Composable
 fun TokenTransactionPreview(
     amount: String,
-    token: Web3Token,
+    token: Web3TokenItem,
 ) {
     Column(
         modifier =
@@ -175,7 +176,7 @@ fun TokenTransactionPreview(
         }
         Box(modifier = Modifier.height(4.dp))
         Text(
-            text = BigDecimal(amount).multiply(BigDecimal(token.price)).currencyFormat(),
+            text = BigDecimal(amount).multiply(BigDecimal(token.priceUsd)).currencyFormat(),
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
         )
@@ -650,8 +651,8 @@ fun TransferBottomPreview() {
 @Preview
 @Composable
 fun BalanceChangePreview() {
-    val token = Web3Token(fungibleId = "", name = "Solana", symbol = "SOL", chainId = "solana", chainName = "Solana", chainIconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", balance = "0.01605982", price = "132.9102434930042", changeAbsolute = "-0.030625", changePercent = "-0.023036555963245636", decimals = 9, assetKey = "asset_key", iconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", assetId = "64692c23-8971-4cf4-84a7-4dd1271dd887")
-    BalanceChangeItem(token = token, balanceChange = BalanceChange("So11111111111111111111111111111111111111112", -10000000))
+    // val token = Web3Token(assert = "", name = "Solana", symbol = "SOL", chainId = "solana", chainName = "Solana", chainIconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", balance = "0.01605982", price = "132.9102434930042", changeAbsolute = "-0.030625", changePercent = "-0.023036555963245636", decimals = 9, assetKey = "asset_key", iconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", assetId = "64692c23-8971-4cf4-84a7-4dd1271dd887")
+    // BalanceChangeItem(token = token, balanceChange = BalanceChange("So11111111111111111111111111111111111111112", -10000000))
 }
 
 @Preview
@@ -663,12 +664,13 @@ fun ItemPreview() {
 @Preview
 @Composable
 fun SolanaParsedTxPreviewPreview() {
-    val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
-    val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    val tokensData = """[{"id":"So11111111111111111111111111111111111111112","fungible_id":"","name":"Wrapped SOL","symbol":"SOL","icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","chain_id":"solana","chain_name":"Solana","chain_icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","balance":"0","price":"131.23961288579045","change_absolute":"-5.5895303","change_percent":"-4.085043702224179","decimals":9,"asset_key":"So11111111111111111111111111111111111111112","associated_account":""},{"id":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","fungible_id":"","name":"USD Coin","symbol":"USDC","icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png","chain_id":"solana","chain_name":"Solana","chain_icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","balance":"0","price":"0.9999952","change_absolute":"-0.00004657","change_percent":"-0.004655805573562128","decimals":6,"asset_key":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","associated_account":""}]"""
-    val tokens = GsonHelper.customGson.fromJson(tokensData, Array<Web3Token>::class.java)
-    parsedTx.tokens = tokens.associateBy { it.assetKey }
-    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    // Todo
+    // val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
+    // val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
+    // val tokensData = """[{"id":"So11111111111111111111111111111111111111112","fungible_id":"","name":"Wrapped SOL","symbol":"SOL","icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","chain_id":"solana","chain_name":"Solana","chain_icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","balance":"0","price":"131.23961288579045","change_absolute":"-5.5895303","change_percent":"-4.085043702224179","decimals":9,"asset_key":"So11111111111111111111111111111111111111112","associated_account":""},{"id":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","fungible_id":"","name":"USD Coin","symbol":"USDC","icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png","chain_id":"solana","chain_name":"Solana","chain_icon_url":"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png","balance":"0","price":"0.9999952","change_absolute":"-0.00004657","change_percent":"-0.004655805573562128","decimals":6,"asset_key":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","associated_account":""}]"""
+    // val tokens = GsonHelper.customGson.fromJson(tokensData, Array<Web3TokenItem>::class.java)
+    // parsedTx.tokens = tokens.associateBy { it.assetKey }
+    // SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview

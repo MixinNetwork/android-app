@@ -4,7 +4,9 @@ import android.content.Context
 import android.os.Parcelable
 import android.text.SpannedString
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R

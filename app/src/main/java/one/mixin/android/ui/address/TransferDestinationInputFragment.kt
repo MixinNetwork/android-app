@@ -28,11 +28,10 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.web3.vo.isSolana
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -76,8 +75,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
         fun newInstance(
             address: String,
-            web3Token: Web3Token,
-            chainToken: Web3Token?,
+            web3Token: Web3TokenItem,
+            chainToken: Web3TokenItem?,
         ) =
             TransferDestinationInputFragment().apply {
                 withArgs {
@@ -109,11 +108,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     }
 
     private val web3Token by lazy {
-        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
     }
 
     private val chainToken by lazy {
-        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
@@ -536,18 +535,20 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     }
 
     private fun isValidAddress(address: String): Boolean {
-        return if (web3Token?.chainName.equals("solana", true) == true) {
-            // https://github.com/solana-labs/solana-web3.js/blob/afe5602674b2eb8f5e780097d98e1d60ec63606b/packages/addresses/src/address.ts#L36
-            if (address.length < 32 || address.length > 44) {
-                return false
-            }
-            return try {
-                address.decodeBase58().size == 32
-            } catch (e: Exception) {
-                false
-            }
-        } else {
-            WalletUtils.isValidAddress(address)
-        }
+        // todo
+        // return if (web3Token?.chainName.equals("solana", true) == true) {
+        //     https://github.com/solana-labs/solana-web3.js/blob/afe5602674b2eb8f5e780097d98e1d60ec63606b/packages/addresses/src/address.ts#L36
+            // if (address.length < 32 || address.length > 44) {
+            //     return false
+            // }
+            // return try {
+            //     address.decodeBase58().size == 32
+            // } catch (e: Exception) {
+            //     false
+            // }
+        // } else {
+        //     WalletUtils.isValidAddress(address)
+        // }
+        return true
     }
 }

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.util.getChainNetwork
@@ -32,7 +32,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 @Composable
 fun TokenInfoHeader(
     token: TokenItem?,
-    web3Token: Web3Token?
+    web3Token: Web3TokenItem?
 ) {
     Row(
         modifier = Modifier
@@ -93,7 +93,7 @@ fun TokenInfoHeader(
 
         web3Token?.let {
             Text(
-                text = it.chainName,
+                text = it.chainName ?: "",
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 modifier = Modifier

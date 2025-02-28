@@ -7,7 +7,7 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
-import one.mixin.android.api.request.web3.AddressRequest
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.StakeRequest
@@ -18,7 +18,6 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.Web3Address
 import one.mixin.android.api.response.Web3Wallet
-import one.mixin.android.api.response.WalletAddressResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -254,7 +253,7 @@ interface RouteService {
 
     @POST("addresses")
     suspend fun createAddress(
-        @Body request: AddressRequest
+        @Body request: Web3AddressRequest
     ): MixinResponse<List<Web3Address>>
 
     @GET("addresses")
@@ -270,8 +269,9 @@ interface RouteService {
         @Path("id") walletId: String
     ): MixinResponse<List<Web3Address>>
 
-    @GET("transactions")
+    @GET("addresses/{id}/transactions")
     suspend fun getAllTransactions(
+        @Path("id") id: String,
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 30
     ): MixinResponse<List<Web3Transaction>>

@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -71,7 +71,7 @@ fun BrowserPage(
     account: String,
     chain: Chain,
     amount: String?,
-    token: Web3Token?,
+    token: Web3TokenItem?,
     toAddress: String?,
     type: Int,
     step: WalletConnectBottomSheetDialogFragment.Step,

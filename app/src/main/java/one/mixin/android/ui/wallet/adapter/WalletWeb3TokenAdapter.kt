@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -24,8 +24,8 @@ import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web3Token>() {
-    fun setAssetList(newAssets: List<Web3Token>) {
+class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web3TokenItem>() {
+    fun setAssetList(newAssets: List<Web3TokenItem>) {
         if (data == null) {
             data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
@@ -39,7 +39,7 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                         ): Boolean {
                             val old = data!![oldItemPosition]
                             val new = newAssets[newItemPosition]
-                            return old.fungibleId == new.fungibleId
+                            return old.assetId == new.assetId
                         }
 
                         override fun getOldListSize() = data!!.size
@@ -65,7 +65,7 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
         }
     }
 
-    fun removeItem(pos: Int): Web3Token? {
+    fun removeItem(pos: Int): Web3TokenItem? {
         val list = data?.toMutableList()
         val addr = list?.removeAt(getPosition(pos))
         data = list
@@ -74,7 +74,7 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
     }
 
     fun restoreItem(
-        item: Web3Token,
+        item: Web3TokenItem,
         pos: Int,
     ) {
         val list = data?.toMutableList()
@@ -105,14 +105,14 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                 }
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-            if (asset.price == "0") {
+            if (asset.priceUsd == "0") {
                 binding.priceTv.setText(R.string.NA)
                 binding.changeTv.visibility = GONE
             } else {
                 binding.changeTv.visibility = VISIBLE
                 binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
-                if (asset.changePercent.isNotEmpty()) {
-                    val changeUsd = BigDecimal(asset.changePercent)
+                if (asset.changeUsd.isNotEmpty()) {
+                    val changeUsd = BigDecimal(asset.changeUsd)
                     val isRising = changeUsd >= BigDecimal.ZERO
                     binding.changeTv.setQuoteText("${(changeUsd).numberFormat2()}%", isRising)
                 }
@@ -125,7 +125,7 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                 holder.itemView,
                 {
                     holder.itemView.context?.getClipboardManager()
-                        ?.setPrimaryClip(ClipData.newPlainText(null, asset.fungibleId))
+                        ?.setPrimaryClip(ClipData.newPlainText(null, asset.assetId))
                 },
             )
         }

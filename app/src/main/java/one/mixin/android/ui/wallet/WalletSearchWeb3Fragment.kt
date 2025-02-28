@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
@@ -112,7 +113,6 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
         searchAdapter.callback = callback
         
-        // 初始加载所有 Web3Token
         loadAllTokens()
     }
 
@@ -123,7 +123,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             binding.pb.isVisible = true
             val tokens = withContext(Dispatchers.IO) { 
                 viewModel.web3Tokens().value?.sortedByDescending { 
-                    runCatching { it.balance.toBigDecimal() * it.price.toBigDecimal() }.getOrDefault(0.toBigDecimal())
+                    runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
                 } ?: emptyList()
             }
             
@@ -166,8 +166,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 val localTokens = withContext(Dispatchers.IO) {
                     viewModel.web3Tokens().value?.filter { token ->
                         token.name.contains(query, ignoreCase = true) ||
-                            token.symbol.contains(query, ignoreCase = true) ||
-                            token.chainName.contains(query, ignoreCase = true)
+                            token.symbol.contains(query, ignoreCase = true)
+                            // todo
+                            // || token.chainName.contains(query, ignoreCase = true)
                     } ?: emptyList()
                 }
 
@@ -184,7 +185,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
     private val callback =
         object : Web3SearchCallback {
-            override fun onTokenClick(token: Web3Token) {
+            override fun onTokenClick(token: Web3TokenItem) {
                 binding.searchEt.hideKeyboard()
                 // Todo
             }

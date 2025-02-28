@@ -784,7 +784,7 @@ class SwapFragment : BaseFragment() {
             tokens.forEachIndexed { _, token ->
                 web3Tokens.forEach { t ->
                     if (t.assetKey.equals(token.address, true)) {
-                        token.price = t.price
+                        token.price = t.priceUsd
                     }
                 }
             }

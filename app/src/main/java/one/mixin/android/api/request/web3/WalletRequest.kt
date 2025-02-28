@@ -10,5 +10,5 @@ data class WalletRequest(
     val category: String,
     
     @SerializedName("addresses")
-    val addresses: List<AddressRequest>?
+    val addresses: List<Web3AddressRequest>?
 )

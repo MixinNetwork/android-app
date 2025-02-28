@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
@@ -94,7 +94,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         {
                             if (it.isNullOrBlank()) {
                                 currentQuery = ""
-                                // 显示所有 Web3Token
+                                // 显示所有 Web3TokenItem
                                 loadAllTokens()
                             } else {
                                 if (it.toString() != currentQuery) {
@@ -112,7 +112,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
         searchAdapter.callback = callback
         
-        // 初始加载所有 Web3Token
+        // 初始加载所有 Web3TokenItem
         loadAllTokens()
     }
 
@@ -123,7 +123,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             binding.pb.isVisible = true
             val tokens = withContext(Dispatchers.IO) { 
                 viewModel.web3Tokens().value?.sortedByDescending { 
-                    runCatching { it.balance.toBigDecimal() * it.price.toBigDecimal() }.getOrDefault(0.toBigDecimal())
+                    runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
                 } ?: emptyList()
             }
             
@@ -167,7 +167,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                     viewModel.web3Tokens().value?.filter { token ->
                         token.name.contains(query, ignoreCase = true) || 
                         token.symbol.contains(query, ignoreCase = true) ||
-                        token.chainName.contains(query, ignoreCase = true)
+                        token.chainName?.contains(query, ignoreCase = true) == true
                     } ?: emptyList()
                 }
                 
@@ -184,9 +184,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
     private val callback =
         object : Web3SearchCallback {
-            override fun onTokenClick(token: Web3Token) {
+            override fun onTokenClick(token: Web3TokenItem) {
                 binding.searchEt.hideKeyboard()
-                // 处理 Web3Token 点击事件
+                // 处理 Web3TokenItem 点击事件
                 // 可以根据需要导航到相应的页面
             }
         }
@@ -198,10 +198,8 @@ class WalletSearchWeb3Fragment : BaseFragment() {
     ): View {
         if (rootView == null) {
             rootView = inflater?.inflate(layout, container, false)
-        } else {
-            (rootView?.parent as? ViewGroup)?.removeView(rootView)
+            _binding = FragmentWalletSearchBinding.bind(rootView!!)
         }
-        rootView?.let { _binding = FragmentWalletSearchBinding.bind(it) }
-        return binding.root
+        return rootView!!
     }
 }

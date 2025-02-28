@@ -15,7 +15,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentInputBinding
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
 import one.mixin.android.extension.clickVibrate
@@ -108,8 +108,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         fun newInstance(
             fromAddress: String,
             toAddress: String,
-            web3Token: Web3Token,
-            chainToken: Web3Token?,
+            web3Token: Web3TokenItem,
+            chainToken: Web3TokenItem?,
             label: String? = null,
             toWallet: Boolean = false
         ) =
@@ -198,10 +198,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         arguments?.getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
     private val web3Token by lazy {
-        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
     }
     private val chainToken by lazy {
-        requireArguments().getParcelableCompat(ARGS_WEB3_CHAIN_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_WEB3_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
 
     private val token by lazy {
@@ -237,7 +237,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private val tokenPrice: BigDecimal by lazy {
-        ((token?.priceUsd ?: web3Token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
+        ((token?.priceUsd ?: web3Token?.priceUsd)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
     }
     private val tokenSymbol by lazy {
         token?.symbol ?: web3Token!!.symbol
@@ -246,7 +246,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         token?.iconUrl ?: web3Token!!.iconUrl
     }
     private val tokenChainIconUrl by lazy {
-        token?.chainIconUrl ?: web3Token!!.chainIconUrl
+        // todo web3Token!!.chainIconUrl
+        token?.chainIconUrl ?: web3Token?.chainIcon ?: ""
     }
     private val tokenBalance by lazy {
         token?.balance ?: web3Token!!.balance
@@ -750,7 +751,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun valueClick(percentageOfBalance: BigDecimal) {
         val baseValue = when {
-            web3Token != null && web3Token?.fungibleId == chainToken?.fungibleId -> {
+            web3Token != null && web3Token?.assetId == chainToken?.assetId -> {
                 if (gas == null) {
                     if (!dialog.isShowing) {
                         lifecycleScope.launch {
@@ -974,7 +975,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         }
 
-    private suspend fun refreshGas(t: Web3Token) {
+    private suspend fun refreshGas(t: Web3TokenItem) {
         val toAddress = toAddress?: return
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false

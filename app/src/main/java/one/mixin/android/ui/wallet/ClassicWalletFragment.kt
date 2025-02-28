@@ -28,8 +28,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.db.web3.vo.findChainToken
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.defaultSharedPreferences
@@ -82,7 +81,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
-    private var assets: List<Web3Token> = listOf()
+    private var assets: List<Web3TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
 
     private var distance = 0
@@ -123,7 +122,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                         } else {
                                             PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                                         }
-                                    navTo(TransferDestinationInputFragment.newInstance(address, token, token.findChainToken(assets)), TransferDestinationInputFragment.TAG)
+                                    navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
                                 }
                                 dismissNow()
                             }
@@ -251,7 +250,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun renderPie(
-        assets: List<Web3Token>,
+        assets: List<Web3TokenItem>,
         bitcoin: TokenItem?,
     ) {
         var totalBTC = BigDecimal.ZERO
@@ -320,7 +319,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun setPieView(
-        r: List<Web3Token>,
+        r: List<Web3TokenItem>,
         totalUSD: BigDecimal,
     ) {
         val list =
@@ -390,7 +389,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        val token = item as Web3Token
+        val token = item as Web3TokenItem
         // Todo
         lifecycleScope.launch {
             val address =

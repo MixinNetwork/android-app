@@ -46,7 +46,7 @@ import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
@@ -57,7 +57,7 @@ import androidx.core.text.isDigitsOnly
 @Composable
 fun MemoInputPage(
     token: TokenItem?,
-    web3Token: Web3Token?,
+    web3Token: Web3TokenItem?,
     address: String,
     contentText: String = "",
     onNext: (String?) -> Unit,

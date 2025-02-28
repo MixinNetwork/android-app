@@ -19,9 +19,8 @@ import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.db.web3.vo.copy
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
-import one.mixin.android.db.web3.vo.getChainIdFromName
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
@@ -208,12 +207,12 @@ internal constructor(
     ) = userRepository.findBotPublicKey(conversationId, botId)
 
     suspend fun findAddres(token: Web3Token): String? {
-        return tokenRepository.findDepositEntry(token.getChainIdFromName())?.destination
+        return tokenRepository.findDepositEntry(token.chainId)?.destination
     }
 
-    suspend fun findAndSyncDepositEntry(token: Web3Token) =
+    suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName(), null).first
+            tokenRepository.findAndSyncDepositEntry(token.assetId, token.chainId).first
         }
 
     suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
@@ -311,7 +310,7 @@ internal constructor(
         }
 
     suspend fun calcFee(
-        token: Web3Token,
+        token: Web3TokenItem,
         transaction: JsSignMessage,
         fromAddress: String,
     ): BigDecimal? {

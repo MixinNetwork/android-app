@@ -6,14 +6,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
 
-class SearchWeb3Adapter : ListAdapter<Web3Token, SearchWeb3Adapter.TokenHolder>(TOKEN_DIFF) {
+class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHolder>(TOKEN_DIFF) {
     var callback: Web3SearchCallback? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenHolder {
@@ -26,18 +26,16 @@ class SearchWeb3Adapter : ListAdapter<Web3Token, SearchWeb3Adapter.TokenHolder>(
     }
 
     inner class TokenHolder(private val binding: ItemWalletSearchBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(token: Web3Token) {
+        fun bind(token: Web3TokenItem) {
             binding.apply {
                 badgeCircleIv.loadToken(token)
                 nameTv.text = token.name
 
                 val balance = runCatching { BigDecimal(token.balance) }.getOrDefault(BigDecimal.ZERO)
-                val price = runCatching { BigDecimal(token.price) }.getOrDefault(BigDecimal.ZERO)
-                val value = balance * price
                 
                 balanceTv.text = balance.numberFormat8()
-                if (price > BigDecimal.ZERO) {
-                    priceTv.text = "$${value.numberFormat2()}"
+                if (token.priceUsd != "0") {
+                    priceTv.text = "$${token.fiat().numberFormat2()}"
                 } else {
                     priceTv.text = ""
                 }
@@ -50,12 +48,12 @@ class SearchWeb3Adapter : ListAdapter<Web3Token, SearchWeb3Adapter.TokenHolder>(
     }
 
     companion object {
-        private val TOKEN_DIFF = object : DiffUtil.ItemCallback<Web3Token>() {
-            override fun areItemsTheSame(oldItem: Web3Token, newItem: Web3Token): Boolean {
-                return oldItem.fungibleId == newItem.fungibleId
+        private val TOKEN_DIFF = object : DiffUtil.ItemCallback<Web3TokenItem>() {
+            override fun areItemsTheSame(oldItem: Web3TokenItem, newItem: Web3TokenItem): Boolean {
+                return oldItem.assetId == newItem.assetId
             }
 
-            override fun areContentsTheSame(oldItem: Web3Token, newItem: Web3Token): Boolean {
+            override fun areContentsTheSame(oldItem: Web3TokenItem, newItem: Web3TokenItem): Boolean {
                 return oldItem == newItem
             }
         }

@@ -9,7 +9,7 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
 import one.mixin.android.extension.loadImage
@@ -53,9 +53,11 @@ class Web3TokenHeader : ConstraintLayout {
     }
 
     @SuppressLint("SetTextI18n")
-    fun setToken(token: Web3Token) {
+    fun setToken(token: Web3TokenItem) {
         _binding.avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-        _binding.avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        // Todo
+        // _binding.avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        _binding.avatar.badge.loadImage(token.chainIcon ?: "", R.drawable.ic_avatar_place_holder)
         _binding.totalTv.text =
             try {
                 if (token.balance.toFloat() == 0f) {
@@ -66,7 +68,7 @@ class Web3TokenHeader : ConstraintLayout {
             } catch (ignored: Exception) {
                 token.balance
             }
-        _binding.value.text = runCatching { "≈ ${Fiats.getSymbol()}${(BigDecimal(token.price).multiply(BigDecimal(token.balance)).multiply(BigDecimal(Fiats.getRate())).numberFormat2())}" }.getOrDefault("N/A")
+        _binding.value.text = runCatching { "≈ ${Fiats.getSymbol()}${(BigDecimal(token.priceUsd).multiply(BigDecimal(token.balance)).multiply(BigDecimal(Fiats.getRate())).numberFormat2())}" }.getOrDefault("N/A")
         _binding.symbol.text = token.symbol
         _binding.stake.root.isVisible = token.isSolToken()
     }

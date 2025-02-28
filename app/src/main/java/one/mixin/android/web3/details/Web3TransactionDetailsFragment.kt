@@ -12,10 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.isSolToken
-import one.mixin.android.db.web3.vo.isSolana
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
@@ -67,16 +66,16 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         fun newInstance(
             address: String,
             chain: String,
-            web3Token: Web3Token,
-            chainToken: Web3Token?,
-            tokens: List<Web3Token>? = null
+            web3Token: Web3TokenItem,
+            chainToken: Web3TokenItem?,
+            tokens: List<Web3TokenItem>? = null
         ) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putString(ARGS_CHAIN, chain)
                 putParcelable(ARGS_TOKEN, web3Token)
                 putParcelable(ARGS_CHAIN_TOKEN, chainToken)
-                putParcelableArrayList(ARGS_TOKENS, arrayListOf<Web3Token>().apply {
+                putParcelableArrayList(ARGS_TOKENS, arrayListOf<Web3TokenItem>().apply {
                     add(web3Token)
                     tokens?.let {
                         addAll(tokens.filter { it != web3Token })
@@ -106,15 +105,15 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
     private val web3tokens by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3Token::class.java)!!
+        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3TokenItem::class.java)!!
     }
 
-    private val token: Web3Token by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)!!
+    private val token: Web3TokenItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)!!
     }
 
-    private val chainToken: Web3Token? by lazy {
-        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
+    private val chainToken: Web3TokenItem? by lazy {
+        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
 
     // private val adapter by lazy {
@@ -137,7 +136,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     //
     //                 R.id.swap -> {
     //                     AnalyticsTracker.trackSwapStart("solana", "solana")
-    //                     navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
+    //                     navTo(SwapFragment.newInstance<Web3TokenItem>(web3tokens), SwapFragment.TAG)
     //                 }
     //
     //                 R.id.stake_rl -> {
@@ -223,7 +222,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             }
 
             binding.apply {
-                web3ViewModel.marketById(token.fungibleId).observe(viewLifecycleOwner) { market ->
+                web3ViewModel.marketById(token.assetId).observe(viewLifecycleOwner) { market ->
                     // todo
                     // if (market != null) {
                     //     val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
@@ -279,7 +278,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 sendReceiveView.swap.isVisible = token.isSolana()
                 sendReceiveView.swap.setOnClickListener {
                     AnalyticsTracker.trackSwapStart("solana", "solana")
-                    navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
+                    navTo(SwapFragment.newInstance<Web3TokenItem>(web3tokens), SwapFragment.TAG)
                 }
             }
         }
@@ -292,7 +291,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
 
-    private fun updateHeader(asset: Web3Token) {
+    private fun updateHeader(asset: Web3TokenItem) {
         binding.apply {
             val amountText =
                 try {

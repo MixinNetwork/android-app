@@ -6,12 +6,9 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.api.request.web3.AddressRequest
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.WalletRequest
-import one.mixin.android.api.response.Web3Address
 import one.mixin.android.api.response.Web3Wallet
-import one.mixin.android.api.response.WalletAddress
-import one.mixin.android.api.response.WalletAddressResponse
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
@@ -35,14 +32,12 @@ class RefreshWeb3Job : BaseJob(
             val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             createWallet(
                 WALLET_CATEGORY_CLASSIC, listOf(
-                    AddressRequest(
+                    Web3AddressRequest(
                         destination = erc20Address,
-                        tag = "",
                         chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
                     ),
-                    AddressRequest(
+                    Web3AddressRequest(
                         destination = solAddress,
-                        tag = "",
                         chainId = Constants.ChainId.SOLANA_CHAIN_ID
                     )
                 )
@@ -54,7 +49,7 @@ class RefreshWeb3Job : BaseJob(
         }
     }
     
-    private suspend fun createWallet(category: String, addresses: List<AddressRequest>) {
+    private suspend fun createWallet(category: String, addresses: List<Web3AddressRequest>) {
         val walletRequest = WalletRequest(
             name = category,
             category = category,
@@ -83,7 +78,8 @@ class RefreshWeb3Job : BaseJob(
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-            }
+            },
+            defaultErrorHandle = {}
         )
     }
 
@@ -109,7 +105,8 @@ class RefreshWeb3Job : BaseJob(
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-            }
+            },
+            defaultErrorHandle = {}
         )
     }
     
@@ -136,7 +133,8 @@ class RefreshWeb3Job : BaseJob(
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-            }
+            },
+            defaultErrorHandle = {}
         )
     }
 }

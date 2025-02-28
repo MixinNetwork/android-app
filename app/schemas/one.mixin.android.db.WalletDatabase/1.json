@@ -2,21 +2,33 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "802fa42ba1ebbfe62cb3d449fe661fde",
+    "identityHash": "c21223630f47d2b3ade06d69198b025c",
     "entities": [
       {
         "tableName": "web3_tokens",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fungible_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `chain_name` TEXT NOT NULL, `chain_icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `price` TEXT NOT NULL, `change_absolute` TEXT NOT NULL, `change_percent` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `decimals` INTEGER NOT NULL, `assetId` TEXT, PRIMARY KEY(`fungible_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `precision` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `change_usd` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
-            "fieldPath": "fungibleId",
-            "columnName": "fungible_id",
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "name",
             "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assetKey",
+            "columnName": "asset_key",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -33,70 +45,40 @@
             "notNull": true
           },
           {
-            "fieldPath": "chainId",
-            "columnName": "chain_id",
-            "affinity": "TEXT",
+            "fieldPath": "precision",
+            "columnName": "precision",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "chainName",
-            "columnName": "chain_name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "chainIconUrl",
-            "columnName": "chain_icon_url",
+            "fieldPath": "kernelAssetId",
+            "columnName": "kernel_asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "balance",
-            "columnName": "balance",
+            "columnName": "amount",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "price",
-            "columnName": "price",
+            "fieldPath": "priceUsd",
+            "columnName": "price_usd",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "changeAbsolute",
-            "columnName": "change_absolute",
+            "fieldPath": "changeUsd",
+            "columnName": "change_usd",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "changePercent",
-            "columnName": "change_percent",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetKey",
-            "columnName": "asset_key",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "decimals",
-            "columnName": "decimals",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetId",
-            "columnName": "assetId",
-            "affinity": "TEXT",
-            "notNull": false
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "fungible_id"
+            "asset_id"
           ]
         },
         "indices": [],
@@ -263,12 +245,44 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "tokens_extra",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `hidden` INTEGER, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
+        "fields": [
+          {
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hidden",
+            "columnName": "hidden",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "coin_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '802fa42ba1ebbfe62cb3d449fe661fde')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c21223630f47d2b3ade06d69198b025c')"
     ]
   }
 }

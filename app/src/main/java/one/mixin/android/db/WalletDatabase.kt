@@ -12,9 +12,11 @@ import one.mixin.android.api.response.Web3Wallet
 import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.util.database.dbDir
 import java.io.File
@@ -25,6 +27,7 @@ import java.io.File
         Web3Transaction::class,
         Web3Wallet::class,
         Web3Address::class,
+        Web3TokensExtra::class,
     ],
     version = 1,
 )
@@ -66,6 +69,7 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun web3TransactionDao(): Web3TransactionDao
     abstract fun web3WalletDao(): Web3WalletDao
     abstract fun web3AddressDao(): Web3AddressDao
+    abstract fun web3TokensExtraDao(): Web3TokensExtraDao
 
     override fun close() {
         super.close()
