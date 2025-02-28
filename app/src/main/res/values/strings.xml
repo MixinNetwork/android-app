@@ -1530,6 +1530,7 @@
     <string name="web3_deposit_description_solana">Use this address for receiving tokens on Solana.</string>
     <string name="No_asset">No Tokens</string>
     <string name="Ethereum_Account">Ethereum Account</string>
+    <string name="Web3_Account">%1$s Account</string>
     <string name="Solana_Account">Solana Account</string>
     <string name="Review">Review</string>
     <string name="Max">Max</string>
