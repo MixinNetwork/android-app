@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader

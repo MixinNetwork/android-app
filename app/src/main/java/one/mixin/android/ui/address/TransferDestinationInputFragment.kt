@@ -28,11 +28,11 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.isSolana
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.isSolana
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog

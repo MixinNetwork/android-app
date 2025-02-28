@@ -6,14 +6,8 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.BaseDao
-import one.mixin.android.vo.InscriptionCollection
-import one.mixin.android.vo.InscriptionItem
-import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.vo.safe.Token
 
 @Dao
 interface Web3TransactionDao : BaseDao<Web3Transaction> {

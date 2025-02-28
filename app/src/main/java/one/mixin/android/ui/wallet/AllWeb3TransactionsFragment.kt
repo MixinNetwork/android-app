@@ -21,7 +21,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
@@ -32,21 +33,18 @@ import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AddressItem
-import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
 
 @AndroidEntryPoint
-class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Transaction>>(R.layout.fragment_all_transactions), MultiSelectTokenListBottomSheetDialogFragment.DataProvider, MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
+class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Transaction>>(R.layout.fragment_all_transactions) {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
 
-        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null): AllWeb3TransactionsFragment {
+        fun newInstance(user: UserItem? = null, tokenItem: Web3Token? = null): AllWeb3TransactionsFragment {
             return AllWeb3TransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
@@ -58,16 +56,12 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     private val adapter = Web3TransactionPagedAdapter()
 
-    private val userItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_USER, UserItem::class.java)
+    private val filterParams by lazy {
+        Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
     }
 
     private val tokenItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
-    }
-
-    private val filterParams by lazy {
-        Web3FilterParams(recipients = userItem?.let { listOf(it) }, tokenItems = tokenItem?.let { listOf(it) })
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
     }
 
     override fun onViewCreated(
@@ -141,8 +135,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     private fun loadFilter() {
         binding.apply {
             filterType.setTitle(filterParams.typeTitle)
-            filterAsset.updateTokens(R.string.Assets, filterParams.tokenItems)
-            filterUser.updateUsers(R.string.Opponents, filterParams.recipients)
+            filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             titleView.setSubTitle(
                 getString(R.string.All_Transactions), getString(
@@ -266,48 +259,18 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         }
     }
 
-    private val multiSelectTokenListBottomSheetDialogFragment by lazy {
-        MultiSelectTokenListBottomSheetDialogFragment.newInstance()
-            .setDateProvider(this@AllWeb3TransactionsFragment)
-            .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-                override fun onTokenSelect(tokenItems: List<TokenItem>?) {
-                    binding.filterAsset.close()
-                    filterParams.tokenItems = tokenItems
-                    loadFilter()
-                }
-
-                override fun onDismiss() {
-                    binding.filterAsset.close()
-                }
-            })
-    }
 
     private fun selectAsset() {
         binding.filterAsset.open()
-        multiSelectTokenListBottomSheetDialogFragment
-            .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
+        // multiSelectTokenListBottomSheetDialogFragment
+        //     .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
     }
 
-    private val multiSelectRecipientsListBottomSheetDialogFragment by lazy {
-        MultiSelectRecipientsListBottomSheetDialogFragment.newInstance(userItem)
-            .setDateProvider(this@AllWeb3TransactionsFragment)
-            .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
-                override fun onRecipientSelect(recipients: List<Recipient>?) {
-                    binding.filterUser.close()
-                    filterParams.recipients = recipients
-                    loadFilter()
-                }
-
-                override fun onDismiss() {
-                    binding.filterUser.close()
-                }
-            })
-    }
 
     private fun selectUser() {
         binding.filterUser.open()
-        multiSelectRecipientsListBottomSheetDialogFragment.setType(filterParams.type)
-        multiSelectRecipientsListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
+        // multiSelectRecipientsListBottomSheetDialogFragment.setType(filterParams.type)
+        // multiSelectRecipientsListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
     }
 
     private fun dateRangePicker(): MaterialDatePicker<Pair<Long, Long>> {
@@ -402,13 +365,13 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                     3 -> SnapshotType.snapshot
                     else -> SnapshotType.all
                 }
-                if (filterParams.recipients?.isNotEmpty() == true) {
-                    if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
-                        filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
-                    } else if (filterParams.type == SnapshotType.snapshot) {
-                        filterParams.recipients = filterParams.recipients?.filterIsInstance<UserItem>()
-                    }
-                }
+                // if (filterParams.recipients?.isNotEmpty() == true) {
+                //     if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
+                //         filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
+                //     } else if (filterParams.type == SnapshotType.snapshot) {
+                //         filterParams.recipients = filterParams.recipients?.filterIsInstance<UserItem>()
+                //     }
+                // }
                 loadFilter()
                 dismiss()
             }
@@ -437,11 +400,4 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         }
     }
 
-    override fun getCurrentTokens(): List<TokenItem> {
-        return filterParams.tokenItems ?: emptyList()
-    }
-
-    override fun getCurrentRecipients(): List<Recipient> {
-        return filterParams.recipients ?: emptyList()
-    }
 }

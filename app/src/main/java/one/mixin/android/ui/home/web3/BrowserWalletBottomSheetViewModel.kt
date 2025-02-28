@@ -9,10 +9,10 @@ import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.PriorityFeeRequest
 import one.mixin.android.api.request.web3.PriorityLevel
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.Tip

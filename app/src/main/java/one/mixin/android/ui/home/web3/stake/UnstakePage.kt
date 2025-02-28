@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.Gson
 import one.mixin.android.R
-import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeState
@@ -40,6 +39,7 @@ import one.mixin.android.api.response.web3.isActiveState
 import one.mixin.android.api.response.web3.isDeactivatingState
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.formatPublicKey
 
 @Composable

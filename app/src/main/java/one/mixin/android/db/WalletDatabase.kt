@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.util.database.dbDir
 import java.io.File
 

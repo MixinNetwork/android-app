@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat

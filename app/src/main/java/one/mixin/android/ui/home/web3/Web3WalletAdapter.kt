@@ -10,10 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Account
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.setQuoteText

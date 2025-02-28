@@ -69,6 +69,10 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.setStartDestination(R.id.all_transactions_fragment)
                 navController.setGraph(navGraph, null)
             }
+            Destination.AllWeb3Transactions -> {
+                navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
+                navController.setGraph(navGraph, null)
+            }
             Destination.Hidden -> {
                 navGraph.setStartDestination(R.id.hidden_assets_fragment)
                 navController.setGraph(navGraph, null)
@@ -102,6 +106,7 @@ class WalletActivity : BlazeBaseActivity() {
         Transactions,
         Search,
         AllTransactions,
+        AllWeb3Transactions,
         Hidden,
         Deposit,
         Buy,

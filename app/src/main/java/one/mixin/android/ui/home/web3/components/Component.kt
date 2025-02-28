@@ -50,14 +50,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.BalanceChange
 import one.mixin.android.api.response.web3.Item
 import one.mixin.android.api.response.web3.ParsedInstruction
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.tip.wc.internal.Chain

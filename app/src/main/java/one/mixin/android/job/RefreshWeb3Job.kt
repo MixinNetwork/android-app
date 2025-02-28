@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.property.PropertyHelper
 
 class RefreshWeb3Job : BaseJob(

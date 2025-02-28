@@ -30,14 +30,14 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
+import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences

@@ -1,4 +1,4 @@
-package one.mixin.android.api.response
+package one.mixin.android.db.web3.vo
 
 import android.content.Context
 import android.os.Parcelable
@@ -8,6 +8,10 @@ import androidx.room.*
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
+import one.mixin.android.api.response.AppMetadata
+import one.mixin.android.api.response.Approval
+import one.mixin.android.api.response.Web3Fee
+import one.mixin.android.api.response.Web3Transfer
 import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
@@ -15,7 +19,6 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.util.needsSpaceBetweenWords
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.web3.details.Web3TransactionDirection
 import one.mixin.android.web3.details.Web3TransactionStatus
 import one.mixin.android.web3.details.Web3TransactionType

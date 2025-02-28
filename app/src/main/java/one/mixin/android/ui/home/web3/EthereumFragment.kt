@@ -25,11 +25,11 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.findChainToken
 import one.mixin.android.databinding.FragmentChainBinding
 import one.mixin.android.databinding.ViewWalletWeb3BottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.findChainToken
 import one.mixin.android.event.TokenEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -42,6 +42,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WCChangeEvent
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
@@ -56,7 +57,6 @@ import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 

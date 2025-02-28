@@ -132,7 +132,7 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.flow
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
 

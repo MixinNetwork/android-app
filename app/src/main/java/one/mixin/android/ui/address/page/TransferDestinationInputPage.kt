@@ -50,7 +50,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.openUrl

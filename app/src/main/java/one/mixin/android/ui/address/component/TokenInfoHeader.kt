@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.util.getChainNetwork

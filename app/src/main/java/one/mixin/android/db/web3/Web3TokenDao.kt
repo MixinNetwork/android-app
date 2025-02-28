@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.db.BaseDao
+import one.mixin.android.db.web3.vo.Web3Token
 
 @Dao
 interface Web3TokenDao : BaseDao<Web3Token> {

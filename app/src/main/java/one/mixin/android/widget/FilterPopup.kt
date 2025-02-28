@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.ViewFilterPopupBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
@@ -43,6 +44,10 @@ class FilterPopup @JvmOverloads constructor(
 
     fun setTitle(text: CharSequence?) {
         binding.title.text = text
+    }
+
+    fun updateWeb3Tokens(@StringRes strRes: Int, tokens: List<Web3Token>?) {
+
     }
 
     fun updateTokens(@StringRes strRes: Int, tokens: List<TokenItem>?) {

@@ -38,7 +38,7 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService

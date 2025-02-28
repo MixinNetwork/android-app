@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage

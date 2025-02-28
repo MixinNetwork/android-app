@@ -26,8 +26,8 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.findChainToken
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.findChainToken
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.property.PropertyHelper

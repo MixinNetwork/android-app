@@ -6,7 +6,7 @@ import android.text.Editable
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase

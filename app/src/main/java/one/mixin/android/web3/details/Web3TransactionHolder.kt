@@ -1,30 +1,19 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.Web3Transaction
-import one.mixin.android.api.response.isSolana
-import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.hashForDate
-import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
-import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
-import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.GrayscaleTransformation
-import java.math.BigDecimal
-import kotlin.math.abs
 
 class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
