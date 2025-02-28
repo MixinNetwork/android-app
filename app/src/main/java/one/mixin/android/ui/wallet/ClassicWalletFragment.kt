@@ -8,7 +8,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -26,11 +25,11 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.db.web3.vo.findChainToken
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.findChainToken
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.defaultSharedPreferences
@@ -58,7 +57,6 @@ import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent

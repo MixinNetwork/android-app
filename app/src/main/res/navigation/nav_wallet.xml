@@ -262,6 +262,13 @@
     </fragment>
 
     <fragment
+        android:id="@+id/wallet_search_web3_fragment"
+        android:name="one.mixin.android.ui.wallet.WalletSearchWeb3Fragment"
+        tools:layout="@layout/fragment_wallet_search">
+
+    </fragment>
+
+    <fragment
         android:id="@+id/wallet_identity"
         android:name="one.mixin.android.ui.wallet.IdentityFragment" >
         <argument

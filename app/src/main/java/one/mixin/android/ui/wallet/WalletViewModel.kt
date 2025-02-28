@@ -26,9 +26,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.WalletDatabase
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager

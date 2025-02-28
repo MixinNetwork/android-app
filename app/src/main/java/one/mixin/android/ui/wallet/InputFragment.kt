@@ -14,10 +14,10 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
-import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat

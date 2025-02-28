@@ -108,8 +108,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     }
             }
             searchIb.setOnClickListener {
-                // Todo classic search
-                WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
+                if (currentType == WalletDestination.Privacy.name) {
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
+                } else {
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.SearchWeb3)
+                }
             }
             compose.setContent {
                 AssetDashboardScreen(

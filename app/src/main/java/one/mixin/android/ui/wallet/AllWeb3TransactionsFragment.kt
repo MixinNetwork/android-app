@@ -21,9 +21,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Transaction
-import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs

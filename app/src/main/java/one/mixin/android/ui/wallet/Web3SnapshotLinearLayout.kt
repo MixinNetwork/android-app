@@ -6,8 +6,8 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener

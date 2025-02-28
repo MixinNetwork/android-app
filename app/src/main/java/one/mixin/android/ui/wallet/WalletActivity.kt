@@ -65,6 +65,10 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.setStartDestination(R.id.wallet_search_fragment)
                 navController.setGraph(navGraph, null)
             }
+            Destination.SearchWeb3 -> {
+                navGraph.setStartDestination(R.id.wallet_search_web3_fragment)
+                navController.setGraph(navGraph, null)
+            }
             Destination.AllTransactions -> {
                 navGraph.setStartDestination(R.id.all_transactions_fragment)
                 navController.setGraph(navGraph, null)
@@ -105,6 +109,7 @@ class WalletActivity : BlazeBaseActivity() {
     enum class Destination {
         Transactions,
         Search,
+        SearchWeb3,
         AllTransactions,
         AllWeb3Transactions,
         Hidden,

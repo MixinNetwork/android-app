@@ -3,13 +3,7 @@ package one.mixin.android.ui.wallet
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.tip.wc.SortOrder
-import one.mixin.android.vo.AddressItem
-import one.mixin.android.vo.Recipient
-import one.mixin.android.vo.UserItem
-import one.mixin.android.vo.displayAddress
-import one.mixin.android.vo.safe.TokenItem
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
