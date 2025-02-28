@@ -7,13 +7,18 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.web3.AddressRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.Web3Address
+import one.mixin.android.api.response.Web3Wallet
+import one.mixin.android.api.response.WalletAddressResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -23,6 +28,8 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
@@ -221,4 +228,56 @@ interface RouteService {
 
     @POST("prices/alerts/{id}")
     suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Alert>
+
+    @POST("wallets")
+    suspend fun createWallet(
+        @Body request: WalletRequest
+    ): MixinResponse<Web3Wallet>
+
+    @GET("wallets")
+    suspend fun getWallets(): MixinResponse<List<Web3Wallet>>
+
+    @GET("wallets/{id}")
+    suspend fun getWallet(
+        @Path("id") id: String
+    ): MixinResponse<Web3Wallet>
+
+    @POST("wallets/{id}/delete")
+    suspend fun destroyWallet(
+        @Path("id") id: String
+    ): MixinResponse<Unit>
+
+    @GET("wallets/{id}/assets")
+    suspend fun getWalletAssets(
+        @Path("id") id: String
+    ): MixinResponse<List<Web3Token>>
+
+    @POST("addresses")
+    suspend fun createAddress(
+        @Body request: AddressRequest
+    ): MixinResponse<List<Web3Address>>
+
+    @GET("addresses")
+    suspend fun getAddresses(): MixinResponse<List<Web3Address>>
+
+    @GET("addresses/{id}")
+    suspend fun getAddress(
+        @Path("id") id: String
+    ): MixinResponse<Web3Address>
+
+    @GET("wallets/{id}/addresses")
+    suspend fun getWalletAddresses(
+        @Path("id") walletId: String
+    ): MixinResponse<List<Web3Address>>
+
+    @GET("transactions")
+    suspend fun getAllTransactions(
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = 30
+    ): MixinResponse<List<Web3Transaction>>
+
+    @GET("transactions/{id}")
+    suspend fun getTransaction(
+        @Path("id") id: String
+    ): MixinResponse<Web3Transaction>
 }

@@ -184,7 +184,7 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    private val containerFragmentTags = listOf(MarketFragment.TAG, EthereumFragment.TAG, SolanaFragment.TAG)
+    private val containerFragmentTags = listOf(MarketFragment.TAG)
     private fun navigate(
         destinationFragment: Fragment,
         tag: String,

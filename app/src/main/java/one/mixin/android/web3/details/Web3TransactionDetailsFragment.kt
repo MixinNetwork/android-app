@@ -288,14 +288,6 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             binding.transactionsRv.list = it
         }
 
-        jobManager.addJobInBackground(
-            RefreshWeb3TransactionJob(
-                address,
-                token.chainId,
-                token.fungibleId,
-                token.assetKey
-            )
-        )
         updateHeader(token) //todo Live data
     }
 

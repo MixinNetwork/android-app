@@ -197,13 +197,6 @@ internal constructor(
         }
     }
 
-    suspend fun web3Transaction(
-        address: String,
-        chainId: String,
-        fungibleId: String,
-        assetKey: String,
-    ) = web3Service.transactions(address, chainId, fungibleId, assetKey)
-
     suspend fun saveSession(participantSession: ParticipantSession) {
         userRepository.saveSession(participantSession)
     }

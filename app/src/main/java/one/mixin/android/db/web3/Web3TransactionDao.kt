@@ -17,4 +17,10 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3Transaction>
+    
+    @Query("SELECT * FROM web3_transactions ORDER BY created_at DESC LIMIT 1")
+    suspend fun getLatestTransaction(): Web3Transaction?
+    
+    @Query("SELECT COUNT(*) FROM web3_transactions")
+    suspend fun getTransactionCount(): Int
 }

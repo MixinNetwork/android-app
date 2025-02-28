@@ -42,6 +42,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3Job
+import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -91,6 +92,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshWeb3Job())
+        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
 
     override fun onCreateView(
@@ -206,10 +208,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         web3ViewModel.web3Tokens().observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
                 setEmpty()
+                assets = it
+                assetsAdapter.setAssetList(it)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
             } else {
                 assets = it
                 assetsAdapter.setAssetList(it)
-                // Refresh the entire list when the fiat currency changes
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()
                     assetsAdapter.notifyDataSetChanged()

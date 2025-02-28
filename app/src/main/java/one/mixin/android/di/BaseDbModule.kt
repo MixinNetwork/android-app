@@ -240,4 +240,12 @@ internal object BaseDbModule {
     @Provides
     fun provideWeb3TransactionDao(db: WalletDatabase) = db.web3TransactionDao()
 
+    @Singleton
+    @Provides
+    fun provideWeb3WalletDao(db: WalletDatabase) = db.web3WalletDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3AddressDao(db: WalletDatabase) = db.web3AddressDao()
+
 }

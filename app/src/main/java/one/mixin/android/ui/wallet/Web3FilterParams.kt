@@ -45,38 +45,38 @@ class Web3FilterParams(
         val filters = mutableListOf<String>()
 
         if (type != SnapshotType.all) {
-            when(type){
-                SnapshotType.snapshot -> {
-                    filters.add("(s.deposit IS NULL OR s.deposit = 'null')")
-                    filters.add("(s.withdrawal IS NULL OR s.withdrawal = 'null')")
-                }
-
-                SnapshotType.deposit -> {
-                    filters.add("s.deposit IS NOT NULL")
-                    filters.add("s.deposit != 'null'")
-                }
-
-                SnapshotType.withdrawal -> {
-                    filters.add("s.withdrawal IS NOT NULL")
-                    filters.add("s.withdrawal != 'null'")
-                }
-                else->{}
-            }
+            // when(type){
+            //     SnapshotType.snapshot -> {
+            //         filters.add("(s.deposit IS NULL OR s.deposit = 'null')")
+            //         filters.add("(s.withdrawal IS NULL OR s.withdrawal = 'null')")
+            //     }
+            //
+            //     SnapshotType.deposit -> {
+            //         filters.add("s.deposit IS NOT NULL")
+            //         filters.add("s.deposit != 'null'")
+            //     }
+            //
+            //     SnapshotType.withdrawal -> {
+            //         filters.add("s.withdrawal IS NOT NULL")
+            //         filters.add("s.withdrawal != 'null'")
+            //     }
+            //     else->{}
+            // }
         }
 
         tokenItems?.let {
-            if (it.isNotEmpty()) {
-                val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
-                filters.add("s.asset_id IN ($tokenIds)")
-            }
+            // if (it.isNotEmpty()) {
+            //     val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
+            //     filters.add("s.asset_id IN ($tokenIds)")
+            // }
         }
 
         startTime?.let {
-            filters.add("s.created_at >= '${Instant.ofEpochMilli(it)}'")
+            filters.add("created_at >= '${Instant.ofEpochMilli(it)}'")
         }
 
         endTime?.let {
-            filters.add("s.created_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
+            filters.add("created_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
         val whereSql = if (filters.isEmpty()) {
             ""
@@ -85,10 +85,10 @@ class Web3FilterParams(
         }
 
         val orderSql = when (order) {
-            SortOrder.Recent -> "ORDER BY s.created_at DESC"
-            SortOrder.Oldest -> "ORDER BY s.created_at ASC"
-            SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC"
-            SortOrder.Amount -> "ORDER BY s.amount DESC"
+            SortOrder.Recent -> "ORDER BY created_at DESC"
+            SortOrder.Oldest -> "ORDER BY created_at ASC"
+            // SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC" // todo
+            SortOrder.Amount -> "ORDER BY amount DESC"
             else -> ""
         }
 
