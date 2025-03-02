@@ -119,7 +119,7 @@ buildscript {
         ext.playPayVersion = '16.5.0'
         ext.datastoreVersion = '1.1.3'
         ext.protobufVersion = '3.11.0'
-        ext.appsFlyerVersion ='6.16.1'
+        ext.appsFlyerVersion ='6.16.2'
         ext.installreferrerVersion ='2.2'
     }
 
