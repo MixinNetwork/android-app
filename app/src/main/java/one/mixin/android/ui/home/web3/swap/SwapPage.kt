@@ -114,6 +114,7 @@ fun SwapPage(
 
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
+    var quoteMin by remember { mutableStateOf<String?>(null) }
 
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
     LaunchedEffect(lastOrderTime) {
@@ -147,6 +148,7 @@ fun SwapPage(
                         if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
                             isLoading = true
                             errorInfo = null
+                            quoteMin = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
                             viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
                                 .onSuccess { value ->
@@ -157,6 +159,9 @@ fun SwapPage(
                                 .onFailure { exception ->
                                     AnalyticsTracker.trackSwapQuote("failure")
                                     if (exception is CancellationException) return@onFailure
+                                    if (exception is AmountException) {
+                                        quoteMin = exception.min
+                                    }
                                     errorInfo = exception.message
                                     quoteResult = null
                                     isLoading = false
@@ -164,6 +169,7 @@ fun SwapPage(
                         } else {
                             errorInfo = null
                             quoteResult = null
+                            quoteMin = null
                             isLoading = false
                         }
                     }
@@ -322,6 +328,12 @@ fun SwapPage(
                                     ) {
                                         Text(
                                             text = errorInfo ?: "",
+                                            modifier = Modifier
+                                                .clickable {
+                                                    if (quoteMin != null && runCatching { BigDecimal(quoteMin) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO) {
+                                                        inputText = quoteMin!!
+                                                    }
+                                            },
                                             style = TextStyle(
                                                 fontSize = 14.sp,
                                                 color = MixinAppTheme.colors.tipError,
