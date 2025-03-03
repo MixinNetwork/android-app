@@ -132,6 +132,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.ui.wallet.Web3FilterParams
 
 @Singleton
@@ -503,7 +504,7 @@ class TokenRepository
         }
 
 
-        fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3Transaction> {
+        fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
             return web3TranTransactionDao.allTransactions(filterParams.buildQuery())
         }
 

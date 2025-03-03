@@ -8,28 +8,21 @@ import androidx.room.RawQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.BaseDao
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 
 @Dao
 interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
-    @Query("SELECT * FROM web3_transactions")
-    fun web3Transactions(): LiveData<List<Web3Transaction>>
+    @Query("SELECT w.transaction_id, w.transaction_hash, w.output_index, w.block_number, w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, w.created_at, w.updated_at, t.symbol, t.icon_url FROM web3_transactions w LEFT JOIN web3_tokens t on t.asset_id = w.asset_id")
+    fun web3Transactions(): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
-    fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3Transaction>
+    fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>
     
     @Query("SELECT * FROM web3_transactions ORDER BY created_at DESC LIMIT 1")
     suspend fun getLatestTransaction(): Web3Transaction?
     
     @Query("SELECT COUNT(*) FROM web3_transactions")
     suspend fun getTransactionCount(): Int
-    
-    @Query("SELECT * FROM web3_transactions WHERE sender = :address OR receiver = :address ORDER BY created_at DESC")
-    fun getTransactionsByAddress(address: String): LiveData<List<Web3Transaction>>
-    
-    @Query("SELECT * FROM web3_transactions WHERE (sender = :address OR receiver = :address) ORDER BY created_at DESC LIMIT 1")
-    suspend fun getLatestTransactionByAddress(address: String): Web3Transaction?
-    
-    @Query("SELECT * FROM web3_transactions WHERE (sender = :address OR receiver = :address) AND created_at < :offset ORDER BY created_at DESC LIMIT :limit")
-    suspend fun getTransactionsByAddressWithOffset(address: String, offset: String, limit: Int): List<Web3Transaction>
+
 }

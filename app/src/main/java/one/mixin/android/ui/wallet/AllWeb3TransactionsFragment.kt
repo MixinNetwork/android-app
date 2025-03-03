@@ -23,7 +23,9 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
@@ -36,9 +38,10 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
+import kotlin.collections.isNotEmpty
 
 @AndroidEntryPoint
-class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Transaction>>(R.layout.fragment_all_transactions) {
+class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3TransactionItem>>(R.layout.fragment_all_transactions) {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
@@ -61,7 +64,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val tokenItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
     }
 
     override fun onViewCreated(

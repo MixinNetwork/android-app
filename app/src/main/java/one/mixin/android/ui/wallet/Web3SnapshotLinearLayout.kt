@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
-import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -22,7 +22,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    var list = emptyList<Web3Transaction>()
+    var list = emptyList<Web3TransactionItem>()
         set(value) {
             field = value
             updateViews()
@@ -48,7 +48,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
                 addView(headerView)
             }
 
-            val itemView = ItemWeb3TransactionBinding.inflate(LayoutInflater.from(context),this,false)
+            val itemView = ItemWeb3TransactionBinding.inflate(LayoutInflater.from(context), this, false)
             val holder = Web3TransactionHolder(itemView)
             holder.bind(item)
             holder.itemView.setOnClickListener {
@@ -58,7 +58,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
                 itemView.root,
                 {
                     context.getClipboardManager()
-                        .setPrimaryClip(ClipData.newPlainText(null, item.id))
+                        .setPrimaryClip(ClipData.newPlainText(null, item.transactionId))
                 },
             )
             addView(itemView.root)
@@ -73,7 +73,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
         }
     }
 
-    fun getHeaderId(snapshot: Web3Transaction): Long {
+    fun getHeaderId(snapshot: Web3TransactionItem): Long {
         return abs(snapshot.createdAt.hashForDate())
     }
 }

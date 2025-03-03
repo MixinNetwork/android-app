@@ -28,7 +28,7 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.WalletDatabase
-import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -149,7 +149,7 @@ class WalletViewModel
     fun allWeb3Transaction(
         initialLoadKey: Int? = 0,
         filterParams: Web3FilterParams,
-    ): LiveData<PagedList<Web3Transaction>> =
+    ): LiveData<PagedList<Web3TransactionItem>> =
         LivePagedListBuilder(
             tokenRepository.allWeb3Transaction(filterParams),
             PagedList.Config.Builder()

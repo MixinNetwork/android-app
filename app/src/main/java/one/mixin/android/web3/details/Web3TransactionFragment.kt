@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
@@ -33,7 +33,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         const val ARGS_CHAIN = "args_chain"
 
         fun newInstance(
-            transaction: Web3Transaction,
+            transaction: Web3TransactionItem,
             chain: String,
             web3Token: Web3TokenItem,
         ) = Web3TransactionFragment().withArgs {
@@ -50,7 +50,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private val transaction by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_TRANSACTION, Web3Transaction::class.java))
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_TRANSACTION, Web3TransactionItem::class.java))
     }
 
     private val chain by lazy {
@@ -70,52 +70,56 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         binding.root.isClickable = true
         binding.apply {
-            transactionIdTv.text = transaction.id
+            transactionIdTv.text = transaction.transactionHash
             transactionHashTv.text = transaction.transactionHash
-            valueTv.text = transaction.value(requireContext())
-            valueAsTv.text = transaction.valueAs
+            valueTv.text = transaction.getFormattedAmount()
+            valueAsTv.text = transaction.amount
             fromTv.text = transaction.sender
             toTv.text = transaction.receiver
-            avatar.bg.loadImage(transaction.icon, R.drawable.ic_avatar_place_holder)
+            avatar.bg.loadImage(transaction.iconUrl, R.drawable.ic_avatar_place_holder)
             avatar.setOnClickListener {
                 tokenClick(transaction)
             }
-            val badge = transaction.badge
+            val badge = transaction.iconUrl
             if (badge == null) {
                 avatar.badge.isVisible = false
             } else {
                 avatar.badge.isVisible = true
                 avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
             }
-            feeTv.text = "${transaction.fee.amount} ${transaction.fee.symbol}"
+            // Todo
+            // feeTv.text = "${transaction.fee.amount} ${transaction.fee.symbol}"
             dateTv.text = transaction.createdAt.fullDate()
-            statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            // Todo
+            // statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
     }
 
-    private fun tokenClick(transaction: Web3Transaction) {
+    private fun tokenClick(transaction: Web3TransactionItem) {
         lifecycleScope.launch {
-            transaction.event?.let { event ->
-                if (event.address == token.assetKey) {
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                    return@launch
-                }
-                val dialog =
-                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                        setCancelable(false)
-                    }
-                try {
-                    web3ViewModel.web3Token(
-                        chain, event.chainId, event.address
-                    ) ?: return@launch
-                    dialog.dismiss()
-                    RxBus.publish(event)
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    dialog.dismiss()
-                    return@launch
-                }
-            }
+            // transaction.event?.let { event ->
+                // Todo
+                // if (event.address == token.assetKey) {
+                //     requireActivity().onBackPressedDispatcher.onBackPressed()
+                //     return@launch
+                // }
+                // val dialog =
+                    // indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    //     setCancelable(false)
+                    // }
+
+                // try {
+                //     web3ViewModel.web3Token(
+                //         chain, event.chainId, event.address
+                //     ) ?: return@launch
+                //     dialog.dismiss()
+                //     RxBus.publish(event)
+                // } catch (e: Exception) {
+                //     Timber.e(e)
+                //     dialog.dismiss()
+                //     return@launch
+                // }
+            // }
         }
     }
 }

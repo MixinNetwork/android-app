@@ -8,6 +8,6 @@ import one.mixin.android.db.BaseDao
 @Dao
 interface Web3AddressDao : BaseDao<Web3Address> {
 
-    @Query("SELECT address_id FROM web3_addresses")
+    @Query("SELECT destination FROM web3_addresses")
     suspend fun getAddressIds(): List<String>
 }

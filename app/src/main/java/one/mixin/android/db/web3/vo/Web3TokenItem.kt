@@ -1,7 +1,6 @@
 package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
-import androidx.compose.ui.unit.Constraints
 import androidx.room.ColumnInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,7 +9,6 @@ import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
-import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction

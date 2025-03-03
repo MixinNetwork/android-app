@@ -13,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
@@ -365,7 +365,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        item as Web3Transaction
+        item as Web3TransactionItem
         navTo(
             Web3TransactionFragment.newInstance(item, chain, token),
             Web3TransactionFragment.TAG

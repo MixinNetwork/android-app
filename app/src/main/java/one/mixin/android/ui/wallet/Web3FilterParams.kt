@@ -2,7 +2,7 @@ package one.mixin.android.ui.wallet
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -11,12 +11,14 @@ import org.threeten.bp.format.DateTimeFormatter
 class Web3FilterParams(
     var order: SortOrder = SortOrder.Recent,
     var type: SnapshotType = SnapshotType.all,
-    var tokenItems: List<Web3Token>? = null,
+    var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
 ) {
     override fun toString(): String {
-        return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
+        return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} " +
+            "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
+            "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }
 
     val selectTime: String?
@@ -40,44 +42,49 @@ class Web3FilterParams(
                 SnapshotType.snapshot -> R.string.Transfer
             }
         }
+        
+    fun formatDate(timestamp: Long): String {
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+            .withZone(ZoneId.systemDefault())
+        return formatter.format(Instant.ofEpochMilli(timestamp))
+    }
 
     fun buildQuery(): SimpleSQLiteQuery {
         val filters = mutableListOf<String>()
 
         if (type != SnapshotType.all) {
-            // when(type){
-            //     SnapshotType.snapshot -> {
-            //         filters.add("(s.deposit IS NULL OR s.deposit = 'null')")
-            //         filters.add("(s.withdrawal IS NULL OR s.withdrawal = 'null')")
-            //     }
-            //
-            //     SnapshotType.deposit -> {
-            //         filters.add("s.deposit IS NOT NULL")
-            //         filters.add("s.deposit != 'null'")
-            //     }
-            //
-            //     SnapshotType.withdrawal -> {
-            //         filters.add("s.withdrawal IS NOT NULL")
-            //         filters.add("s.withdrawal != 'null'")
-            //     }
-            //     else->{}
-            // }
+            when (type) {
+                SnapshotType.snapshot -> {
+                    filters.add("(deposit IS NULL OR deposit = 'null')")
+                    filters.add("(withdrawal IS NULL OR withdrawal = 'null')")
+                }
+                SnapshotType.deposit -> {
+                    filters.add("deposit IS NOT NULL")
+                    filters.add("deposit != 'null'")
+                }
+                SnapshotType.withdrawal -> {
+                    filters.add("withdrawal IS NOT NULL")
+                    filters.add("withdrawal != 'null'")
+                }
+                else -> {}
+            }
         }
 
         tokenItems?.let {
-            // if (it.isNotEmpty()) {
-            //     val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
-            //     filters.add("s.asset_id IN ($tokenIds)")
-            // }
+            if (it.isNotEmpty()) {
+                val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
+                filters.add("w.asset_id IN ($tokenIds)")
+            }
         }
 
         startTime?.let {
-            filters.add("created_at >= '${Instant.ofEpochMilli(it)}'")
+            filters.add("w.created_at >= '${Instant.ofEpochMilli(it)}'")
         }
 
         endTime?.let {
-            filters.add("created_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
+            filters.add("w.created_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
+        
         val whereSql = if (filters.isEmpty()) {
             ""
         } else {
@@ -85,13 +92,19 @@ class Web3FilterParams(
         }
 
         val orderSql = when (order) {
-            SortOrder.Recent -> "ORDER BY created_at DESC"
-            SortOrder.Oldest -> "ORDER BY created_at ASC"
-            // SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC" // todo
-            SortOrder.Amount -> "ORDER BY amount DESC"
+            SortOrder.Recent -> "ORDER BY w.created_at DESC"
+            SortOrder.Oldest -> "ORDER BY w.created_at ASC"
+            // SortOrder.Value -> "ORDER BY abs(amount * price_usd) DESC" // todo
+            SortOrder.Amount -> "ORDER BY w.amount DESC"
             else -> ""
         }
 
-        return SimpleSQLiteQuery("SELECT * FROM web3_transactions $whereSql $orderSql")
+        return SimpleSQLiteQuery(
+            "SELECT w.transaction_id, w.transaction_hash, w.output_index, w.block_number, " +
+                "w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, " +
+                "w.created_at, w.updated_at, t.symbol, t.icon_url " +
+                "FROM web3_transactions w " +
+                "LEFT JOIN web3_tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
+        )
     }
 }

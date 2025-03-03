@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.ViewFilterPopupBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.AddressItem
@@ -46,7 +47,7 @@ class FilterPopup @JvmOverloads constructor(
         binding.title.text = text
     }
 
-    fun updateWeb3Tokens(@StringRes strRes: Int, tokens: List<Web3Token>?) {
+    fun updateWeb3Tokens(@StringRes strRes: Int, tokens: List<Web3TokenItem>?) {
 
     }
 

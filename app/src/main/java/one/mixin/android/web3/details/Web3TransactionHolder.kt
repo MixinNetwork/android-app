@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -19,187 +20,115 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionBinding) : RecyclerV
     @SuppressLint("SetTextI18n")
     fun bind(transaction: Web3Transaction) {
         binding.apply {
-            titleTv.text = transaction.title(root.context)
-            subTitleTv.text = transaction.subTitle
-            when (transaction.operationType) {
-                Web3TransactionType.Send.value -> {
-                    if (transaction.sender == transaction.receiver) {
-                        avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
-                    } else {
-                        avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
-                    }
-                    avatar.badge.isVisible = false
-
-                    if (transaction.transfers.isNotEmpty()) {
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
-                            inTv.textColorResource = R.color.wallet_pink
-                            inTv.text = "-${outTransfer.amount}"
-                            inSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.text = outTransfer.amountFormat
-                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
-                            outTv.isVisible = false
-                        }
-                    }
-                }
-
-                Web3TransactionType.Receive.value -> {
+            titleTv.text = transaction.transactionHash
+            subTitleTv.text = transaction.createdAt
+            
+            // 根据交易类型设置图标和颜色
+            if (transaction.sender == transaction.receiver) {
+                avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
+                avatar.badge.isVisible = false
+            } else if (transaction.sender.isEmpty()) {
+                avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
+                avatar.badge.isVisible = false
+            } else {
+                avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                avatar.badge.isVisible = false
+            }
+            
+            // 设置金额和符号
+            if (transaction.iconUrl.isNotEmpty()) {
+                avatar.bg.loadImage(
+                    transaction.iconUrl,
+                    holder = R.drawable.ic_avatar_place_holder
+                )
+            }
+            
+            // 设置金额和符号
+            val amount = transaction.amount
+            val symbol = transaction.symbol
+            
+            // 根据交易方向设置颜色和符号
+            if (transaction.sender == transaction.receiver) {
+                // 自己给自己转账
+                inTv.textColorResource = R.color.wallet_green
+                inTv.text = amount
+                inSymbolTv.text = symbol
+                outTv.isVisible = false
+                outSymbolTv.text = ""
+                outSymbolTv.isVisible = false
+            } else if (transaction.sender.isEmpty()) {
+                // 接收交易
+                inTv.textColorResource = R.color.wallet_green
+                inTv.text = "+$amount"
+                inSymbolTv.text = symbol
+                outTv.isVisible = false
+                outSymbolTv.text = ""
+                outSymbolTv.isVisible = false
+            } else {
+                // 发送交易
+                inTv.textColorResource = R.color.wallet_pink
+                inTv.text = "-$amount"
+                inSymbolTv.text = symbol
+                outTv.isVisible = false
+                outSymbolTv.text = ""
+                outSymbolTv.isVisible = false
+            }
+        }
+    }
+    
+    @SuppressLint("SetTextI18n")
+    fun bind(transaction: Web3TransactionItem) {
+        binding.apply {
+            titleTv.text = transaction.transactionHash
+            subTitleTv.text = transaction.createdAt
+            
+            // 设置图标
+            if (transaction.iconUrl != null && transaction.iconUrl.isNotEmpty()) {
+                avatar.bg.loadImage(
+                    transaction.iconUrl,
+                    holder = R.drawable.ic_avatar_place_holder
+                )
+            } else {
+                // 根据交易类型设置默认图标
+                if (transaction.sender == transaction.receiver) {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
-                    avatar.badge.isVisible = false
-                    if (transaction.transfers.isNotEmpty()) {
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount}"
-                            inSymbolTv.text = inTransfer.symbol
-                            outSymbolTv.text = inTransfer.amountFormat
-                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
-                            outTv.isVisible = false
-                        }
-                    }
-                }
-
-                Web3TransactionType.Withdraw.value -> {
+                } else if (transaction.sender.isEmpty()) {
+                    avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
+                } else {
                     avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
-                    if (transaction.transfers.isNotEmpty()) {
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount}"
-                            inSymbolTv.text = inTransfer.symbol
-                            avatar.badge.loadImage(inTransfer.iconUrl, holder = R.drawable.ic_avatar_place_holder)
-                            avatar.badge.isVisible = true
-                        }
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
-                            outTv.isVisible = true
-                            outTv.textColorResource = R.color.wallet_pink
-                            outTv.text = "-${outTransfer.amount}"
-                            outSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
-                        }
-                    }
                 }
-
-                Web3TransactionType.Execute.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
-                    avatar.badge.isVisible = false
-
-                    if (transaction.transfers.isNotEmpty()) {
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
-                            inTv.textColorResource = R.color.wallet_pink
-                            inTv.text = "-${outTransfer.amount}"
-                            inSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.text = outTransfer.amountFormat
-                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
-                            outTv.isVisible = false
-                        }
-                    }
-                }
-
-                Web3TransactionType.Approve.value -> {
-                    avatar.bg.loadImage(
-                        transaction.fee.iconUrl,
-                        holder = R.drawable.ic_avatar_place_holder,
-                        transformation =
-                            if (transaction.status == Web3TransactionStatus.Failed.value) {
-                                GrayscaleTransformation()
-                            } else {
-                                null
-                            },
-                    )
-                    avatar.badge.loadImage(transaction.approvals.firstOrNull()?.iconUrl, holder = R.drawable.ic_no_dapp)
-                    avatar.badge.isVisible = true
-                    inTv.textColorResource = R.color.wallet_pink
-                    inTv.text = "-${transaction.fee.amount}"
-                    inSymbolTv.text = transaction.fee.symbol
-                    outSymbolTv.text = transaction.fee.amountFormat
-                    outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
-                    outTv.isVisible = false
-                }
-
-                Web3TransactionType.Mint.value -> {
-                    avatar.bg.loadImage(
-                        transaction.fee.iconUrl,
-                        holder = R.drawable.ic_avatar_place_holder,
-                        transformation =
-                            if (transaction.status == Web3TransactionStatus.Failed.value) {
-                                GrayscaleTransformation()
-                            } else {
-                                null
-                            },
-                    )
-                    avatar.badge.loadImage(transaction.approvals.firstOrNull()?.iconUrl, holder = R.drawable.ic_no_dapp)
-                    avatar.badge.isVisible = true
-                    inTv.textColorResource = R.color.wallet_pink
-                    inTv.text = "-${transaction.fee.amount}"
-                    inSymbolTv.text = transaction.fee.symbol
-                    outSymbolTv.text = transaction.fee.amountFormat
-                    outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_assist)
-                    outTv.isVisible = false
-                }
-
-                Web3TransactionType.Trade.value -> {
-                    avatar.badge.loadImage(transaction.appMetadata?.iconUrl, holder = R.drawable.ic_no_dapp)
-                    avatar.badge.isVisible = true
-                    if (transaction.transfers.isNotEmpty()) {
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            avatar.bg.loadImage(
-                                inTransfer.iconUrl,
-                                holder = R.drawable.ic_avatar_place_holder,
-                                transformation =
-                                    if (transaction.status == Web3TransactionStatus.Failed.value) {
-                                        GrayscaleTransformation()
-                                    } else {
-                                        null
-                                    },
-                            )
-                            inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount}"
-                            inSymbolTv.text = inTransfer.symbol
-                        }
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
-                            outTv.isVisible = true
-                            outTv.textColorResource = R.color.wallet_pink
-                            outTv.text = "-${outTransfer.amount}"
-                            outSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
-                        }
-                    }
-                }
-
-                Web3TransactionType.Deposit.value -> {
-                    avatar.badge.loadImage(transaction.appMetadata?.iconUrl, holder = R.drawable.ic_no_dapp)
-                    avatar.badge.isVisible = true
-                    if (transaction.transfers.isNotEmpty()) {
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.In.value }?.let { inTransfer ->
-                            avatar.bg.loadImage(
-                                inTransfer.iconUrl,
-                                holder = R.drawable.ic_avatar_place_holder,
-                                transformation =
-                                    if (transaction.status == Web3TransactionStatus.Failed.value) {
-                                        GrayscaleTransformation()
-                                    } else {
-                                        null
-                                    },
-                            )
-                            inTv.textColorResource = R.color.wallet_green
-                            inTv.text = "+${inTransfer.amount}"
-                            inSymbolTv.text = inTransfer.symbol
-                        }
-                        transaction.transfers.find { it.direction == Web3TransactionDirection.Out.value }?.let { outTransfer ->
-                            outTv.isVisible = true
-                            outTv.textColorResource = R.color.wallet_pink
-                            outTv.text = "-${outTransfer.amount}"
-                            outSymbolTv.text = outTransfer.symbol
-                            outSymbolTv.textColor = root.context.colorFromAttribute(R.attr.text_primary)
-                        }
-                    }
-                }
-                else -> {
-                    avatar.bg.setImageResource(R.drawable.ic_no_dapp)
-                    avatar.badge.isVisible = false
-                    outSymbolTv.text = ""
-                    outTv.text = ""
-                    inSymbolTv.text = ""
-                    inTv.text = ""
-                }
+            }
+            avatar.badge.isVisible = false
+            
+            // 设置金额和符号
+            val amount = transaction.getFormattedAmount()
+            val symbol = transaction.symbol
+            
+            // 根据交易方向设置颜色和符号
+            if (transaction.sender == transaction.receiver) {
+                // 自己给自己转账
+                inTv.textColorResource = R.color.wallet_green
+                inTv.text = amount
+                inSymbolTv.text = symbol
+                outTv.isVisible = false
+                outSymbolTv.text = ""
+                outSymbolTv.isVisible = false
+            } else if (transaction.sender.isEmpty()) {
+                // 接收交易
+                inTv.textColorResource = R.color.wallet_green
+                inTv.text = "+$amount"
+                inSymbolTv.text = symbol
+                outTv.isVisible = false
+                outSymbolTv.text = ""
+                outSymbolTv.isVisible = false
+            } else {
+                // 发送交易
+                inTv.textColorResource = R.color.wallet_pink
+                inTv.text = "-$amount"
+                inSymbolTv.text = symbol
+                outTv.isVisible = false
+                outSymbolTv.text = ""
+                outSymbolTv.isVisible = false
             }
         }
     }
