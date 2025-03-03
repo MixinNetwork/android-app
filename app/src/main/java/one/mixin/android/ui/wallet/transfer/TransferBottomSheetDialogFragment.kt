@@ -666,10 +666,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 trace = null
                                 if (addressManageBiometricItem.type == ADD) {
                                     val assetId = addressManageBiometricItem.asset!!.assetId
+                                    val chainId = addressManageBiometricItem.asset!!.chainId
                                     val destination = addressManageBiometricItem.destination
                                     val label = addressManageBiometricItem.label
                                     val tag = addressManageBiometricItem.tag
-                                    bottomViewModel.syncAddr(assetId, destination, label, tag, pin).apply {
+                                    bottomViewModel.syncAddr(assetId, chainId, destination, label, tag, pin).apply {
                                         if (isSuccess) {
                                             bottomViewModel.saveAddr(data as Address)
                                         }
