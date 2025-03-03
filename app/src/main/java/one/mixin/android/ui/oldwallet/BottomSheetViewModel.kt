@@ -92,6 +92,7 @@ class BottomSheetViewModel
 
         suspend fun syncAddr(
             assetId: String,
+            chainId: String,
             destination: String?,
             label: String?,
             tag: String?,
@@ -100,6 +101,7 @@ class BottomSheetViewModel
             assetRepository.syncAddr(
                 AddressRequest(
                     assetId,
+                    chainId,
                     destination,
                     tag,
                     label,
