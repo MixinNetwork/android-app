@@ -254,18 +254,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             } else {
                                                 PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                             }
-                                            val assetId = web3Token!!.assetId
-                                            if (assetId.isNullOrBlank()) {
+
+                                            if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                val token = web3ViewModel.syncAsset(
-                                                    web3Token!!.assetId ?: ""
-                                                )
-                                                if (token == null || fromAddress.isBlank()) {
-                                                    toast(R.string.Alert_Not_Support)
-                                                } else {
-                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken = chainToken, toWallet = true), InputFragment.TAG)
-                                                }
+                                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = it, chainToken = chainToken, toWallet = true), InputFragment.TAG)
                                             }
                                         }
                                         dialog.dismiss()
@@ -288,8 +281,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 } else {
                                                     PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                                 }
-                                                val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
-                                                if (token == null || fromAddress.isBlank()) {
+                                                if (fromAddress.isBlank()) {
                                                     toast(R.string.Alert_Not_Support)
                                                 } else {
                                                     navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = it, chainToken= chainToken), InputFragment.TAG)
@@ -315,8 +307,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             } else {
                                                 PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                             }
-                                            val token = web3ViewModel.syncAsset(web3Token!!.assetId ?: "")
-                                            if (token == null || fromAddress.isBlank()) {
+                                            if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
                                                 navTo(

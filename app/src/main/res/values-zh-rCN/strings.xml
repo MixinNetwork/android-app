@@ -1493,6 +1493,7 @@
     <string name="web3_deposit_description_solana">使用此地址在 Solana 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
     <string name="Ethereum_Account">Ethereum 账户</string>
+    <string name="Web3_Account">%1$s 账户</string>
     <string name="Solana_Account">Solana 账户</string>
     <string name="Review">预览</string>
     <string name="Max">最大值</string>

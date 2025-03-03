@@ -846,6 +846,7 @@ class BottomSheetViewModel
 
         suspend fun syncAddr(
             assetId: String,
+            chainId: String,
             destination: String?,
             label: String?,
             tag: String?,
@@ -854,6 +855,7 @@ class BottomSheetViewModel
             tokenRepository.syncAddr(
                 AddressRequest(
                     assetId,
+                    chainId,
                     destination,
                     tag,
                     label,

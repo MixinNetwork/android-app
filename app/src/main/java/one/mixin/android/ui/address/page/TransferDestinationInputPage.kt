@@ -1,6 +1,7 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
+import one.mixin.android.util.getChainNetwork
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -244,10 +245,8 @@ fun TransferDestinationInputPage(
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     stringResource(
-                                        when (token?.chainId) {
-                                            ChainId.SOLANA_CHAIN_ID -> R.string.Solana_Account
-                                            else -> R.string.Ethereum_Account
-                                        }
+                                        R.string.Web3_Account,
+                                        token?.chainName ?: ""
                                     ),
                                     stringResource(
                                         R.string.Send_to_web3_wallet_description,
